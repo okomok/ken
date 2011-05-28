@@ -5,16 +5,15 @@
 
 
 package com.github.okomok
-package ken
 
 
-object Prelude {
+package object ken {
 
-    def identity[a](x: a): a = x
+    def id[a](x: a): a = x
 
     def const[a, b](x: a)(y: b): a = x
 
-    def apply[a, b, c](x: a => b => c)(y: a)(z: b): c = x(y)(z)
+    def apply[a, b](x: a => b)(y: a): b = x(y)
 
     def flip[a, b, c](x: a => b => c)(y: b)(z: a): c = x(z)(y)
 
