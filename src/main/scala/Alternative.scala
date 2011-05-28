@@ -29,7 +29,7 @@ trait Alternative[f[_]] extends Applicative[f] {
     }
     implicit def <|>[a](x: f[a]): _Op_<|>[a] = new _Op_<|>(x)
 
-    def optional[a](x: f[a]): f[Option[a]] = (Some(_: a): Option[a]) <#> x <|> pure(None)
+    def optional[a](x: f[a]): f[Option[a]] = id[a => Option[a]](Some(_)) <#> x <|> pure(None)
 
     private def _cons[a]: a => List[a] => List[a] = x => xs => x :: xs
 }
@@ -38,4 +38,10 @@ trait Alternative[f[_]] extends Applicative[f] {
 object Alternative {
     implicit val Option: Alternative[Option] = detail.OptionInstance
     implicit val List: Alternative[List] = detail.ListInstance
+/*
+    def optional[f[_], a](x: f[a])(implicit m: Alternative[f]): f[Option[a]] = {
+        import m._
+        (Some(_: a): Option[a]) <#> x <|> pure(None)
+    }
+*/
 }
