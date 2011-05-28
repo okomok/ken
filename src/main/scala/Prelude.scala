@@ -12,6 +12,10 @@ object Prelude {
 
     def identity[a](x: a): a = x
 
-    def const[a](x: a)(y: Any): a = x
+    def const[a, b](x: a)(y: b): a = x
+
+    def apply[a, b, c](x: a => b => c)(y: a)(z: b): c = x(y)(z)
+
+    def flip[a, b, c](x: a => b => c)(y: b)(z: a): c = x(z)(y)
 
 }

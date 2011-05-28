@@ -25,30 +25,13 @@ trait Applicative extends Pointed {
     }
     implicit def <*>[a, b](x: f_[a => b]): Op_<*>[a, b] = new Op_<*>(x)
 
-    class Op_*>[a, b](x: f_[a]) {
-        def *>(y: f_[b]): f_[b] = op_*>(x)(y)
+    class Op_*>[a](x: f_[a]) {
+        def *>[b](y: f_[b]): f_[b] = op_*>(x)(y)
     }
-    implicit def *>[a, b](x: f_[a]): Op_*>[a, b] = new Op_*>(x)
+    implicit def *>[a, b](x: f_[a]): Op_*>[a] = new Op_*>(x)
 
-    class Op_<*[a, b](x: f_[a]) {
-        def <*(y: f_[b]): f_[a] = op_<*(x)(y)
+    class Op_<*[a](x: f_[a]) {
+        def <*[b](y: f_[b]): f_[a] = op_<*(x)(y)
     }
-    implicit def <*[a, b](x: f_[a]): Op_<*[a, b] = new Op_<*(x)
-}
-
-
-object Applicative {
-
-    trait OfList extends Applicative with Pointed.OfList {
-        override def op_<*>[a, b](x: f_[a => b])(y: f_[a]): f_[b] = {
-           for { p <- x; q <- y } yield p(q)
-        }
-    }
-    val OfList = new OfList {}
-
-
-    import OfList._
-
-    pure((x: Int) => (y: Int) => x + y) <*> (2 :: 3 :: 4 :: Nil) <*> pure(4)
-
+    implicit def <*[a](x: f_[a]): Op_<*[a] = new Op_<*(x)
 }
