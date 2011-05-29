@@ -10,16 +10,16 @@ package ken
 
 trait MonadPlus[f[_]] extends Monad[f] {
     def mzero[a]: f[a]
-    def op_mplus[a](x: f[a])(y: f[a]): f[a]
+    def mplus[a](x: f[a])(y: f[a]): f[a]
 
-    class _Mplus[a](x: f[a]) {
-        def mplus(y: f[a]): f[a] = op_mplus(x)(y)
+    private[ken] class _Mplus_[a](x: f[a]) {
+        def _mplus_(y: f[a]): f[a] = mplus(x)(y)
     }
-    implicit def mplus[a](x: f[a]): _Mplus[a] = new _Mplus(x)
+    implicit def _mplus_[a](x: f[a]): _Mplus_[a] = new _Mplus_(x)
 }
 
 
 object MonadPlus {
-    implicit val Option: MonadPlus[Option] = detail.OptionInstance
-    implicit val List: MonadPlus[List] = detail.ListInstance
+    implicit val Option: MonadPlus[Option] = detail._Option
+    implicit val List: MonadPlus[List] = detail._List
 }

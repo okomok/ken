@@ -8,6 +8,9 @@ package com.github.okomok
 package ken
 
 
+import Prelude._
+
+
 trait Alternative[f[_]] extends Applicative[f] {
     def empty[a]: f[a]
     def op_<|>[a](x: f[a])(y: f[a]): f[a]
@@ -24,7 +27,7 @@ trait Alternative[f[_]] extends Applicative[f] {
         many_v
     }
 
-    class _Op_<|>[a](x: f[a]) {
+    private[ken] class _Op_<|>[a](x: f[a]) {
         def <|>(y: f[a]): f[a] = op_<|>(x)(y)
     }
     implicit def <|>[a](x: f[a]): _Op_<|>[a] = new _Op_<|>(x)
@@ -36,8 +39,8 @@ trait Alternative[f[_]] extends Applicative[f] {
 
 
 object Alternative {
-    implicit val Option: Alternative[Option] = detail.OptionInstance
-    implicit val List: Alternative[List] = detail.ListInstance
+    implicit val Option: Alternative[Option] = detail._Option
+    implicit val List: Alternative[List] = detail._List
 /*
     def optional[f[_], a](x: f[a])(implicit m: Alternative[f]): f[Option[a]] = {
         import m._

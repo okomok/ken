@@ -12,12 +12,12 @@ trait Monad[f[_]] extends Applicative[f] {
     def op_>>=[a, b](x: f[a])(y: a => f[b]): f[b]
     def op_>>[a, b](x: f[a])(y: f[b]): f[b] = x >>= (_ => y)
 
-    class _Op_>>=[a](x: f[a]) {
+    private[ken] class _Op_>>=[a](x: f[a]) {
         def >>=[b](y: a => f[b]): f[b] = op_>>=(x)(y)
     }
     implicit def >>=[a](x: f[a]): _Op_>>=[a] = new _Op_>>=(x)
 
-    class _Op_>>[a](x: f[a]) {
+    private[ken] class _Op_>>[a](x: f[a]) {
         def >>[b](y: f[b]): f[b] = op_>>(x)(y)
     }
     implicit def >>[a, b](x: f[a]): _Op_>>[a] = new _Op_>>(x)
@@ -25,6 +25,6 @@ trait Monad[f[_]] extends Applicative[f] {
 
 
 object Monad {
-    implicit val Option: Monad[Option] = detail.OptionInstance
-    implicit val List: Monad[List] = detail.ListInstance
+    implicit val Option: Monad[Option] = detail._Option
+    implicit val List: Monad[List] = detail._List
 }
