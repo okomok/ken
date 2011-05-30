@@ -82,4 +82,3 @@ object List extends Alternative with MonadPlus {
         override def op_<*>[a, b](x: f_[a => b])(y: f_[a]): f_[b] = zipWith[a => b, a, b](apply)(x)(y)
     }
 }
-
