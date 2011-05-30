@@ -9,13 +9,13 @@ package ken
 
 
 trait Monoid {
-    type a_
-    def mempty: a_
-    def mappend(x: a_)(y: a_): a_
-    def mconcat(x: List[a_]): a_ = x.foldRight(mempty)(mappend(_)(_))
+    type m_
+    def mempty: m_
+    def mappend(x: m_)(y: m_): m_
+    def mconcat(x: List[m_]): m_ = x.foldRight(mempty)(mappend(_)(_))
 
-    private[ken] class _Mappend_(x: a_) {
-        def _mappend_(y: a_): a_ = mappend(x)(y)
+    private[ken] class Mappend_(x: m_) {
+        def _mappend_(y: m_): m_ = mappend(x)(y)
     }
-    implicit def _mappend_(x: a_): _Mappend_ = new _Mappend_(x)
+    implicit def _mappend_(x: m_): Mappend_ = new Mappend_(x)
 }

@@ -27,10 +27,10 @@ trait Alternative extends Applicative {
         many_v
     }
 
-    private[ken] class _Op_<|>[a](x: f_[a]) {
+    private[ken] class Op_<|>[a](x: f_[a]) {
         def <|>(y: f_[a]): f_[a] = op_<|>(x)(y)
     }
-    implicit def <|>[a](x: f_[a]): _Op_<|>[a] = new _Op_<|>(x)
+    implicit def <|>[a](x: f_[a]): Op_<|>[a] = new Op_<|>(x)
 
     def optional[a](x: f_[a]): f_[Option[a]] = id[a => Option[a]](Some(_)) <#> x <|> pure(None)
 

@@ -30,10 +30,9 @@ object List_ extends Alternative with MonadPlus {
     override def mplus[a](x: f_[a])(y: f_[a]): f_[a] = x ::: y
 }
 
-
 class ListOf[a] extends Monoid {
     // Monoid
-    override type a_ = List[a]
-    override def mempty: a_ = Nil
-    override def mappend(x: a_)(y: a_): a_ = x ::: y
+    override type m_ = List[a]
+    override def mempty: m_ = Nil
+    override def mappend(x: m_)(y: m_): m_ = x ::: y
 }
