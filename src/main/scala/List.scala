@@ -8,6 +8,7 @@ package com.github.okomok
 package ken
 
 
+import scala.annotation.tailrec
 import Prelude._
 
 
@@ -44,6 +45,16 @@ object List extends Alternative with MonadPlus {
     }
     implicit def ofName[A](xs: => List[A]): OfName[A] = new OfName(xs)
 
+    @tailrec
+    def op_==(xs: List[_])(ys: List[_]): Boolean = (xs, ys) match {
+        case (Nil, Nil) => true
+        case (Nil, _) => false
+        case (_, Nil) => false
+        case (x :: xs, y :: ys) => {
+            if (x == y) op_==(xs())(ys()) else false
+        }
+    }
+
     // Functor
     override type f_[a] = List[a]
     // Applicative
@@ -67,8 +78,8 @@ object List extends Alternative with MonadPlus {
         // Functor
         override type f_[a] = List[a]
         // Applicative
-        override def pure[a](x: => a): f_[a] = undefined
-        override def op_<*>[a, b](x: f_[a => b])(y: f_[a]): f_[b] = undefined
+        override def pure[a](x: => a): f_[a] = repeat(x)
+        override def op_<*>[a, b](x: f_[a => b])(y: f_[a]): f_[b] = zipWith[a => b, a, b](apply)(x)(y)
     }
 }
 
