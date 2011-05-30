@@ -26,4 +26,17 @@ class TrivialTest extends org.scalatest.junit.JUnit3Suite {
         */
     }
 
+    def teztIO {
+        import ken.Prelude
+   //     val io = Prelude.getChar >>= { x => Prelude.putChar(x) }
+   //     io.unIO()
+
+        val io = for {
+            x <- Prelude.getChar
+            u <- Prelude.putChar(x)
+        } yield u
+
+        io.unIO()
+    }
+
 }

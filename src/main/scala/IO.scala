@@ -12,7 +12,6 @@ trait IO[a] {
     def unIO(): a
 }
 
-
 object IO extends Monad {
     // Functor
     override type f_[a] = IO[a]
