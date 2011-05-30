@@ -28,24 +28,20 @@ object Prelude {
 
     def error(msg: String): Nothing = throw new Error(msg)
 
-    def undefined: Nothing = throw new Error
+    def undefined: Nothing = throw new Error("undefined")
 
-    val show: Any => String = { x => x.toString }
+    def show(x: Any): String = x.toString
 
-    val putChar: Char => IO[Unit] = print(_)
+    def putChar(x: Char): IO[Unit] = print(x)
 
-    val putStr: String => IO[Unit] = print(_)
+    def putStr(x: String): IO[Unit] = print(x)
 
-    val putStrLn: String => IO[Unit] = { x =>
-        new IO[Unit] {
-            override def unIO(): Unit = Predef.println(x)
-        }
+    def putStrLn(x: String): IO[Unit] = new IO[Unit] {
+        override def unIO(): Unit = Predef.println(x)
     }
 
-    val print: Any => IO[Unit] = { x =>
-        new IO[Unit] {
-            override def unIO(): Unit = Predef.print(x)
-        }
+    def print(x: Any): IO[Unit] = new IO[Unit] {
+        override def unIO(): Unit = Predef.print(x)
     }
 
     val getChar: IO[Char] = new IO[Char] {
