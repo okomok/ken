@@ -16,13 +16,13 @@ trait Alternative extends Applicative {
     def op_<|>[a](x: f_[a])(y: f_[a]): f_[a]
 
     def some[a](v: f_[a]): f_[List[a]] = {
-        def many_v: f_[List[a]] = some_v <|> pure(Nil)
+        def many_v: f_[List[a]] = some_v <|> pure(List.Nil)
         def some_v: f_[List[a]] = _cons[a] <#> v <*> many_v
         some_v
     }
 
     def many[a](v: f_[a]): f_[List[a]] = {
-        def many_v: f_[List[a]] = some_v <|> pure(Nil)
+        def many_v: f_[List[a]] = some_v <|> pure(List.Nil)
         def some_v: f_[List[a]] = _cons[a] <#> v <*> many_v
         many_v
     }
