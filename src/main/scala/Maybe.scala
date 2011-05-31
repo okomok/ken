@@ -1,0 +1,92 @@
+
+
+// Copyright Shunsuke Sogame 2011.
+// Distributed under the terms of an MIT-style license.
+
+
+package com.github.okomok
+package ken
+
+
+sealed abstract class Maybe[+a]
+
+
+object Maybe extends Alternative[Maybe] with MonadPlus[Maybe] {
+    implicit val theInstance = Maybe
+
+    object Nothing extends Maybe[scala.Nothing]
+    case class Just[a](x: a) extends Maybe[a]
+
+    def maybe[a, b](n: b)(f: a => b)(m: Maybe[a]): b = m match {
+        case Nothing => n
+        case Just(x) => f(x)
+    }
+
+    def isJust[a](m: Maybe[a]): Boolean = m match {
+        case Nothing => false
+        case _ => true
+    }
+
+    def isNothing[a](m: Maybe[a]): Boolean = m match {
+        case Nothing => true
+        case _ => false
+    }
+
+    def fromJust[a](m: Maybe[a]): a = m match {
+        case Nothing => Prelude.error("Nothing")
+        case Just(x) => x
+    }
+
+    def fromMaybe[a](d: a)(x: Maybe[a]): a = x match {
+        case Nothing => d
+        case Just(v) => v
+    }
+
+    import List.{Nil, ::}
+
+    def maybeToList[a](m: Maybe[a]): List[a] = m match {
+        case Nothing => Nil
+        case Just(x) => x :: Nil
+    }
+
+    def listToMaybe[a](xs: List[a]): Maybe[a] = xs match {
+        case Nil => Nothing
+        case a :: _ => Just(a)
+    }
+
+    def catMaybes[a](ls: List[Maybe[a]]): List[a] = for (Just(x) <- ls) yield x
+
+    def mapMaybe[a, b](f: a => Maybe[b])(xs: List[a]): List[b] = xs match {
+        case Nil => Nil
+        case x :: xs => {
+            lazy val rs: List[b] = mapMaybe(f)(xs())
+            f(x) match {
+                case Nothing => rs
+                case Just(r) => r :: rs
+            }
+        }
+    }
+
+    private[this] type f[a] = Maybe[a]
+    // Applicative
+    override def pure[a](x: => a): f[a] = Just(x)
+    // Alternative
+    override def empty[a]: f[a] = Nothing
+    override def op_<|>[a](x: f[a])(y: f[a]): f[a] = (x, y) match {
+        case (Nothing, p) => p
+        case (Just(p), _) => Just(p)
+    }
+    // Monad
+    override def op_>>=[a, b](x: f[a])(y: a => f[b]): f[b] = x match {
+        case Just(x) => y(x)
+        case Nothing => Nothing
+    }
+    // MonadPlus
+    override def mzero[a]: f[a] = Nothing
+    override def mplus[a](x: f[a])(y: f[a]): f[a] = (x, y) match {
+        case (Nothing, Nothing) => Nothing
+        case (Just(p), Nothing) => Just(p)
+        case (Nothing, Just(p)) => Just(p)
+        case (Just(p), Just(q)) => Just(p)
+    }
+}

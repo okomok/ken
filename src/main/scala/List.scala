@@ -15,13 +15,16 @@ import Prelude._
 sealed abstract class List[+A] {
     def ++[B >: A](that: => List[B]): List[B] = op_++[B](this)(that)
     def !!(n: Int): A = op_!!(this)(n)
+
+    def filter(p: A => Boolean): List[A] = Prelude.filter(p)(this)
+    def withFilter(p: A => Boolean): List[A] = Prelude.filter(p)(this)
 }
 
 
 object List extends Alternative[List] with MonadPlus[List] {
     implicit val theInstance = List
 
-    case object Nil extends List[Nothing] {
+    object Nil extends List[Nothing] {
         def ::[A](x: A): List[A] = new ::[A](x, this)
     }
 
