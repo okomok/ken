@@ -15,7 +15,7 @@ object Maybe extends Alternative[Maybe] with MonadPlus[Maybe] {
     implicit val theInstance = Maybe
 
     object Nothing extends Maybe[scala.Nothing]
-    case class Just[a](x: a) extends Maybe[a]
+    case class Just[+a](x: a) extends Maybe[a]
 
     def maybe[a, b](n: b)(f: a => b)(m: Maybe[a]): b = m match {
         case Nothing => n
