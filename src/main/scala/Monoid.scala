@@ -19,3 +19,22 @@ trait Monoid[m] {
     }
     implicit def _mappend_(x: m): Mappend_ = new Mappend_(x)
 }
+
+
+object Monoid {
+    implicit val ofUnit = Unit_
+
+    implicit def ofFunction1[A, b](implicit mb: Monoid[b]): Monoid[A => b] = new Monoid[A => b] {
+        private[this] type m = A => b
+        override def mempty: m = _ => mb.mempty
+        override def mappend(x: m)(y: m): m = z => mb.mappend(x(z))(y(z))
+    }
+
+    implicit def ofPair[a, b](implicit ma: Monoid[a], mb: Monoid[b]): Monoid[(a, b)] = new Monoid[(a, b)] {
+        private[this] type m = (a, b)
+        def mempty: m = (ma.mempty, mb.mempty)
+        def mappend(x1: m)(x2: m): m = (x1, x2) match {
+            case ((a1, b1), (a2, b2)) => (ma.mappend(a1)(a2), mb.mappend(b1)(b2))
+        }
+    }
+}

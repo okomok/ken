@@ -9,8 +9,6 @@ package ken
 
 
 object Unit_ extends Monoid[Unit] {
-    implicit val theInstance = Unit_
-
     private[this] type m = Unit
     override def mempty: m = ()
     override def mappend(x: m)(y: m): m = ()

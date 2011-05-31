@@ -19,7 +19,6 @@ sealed abstract class List[+A] {
 
 
 object List extends Alternative[List] with MonadPlus[List] {
-
     implicit val theInstance = List
 
     case object Nil extends List[Nothing] {
