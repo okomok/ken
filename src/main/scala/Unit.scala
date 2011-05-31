@@ -8,9 +8,9 @@ package com.github.okomok
 package ken
 
 
-object Unit_ extends Monoid {
-    override type m_ = Unit
-    override def mempty: m_ = ()
-    override def mappend(x: m_)(y: m_): m_ = ()
-    override def mconcat(x: List[m_]): m_ = ()
+object Unit_ extends Monoid[Unit] {
+    private[this] type m = Unit
+    override def mempty: m = ()
+    override def mappend(x: m)(y: m): m = ()
+    override def mconcat(x: List[m]): m = ()
 }

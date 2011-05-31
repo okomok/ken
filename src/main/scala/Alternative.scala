@@ -11,28 +11,28 @@ package ken
 import Prelude._
 
 
-trait Alternative extends Applicative {
-    def empty[a]: f_[a]
-    def op_<|>[a](x: f_[a])(y: f_[a]): f_[a]
+trait Alternative[f[_]] extends Applicative[f] {
+    def empty[a]: f[a]
+    def op_<|>[a](x: f[a])(y: f[a]): f[a]
 
-    def some[a](v: f_[a]): f_[List[a]] = {
-        def many_v: f_[List[a]] = some_v <|> pure(List.Nil)
-        def some_v: f_[List[a]] = _cons[a] <#> v <*> many_v
+    def some[a](v: f[a]): f[List[a]] = {
+        def many_v: f[List[a]] = some_v <|> pure(List.Nil)
+        def some_v: f[List[a]] = _cons[a] <#> v <*> many_v
         some_v
     }
 
-    def many[a](v: f_[a]): f_[List[a]] = {
-        def many_v: f_[List[a]] = some_v <|> pure(List.Nil)
-        def some_v: f_[List[a]] = _cons[a] <#> v <*> many_v
+    def many[a](v: f[a]): f[List[a]] = {
+        def many_v: f[List[a]] = some_v <|> pure(List.Nil)
+        def some_v: f[List[a]] = _cons[a] <#> v <*> many_v
         many_v
     }
 
-    private[ken] class Op_<|>[a](x: f_[a]) {
-        def <|>(y: f_[a]): f_[a] = op_<|>(x)(y)
+    private[ken] class Op_<|>[a](x: f[a]) {
+        def <|>(y: f[a]): f[a] = op_<|>(x)(y)
     }
-    implicit def <|>[a](x: f_[a]): Op_<|>[a] = new Op_<|>(x)
+    implicit def <|>[a](x: f[a]): Op_<|>[a] = new Op_<|>(x)
 
-    def optional[a](x: f_[a]): f_[Option[a]] = id[a => Option[a]](Some(_)) <#> x <|> pure(None)
+    def optional[a](x: f[a]): f[Option[a]] = id[a => Option[a]](Some(_)) <#> x <|> pure(None)
 
     private def _cons[a]: a => List[a] => List[a] = x => xs => x :: xs
 }

@@ -12,13 +12,12 @@ trait IO[a] {
     def unIO(): a
 }
 
-object IO extends Monad {
-    // Functor
-    override type f_[a] = IO[a]
+object IO extends Monad[IO] {
+    private[this] type f[a] = IO[a]
     // Applicative
-    override def pure[a](x: => a): f_[a] = new IO[a] {
+    override def pure[a](x: => a): f[a] = new IO[a] {
         override def unIO(): a = x
     }
     // Monad
-    override def op_>>=[a, b](x: f_[a])(y: a => f_[b]): f_[b] = y(x.unIO())
+    override def op_>>=[a, b](x: f[a])(y: a => f[b]): f[b] = y(x.unIO())
 }

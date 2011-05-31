@@ -15,7 +15,7 @@ class TrivialTest extends org.scalatest.junit.JUnit3Suite {
     def testList {
         import ken.List._
 
-        val xs: f_[Int] = locally {
+        val xs: ftype[Int] = locally {
             ((x: Int) => (y: Int) => x + y) <#> (2 :: 3 :: 4 :: Nil) <*> pure(4)
         }
         expect(6 :: 7 :: 8 :: Nil)(xs)
@@ -25,7 +25,7 @@ class TrivialTest extends org.scalatest.junit.JUnit3Suite {
         expect(true)(6 :: 7 :: 8 :: Nil == 6 :: 7 :: 8 :: Nil)
         expect(false)(6 :: 7 :: Nil == 6 :: 7 :: 8 :: Nil)
 
-        def makeList: f_[Int] = throw new Error
+        def makeList: ftype[Int] = throw new Error
         val ys = ::(10, makeList)
         expect(false)(6 :: 7 :: Nil == ys)
 

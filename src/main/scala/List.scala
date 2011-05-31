@@ -18,7 +18,7 @@ sealed abstract class List[+A] {
 }
 
 
-object List extends Alternative with MonadPlus {
+object List extends Alternative[List] with MonadPlus[List] {
 
     case object Nil extends List[Nothing] {
         def ::[A](x: A): List[A] = new ::[A](x, this)
@@ -31,8 +31,7 @@ object List extends Alternative with MonadPlus {
         }
     }
 
-    // strict extractor
-    object #:: {
+    object #:: { // strict extractor
         def unapply[A](xs: List[A]): Option[(A, List[A])] = xs match {
             case Nil => None
             case x :: xs => Some(x, xs())
@@ -55,30 +54,30 @@ object List extends Alternative with MonadPlus {
         }
     }
 
-    // Functor
-    override type f_[a] = List[a]
+    private[this] type f[a] = List[a]
     // Applicative
-    override def pure[a](x: => a): f_[a] = x :: Nil
+    override def pure[a](x: => a): f[a] = x :: Nil
     // Alternative
-    override def empty[a]: f_[a] = Nil
-    override def op_<|>[a](x: f_[a])(y: f_[a]): f_[a] = x ++ y
+    override def empty[a]: f[a] = Nil
+    override def op_<|>[a](x: f[a])(y: f[a]): f[a] = x ++ y
     // Monad
-    override def op_>>=[a, b](x: f_[a])(y: a => f_[b]): f_[b] = concat(map(y)(x))
+    override def op_>>=[a, b](x: f[a])(y: a => f[b]): f[b] = concat(map(y)(x))
     // MonadPlus
-    override def mzero[a]: f_[a] = Nil
-    override def mplus[a](x: f_[a])(y: f_[a]): f_[a] = x ++ y
-
+    override def mzero[a]: f[a] = Nil
+    override def mplus[a](x: f[a])(y: f[a]): f[a] = x ++ y
+/*
     class Of[a] extends Monoid {
         override type m_ = List[a]
         override def mempty: m_ = List.Nil
         override def mappend(x: m_)(y: m_): m_ = x ++ y
     }
+*/
+}
 
-    object Zip extends Applicative {
-        // Functor
-        override type f_[a] = List[a]
-        // Applicative
-        override def pure[a](x: => a): f_[a] = repeat(x)
-        override def op_<*>[a, b](x: f_[a => b])(y: f_[a]): f_[b] = zipWith[a => b, a, b](apply)(x)(y)
-    }
+
+object ZipList extends Applicative[List] {
+    private[this] type f[a] = List[a]
+    // Applicative
+    override def pure[a](x: => a): f[a] = repeat(x)
+    override def op_<*>[a, b](x: f[a => b])(y: f[a]): f[b] = zipWith[a => b, a, b](apply)(x)(y)
 }

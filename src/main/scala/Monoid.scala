@@ -8,14 +8,14 @@ package com.github.okomok
 package ken
 
 
-trait Monoid {
-    type m_
-    def mempty: m_
-    def mappend(x: m_)(y: m_): m_
-    def mconcat(x: List[m_]): m_ = x.foldRight(mempty)(mappend(_)(_))
+trait Monoid[m] {
+    type mtype = m
+    def mempty: m
+    def mappend(x: m)(y: m): m
+    def mconcat(x: List[m]): m = Prelude.foldr[m, m](x => y => mappend(x)(y()))(mempty)(x)
 
-    private[ken] class Mappend_(x: m_) {
-        def _mappend_(y: m_): m_ = mappend(x)(y)
+    private[ken] class Mappend_(x: m) {
+        def _mappend_(y: m): m = mappend(x)(y)
     }
-    implicit def _mappend_(x: m_): Mappend_ = new Mappend_(x)
+    implicit def _mappend_(x: m): Mappend_ = new Mappend_(x)
 }
