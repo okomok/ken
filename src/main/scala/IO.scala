@@ -13,6 +13,8 @@ trait IO[a] {
 }
 
 object IO extends Monad[IO] {
+    implicit val theInstance = IO
+
     private[this] type f[a] = IO[a]
     // Applicative
     override def pure[a](x: => a): f[a] = new IO[a] {

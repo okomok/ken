@@ -34,6 +34,19 @@ class TrivialTest extends org.scalatest.junit.JUnit3Suite {
 
         callfmap(ken.List_)((x: Int) => x)(3 :: Nil)
         */
+
+    }
+
+    def compileImplicit {
+        import ken.List.Nil
+
+        (1 :: 2 :: Nil) >>= (x => x :: Nil)
+
+        def takeImplicit[f[_], a](x: f[a])(implicit i: ken.Monad[f]): Unit = throw new Error
+        def takeMonoidImplicit[a](x: a)(implicit i: ken.Monoid[a]): Unit = throw new Error
+
+        val u1: Unit = takeImplicit(6 :: Nil)
+        val u2: Unit = takeMonoidImplicit(6 :: Nil)
     }
 
     def teztIO {

@@ -20,6 +20,8 @@ sealed abstract class List[+A] {
 
 object List extends Alternative[List] with MonadPlus[List] {
 
+    implicit val theInstance = List
+
     case object Nil extends List[Nothing] {
         def ::[A](x: A): List[A] = new ::[A](x, this)
     }
@@ -65,13 +67,12 @@ object List extends Alternative[List] with MonadPlus[List] {
     // MonadPlus
     override def mzero[a]: f[a] = Nil
     override def mplus[a](x: f[a])(y: f[a]): f[a] = x ++ y
-/*
-    class Of[a] extends Monoid {
-        override type m_ = List[a]
-        override def mempty: m_ = List.Nil
-        override def mappend(x: m_)(y: m_): m_ = x ++ y
+
+    implicit def monoidInstance[a]: Monoid[List[a]] = new Monoid[List[a]] {
+        private[this] type m = List[a]
+        override def mempty: m = Nil
+        override def mappend(x: m)(y: m): m = x ++ y
     }
-*/
 }
 
 
@@ -80,4 +81,5 @@ object ZipList extends Applicative[List] {
     // Applicative
     override def pure[a](x: => a): f[a] = repeat(x)
     override def op_<*>[a, b](x: f[a => b])(y: f[a]): f[b] = zipWith[a => b, a, b](apply)(x)(y)
+    implicit val instance = ZipList
 }
