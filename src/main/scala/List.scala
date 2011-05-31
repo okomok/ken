@@ -12,23 +12,25 @@ import scala.annotation.tailrec
 import Prelude._
 
 
-sealed abstract class List[+A] {
-    def ++[B >: A](that: => List[B]): List[B] = op_++[B](this)(that)
-    def !!(n: Int): A = op_!!(this)(n)
+sealed abstract class List[+a] {
+    def ++[B >: a](that: => List[B]): List[B] = op_++[B](this)(that)
+    def !!(n: Int): a = op_!!(this)(n)
 
-    def filter(p: A => Boolean): List[A] = Prelude.filter(p)(this)
-    def withFilter(p: A => Boolean): List[A] = Prelude.filter(p)(this)
+    def filter(p: a => Boolean): List[a] = Prelude.filter(p)(this)
+    def withFilter(p: a => Boolean): List[a] = Prelude.filter(p)(this)
 }
 
 
 object List extends Alternative[List] with MonadPlus[List] {
+    type Type[+a] = List[a]
+
     implicit val theInstance = List
 
     object Nil extends List[Nothing] {
-        def ::[A](x: A): List[A] = new ::[A](x, this)
+        def ::[a](x: a): List[a] = new ::[a](x, this)
     }
 
-    case class ::[+A](head: A, tail: Lazy[List[A]]) extends List[A] {
+    case class ::[+a](head: a, tail: Lazy[List[a]]) extends List[a] {
         override def equals(that: Any): Boolean = that match {
             case that: List[_] => op_==(this)(that)
             case _ => false
@@ -36,17 +38,17 @@ object List extends Alternative[List] with MonadPlus[List] {
     }
 
     object #:: { // strict extractor
-        def unapply[A](xs: List[A]): Option[(A, List[A])] = xs match {
+        def unapply[a](xs: List[a]): Option[(a, List[a])] = xs match {
             case Nil => None
             case x :: xs => Some(x, xs())
         }
     }
 
-    private[ken] class OfName[A](xs: => List[A]) {
-        def ::(x: A): List[A] = new List.::(x, xs)
-        def :::(ys: List[A]): List[A] = ys ++ xs
+    private[ken] class OfName[a](xs: => List[a]) {
+        def ::(x: a): List[a] = new List.::(x, xs)
+        def :::(ys: List[a]): List[a] = ys ++ xs
     }
-    implicit def ofName[A](xs: => List[A]): OfName[A] = new OfName(xs)
+    implicit def ofName[a](xs: => List[a]): OfName[a] = new OfName(xs)
 
     @tailrec
     def op_==(xs: List[_])(ys: List[_]): Boolean = (xs, ys) match {

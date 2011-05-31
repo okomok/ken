@@ -12,6 +12,8 @@ sealed abstract class Either[+a, +b]
 
 
 object Either {
+    type Type[+a, +b] = Either[a, b]
+
     case class Left[+a, +b](x: a) extends Either[a, b]
     case class Right[+a, +b](y: b) extends Either[a, b]
 

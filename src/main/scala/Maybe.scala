@@ -12,6 +12,8 @@ sealed abstract class Maybe[+a]
 
 
 object Maybe extends Alternative[Maybe] with MonadPlus[Maybe] {
+    type Type[+a] = Maybe[a]
+
     implicit val theInstance = Maybe
 
     object Nothing extends Maybe[scala.Nothing]

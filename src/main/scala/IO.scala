@@ -8,11 +8,13 @@ package com.github.okomok
 package ken
 
 
-trait IO[a] {
+trait IO[+a] {
     def unIO(): a
 }
 
 object IO extends Monad[IO] {
+    type Type[+a] = IO[a]
+
     implicit val theInstance = IO
 
     private[this] type f[a] = IO[a]
