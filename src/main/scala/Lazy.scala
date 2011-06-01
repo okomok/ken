@@ -15,5 +15,7 @@ case class Lazy[+R](_1: () => R) extends (() => R) {
 
 object Lazy {
     def apply[R](body: => R)(implicit i: DummyImplicit) = new Lazy(() => body)
-    implicit def _fromExpr[R](from: => R): Lazy[R] = apply(from)
+    //implicit def _fromExpr[R](from: => R): Lazy[R] = apply(from)
+
+    def arg2[A, B, C](f: A => B => C)(x: A)(y: Lazy[B]): C = f(x)(y())
 }

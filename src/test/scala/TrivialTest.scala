@@ -26,7 +26,7 @@ class TrivialTest extends org.scalatest.junit.JUnit3Suite {
         expect(false)(6 :: 7 :: Nil == 6 :: 7 :: 8 :: Nil)
 
         def makeList: ftype[Int] = throw new Error
-        val ys = ::(10, makeList)
+        val ys = ::(10, ken.Lazy(makeList))
         expect(false)(6 :: 7 :: Nil == ys)
 
         /*
@@ -76,4 +76,17 @@ class TrivialTest extends org.scalatest.junit.JUnit3Suite {
         }
     }
 
+    /*
+    def testImport {
+        object xxx {
+            type L = Int
+            object yyy {
+                type L = xxx.L
+            }
+        }
+        import xxx._
+        import yyy._
+        val x: L = 3
+    }
+    */
 }

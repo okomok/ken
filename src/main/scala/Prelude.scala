@@ -13,7 +13,30 @@ import scala.annotation.tailrec
 
 object Prelude {
 
+// Booleans
+
+    def not(b: Boolean): Boolean = !b
+
+    def op_&&(b: Boolean)(c: Lazy[Boolean]): Boolean = b && c()
+
+    def op_||(b: Boolean)(c: Lazy[Boolean]): Boolean = b || c()
+
+// Tuples
+
+    def fst[a, b](p: (a, b)): a = p match {
+        case (x, _) => x
+    }
+
+    def snd[a, b](p: (a, b)): b = p match {
+        case (_, y) => y
+    }
+
+    def curry[a, b, c](f: (a, b) => c): a => b => c = { x => y => f(x, y) }
+
+    def uncurry[a, b, c](f: a => b => c): (a, b) => c = { (x, y) => f(x)(y) }
+
 // Miscellaneous functions
+
     def id[a](x: a): a = x
 
     def const[a](x: a): Any => a = { _ => x }
@@ -35,6 +58,7 @@ object Prelude {
     def undefined: Nothing = throw new Error("undefined")
 
 // List operations
+
     import List.{Nil, ::, #:: }
 
     def map[a, b](f: a => b)(xs: List[a]): List[b] = xs match {
@@ -105,6 +129,7 @@ object Prelude {
     def reverse[a](xs: List[a]): List[a] = foldl(flip((x: a) => (xs: List[a]) => x :: xs))(Nil)(xs)
 
 // Reducing lists (folds)
+
     @tailrec
     def foldl[a, b](f: a => b => a)(z: a)(xs: List[b]): a = xs match {
         case Nil => z
@@ -118,27 +143,28 @@ object Prelude {
 
     def foldr[a, b](f: a => Lazy[b] => b)(z: b)(xs: List[a]): b = xs match {
         case Nil => z
-        case x :: xs => f(x)(foldr(f)(z)(xs()))
+        case x :: xs => f(x)(Lazy(foldr(f)(z)(xs())))
     }
 
     def foldr1[a](f: a => Lazy[a] => a)(xs: List[a]): a = xs match {
         case Nil => error("empty List")
         case x #:: Nil => x
-        case x :: xs => f(x)(foldr1(f)(xs()))
+        case x :: xs => f(x)(Lazy(foldr1(f)(xs())))
     }
 
 // Special folds
-    def and(xs: List[Boolean]): Boolean = foldr[Boolean, Boolean](x => y => x && y())(true)(xs)
 
-    def or(xs: List[Boolean]): Boolean = foldr[Boolean, Boolean](x => y => x || y())(false)(xs)
+    def and(xs: List[Boolean]): Boolean = foldr(op_&&)(true)(xs)
+
+    def or(xs: List[Boolean]): Boolean = foldr(op_||)(false)(xs)
 
     def any[a](p: a => Boolean)(xs: List[a]): Boolean = or(map(p)(xs))
 
     def all[a](p: a => Boolean)(xs: List[a]): Boolean = and(map(p)(xs))
 
-    def sum[a](xs: List[a])(implicit i: Numeric[a]): a = foldl[a, a](x => y => i.plus(x, y))(i.zero)(xs)
+    def sum[a](xs: List[a])(implicit i: Numeric[a]): a = foldl(curry(i.plus))(i.zero)(xs)
 
-    def product[a](xs: List[a])(implicit i: Numeric[a]): a = foldl[a, a](x => y => i.times(x, y))(i.one)(xs)
+    def product[a](xs: List[a])(implicit i: Numeric[a]): a = foldl(curry(i.times))(i.one)(xs)
 
     def concat[a](xs: List[List[a]]): List[a] = foldr[List[a], List[a]](x => y => x ::: y())(Nil)(xs)
 
@@ -146,15 +172,16 @@ object Prelude {
 
     def maximum[a](xs: List[a])(implicit i: Ordering[a]): a = xs match {
         case Nil => error("empty List")
-        case xs => foldl1[a](x => y => i.max(x, y))(xs)
+        case xs => foldl1(curry(i.max))(xs)
     }
 
     def minimum[a](xs: List[a])(implicit i: Ordering[a]): a = xs match {
         case Nil => error("empty List")
-        case xs => foldl1[a](x => y => i.min(x, y))(xs)
+        case xs => foldl1(curry(i.min))(xs)
     }
 
 // Building lists
+
     def scanl[a, b](f: a => b => a)(q: => a)(ls: List[b]): List[a] = { // why `q` is by-name?
         q :: (ls match {
             case Nil => Nil
@@ -171,7 +198,7 @@ object Prelude {
         case Nil => q0 :: Nil
         case x :: xs => {
             lazy val qs = scanr(f)(q0)(xs())
-            f(x)(head[b](qs)) :: qs // I don't know why `[b]` needed.
+            f(x)(Lazy(head(qs))) :: qs
         }
     }
 
@@ -180,11 +207,12 @@ object Prelude {
         case x #:: Nil => x :: Nil
         case x :: xs => {
             lazy val qs = scanr1(f)(xs())
-            f(x)(head[a](qs)) :: qs
+            f(x)(Lazy(head(qs))) :: qs
         }
     }
 
 // Infinite lists
+
     def iterate[a](f: a => a)(x: a): List[a] = x :: iterate(f)(f(x))
 
     def repeat[a](x: a): List[a] = {
@@ -203,6 +231,7 @@ object Prelude {
     }
 
 // Sublists
+
     def take[a](n: Int)(xs: List[a]): List[a] = (n, xs) match {
         case (n, _) if n <= 0 => Nil
         case (_, Nil) => Nil
@@ -240,9 +269,10 @@ object Prelude {
         }
     }
 
-    def break[a](p: a => Boolean)(xs: List[a]): (List[a], List[a]) = span[a](x => !p(x))(xs)
+    def break[a](p: a => Boolean)(xs: List[a]): (List[a], List[a]) = span[a](!p(_))(xs)
 
 // Searching lists
+
     def elem[a](x: a)(xs: List[a]): Boolean = any[a](x == _)(xs)
 
     def notElem[a](x: a)(xs: List[a]): Boolean = all[a](x != _)(xs)
@@ -254,6 +284,7 @@ object Prelude {
     }
 
 // Zipping and unzipping lists
+
     def zip[a, b](xs: List[a])(ys: List[b]): List[(a, b)] = (xs, ys) match {
         case (a :: as, b :: bs) => (a, b) :: zip(as())(bs())
         case _ => Nil
@@ -272,9 +303,11 @@ object Prelude {
 
 
 // Converting to String
+
     def show(x: Any): String = x.toString
 
-// Basic IO
+// Basic I/O operations
+
     def putChar(x: Char): IO[Unit] = print(x)
 
     def putStr(x: String): IO[Unit] = print(x)

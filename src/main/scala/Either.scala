@@ -22,13 +22,15 @@ object Either {
         case Right(y) => g(y)
     }
 
+    import List.{::, Nil}
+
     def lefts[a, b](x: List[Either[a, b]]): List[a] = for (Left(a) <- x) yield a
     def rights[a, b](x: List[Either[a, b]]): List[b] = for (Right(a) <- x) yield a
 
     def partitionEithers[a, b](x: List[Either[a, b]]): (List[a], List[b]) = {
         def left(_a: a)(lr: (List[a], List[b])): (List[a], List[b]) = lr match { case (l, r) => (_a :: l, r) }
         def right(_a: b)(lr: (List[a], List[b])): (List[a], List[b]) = lr match { case (l, r) => (l, _a :: r) }
-        Prelude.foldr[Either[a, b], (List[a], List[b])](x => y => either(left)(right)(x)(y()))((List.Nil, List.Nil))(x)
+        Prelude.foldr[Either[a, b], (List[a], List[b])](Lazy.arg2(either(left)(right)))((Nil, Nil))(x)
     }
 
     implicit def functorInstance[A]: Functor[({type f[x] = Either[A, x]})#f] = new Functor[({type f[x] = Either[A, x]})#f] {

@@ -27,7 +27,7 @@ object List extends Alternative[List] with MonadPlus[List] {
     implicit val theInstance = List
 
     object Nil extends List[Nothing] {
-        def ::[a](x: a): List[a] = new ::[a](x, this)
+        def ::[a](x: a): List[a] = new ::[a](x, Lazy(this))
     }
 
     case class ::[+a](head: a, tail: Lazy[List[a]]) extends List[a] {
@@ -45,7 +45,7 @@ object List extends Alternative[List] with MonadPlus[List] {
     }
 
     private[ken] class OfName[a](xs: => List[a]) {
-        def ::(x: a): List[a] = new List.::(x, xs)
+        def ::(x: a): List[a] = new List.::(x, Lazy(xs))
         def :::(ys: List[a]): List[a] = ys ++ xs
     }
     implicit def ofName[a](xs: => List[a]): OfName[a] = new OfName(xs)
