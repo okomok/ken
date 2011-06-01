@@ -12,7 +12,7 @@ trait Functor[f[_]] {
     type ftype[a] = f[a]
     def fmap[a, b](x: a => b)(y: f[a]): f[b]
 
-    def op_<#>[a, b](x: a => b)(y: f[a]): f[b] = fmap(x)(y)
+    final def op_<#>[a, b](x: a => b)(y: f[a]): f[b] = fmap(x)(y)
     def op_<#[a, b](x: => a)(y: f[b]): f[a] = fmap[b, a](_ => x)(y)
 
     private[ken] class Op_<#>[a, b](x: a => b) {
@@ -25,3 +25,6 @@ trait Functor[f[_]] {
     }
     implicit def <#[a](x: => a): Op_<#[a] = new Op_<#(x)
 }
+
+
+object Functor extends ApplicativeInstance

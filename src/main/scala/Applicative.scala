@@ -47,7 +47,11 @@ trait Applicative[f[_]] extends Functor[f] {
 }
 
 
-object Applicative {
+object Applicative extends ApplicativeInstance
+
+private[ken] trait ApplicativeInstance {
+    implicit val ofId = Id
+
     implicit def ofFunction1[A]: Applicative[({type f[a] = A => a})#f] = new Applicative[({type f[a] = A => a})#f] {
         private[this] type f[a] = A => a
         override def pure[a](x: => a): f[a] = const(x)

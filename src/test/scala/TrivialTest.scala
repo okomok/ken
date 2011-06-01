@@ -62,6 +62,14 @@ class TrivialTest extends org.scalatest.junit.JUnit3Suite {
         io.unIO()
     }
 
+    def teztIOAp {
+        import ken.Prelude._
+        import ken.IO._
+
+        val io = { (c1: Char) => (c2: Char) => println(c1); println(c2) } <#> getChar <*> getChar
+        io.unIO()
+    }
+
     def testStreamDefect {
         def makeStream: Stream[Int] = throw new Error
         val xs: Stream[Int] = Stream.cons(1, makeStream)
