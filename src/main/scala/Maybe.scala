@@ -56,7 +56,7 @@ object Maybe extends Alternative[Maybe] with MonadPlus[Maybe] {
         case a :: _ => Just(a)
     }
 
-    def catMaybes[a](ls: List[Maybe[a]]): List[a] = for (Just(x) <- ls) yield x
+    def catMaybes[a](ls: List[Maybe[a]]): List[a] = for { Just(x) <- ls } yield x
 
     def mapMaybe[a, b](f: a => Maybe[b])(xs: List[a]): List[b] = xs match {
         case Nil => Nil

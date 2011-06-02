@@ -24,8 +24,8 @@ object Either {
 
     import List.{::, Nil}
 
-    def lefts[a, b](x: List[Either[a, b]]): List[a] = for (Left(a) <- x) yield a
-    def rights[a, b](x: List[Either[a, b]]): List[b] = for (Right(a) <- x) yield a
+    def lefts[a, b](x: List[Either[a, b]]): List[a] = for { Left(a) <- x } yield a
+    def rights[a, b](x: List[Either[a, b]]): List[b] = for { Right(a) <- x } yield a
 
     def partitionEithers[a, b](x: List[Either[a, b]]): (List[a], List[b]) = {
         def left(_a: a)(lr: (List[a], List[b])): (List[a], List[b]) = lr match { case (l, r) => (_a :: l, r) }

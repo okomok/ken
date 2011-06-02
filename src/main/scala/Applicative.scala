@@ -9,6 +9,7 @@ package ken
 
 
 import Prelude._
+import List.{Nil, ::, cons}
 
 
 trait Applicative[f[_]] extends Functor[f] {

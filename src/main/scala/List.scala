@@ -77,6 +77,11 @@ object List extends Alternative[List] with MonadPlus[List] {
         override def mempty: m = Nil
         override def mappend(x: m)(y: m): m = x ++ y
     }
+
+    final def cons[a]: a => List[a] => List[a] = { x => xs => x :: xs }
+    final def consr[a]: a => Lazy[List[a]] => List[a] = { x => xs => x :: xs() }
+    final def append[a]: List[a] => List[a] => List[a] = { xs => ys => xs ::: ys }
+    final def appendr[a]: List[a] => Lazy[List[a]] => List[a] = { xs => ys => xs ::: ys() }
 }
 
 
