@@ -17,5 +17,5 @@ object Lazy {
     def apply[R](body: => R)(implicit i: DummyImplicit) = new Lazy(() => body)
     //implicit def _fromExpr[R](from: => R): Lazy[R] = apply(from)
 
-    def arg2[A, B, C](f: A => B => C)(x: A)(y: Lazy[B]): C = f(x)(y())
+    def r[A, B, C](f: A => B => C)(x: A)(y: Lazy[B]): C = f(x)(y())
 }

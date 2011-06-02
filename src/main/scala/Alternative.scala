@@ -34,5 +34,5 @@ trait Alternative[f[_]] extends Applicative[f] {
 
     def optional[a](x: f[a]): f[Option[a]] = id[a => Option[a]](Some(_)) <#> x <|> pure(None)
 
-    private def _cons[a]: a => List[a] => List[a] = x => xs => x :: xs
+    private[this] def _cons[a]: a => List[a] => List[a] = x => xs => x :: xs
 }
