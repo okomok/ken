@@ -8,6 +8,7 @@ package com.github.okomok
 package ken
 
 
+/*
 // Will be removed.
 
 object Option_ extends Alternative[Option] with MonadPlus[Option] {
@@ -31,3 +32,4 @@ object Option_ extends Alternative[Option] with MonadPlus[Option] {
         case (Some(p), Some(q)) => Some(p)
     }
 }
+*/

@@ -21,10 +21,10 @@ object Monoid extends MonoidInstance {
     def mappend[m](x: m)(y: m)(implicit i: Monoid[m]): m = i.mappend(x)(y)
     def mconcat[m](x: List[m])(implicit i: Monoid[m]): m = i.mconcat(x)
 
-    private[ken] class Mappend_[m](x: m, i: Monoid[m]) {
-        def _mappend_(y: m): m = mappend(x)(y)(i)
+    private[ken] class Mappend_[m](x: m)(implicit i: Monoid[m]) {
+        def _mappend_(y: m): m = mappend(x)(y)
     }
-    implicit def _mappend_[m](x: m)(implicit i: Monoid[m]): Mappend_[m] = new Mappend_(x, i)
+    implicit def _mappend_[m](x: m)(implicit i: Monoid[m]): Mappend_[m] = new Mappend_(x)
 }
 
 

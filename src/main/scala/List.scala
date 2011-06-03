@@ -43,7 +43,7 @@ object #:: { // strict extractor
 
 
 object List extends Alternative[List] with MonadPlus[List] {
-    implicit val theInstance = List
+    implicit val theInstance = this
 
     private[ken] class OfName[a](xs: => List[a]) {
         def ::(x: a): List[a] = new ken.::(x, Lazy(xs))
@@ -61,17 +61,16 @@ object List extends Alternative[List] with MonadPlus[List] {
         }
     }
 
-    private[this] type f[a] = List[a]
-    // Applicative
-    override def pure[a](x: => a): f[a] = x :: Nil
+    private[this] type m[a] = List[a]
     // Alternative
-    override def empty[a]: f[a] = Nil
-    override def op_<|>[a](x: f[a])(y: f[a]): f[a] = x ++ y
+    override def empty[a]: m[a] = Nil
+    override def op_<|>[a](x: m[a])(y: m[a]): m[a] = x ++ y
     // Monad
-    override def op_>>=[a, b](x: f[a])(y: a => f[b]): f[b] = concat(map(y)(x))
+    override def `return`[a](x: => a): m[a] = x :: Nil
+    override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = concat(map(y)(x))
     // MonadPlus
-    override def mzero[a]: f[a] = Nil
-    override def mplus[a](x: f[a])(y: f[a]): f[a] = x ++ y
+    override def mzero[a]: m[a] = Nil
+    override def mplus[a](x: m[a])(y: m[a]): m[a] = x ++ y
 
     implicit def monoidInstance[a]: Monoid[List[a]] = new Monoid[List[a]] {
         private[this] type m = List[a]
@@ -87,9 +86,8 @@ object List extends Alternative[List] with MonadPlus[List] {
 
 
 object ZipList extends Applicative[List] {
+    implicit val theInstance = this
     private[this] type f[a] = List[a]
-    // Applicative
     override def pure[a](x: => a): f[a] = repeat(x)
     override def op_<*>[a, b](x: f[a => b])(y: f[a]): f[b] = zipWith[a => b, a, b](apply)(x)(y)
-    implicit val instance = ZipList
 }

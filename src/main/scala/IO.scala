@@ -13,13 +13,11 @@ trait IO[+a] {
 }
 
 object IO extends Monad[IO] {
-    implicit val theInstance = IO
+    implicit val theInstance = this
 
-    private[this] type f[a] = IO[a]
-    // Applicative
-    override def pure[a](x: => a): f[a] = new IO[a] {
+    private[this] type m[a] = IO[a]
+    override def `return`[a](x: => a): m[a] = new IO[a] {
         override def unIO(): a = x
     }
-    // Monad
-    override def op_>>=[a, b](x: f[a])(y: a => f[b]): f[b] = y(x.unIO())
+    override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = y(x.unIO())
 }

@@ -9,13 +9,14 @@ package ken
 
 
 trait Monad[m[_]] extends Applicative[m] {
-    import Monad._
-    private[this] implicit val _self = this
+    import Monad.{>>=, `for`}
+    private[this] implicit val i = this
 
-    final def `return`[a](x: => a): m[a] = pure(x)
+    def `return`[a](x: => a): m[a]
     def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b]
     def op_>>[a, b](x: m[a])(y: m[b]): m[b] = x >>= (_ => y)
 
+    final override def pure[a](x: => a): m[a] = `return`(x)
     override def op_<*>[a, b](x: m[a => b])(y: m[a]): m[b] = for { _x <- x; _y <- y } yield _x(_y)
 }
 
@@ -43,10 +44,10 @@ object Monad {
 
     def op_=<<[m[_], a, b](f: a => m[b])(x: m[a])(implicit i: Monad[m]): m[b] = x >>= f
 
-    private[ken] class Op_=<<[m[_], a, b](f: a => m[b], i: Monad[m]) {
-        def =<<(x: m[a]): m[b] = op_=<<(f)(x)(i)
+    private[ken] class Op_=<<[m[_], a, b](f: a => m[b])(implicit i: Monad[m]) {
+        def =<<(x: m[a]): m[b] = op_=<<(f)(x)
     }
-    implicit def =<<[m[_], a, b](f: a => m[b])(implicit i: Monad[m]): Op_=<<[m, a, b] = new Op_=<<[m, a, b](f, i)
+    implicit def =<<[m[_], a, b](f: a => m[b])(implicit i: Monad[m]): Op_=<<[m, a, b] = new Op_=<<[m, a, b](f)
 
     def sequence[m[_], a](ms: List[m[a]])(implicit i: Monad[m]): m[List[a]] = {
         def k(m: m[a])(_m: Lazy[m[List[a]]]): m[List[a]] = for { x <- m; xs <- _m() } yield (x :: xs)

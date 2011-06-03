@@ -9,9 +9,9 @@ package ken
 
 
 trait Alternative[f[_]] extends Applicative[f] {
-    import Alternative._
-    import Applicative._
-    private[this] implicit val _self = this
+    import Alternative.{<|>}
+    import Applicative.{<#>, <*>}
+    private[this] implicit val i = this
 
     def empty[a]: f[a]
     def op_<|>[a](x: f[a])(y: f[a]): f[a]
@@ -41,10 +41,10 @@ object Alternative {
     def some[f[_], a](v: f[a])(implicit i: Alternative[f]): f[List[a]] = i.some(v)
     def many[f[_], a](v: f[a])(implicit i: Alternative[f]): f[List[a]] = i.many(v)
 
-    private[ken] class Op_<|>[f[_], a](x: f[a], i: Alternative[f]) {
-        def <|>(y: f[a]): f[a] = op_<|>(x)(y)(i)
+    private[ken] class Op_<|>[f[_], a](x: f[a])(implicit i: Alternative[f]) {
+        def <|>(y: f[a]): f[a] = op_<|>(x)(y)
     }
-    implicit def <|>[f[_], a](x: f[a])(implicit i: Alternative[f]): Op_<|>[f, a] = new Op_<|>[f, a](x, i)
+    implicit def <|>[f[_], a](x: f[a])(implicit i: Alternative[f]): Op_<|>[f, a] = new Op_<|>[f, a](x)
 
     def optional[f[_], a](x: f[a])(implicit i: Alternative[f]): f[Option[a]] = id[a => Option[a]](Some(_)) <#> x <|> pure(None: Option[a])(i)
 }
