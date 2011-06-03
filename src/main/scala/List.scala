@@ -19,6 +19,11 @@ sealed abstract class List[+a] {
 
     def filter(p: a => Boolean): List[a] = ken.filter(p)(this)
     def withFilter(p: a => Boolean): List[a] = ken.filter(p)(this)
+
+    def toScalaList: scala.List[a] = this match {
+        case Nil => scala.Nil
+        case x :: xs => scala.::(x, xs().toScalaList)
+    }
 }
 
 
@@ -78,10 +83,17 @@ object List extends Alternative[List] with MonadPlus[List] {
         override def mappend(x: m)(y: m): m = x ++ y
     }
 
-    final def cons[a]: a => List[a] => List[a] = { x => xs => x :: xs }
-    final def consr[a]: a => Lazy[List[a]] => List[a] = { x => xs => x :: xs() }
-    final def append[a]: List[a] => List[a] => List[a] = { xs => ys => xs ::: ys }
-    final def appendr[a]: List[a] => Lazy[List[a]] => List[a] = { xs => ys => xs ::: ys() }
+    def cons[a]: a => List[a] => List[a] = { x => xs => x :: xs }
+    def consr[a]: a => Lazy[List[a]] => List[a] = { x => xs => x :: xs() }
+    def append[a]: List[a] => List[a] => List[a] = { xs => ys => xs ::: ys }
+    def appendr[a]: List[a] => Lazy[List[a]] => List[a] = { xs => ys => xs ::: ys() }
+
+    def from[a](that: List[a]): List[a] = that
+
+    def apply[a](xs: a*): List[a] = from(xs)
+    def unapplySeq[a](xs: List[a]): Option[Seq[a]] = Some(xs.toScalaList)
+
+    implicit def fromIterable[a](xs: scala.Iterable[a]): List[a] = if (xs.isEmpty) Nil else (xs.head :: from(xs.tail))
 }
 
 
