@@ -54,7 +54,7 @@ object Maybe extends Alternative[Maybe] with MonadPlus[Maybe] {
         case a :: _ => Just(a)
     }
 
-    import Monad.forExpr
+    import Monad.`for`
 
     def catMaybes[a](ls: List[Maybe[a]]): List[a] = for { Just(x) <- ls } yield x
 

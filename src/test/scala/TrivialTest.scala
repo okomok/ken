@@ -43,7 +43,7 @@ class TrivialTest extends org.scalatest.junit.JUnit3Suite {
     }
 
     def teztIO {
-        import Monad.forExpr
+        import Monad.`for`
    //     val io = getChar >>= { x => putChar(x) }
    //     io.unIO()
 

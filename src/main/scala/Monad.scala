@@ -35,11 +35,11 @@ object Monad {
     }
     implicit def >>[m[_], a, b](x: m[a])(implicit i: Monad[m]): Op_>>[m, a] = new Op_>>[m, a](x)
 
-    private[ken] class ForExpr[m[_], a](x: m[a])(implicit i: Monad[m]) {
+    private[ken] class For[m[_], a](x: m[a])(implicit i: Monad[m]) {
        def map[b](y: a => b): m[b] = op_>>=(x)(_x => `return`(y(_x)))
        def flatMap[b](y: a => m[b]): m[b] = op_>>=(x)(y)
     }
-    implicit def forExpr[m[_], a](x: m[a])(implicit i: Monad[m]): ForExpr[m, a] = new ForExpr[m, a](x)
+    implicit def `for`[m[_], a](x: m[a])(implicit i: Monad[m]): For[m, a] = new For[m, a](x)
 
     def op_=<<[m[_], a, b](f: a => m[b])(x: m[a])(implicit i: Monad[m]): m[b] = x >>= f
 

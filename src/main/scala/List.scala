@@ -43,8 +43,6 @@ object #:: { // strict extractor
 
 
 object List extends Alternative[List] with MonadPlus[List] {
-    type Type[+a] = List[a]
-
     implicit val theInstance = List
 
     private[ken] class OfName[a](xs: => List[a]) {

@@ -9,7 +9,6 @@ package ken
 
 
 object Unit_ extends Monoid[Unit] {
-    type Type = Unit
     private[this] type m = Unit
     override def mempty: m = ()
     override def mappend(x: m)(y: m): m = ()

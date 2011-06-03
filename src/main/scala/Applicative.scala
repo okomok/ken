@@ -9,12 +9,15 @@ package ken
 
 
 trait Applicative[f[_]] extends Functor[f] {
+    import Applicative._
+    private[this] implicit val _self = this
+
     def pure[a](x: => a): f[a]
     def op_<*>[a, b](x: f[a => b])(y: f[a]): f[b]
-    def op_*>[a, b](x: f[a])(y: f[b]): f[b] = Applicative.liftA2[f, a, b, b](const(id))(x)(y)(this)
-    def op_<*[a, b](x: f[a])(y: f[b]): f[a] = Applicative.liftA2[f, a, b, a](const)(x)(y)(this)
+    def op_*>[a, b](x: f[a])(y: f[b]): f[b] = liftA2[f, a, b, b](const(id))(x)(y)(this)
+    def op_<*[a, b](x: f[a])(y: f[b]): f[a] = liftA2[f, a, b, a](const)(x)(y)(this)
 
-    override def fmap[a, b](x: a => b)(y: f[a]): f[b] = op_<*>(pure(x))(y)
+    override def fmap[a, b](x: a => b)(y: f[a]): f[b] = pure(x) <*> y
 }
 
 

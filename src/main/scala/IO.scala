@@ -13,8 +13,6 @@ trait IO[+a] {
 }
 
 object IO extends Monad[IO] {
-    type Type[+a] = IO[a]
-
     implicit val theInstance = IO
 
     private[this] type f[a] = IO[a]
