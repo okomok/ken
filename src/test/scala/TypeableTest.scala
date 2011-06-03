@@ -17,12 +17,19 @@ class TypeableTest extends org.scalatest.junit.JUnit3Suite {
         val ac = implicitly[ken.Typeable[String]]
         val bc = implicitly[ken.Typeable[String]]
         val a = "hello"
-        val b = ac.cast[String](a)
-        b match {
-            case ken.Maybe.Just(x) => expect(a)(x)
-            case _ => fail("doh")
-        }
+        val ken.Maybe.Just(x) = ac.cast[String](a)
+        expect(a)(x)
         val c: ken.Maybe[Int] = ac.cast(a)
+        expect(ken.Maybe.Nothing)(c)
+    }
+
+    def testParam {
+        val ac = implicitly[ken.Typeable[scala.List[String]]]
+        val bc = implicitly[ken.Typeable[scala.List[String]]]
+        val a = "hello" :: scala.Nil
+        val ken.Maybe.Just(x) = ac.cast[scala.List[String]](a)
+        expect(a)(x)
+        val c = ac.cast[scala.List[Int]](a)
         expect(ken.Maybe.Nothing)(c)
     }
 
