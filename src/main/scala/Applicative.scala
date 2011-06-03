@@ -8,10 +8,6 @@ package com.github.okomok
 package ken
 
 
-import Prelude._
-import List.{Nil, ::, cons}
-
-
 trait Applicative[f[_]] extends Functor[f] {
     def pure[a](x: => a): f[a]
     def op_<*>[a, b](x: f[a => b])(y: f[a]): f[b]

@@ -12,7 +12,7 @@ trait Monoid[m] {
     type mtype = m
     def mempty: m
     def mappend(x: m)(y: m): m
-    def mconcat(x: List[m]): m = Prelude.foldr(Lazy.r(mappend))(mempty)(x)
+    def mconcat(x: List[m]): m = foldr(Lazy.r(mappend))(mempty)(x)
 }
 
 

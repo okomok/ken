@@ -15,18 +15,18 @@ class TypeableTest extends org.scalatest.junit.JUnit3Suite {
 
     def testTrivial {
         val a = "hello"
-        val Maybe.Just(x) = Typeable.cast[String, String](a)
+        val Just(x) = Typeable.cast[String, String](a)
         expect(a)(x)
         val c = Typeable.cast[String, Int](a)
-        expect(Maybe.Nothing)(c)
+        expect(Nothing)(c)
     }
 
     def testParam {
         val a = "hello" :: scala.Nil
-        val Maybe.Just(x) = Typeable.cast[scala.List[String], scala.List[String]](a)
+        val Just(x) = Typeable.cast[scala.List[String], scala.List[String]](a)
         expect(a)(x)
         val c = Typeable.cast[scala.List[String], scala.List[Int]](a)
-        expect(Maybe.Nothing)(c)
+        expect(Nothing)(c)
     }
 
     def testmkT {
@@ -40,7 +40,7 @@ class TypeableTest extends org.scalatest.junit.JUnit3Suite {
     def testBadCompiler1 {
         val a = "hello"
         intercept[MatchError] {
-            val Maybe.Just(x) = Typeable.cast(a): Maybe[String] // annotation seems ignored.
+            val Just(x) = Typeable.cast(a): Maybe[String] // annotation seems ignored.
         }
     }
 
@@ -49,8 +49,8 @@ class TypeableTest extends org.scalatest.junit.JUnit3Suite {
         intercept[Error] {
             val r = Typeable.cast(a): Maybe[String]
             r match {
-                case Maybe.Just(x) => ()
-                case Maybe.Nothing => throw new Error
+                case Just(x) => ()
+                case Nothing => throw new Error
             }
         }
     }

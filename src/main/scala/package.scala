@@ -5,13 +5,12 @@
 
 
 package com.github.okomok
-package ken
 
 
 import scala.annotation.tailrec
 
 
-object Prelude {
+package object ken {
 
 // Booleans
     def not(b: Boolean): Boolean = !b
@@ -55,8 +54,6 @@ object Prelude {
     def undefined: Nothing = throw new Error("undefined")
 
 // List operations
-    import List.{Nil, ::, #::}
-
     def map[a, b](f: a => b)(xs: List[a]): List[b] = xs match {
         case Nil => Nil
         case x :: xs => f(x) :: map(f)(xs())

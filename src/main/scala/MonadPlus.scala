@@ -8,9 +8,6 @@ package com.github.okomok
 package ken
 
 
-import Prelude._
-
-
 trait MonadPlus[m[_]] extends Monad[m] {
     def mzero[a]: m[a]
     def mplus[a](x: m[a])(y: m[a]): m[a]

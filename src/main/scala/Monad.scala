@@ -8,10 +8,6 @@ package com.github.okomok
 package ken
 
 
-import Prelude._
-import List.{Nil, ::}
-
-
 trait Monad[m[_]] extends Applicative[m] {
     import Monad._
     private[this] implicit val _self = this

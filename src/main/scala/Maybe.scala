@@ -11,13 +11,13 @@ package ken
 sealed abstract class Maybe[+a]
 
 
+object Nothing extends Maybe[scala.Nothing]
+
+case class Just[+a](x: a) extends Maybe[a]
+
+
 object Maybe extends Alternative[Maybe] with MonadPlus[Maybe] {
-    type Type[+a] = Maybe[a]
-
     implicit val theInstance = Maybe
-
-    object Nothing extends Maybe[scala.Nothing]
-    case class Just[+a](x: a) extends Maybe[a]
 
     def maybe[a, b](n: b)(f: a => b)(m: Maybe[a]): b = m match {
         case Nothing => n
@@ -35,7 +35,7 @@ object Maybe extends Alternative[Maybe] with MonadPlus[Maybe] {
     }
 
     def fromJust[a](m: Maybe[a]): a = m match {
-        case Nothing => Prelude.error("Nothing")
+        case Nothing => error("Nothing")
         case Just(x) => x
     }
 
@@ -43,8 +43,6 @@ object Maybe extends Alternative[Maybe] with MonadPlus[Maybe] {
         case Nothing => d
         case Just(v) => v
     }
-
-    import List.{Nil, ::}
 
     def maybeToList[a](m: Maybe[a]): List[a] = m match {
         case Nothing => Nil

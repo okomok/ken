@@ -9,15 +9,36 @@ package ken
 
 
 import scala.annotation.tailrec
-import Prelude._
 
 
 sealed abstract class List[+a] {
-    def ++[B >: a](that: => List[B]): List[B] = op_++[B](this)(that)
+    def asList[b >: a]: List[b] = this
+
+    def ++[b >: a](that: => List[b]): List[b] = op_++[b](this)(that)
     def !!(n: Int): a = op_!!(this)(n)
 
-    def filter(p: a => Boolean): List[a] = Prelude.filter(p)(this)
-    def withFilter(p: a => Boolean): List[a] = Prelude.filter(p)(this)
+    def filter(p: a => Boolean): List[a] = ken.filter(p)(this)
+    def withFilter(p: a => Boolean): List[a] = ken.filter(p)(this)
+}
+
+
+object Nil extends List[Nothing] {
+    def ::[a](x: a): List[a] = new ::[a](x, Lazy(this))
+}
+
+case class ::[+a](head: a, tail: Lazy[List[a]]) extends List[a] {
+    override def equals(that: Any): Boolean = that match {
+        case that: List[_] => List.op_==(this)(that)
+        case _ => false
+    }
+}
+
+
+object #:: { // strict extractor
+    def unapply[a](xs: List[a]): Option[(a, List[a])] = xs match {
+        case Nil => None
+        case x :: xs => Some(x, xs())
+    }
 }
 
 
@@ -26,26 +47,8 @@ object List extends Alternative[List] with MonadPlus[List] {
 
     implicit val theInstance = List
 
-    object Nil extends List[Nothing] {
-        def ::[a](x: a): List[a] = new ::[a](x, Lazy(this))
-    }
-
-    case class ::[+a](head: a, tail: Lazy[List[a]]) extends List[a] {
-        override def equals(that: Any): Boolean = that match {
-            case that: List[_] => op_==(this)(that)
-            case _ => false
-        }
-    }
-
-    object #:: { // strict extractor
-        def unapply[a](xs: List[a]): Option[(a, List[a])] = xs match {
-            case Nil => None
-            case x :: xs => Some(x, xs())
-        }
-    }
-
     private[ken] class OfName[a](xs: => List[a]) {
-        def ::(x: a): List[a] = new List.::(x, Lazy(xs))
+        def ::(x: a): List[a] = new ken.::(x, Lazy(xs))
         def :::(ys: List[a]): List[a] = ys ++ xs
     }
     implicit def ofName[a](xs: => List[a]): OfName[a] = new OfName(xs)

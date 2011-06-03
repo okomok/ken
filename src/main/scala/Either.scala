@@ -10,20 +10,16 @@ package ken
 
 sealed abstract class Either[+a, +b]
 
+case class Left[+a, +b](x: a) extends Either[a, b]
+case class Right[+a, +b](y: b) extends Either[a, b]
+
 
 object Either {
-
-    type Type[+a, +b] = Either[a, b]
-
-    case class Left[+a, +b](x: a) extends Either[a, b]
-    case class Right[+a, +b](y: b) extends Either[a, b]
-
     def either[a, b, c](f: a => c)(g: b => c)(e: Either[a, b]): c = e match {
         case Left(x) => f(x)
         case Right(y) => g(y)
     }
 
-    import List.{::, Nil}
     import Monad.forExpr
 
     def lefts[a, b](x: List[Either[a, b]]): List[a] = for { Left(a) <- x } yield a
@@ -32,7 +28,7 @@ object Either {
     def partitionEithers[a, b](x: List[Either[a, b]]): (List[a], List[b]) = {
         def left(_a: a)(lr: (List[a], List[b])): (List[a], List[b]) = lr match { case (l, r) => (_a :: l, r) }
         def right(_a: b)(lr: (List[a], List[b])): (List[a], List[b]) = lr match { case (l, r) => (l, _a :: r) }
-        Prelude.foldr[Either[a, b], (List[a], List[b])](Lazy.r(either(left)(right)))((Nil, Nil))(x)
+        foldr[Either[a, b], (List[a], List[b])](Lazy.r(either(left)(right)))((Nil, Nil))(x)
     }
 
     implicit def functorInstance[A]: Functor[({type f[x] = Either[A, x]})#f] = new Functor[({type f[x] = Either[A, x]})#f] {

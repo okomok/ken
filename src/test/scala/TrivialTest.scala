@@ -7,16 +7,17 @@
 package com.github.okomok.kentest
 
 
-import com.github.okomok.ken
+import com.github.okomok.ken._
 
 
 class TrivialTest extends org.scalatest.junit.JUnit3Suite {
 
     def testList {
-        import ken.List._
+        import Applicative._
 
-        val xs: ftype[Int] = locally {
-            ((x: Int) => (y: Int) => x + y) <#> (2 :: 3 :: 4 :: Nil) <*> pure(4)
+        val xs: List[Int] = locally {
+            implicit val i = implicitly[Applicative[List]]
+            ((x: Int) => (y: Int) => x + y) <#> (2 :: 3 :: 4 :: Nil) <*> pure(4)(i)
         }
         expect(6 :: 7 :: 8 :: Nil)(xs)
 
@@ -25,56 +26,47 @@ class TrivialTest extends org.scalatest.junit.JUnit3Suite {
         expect(true)(6 :: 7 :: 8 :: Nil == 6 :: 7 :: 8 :: Nil)
         expect(false)(6 :: 7 :: Nil == 6 :: 7 :: 8 :: Nil)
 
-        def makeList: ftype[Int] = throw new Error
-        val ys = ::(10, ken.Lazy(makeList))
+        def makeList: List[Int] = throw new Error
+        val ys = ::(10, Lazy(makeList))
         expect(false)(6 :: 7 :: Nil == ys)
-
-        /*
-        def callfmap[x <: ken.Functor, a, b](x: x)(y: a => b)(z: f[a]): f[b] = x.fmap(y)(z)
-
-        callfmap(ken.List_)((x: Int) => x)(3 :: Nil)
-        */
-
     }
 
     def compileImplicit {
-        import ken.List.Nil
-
+        import Monad.>>=
         (1 :: 2 :: Nil) >>= (x => x :: Nil)
 
-        def takeImplicit[f[_], a](x: f[a])(implicit i: ken.Monad[f]): Unit = throw new Error
-        def takeMonoidImplicit[a](x: a)(implicit i: ken.Monoid[a]): Unit = throw new Error
+        def takeImplicit[f[_], a](x: f[a])(implicit i: Monad[f]): Unit = throw new Error
+        def takeMonoidImplicit[a](x: a)(implicit i: Monoid[a]): Unit = throw new Error
 
         val u1: Unit = takeImplicit(6 :: Nil)
         val u2: Unit = takeMonoidImplicit(6 :: Nil)
     }
 
     def teztIO {
-        import ken.Prelude
-   //     val io = Prelude.getChar >>= { x => Prelude.putChar(x) }
+        import Monad.forExpr
+   //     val io = getChar >>= { x => putChar(x) }
    //     io.unIO()
 
         val io = for {
-            x <- Prelude.getChar
-            u <- Prelude.putChar(x)
+            x <- getChar
+            u <- putChar(x)
         } yield u
 
         io.unIO()
     }
 
     def teztIOAp {
-        import ken.Prelude._
-        import ken.IO._
+        import Applicative._
 
         val io = { (c1: Char) => (c2: Char) => println(c1); println(c2) } <#> getChar <*> getChar
         io.unIO()
     }
 
+    /*
     def testStreamDefect {
+        import
         def makeStream: Stream[Int] = throw new Error
         val xs: Stream[Int] = Stream.cons(1, makeStream)
-
-        //import ken.#::
 
         intercept[Error] {
             xs match {
@@ -83,6 +75,7 @@ class TrivialTest extends org.scalatest.junit.JUnit3Suite {
             }
         }
     }
+    */
 
     /*
     def testImport {

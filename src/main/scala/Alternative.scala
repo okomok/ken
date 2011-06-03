@@ -8,9 +8,6 @@ package com.github.okomok
 package ken
 
 
-import Prelude._
-
-
 trait Alternative[f[_]] extends Applicative[f] {
     import Alternative._
     import Applicative._
@@ -20,13 +17,13 @@ trait Alternative[f[_]] extends Applicative[f] {
     def op_<|>[a](x: f[a])(y: f[a]): f[a]
 
     def some[a](v: f[a]): f[List[a]] = {
-        def many_v: f[List[a]] = some_v <|> pure(List.Nil)
+        def many_v: f[List[a]] = some_v <|> pure(Nil)
         def some_v: f[List[a]] = _cons[a] <#> v <*> many_v
         some_v
     }
 
     def many[a](v: f[a]): f[List[a]] = {
-        def many_v: f[List[a]] = some_v <|> pure(List.Nil)
+        def many_v: f[List[a]] = some_v <|> pure(Nil)
         def some_v: f[List[a]] = _cons[a] <#> v <*> many_v
         many_v
     }
