@@ -15,42 +15,62 @@ import List.{Nil, ::, cons}
 trait Applicative[f[_]] extends Functor[f] {
     def pure[a](x: => a): f[a]
     def op_<*>[a, b](x: f[a => b])(y: f[a]): f[b]
+    def op_*>[a, b](x: f[a])(y: f[b]): f[b] = Applicative.liftA2[f, a, b, b](const(id))(x)(y)(this)
+    def op_<*[a, b](x: f[a])(y: f[b]): f[a] = Applicative.liftA2[f, a, b, a](const)(x)(y)(this)
 
-    def op_*>[a, b](x: f[a])(y: f[b]): f[b] = liftA2[a, b, b](const(id))(x)(y)
-    def op_<*[a, b](x: f[a])(y: f[b]): f[a] = liftA2[a, b, a](const)(x)(y)
-
-    private[ken] class Op_<*>[a, b](x: f[a => b]) {
-        def <*>(y: f[a]): f[b] = op_<*>(x)(y)
-    }
-    implicit def <*>[a, b](x: f[a => b]): Op_<*>[a, b] = new Op_<*>(x)
-
-    private[ken] class Op_*>[a](x: f[a]) {
-        def *>[b](y: f[b]): f[b] = op_*>(x)(y)
-    }
-    implicit def *>[a, b](x: f[a]): Op_*>[a] = new Op_*>(x)
-
-    private[ken] class Op_<*[a](x: f[a]) {
-        def <*[b](y: f[b]): f[a] = op_<*(x)(y)
-    }
-    implicit def <*[a](x: f[a]): Op_<*[a] = new Op_<*(x)
-
-    private[ken] class Op_<**>[a](x: f[a]) {
-        def <**>[b](y: f[a => b]): f[b] = op_<**>(x)(y)
-    }
-    implicit def <**>[a](x: f[a]): Op_<**>[a] = new Op_<**>(x)
-
-    override def fmap[a, b](x: a => b)(y: f[a]): f[b] = pure(x) <*> y
-
-    final def op_<**>[a, b](x: f[a])(y: f[a => b]): f[b] = liftA2[a, a => b, b](flip(apply))(x)(y)
-    final def liftA[a, b](x: a => b)(y: f[a]): f[b] = pure(x) <*> y
-    final def liftA2[a, b, c](x: a => b => c)(y: f[a])(z: f[b]): f[c] = x <#> y <*> z
-    final def liftA3[a, b, c, d](x: a => b => c => d)(y: f[a])(z: f[b])(w: f[c]): f[d] = x <#> y <*> z <*> w
+    override def fmap[a, b](x: a => b)(y: f[a]): f[b] = op_<*>(pure(x))(y)
 }
 
 
-object Applicative extends ApplicativeInstance
+object Applicative extends ApplicativeInstance {
+    def pure[f[_], a](x: => a)(implicit i: Applicative[f]): f[a] = i.pure(x)
+    def op_<*>[f[_], a, b](x: f[a => b])(y: f[a])(implicit i: Applicative[f]): f[b] = i.op_<*>(x)(y)
 
-private[ken] trait ApplicativeInstance {
+    def op_*>[f[_], a, b](x: f[a])(y: f[b])(implicit i: Applicative[f]): f[b] = i.op_*>(x)(y)
+    def op_<*[f[_], a, b](x: f[a])(y: f[b])(implicit i: Applicative[f]): f[a] = i.op_<*(x)(y)
+
+    def op_<#>[f[_], a, b](x: a => b)(y: f[a])(implicit i: Functor[f]): f[b] = i.fmap(x)(y)
+
+    private[ken] class Op_<#>[f[_], a, b](x: a => b, i: Functor[f]) {
+        def <#>(y: f[a]): f[b] = op_<#>(x)(y)(i)
+    }
+    implicit def <#>[f[_], a, b](x: a => b)(implicit i: Functor[f]): Op_<#>[f, a, b] = new Op_<#>[f, a, b](x, i)
+
+    def op_<#[f[_], a, b](x: => a)(y: f[b])(implicit i: Functor[f]): f[a] = i.fmap[b, a](_ => x)(y)
+
+    private[ken] class Op_<#[f[_], a](x: => a, i: Functor[f]) {
+        def <#[b](y: f[b]): f[a] = op_<#(x)(y)(i)
+    }
+    implicit def <#[f[_], a](x: => a)(implicit i: Functor[f]): Op_<#[f, a] = new Op_<#[f, a](x, i)
+
+    private[ken] class Op_<*>[f[_], a, b](x: f[a => b], i: Applicative[f]) {
+        def <*>(y: f[a]): f[b] = i.op_<*>(x)(y)
+    }
+    implicit def <*>[f[_], a, b](x: f[a => b])(implicit i: Applicative[f]): Op_<*>[f, a, b] = new Op_<*>[f, a, b](x, i)
+
+    private[ken] class Op_*>[f[_], a](x: f[a], i: Applicative[f]) {
+        def *>[b](y: f[b]): f[b] = i.op_*>(x)(y)
+    }
+    implicit def *>[f[_], a, b](x: f[a])(implicit i: Applicative[f]): Op_*>[f, a] = new Op_*>[f, a](x, i)
+
+    private[ken] class Op_<*[f[_], a](x: f[a], i: Applicative[f]) {
+        def <*[b](y: f[b]): f[a] = i.op_<*(x)(y)
+    }
+    implicit def <*[f[_], a](x: f[a])(implicit i: Applicative[f]): Op_<*[f, a] = new Op_<*[f, a](x, i)
+
+    private[ken] class Op_<**>[f[_], a](x: f[a], i: Applicative[f]) {
+        def <**>[b](y: f[a => b]): f[b] = op_<**>(x)(y)(i)
+    }
+    implicit def <**>[f[_], a](x: f[a])(implicit i: Applicative[f]): Op_<**>[f, a] = new Op_<**>[f, a](x, i)
+
+    def op_<**>[f[_], a, b](x: f[a])(y: f[a => b])(implicit i: Applicative[f]): f[b] = liftA2[f, a, a => b, b](flip(apply))(x)(y)
+    def liftA[f[_], a, b](x: a => b)(y: f[a])(implicit i: Applicative[f]): f[b] = pure(x)(i) <*> y
+    def liftA2[f[_], a, b, c](x: a => b => c)(y: f[a])(z: f[b])(implicit i: Applicative[f]): f[c] = x <#> y <*> z
+    def liftA3[f[_], a, b, c, d](x: a => b => c => d)(y: f[a])(z: f[b])(w: f[c])(implicit i: Applicative[f]): f[d] = x <#> y <*> z <*> w
+}
+
+
+trait ApplicativeInstance {
     implicit val ofId = Id
 
     implicit def ofFunction1[A]: Applicative[({type f[a] = A => a})#f] = new Applicative[({type f[a] = A => a})#f] {

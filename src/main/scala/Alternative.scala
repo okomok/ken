@@ -12,6 +12,10 @@ import Prelude._
 
 
 trait Alternative[f[_]] extends Applicative[f] {
+    import Alternative._
+    import Applicative._
+    private[this] implicit val _self = this
+
     def empty[a]: f[a]
     def op_<|>[a](x: f[a])(y: f[a]): f[a]
 
@@ -27,12 +31,23 @@ trait Alternative[f[_]] extends Applicative[f] {
         many_v
     }
 
-    private[ken] class Op_<|>[a](x: f[a]) {
-        def <|>(y: f[a]): f[a] = op_<|>(x)(y)
-    }
-    implicit def <|>[a](x: f[a]): Op_<|>[a] = new Op_<|>(x)
-
-    def optional[a](x: f[a]): f[Option[a]] = id[a => Option[a]](Some(_)) <#> x <|> pure(None)
-
     private[this] def _cons[a]: a => List[a] => List[a] = x => xs => x :: xs
+}
+
+
+object Alternative {
+    import Applicative._
+
+    def empty[f[_], a](implicit i: Alternative[f]): f[a] = i.empty[a]
+    def op_<|>[f[_], a](x: f[a])(y: f[a])(implicit i: Alternative[f]): f[a] = i.op_<|>(x)(y)
+
+    def some[f[_], a](v: f[a])(implicit i: Alternative[f]): f[List[a]] = i.some(v)
+    def many[f[_], a](v: f[a])(implicit i: Alternative[f]): f[List[a]] = i.many(v)
+
+    private[ken] class Op_<|>[f[_], a](x: f[a], i: Alternative[f]) {
+        def <|>(y: f[a]): f[a] = op_<|>(x)(y)(i)
+    }
+    implicit def <|>[f[_], a](x: f[a])(implicit i: Alternative[f]): Op_<|>[f, a] = new Op_<|>[f, a](x, i)
+
+    def optional[f[_], a](x: f[a])(implicit i: Alternative[f]): f[Option[a]] = id[a => Option[a]](Some(_)) <#> x <|> pure(None: Option[a])(i)
 }

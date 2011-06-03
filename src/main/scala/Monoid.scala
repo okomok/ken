@@ -13,15 +13,22 @@ trait Monoid[m] {
     def mempty: m
     def mappend(x: m)(y: m): m
     def mconcat(x: List[m]): m = Prelude.foldr(Lazy.r(mappend))(mempty)(x)
-
-    private[ken] class Mappend_(x: m) {
-        def _mappend_(y: m): m = mappend(x)(y)
-    }
-    implicit def _mappend_(x: m): Mappend_ = new Mappend_(x)
 }
 
 
-object Monoid {
+object Monoid extends MonoidInstance {
+    def mempty[m](implicit i: Monoid[m]): m = i.mempty
+    def mappend[m](x: m)(y: m)(implicit i: Monoid[m]): m = i.mappend(x)(y)
+    def mconcat[m](x: List[m])(implicit i: Monoid[m]): m = i.mconcat(x)
+
+    private[ken] class Mappend_[m](x: m, i: Monoid[m]) {
+        def _mappend_(y: m): m = mappend(x)(y)(i)
+    }
+    implicit def _mappend_[m](x: m)(implicit i: Monoid[m]): Mappend_[m] = new Mappend_(x, i)
+}
+
+
+trait MonoidInstance {
     implicit val ofUnit = Unit_
 
     implicit def ofFunction1[A, b](implicit mb: Monoid[b]): Monoid[A => b] = new Monoid[A => b] {

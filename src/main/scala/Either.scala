@@ -12,6 +12,7 @@ sealed abstract class Either[+a, +b]
 
 
 object Either {
+
     type Type[+a, +b] = Either[a, b]
 
     case class Left[+a, +b](x: a) extends Either[a, b]
@@ -23,6 +24,7 @@ object Either {
     }
 
     import List.{::, Nil}
+    import Monad.forExpr
 
     def lefts[a, b](x: List[Either[a, b]]): List[a] = for { Left(a) <- x } yield a
     def rights[a, b](x: List[Either[a, b]]): List[b] = for { Right(a) <- x } yield a
