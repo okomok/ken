@@ -8,29 +8,51 @@
 package com.github.okomok.kentest
 
 
-import com.github.okomok.ken
+import com.github.okomok.ken._
 
 
 class TypeableTest extends org.scalatest.junit.JUnit3Suite {
 
     def testTrivial {
-        val ac = implicitly[ken.Typeable[String]]
-        val bc = implicitly[ken.Typeable[String]]
         val a = "hello"
-        val ken.Maybe.Just(x) = ac.cast[String](a)
+        val Maybe.Just(x) = Typeable.cast[String, String](a)
         expect(a)(x)
-        val c: ken.Maybe[Int] = ac.cast(a)
-        expect(ken.Maybe.Nothing)(c)
+        val c = Typeable.cast[String, Int](a)
+        expect(Maybe.Nothing)(c)
     }
 
     def testParam {
-        val ac = implicitly[ken.Typeable[scala.List[String]]]
-        val bc = implicitly[ken.Typeable[scala.List[String]]]
         val a = "hello" :: scala.Nil
-        val ken.Maybe.Just(x) = ac.cast[scala.List[String]](a)
+        val Maybe.Just(x) = Typeable.cast[scala.List[String], scala.List[String]](a)
         expect(a)(x)
-        val c = ac.cast[scala.List[Int]](a)
-        expect(ken.Maybe.Nothing)(c)
+        val c = Typeable.cast[scala.List[String], scala.List[Int]](a)
+        expect(Maybe.Nothing)(c)
+    }
+
+    def testmkT {
+        val x = Typeable.mkT((b: Boolean) => !b)(true)
+        expect(false)(x)
+
+        val y = Typeable.mkT((b: Boolean) => !b)('a')
+        expect(y)('a')
+    }
+
+    def testBadCompiler1 {
+        val a = "hello"
+        intercept[MatchError] {
+            val Maybe.Just(x) = Typeable.cast(a): Maybe[String] // annotation seems ignored.
+        }
+    }
+
+    def testBadCompiler2 {
+        val a = "hello"
+        intercept[Error] {
+            val r = Typeable.cast(a): Maybe[String]
+            r match {
+                case Maybe.Just(x) => ()
+                case Maybe.Nothing => throw new Error
+            }
+        }
     }
 
 }

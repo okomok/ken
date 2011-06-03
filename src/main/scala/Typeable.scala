@@ -8,21 +8,26 @@ package com.github.okomok
 package ken
 
 
-trait Typeable[a] {
-    def typeOf(x: => a): ClassManifest[a] // Notice `x` isn't evaluated.
+sealed abstract class Typeable[a] {
+    def typeOf(x: => a): ClassManifest[a]
+}
 
-    final def cast[b](x: a)(implicit bc: Typeable[b]): Maybe[b] = {
-        lazy val r: Maybe[b] = if (typeOf(x) <:< bc.typeOf(Maybe.fromJust(r))) {
+object Typeable {
+    implicit def instanceOfAny[a](implicit ac: ClassManifest[a]): Typeable[a] = new Typeable[a] {
+        override def typeOf(x: => a): ClassManifest[a] = ac
+    }
+
+    def cast[a, b](x: a)(implicit ac: Typeable[a], bc: Typeable[b]): Maybe[b] = {
+        lazy val r: Maybe[b] = if (ac.typeOf(x) <:< bc.typeOf(Maybe.fromJust(r))) {
             Maybe.Just(x.asInstanceOf[b])
         } else {
             Maybe.Nothing
         }
         r
     }
-}
 
-object Typeable {
-    implicit def instanceOfAny[a](implicit ac: ClassManifest[a]): Typeable[a] = new Typeable[a] {
-        override def typeOf(x: => a): ClassManifest[a] = ac
+    def mkT[a, b](f: b => b)(x: a)(implicit ac: Typeable[a => a], bc: Typeable[b => b]): a = cast[b => b, a => a](f) match {
+        case Maybe.Nothing => x
+        case Maybe.Just(g) => g(x)
     }
 }
