@@ -39,6 +39,14 @@ case class ::[+a](head: a, tail: &[List[a]]) extends List[a] {
 }
 
 
+object !:: { // strict extractor
+    def unapply[a](xs: List[a]): Option[(a, List[a])] = xs match {
+        case Nil => None
+        case x :: xs => Some(x, !xs)
+    }
+}
+
+
 object List extends Alternative[List] with MonadPlus[List] {
     implicit val theInstance = this
 
