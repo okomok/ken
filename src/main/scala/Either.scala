@@ -28,7 +28,7 @@ object Either {
     def partitionEithers[a, b](x: List[Either[a, b]]): (List[a], List[b]) = {
         def left(_a: a)(lr: (List[a], List[b])): (List[a], List[b]) = lr match { case (l, r) => (_a :: l, r) }
         def right(_a: b)(lr: (List[a], List[b])): (List[a], List[b]) = lr match { case (l, r) => (l, _a :: r) }
-        foldr[Either[a, b], (List[a], List[b])](Lazy.r(either(left)(right)))((Nil, Nil))(x)
+        foldr[Either[a, b], (List[a], List[b])](&.r(either(left)(right)))((Nil, Nil))(x)
     }
 
     implicit def functorInstance[A]: Functor[({type f[x] = Either[A, x]})#f] = new Functor[({type f[x] = Either[A, x]})#f] {

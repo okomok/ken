@@ -50,12 +50,12 @@ object Monad {
     implicit def =<<[m[_], a, b](f: a => m[b])(implicit i: Monad[m]): Op_=<<[m, a, b] = new Op_=<<[m, a, b](f)
 
     def sequence[m[_], a](ms: List[m[a]])(implicit i: Monad[m]): m[List[a]] = {
-        def k(m: m[a])(_m: Lazy[m[List[a]]]): m[List[a]] = for { x <- m; xs <- _m() } yield (x :: xs)
+        def k(m: m[a])(_m: &[m[List[a]]]): m[List[a]] = for { x <- m; xs <- !_m} yield (x :: xs)
         foldr(k)(`return`(Nil))(ms)
     }
 
     def sequence_[m[_], a](ms: List[m[a]])(implicit i: Monad[m]): m[Unit] = {
-        foldr(Lazy.r(op_>>[m, a, Unit]))(`return`(()))(ms)
+        foldr(&.r(op_>>[m, a, Unit]))(`return`(()))(ms)
     }
 
     def mapM[m[_], a, b](f: a => m[b])(as: List[a])(implicit i: Monad[m]): m[List[b]] = sequence(map(f)(as))
@@ -65,7 +65,7 @@ object Monad {
         case Nil => `return`(Nil)
         case x :: xs => for {
             flg <- p(x)
-            ys <- filterM(p)(xs())
+            ys <- filterM(p)(!xs)
         } yield (if (flg) (x :: ys) else ys)
     }
 
@@ -98,7 +98,7 @@ object Monad {
 
     def foldM[m[_], a, b](f: a => b => m[a])(a: a)(xs: List[b])(implicit i: Monad[m]): m[a] = xs match {
         case Nil => `return`(a)
-        case x :: xs => f(a)(x) >>= (fax => foldM(f)(fax)(xs()))
+        case x :: xs => f(a)(x) >>= (fax => foldM(f)(fax)(!xs))
     }
 
     def foldM_[m[_], a, b](f: a => b => m[a])(a: a)(xs: List[b])(implicit i: Monad[m]): m[Unit] = {

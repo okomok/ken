@@ -15,9 +15,9 @@ package object ken {
 // Booleans
     def not(b: Boolean): Boolean = !b
 
-    def op_&&(b: Boolean)(c: Lazy[Boolean]): Boolean = b && c()
+    def op_&&(b: Boolean)(c: &[Boolean]): Boolean = b && !c
 
-    def op_||(b: Boolean)(c: Lazy[Boolean]): Boolean = b || c()
+    def op_||(b: Boolean)(c: &[Boolean]): Boolean = b || !c
 
 // Tuples
     def fst[a, b](p: (a, b)): a = p match {
@@ -56,21 +56,21 @@ package object ken {
 // List operations
     def map[a, b](f: a => b)(xs: List[a]): List[b] = xs match {
         case Nil => Nil
-        case x :: xs => f(x) :: map(f)(xs())
+        case x :: xs => f(x) :: map(f)(!xs)
     }
 
     def op_++[a](xs: List[a])(ys: List[a]): List[a] = xs match {
         case Nil => ys
-        case x :: xs => x :: (xs() ++ ys)
+        case x :: xs => x :: (!xs ++ ys)
     }
 
     def filter[a](pred: a => Boolean)(xs: List[a]): List[a] = xs match {
         case Nil => Nil
         case x :: xs => {
             if (pred(x)) {
-                x :: filter(pred)(xs())
+                x :: filter(pred)(!xs)
             } else {
-                filter(pred)(xs())
+                filter(pred)(!xs)
             }
         }
     }
@@ -83,19 +83,19 @@ package object ken {
     @tailrec
     def last[a](xs: List[a]): a = xs match {
         case Nil => error("empty List")
-        case x #:: Nil => x
-        case _ :: xs => last(xs())
+        case x !:: Nil => x
+        case _ :: xs => last(!xs)
     }
 
     def tail[a](xs: List[a]): List[a] = xs match {
         case Nil => error("empty List")
-        case _ :: xs => xs()
+        case _ :: xs => !xs
     }
 
     def init[a](xs: List[a]): List[a] = xs match {
         case Nil => error("empty List")
-        case x #:: Nil => Nil
-        case x :: xs => x :: init(xs())
+        case x !:: Nil => Nil
+        case x :: xs => x :: init(!xs)
     }
 
     def `null`(xs: List[_]): Boolean = xs match {
@@ -107,7 +107,7 @@ package object ken {
         @tailrec
         def len(l: List[_])(a: Int): Int = l match {
             case Nil => a
-            case x :: xs => len(xs())(a + 1)
+            case x :: xs => len(!xs)(a + 1)
         }
         len(xs)(0)
     }
@@ -116,7 +116,7 @@ package object ken {
         case (_, n) if n < 0 => error("negative index")
         case (Nil, _) => error("index too large")
         case (x :: _, 0) => x
-        case (_ :: xs, n) => xs() !! (n-1)
+        case (_ :: xs, n) => !xs !! (n-1)
     }
 
     def reverse[a](xs: List[a]): List[a] = foldl(flip(List.cons[a]))(Nil)(xs)
@@ -125,23 +125,23 @@ package object ken {
     @tailrec
     def foldl[a, b](f: a => b => a)(z: a)(xs: List[b]): a = xs match {
         case Nil => z
-        case x :: xs => foldl(f)(f(z)(x))(xs())
+        case x :: xs => foldl(f)(f(z)(x))(!xs)
     }
 
     def foldl1[a](f: a => a => a)(xs: List[a]): a = xs match {
         case Nil => error("empty List")
-        case x :: xs => foldl(f)(x)(xs())
+        case x :: xs => foldl(f)(x)(!xs)
     }
 
-    def foldr[a, b](f: a => Lazy[b] => b)(z: b)(xs: List[a]): b = xs match {
+    def foldr[a, b](f: a => &[b] => b)(z: b)(xs: List[a]): b = xs match {
         case Nil => z
-        case x :: xs => f(x)(Lazy(foldr(f)(z)(xs())))
+        case x :: xs => f(x)(&(foldr(f)(z)(!xs)))
     }
 
-    def foldr1[a](f: a => Lazy[a] => a)(xs: List[a]): a = xs match {
+    def foldr1[a](f: a => &[a] => a)(xs: List[a]): a = xs match {
         case Nil => error("empty List")
-        case x #:: Nil => x
-        case x :: xs => f(x)(Lazy(foldr1(f)(xs())))
+        case x !:: Nil => x
+        case x :: xs => f(x)(&(foldr1(f)(!xs)))
     }
 
 // Special folds
@@ -159,7 +159,7 @@ package object ken {
 
     def concat[a](xs: List[List[a]]): List[a] = foldr(List.appendr[a])(Nil)(xs)
 
-    def concatMap[a, b](f: a => List[b])(xs: List[a]): List[b] = foldr[a, List[b]](x => y => f(x) ++ y())(Nil)(xs)
+    def concatMap[a, b](f: a => List[b])(xs: List[a]): List[b] = foldr[a, List[b]](x => y => f(x) ++ !y)(Nil)(xs)
 
     def maximum[a](xs: List[a])(implicit i: Ordering[a]): a = xs match {
         case Nil => error("empty List")
@@ -175,29 +175,29 @@ package object ken {
     def scanl[a, b](f: a => b => a)(q: => a)(ls: List[b]): List[a] = { // why `q` is by-name?
         q :: (ls match {
             case Nil => Nil
-            case x :: xs => scanl(f)(f(q)(x))(xs())
+            case x :: xs => scanl(f)(f(q)(x))(!xs)
         })
     }
 
     def scanl1[a](f: a => a => a)(xs: List[a]): List[a] = xs match {
         case Nil => error("empty List")
-        case x :: xs => scanl(f)(x)(xs())
+        case x :: xs => scanl(f)(x)(!xs)
     }
 
-    def scanr[a, b](f: a => Lazy[b] => b)(q0: b)(xs: List[a]): List[b] = xs match {
+    def scanr[a, b](f: a => &[b] => b)(q0: b)(xs: List[a]): List[b] = xs match {
         case Nil => q0 :: Nil
         case x :: xs => {
-            lazy val qs = scanr(f)(q0)(xs())
-            f(x)(Lazy(head(qs))) :: qs
+            lazy val qs = scanr(f)(q0)(!xs)
+            f(x)(&(head(qs))) :: qs
         }
     }
 
-    def scanr1[a](f: a => Lazy[a] => a)(xs: List[a]): List[a] = xs match {
+    def scanr1[a](f: a => &[a] => a)(xs: List[a]): List[a] = xs match {
         case Nil => Nil
-        case x #:: Nil => x :: Nil
+        case x !:: Nil => x :: Nil
         case x :: xs => {
-            lazy val qs = scanr1(f)(xs())
-            f(x)(Lazy(head(qs))) :: qs
+            lazy val qs = scanr1(f)(!xs)
+            f(x)(&(head(qs))) :: qs
         }
     }
 
@@ -223,33 +223,33 @@ package object ken {
     def take[a](n: Int)(xs: List[a]): List[a] = (n, xs) match {
         case (n, _) if n <= 0 => Nil
         case (_, Nil) => Nil
-        case (n, x :: xs) => x :: take(n-1)(xs())
+        case (n, x :: xs) => x :: take(n-1)(!xs)
     }
 
     @tailrec
     def drop[a](n: Int)(xs: List[a]): List[a] = (n, xs) match {
         case (_, Nil) => Nil
-        case (n, _ :: xs) => drop(n-1)(xs())
+        case (n, _ :: xs) => drop(n-1)(!xs)
     }
 
     def splitAt[a](n: Int)(xs: List[a]): (List[a], List[a]) = (take(n)(xs), drop(n)(xs))
 
     def takeWhile[a](p: a => Boolean)(xs: List[a]): List[a] = xs match {
         case Nil => Nil
-        case x :: xs => if (p(x)) x :: takeWhile(p)(xs()) else Nil
+        case x :: xs => if (p(x)) x :: takeWhile(p)(!xs) else Nil
     }
 
     @tailrec
     def dropWhile[a](p: a => Boolean)(xs: List[a]): List[a] = xs match {
         case Nil => Nil
-        case x :: _xs => if (p(x)) dropWhile(p)(_xs()) else xs
+        case x :: _xs => if (p(x)) dropWhile(p)(!_xs) else xs
     }
 
     def span[a](p: a => Boolean)(xs: List[a]): (List[a], List[a]) = xs match {
         case Nil => (Nil, Nil)
         case x :: _xs => {
             if (p(x)) {
-                val (ys, zs) = span(p)(_xs())
+                val (ys, zs) = span(p)(!_xs)
                 (x :: ys, zs)
             } else {
                 (Nil, xs)
@@ -267,22 +267,22 @@ package object ken {
     @tailrec
     def lookup[a, b](key: a)(xs: List[(a, b)]): Option[b] = xs match {
         case Nil => None
-        case (x, y) :: xys => if (key == x) Some(y) else lookup(key)(xys())
+        case (x, y) :: xys => if (key == x) Some(y) else lookup(key)(!xys)
     }
 
 // Zipping and unzipping lists
     def zip[a, b](xs: List[a])(ys: List[b]): List[(a, b)] = (xs, ys) match {
-        case (a :: as, b :: bs) => (a, b) :: zip(as())(bs())
+        case (a :: as, b :: bs) => (a, b) :: zip(!as)(!bs)
         case _ => Nil
     }
 
     def zipWith[a, b, c](f: a => b => c)(xs: List[a])(ys: List[b]): List[c] = (xs, ys) match {
-        case (a :: as, b :: bs) => f(a)(b) :: zipWith(f)(as())(bs())
+        case (a :: as, b :: bs) => f(a)(b) :: zipWith(f)(!as)(!bs)
         case _ => Nil
     }
 
     def unzip[a, b](xs: List[(a, b)]): (List[a], List[b]) = {
-        foldr[(a, b), (List[a], List[b])](ab => abs => (ab._1 :: abs()._1, ab._2 :: abs()._2))((Nil, Nil))(xs)
+        foldr[(a, b), (List[a], List[b])](ab => abs => (ab._1 :: (!abs)._1, ab._2 :: (!abs)._2))((Nil, Nil))(xs)
     }
 
 // Functions on strings

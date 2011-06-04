@@ -22,5 +22,5 @@ trait MonadPlus[m[_]] extends Monad[m] {
         case false => mzero
     }
 
-    final def msum[a](xs: List[m[a]]): m[a] = foldr(Lazy.r(mplus[a]))(mzero)(xs)
+    final def msum[a](xs: List[m[a]]): m[a] = foldr(&.r(mplus[a]))(mzero)(xs)
 }
