@@ -83,7 +83,7 @@ package object ken {
     @tailrec
     def last[a](xs: List[a]): a = xs match {
         case Nil => error("empty List")
-        case x !:: Nil => x
+        case x :: !(Nil) => x
         case _ :: xs => last(!xs)
     }
 
@@ -94,7 +94,7 @@ package object ken {
 
     def init[a](xs: List[a]): List[a] = xs match {
         case Nil => error("empty List")
-        case x !:: Nil => Nil
+        case x :: !(Nil) => Nil
         case x :: xs => x :: init(!xs)
     }
 
@@ -140,7 +140,7 @@ package object ken {
 
     def foldr1[a](f: a => &[a] => a)(xs: List[a]): a = xs match {
         case Nil => error("empty List")
-        case x !:: Nil => x
+        case x :: !(Nil) => x
         case x :: xs => f(x)(&(foldr1(f)(!xs)))
     }
 
@@ -194,7 +194,7 @@ package object ken {
 
     def scanr1[a](f: a => &[a] => a)(xs: List[a]): List[a] = xs match {
         case Nil => Nil
-        case x !:: Nil => x :: Nil
+        case x :: !(Nil) => x :: Nil
         case x :: xs => {
             lazy val qs = scanr1(f)(!xs)
             f(x)(&(head(qs))) :: qs
