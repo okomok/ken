@@ -12,7 +12,7 @@ import scala.annotation.tailrec
 
 
 sealed abstract class List[+a] {
-    def asList[b >: a]: List[b] = this
+    def of[b >: a]: List[b] = this
 
     def ++[b >: a](that: => List[b]): List[b] = op_++[b](this)(that)
     def !!(n: Int): a = op_!!(this)(n)

@@ -18,7 +18,7 @@ class ApplicativeTest extends org.scalatest.junit.JUnit3Suite {
     def distList[f[_], a](xs: List[f[a]])(implicit i: Applicative[f]): f[List[a]] = {
         import Applicative._
         xs match {
-            case Nil => pure(Nil.asList[a])(i)
+            case Nil => pure(Nil.of[a])(i)
             case x !:: xs => List.cons[a] <#> x <*> distList(xs)
         }
     }
@@ -26,7 +26,7 @@ class ApplicativeTest extends org.scalatest.junit.JUnit3Suite {
     def traverseList[f[_], a, b](f: a => f[b])(xs: List[a])(implicit i: Applicative[f]): f[List[b]] = {
         import Applicative._
         xs match {
-            case Nil => pure(Nil.asList[b])(i)
+            case Nil => pure(Nil.of[b])(i)
             case x !:: xs => List.cons[b] <#> f(x) <*> traverseList(f)(xs)
         }
     }

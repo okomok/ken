@@ -46,5 +46,5 @@ object Alternative {
     }
     implicit def <|>[f[_], a](x: f[a])(implicit i: Alternative[f]): Op_<|>[f, a] = new Op_<|>[f, a](x)
 
-    def optional[f[_], a](x: f[a])(implicit i: Alternative[f]): f[Option[a]] = id[a => Option[a]](Some(_)) <#> x <|> pure(None: Option[a])(i)
+    def optional[f[_], a](x: f[a])(implicit i: Alternative[f]): f[Maybe[a]] = (Just(_: a).of[a]) <#> x <|> pure(Nothing.of[a])(i)
 }

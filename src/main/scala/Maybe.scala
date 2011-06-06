@@ -8,7 +8,9 @@ package com.github.okomok
 package ken
 
 
-sealed abstract class Maybe[+a]
+sealed abstract class Maybe[+a] {
+    def of[b >: a]: Maybe[b] = this
+}
 
 
 object Nothing extends Maybe[scala.Nothing]
