@@ -55,4 +55,15 @@ class TypeableTest extends org.scalatest.junit.JUnit3Suite {
         }
     }
 
+    def testmkQ {
+        val x = Typeable.mkQ(22)((c: Char) => c.toInt)('a')
+        expect(97)(x)
+
+        val y = Typeable.mkQ(22)((c: Char) => c.toInt)('b')
+        expect(98)(y)
+
+        val z = Typeable.mkQ(22)((c: Char) => c.toInt)(true)
+        expect(22)(z)
+    }
+
 }
