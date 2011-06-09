@@ -17,7 +17,7 @@ class TrivialTest extends org.scalatest.junit.JUnit3Suite {
 
         val xs: List[Int] = locally {
             implicit val i = implicitly[Applicative[List]]
-            ((x: Int) => (y: Int) => x + y) <#> (2 :: 3 :: 4 :: Nil) <*> pure(4)(i)
+            ((x: Int) => (y: Int) => x + y) <@> (2 :: 3 :: 4 :: Nil) <*> pure(4)(i)
         }
         expect(6 :: 7 :: 8 :: Nil)(xs)
 
@@ -58,7 +58,7 @@ class TrivialTest extends org.scalatest.junit.JUnit3Suite {
     def teztIOAp {
         import Applicative._
 
-        val io = { (c1: Char) => (c2: Char) => println(c1); println(c2) } <#> getChar <*> getChar
+        val io = { (c1: Char) => (c2: Char) => println(c1); println(c2) } <@> getChar <*> getChar
         io.unIO()
     }
 

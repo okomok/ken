@@ -41,7 +41,7 @@ package object ken {
 
     def flip[a, b, c](f: a => b => c): b => a => c = { x => y => f(y)(x) }
 
-    def apply[a, b](f: a => b)(x: a): b = f(x)
+    def `@`[a, b](f: a => b)(x: a): b = f(x)
 
     def until[a](p: a => Boolean)(f: a => a)(x: a): a = {
         if (p(x)) x else until(p)(f)(f(x))

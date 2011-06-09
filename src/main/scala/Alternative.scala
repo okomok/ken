@@ -10,7 +10,7 @@ package ken
 
 trait Alternative[f[_]] extends Applicative[f] {
     import Alternative.{<|>}
-    import Applicative.{<#>, <*>}
+    import Applicative.{<@>, <*>}
     private[this] implicit val i = this
 
     def empty[a]: f[a]
@@ -18,13 +18,13 @@ trait Alternative[f[_]] extends Applicative[f] {
 
     def some[a](v: f[a]): f[List[a]] = {
         def many_v: f[List[a]] = some_v <|> pure(Nil)
-        def some_v: f[List[a]] = _cons[a] <#> v <*> many_v
+        def some_v: f[List[a]] = _cons[a] <@> v <*> many_v
         some_v
     }
 
     def many[a](v: f[a]): f[List[a]] = {
         def many_v: f[List[a]] = some_v <|> pure(Nil)
-        def some_v: f[List[a]] = _cons[a] <#> v <*> many_v
+        def some_v: f[List[a]] = _cons[a] <@> v <*> many_v
         many_v
     }
 
@@ -46,5 +46,5 @@ object Alternative {
     }
     implicit def <|>[f[_], a](x: f[a])(implicit i: Alternative[f]): Op_<|>[f, a] = new Op_<|>[f, a](x)
 
-    def optional[f[_], a](x: f[a])(implicit i: Alternative[f]): f[Maybe[a]] = (Just(_: a).of[a]) <#> x <|> pure(Nothing.of[a])(i)
+    def optional[f[_], a](x: f[a])(implicit i: Alternative[f]): f[Maybe[a]] = (Just(_: a).of[a]) <@> x <|> pure(Nothing.of[a])(i)
 }

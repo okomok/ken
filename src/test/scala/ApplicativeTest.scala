@@ -19,7 +19,7 @@ class ApplicativeTest extends org.scalatest.junit.JUnit3Suite {
         import Applicative._
         xs match {
             case Nil => pure(Nil.of[a])(i)
-            case x !:: xs => List.cons[a] <#> x <*> distList(xs)
+            case x !:: xs => List.cons[a] <@> x <*> distList(xs)
         }
     }
 
@@ -27,7 +27,7 @@ class ApplicativeTest extends org.scalatest.junit.JUnit3Suite {
         import Applicative._
         xs match {
             case Nil => pure(Nil.of[b])(i)
-            case x !:: xs => List.cons[b] <#> f(x) <*> traverseList(f)(xs)
+            case x !:: xs => List.cons[b] <@> f(x) <*> traverseList(f)(xs)
         }
     }
 
@@ -54,6 +54,6 @@ class ApplicativeTest extends org.scalatest.junit.JUnit3Suite {
     def iffy[f[_], a](fb: f[Boolean])(ft: f[a])(fe: f[a])(implicit i: Applicative[f]): f[a] = {
         import Applicative._
         def cond(b: Boolean)(t: a)(e: a): a = if (b) t else e // both ft and fe are computed.
-        (cond _) <#> fb <*> ft <*> fe
+        (cond _) <@> fb <*> ft <*> fe
     }
 }

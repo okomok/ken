@@ -28,12 +28,12 @@ object Applicative extends ApplicativeInstance {
     def op_*>[f[_], a, b](x: f[a])(y: f[b])(implicit i: Applicative[f]): f[b] = i.op_*>(x)(y)
     def op_<*[f[_], a, b](x: f[a])(y: f[b])(implicit i: Applicative[f]): f[a] = i.op_<*(x)(y)
 
-    def op_<#>[f[_], a, b](x: a => b)(y: f[a])(implicit i: Functor[f]): f[b] = i.fmap(x)(y)
+    def op_<@>[f[_], a, b](x: a => b)(y: f[a])(implicit i: Functor[f]): f[b] = i.fmap(x)(y)
 
-    private[ken] class Op_<#>[f[_], a, b](x: a => b)(implicit i: Functor[f]) {
-        def <#>(y: f[a]): f[b] = op_<#>(x)(y)
+    private[ken] class Op_<@>[f[_], a, b](x: a => b)(implicit i: Functor[f]) {
+        def <@>(y: f[a]): f[b] = op_<@>(x)(y)
     }
-    implicit def <#>[f[_], a, b](x: a => b)(implicit i: Functor[f]): Op_<#>[f, a, b] = new Op_<#>[f, a, b](x)
+    implicit def <@>[f[_], a, b](x: a => b)(implicit i: Functor[f]): Op_<@>[f, a, b] = new Op_<@>[f, a, b](x)
 
     def op_<#[f[_], a, b](x: => a)(y: f[b])(implicit i: Functor[f]): f[a] = i.fmap[b, a](_ => x)(y)
 
@@ -62,10 +62,10 @@ object Applicative extends ApplicativeInstance {
     }
     implicit def <**>[f[_], a](x: f[a])(implicit i: Applicative[f]): Op_<**>[f, a] = new Op_<**>[f, a](x)
 
-    def op_<**>[f[_], a, b](x: f[a])(y: f[a => b])(implicit i: Applicative[f]): f[b] = liftA2[f, a, a => b, b](flip(apply))(x)(y)
+    def op_<**>[f[_], a, b](x: f[a])(y: f[a => b])(implicit i: Applicative[f]): f[b] = liftA2[f, a, a => b, b](flip(`@`))(x)(y)
     def liftA[f[_], a, b](x: a => b)(y: f[a])(implicit i: Applicative[f]): f[b] = pure(x)(i) <*> y
-    def liftA2[f[_], a, b, c](x: a => b => c)(y: f[a])(z: f[b])(implicit i: Applicative[f]): f[c] = x <#> y <*> z
-    def liftA3[f[_], a, b, c, d](x: a => b => c => d)(y: f[a])(z: f[b])(w: f[c])(implicit i: Applicative[f]): f[d] = x <#> y <*> z <*> w
+    def liftA2[f[_], a, b, c](x: a => b => c)(y: f[a])(z: f[b])(implicit i: Applicative[f]): f[c] = x <@> y <*> z
+    def liftA3[f[_], a, b, c, d](x: a => b => c => d)(y: f[a])(z: f[b])(w: f[c])(implicit i: Applicative[f]): f[d] = x <@> y <*> z <*> w
 }
 
 
