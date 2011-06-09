@@ -35,12 +35,12 @@ object Applicative extends ApplicativeInstance {
     }
     implicit def <@>[f[_], a, b](x: a => b)(implicit i: Functor[f]): Op_<@>[f, a, b] = new Op_<@>[f, a, b](x)
 
-    def op_<#[f[_], a, b](x: => a)(y: f[b])(implicit i: Functor[f]): f[a] = i.fmap[b, a](_ => x)(y)
+    def op_<@[f[_], a, b](x: => a)(y: f[b])(implicit i: Functor[f]): f[a] = i.fmap[b, a](_ => x)(y)
 
-    private[ken] class Op_<#[f[_], a](x: => a)(implicit i: Functor[f]) {
-        def <#[b](y: f[b]): f[a] = op_<#(x)(y)
+    private[ken] class Op_<@[f[_], a](x: => a)(implicit i: Functor[f]) {
+        def <@[b](y: f[b]): f[a] = op_<@(x)(y)
     }
-    implicit def <#[f[_], a](x: => a)(implicit i: Functor[f]): Op_<#[f, a] = new Op_<#[f, a](x)
+    implicit def <@[f[_], a](x: => a)(implicit i: Functor[f]): Op_<@[f, a] = new Op_<@[f, a](x)
 
     private[ken] class Op_<*>[f[_], a, b](x: f[a => b])(implicit i: Applicative[f]) {
         def <*>(y: f[a]): f[b] = op_<*>(x)(y)
