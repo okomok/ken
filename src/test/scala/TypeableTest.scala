@@ -15,17 +15,17 @@ class TypeableTest extends org.scalatest.junit.JUnit3Suite {
 
     def testTrivial {
         val a = "hello"
-        val Just(x) = Typeable.cast[String, String](a)
+        val Just(x) = Typeable.cast(a, Type[String])
         expect(a)(x)
-        val c = Typeable.cast[String, Int](a)
+        val c = Typeable.cast(a, Type[Int])
         expect(Nothing)(c)
     }
 
     def testParam {
         val a = "hello" :: scala.Nil
-        val Just(x) = Typeable.cast[scala.List[String], scala.List[String]](a)
+        val Just(x) = Typeable.cast(a, Type[scala.List[String]])
         expect(a)(x)
-        val c = Typeable.cast[scala.List[String], scala.List[Int]](a)
+        val c = Typeable.cast(a, Type[scala.List[Int]])
         expect(Nothing)(c)
     }
 
@@ -36,11 +36,22 @@ class TypeableTest extends org.scalatest.junit.JUnit3Suite {
         val y = Typeable.mkT((b: Boolean) => !b)('a')
         expect(y)('a')
     }
-
+/*
     def testBadCompiler1 {
         val a = "hello"
         intercept[MatchError] {
             val Just(x) = Typeable.cast(a): Maybe[String] // annotation seems ignored.
+        }
+    }
+
+    def testBadCompiler0 {
+        val a = "hello"
+        intercept[Error] {
+            val r = identity[Maybe[String]](Typeable.cast(a))
+            r match {
+                case Just(x) => ()
+                case Nothing => throw new Error
+            }
         }
     }
 
@@ -54,7 +65,7 @@ class TypeableTest extends org.scalatest.junit.JUnit3Suite {
             }
         }
     }
-
+*/
     def testmkQ {
         val x = Typeable.mkQ(22)((c: Char) => c.toInt)('a')
         expect(97)(x)
