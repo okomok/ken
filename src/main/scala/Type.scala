@@ -8,10 +8,10 @@ package com.github.okomok
 package ken
 
 
-final class Type[a] {
+sealed abstract class Type[a] {
     type get = a
 }
 
 object Type {
-    def apply[a]: Type[a] = new Type[a]
+    def apply[a]: Type[a] = new Type[a] {}
 }
