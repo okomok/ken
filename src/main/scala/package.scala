@@ -54,6 +54,9 @@ package object ken {
     def undefined: Nothing = throw new Error("undefined")
 
 // List operations
+    def op_::[a](x: a)(xs: => List[a]): List[a] = ::(x, Lazy(xs))
+    def op_!::[a](x: a)(xs: List[a]): List[a] = op_::(x)(xs)
+
     def map[a, b](f: a => b)(xs: List[a]): List[b] = xs match {
         case Nil => Nil
         case x :: xs => f(x) :: map(f)(xs.!)
@@ -119,7 +122,7 @@ package object ken {
         case (_ :: xs, n) => xs.! !! (n-1)
     }
 
-    def reverse[a](xs: List[a]): List[a] = foldl(flip(List.cons[a]))(Nil)(xs)
+    def reverse[a](xs: List[a]): List[a] = foldl(flip(op_!::[a]))(Nil)(xs)
 
 // Reducing lists (folds)
     @tailrec

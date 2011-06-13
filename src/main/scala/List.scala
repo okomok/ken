@@ -12,14 +12,16 @@ import scala.annotation.tailrec
 
 
 sealed abstract class List[+a] {
-    def of[b >: a]: List[b] = this
+    @inline
+    final def of[b >: a]: List[b] = this
 
-    def !!(n: Int): a = op_!!(this)(n)
+    final def !!(n: Int): a = op_!!(this)(n)
+    final def !::[b >: a](x: b): List[b] = op_!::[b](x)(this)
 
-    def filter(p: a => Boolean): List[a] = ken.filter(p)(this)
-    def withFilter(p: a => Boolean): List[a] = ken.filter(p)(this)
+    final def filter(p: a => Boolean): List[a] = ken.filter(p)(this)
+    final def withFilter(p: a => Boolean): List[a] = ken.filter(p)(this)
 
-    def toScalaList: scala.List[a] = this match {
+    final def toScalaList: scala.List[a] = this match {
         case Nil => scala.Nil
         case x :: xs => scala.::(x, (xs.!).toScalaList)
     }
@@ -27,10 +29,10 @@ sealed abstract class List[+a] {
 
 
 object Nil extends List[Nothing] {
-    def ::[a](x: a): List[a] = new ::[a](x, &(this))
+    def ::[a](x: a): List[a] = new ::[a](x, Lazy(this))
 }
 
-case class ::[+a](head: a, tail: &[List[a]]) extends List[a] {
+case class ::[+a](head: a, tail: Lazy[List[a]]) extends List[a] {
     override def equals(that: Any): Boolean = that match {
         case that: List[_] => List.op_==(this)(that)
         case _ => false
@@ -49,12 +51,6 @@ object !:: { // strict extractor
 object List extends Alternative[List] with MonadPlus[List] {
     implicit val theInstance = this
 
-    private[ken] class OfName[a](xs: => List[a]) {
-        def ::(x: a): List[a] = new ken.::(x, &(xs))
-        def :::(ys: List[a]): List[a] = op_++(ys)(xs)
-    }
-    implicit def ofName[a](xs: => List[a]): OfName[a] = new OfName(xs)
-
     @tailrec
     def op_==(xs: List[_])(ys: List[_]): Boolean = (xs, ys) match {
         case (Nil, Nil) => true
@@ -64,6 +60,12 @@ object List extends Alternative[List] with MonadPlus[List] {
             if (x == y) op_==(xs.!)(ys.!) else false
         }
     }
+
+    private[ken] class OfName[a](xs: => List[a]) {
+        def ::(x: a): List[a] = op_::(x)(xs)
+        def :::(ys: List[a]): List[a] = op_++(ys)(xs)
+    }
+    implicit def ofName[a](xs: => List[a]): OfName[a] = new OfName(xs)
 
     private[this] type m[a] = List[a]
     // Alternative
@@ -81,11 +83,6 @@ object List extends Alternative[List] with MonadPlus[List] {
         override def mempty: m = Nil
         override def mappend(x: m)(y: => m): m = x ::: y
     }
-
-    def cons[a]: a => List[a] => List[a] = { x => xs => x :: xs }
-    def consr[a]: a => &[List[a]] => List[a] = { x => xs => x :: xs.! }
-    def append[a]: List[a] => List[a] => List[a] = { xs => ys => xs ::: ys }
-    def appendr[a]: List[a] => &[List[a]] => List[a] = { xs => ys => xs ::: ys.! }
 
     def from[a](that: List[a]): List[a] = that
 

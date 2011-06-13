@@ -8,24 +8,19 @@ package com.github.okomok
 package ken
 
 
-sealed abstract class &[+a] {
+sealed abstract class Lazy[+a] {
     def ! : a
 }
 
-object & {
-    def apply[a](x: => a): &[a] = new &[a] {
+object Lazy {
+    def apply[a](x: => a): Lazy[a] = new Lazy[a] {
         override lazy val ! : a = x
     }
 
     // implicit def toStrict[a](x: &[a]): a = x.!
-    /*
-    implicit def fromFunction1[a1, r](f: a1 => r): &[a1] => &[r] = { x1 => &(f(x1.!)) }
-    implicit def fromFunction2[a1, a2, r](f: a1 => a2 => r): &[a1] => &[a2] => &[r] = { x1 => x2 => &(f(x1.!)(x2.!)) }
-    implicit def fromFunction3[a1, a2, a3, r](f: a1 => a2 => a3 => r): &[a1] => &[a2] => &[a3] => &[r] = { x1 => x2 => x3 => &(f(x1.!)(x2.!)(x3.!)) }
-    */
 }
 
 
 object ! {
-    def unapply[a](x: &[a]): Option[a] = Some(x.!)
+    def unapply[a](x: Lazy[a]): Option[a] = Some(x.!)
 }
