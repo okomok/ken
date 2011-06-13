@@ -14,7 +14,7 @@ trait Monad[m[_]] extends Applicative[m] {
 
     def `return`[a](x: => a): m[a]
     def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b]
-    def op_>>[a, b](x: m[a])(y: m[b]): m[b] = x >>= (_ => y)
+    def op_>>[a, b](x: m[a])(y: => m[b]): m[b] = { lazy val _y = y; x >>= (_ => _y) }
 
     final override def pure[a](x: => a): m[a] = `return`(x)
     override def op_<*>[a, b](x: m[a => b])(y: m[a]): m[b] = for { _x <- x; _y <- y } yield _x(_y)
@@ -24,7 +24,7 @@ trait Monad[m[_]] extends Applicative[m] {
 object Monad {
     def `return`[m[_], a](x: => a)(implicit i: Monad[m]): m[a] = i.pure(x)
     def op_>>=[m[_], a, b](x: m[a])(y: a => m[b])(implicit i: Monad[m]): m[b] = i.op_>>=(x)(y)
-    def op_>>[m[_], a, b](x: m[a])(y: m[b])(implicit i: Monad[m]): m[b] = i.op_>>(x)(y)
+    def op_>>[m[_], a, b](x: m[a])(y: => m[b])(implicit i: Monad[m]): m[b] = i.op_>>(x)(y)
 
     private[ken] class Op_>>=[m[_], a](x: m[a])(implicit i: Monad[m]) {
         def >>=[b](y: a => m[b]): m[b] = op_>>=(x)(y)
@@ -32,7 +32,7 @@ object Monad {
     implicit def >>=[m[_], a](x: m[a])(implicit i: Monad[m]): Op_>>=[m, a] = new Op_>>=[m, a](x)
 
     private[ken] class Op_>>[m[_], a](x: m[a])(implicit i: Monad[m]) {
-        def >>[b](y: m[b]): m[b] = op_>>(x)(y)
+        def >>[b](y: => m[b]): m[b] = op_>>(x)(y)
     }
     implicit def >>[m[_], a, b](x: m[a])(implicit i: Monad[m]): Op_>>[m, a] = new Op_>>[m, a](x)
 
@@ -50,12 +50,12 @@ object Monad {
     implicit def =<<[m[_], a, b](f: a => m[b])(implicit i: Monad[m]): Op_=<<[m, a, b] = new Op_=<<[m, a, b](f)
 
     def sequence[m[_], a](ms: List[m[a]])(implicit i: Monad[m]): m[List[a]] = {
-        def k(m: m[a])(_m: &[m[List[a]]]): m[List[a]] = for { x <- m; xs <- _m.!} yield (x :: xs)
+        def k(m: m[a])(_m: => m[List[a]]): m[List[a]] = for { x <- m; xs <- _m } yield (x :: xs)
         foldr(k)(`return`(Nil))(ms)
     }
 
     def sequence_[m[_], a](ms: List[m[a]])(implicit i: Monad[m]): m[Unit] = {
-        foldr(&.r(op_>>[m, a, Unit]))(`return`(()))(ms)
+        foldr(op_>>[m, a, Unit])(`return`(()))(ms)
     }
 
     def mapM[m[_], a, b](f: a => m[b])(as: List[a])(implicit i: Monad[m]): m[List[b]] = sequence(map(f)(as))

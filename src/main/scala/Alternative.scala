@@ -14,7 +14,7 @@ trait Alternative[f[_]] extends Applicative[f] {
     private[this] implicit val i = this
 
     def empty[a]: f[a]
-    def op_<|>[a](x: f[a])(y: f[a]): f[a]
+    def op_<|>[a](x: f[a])(y: => f[a]): f[a]
 
     def some[a](v: f[a]): f[List[a]] = {
         def many_v: f[List[a]] = some_v <|> pure(Nil)
@@ -36,13 +36,13 @@ object Alternative {
     import Applicative._
 
     def empty[f[_], a](implicit i: Alternative[f]): f[a] = i.empty[a]
-    def op_<|>[f[_], a](x: f[a])(y: f[a])(implicit i: Alternative[f]): f[a] = i.op_<|>(x)(y)
+    def op_<|>[f[_], a](x: f[a])(y: => f[a])(implicit i: Alternative[f]): f[a] = i.op_<|>(x)(y)
 
     def some[f[_], a](v: f[a])(implicit i: Alternative[f]): f[List[a]] = i.some(v)
     def many[f[_], a](v: f[a])(implicit i: Alternative[f]): f[List[a]] = i.many(v)
 
     private[ken] class Op_<|>[f[_], a](x: f[a])(implicit i: Alternative[f]) {
-        def <|>(y: f[a]): f[a] = op_<|>(x)(y)
+        def <|>(y: => f[a]): f[a] = op_<|>(x)(y)
     }
     implicit def <|>[f[_], a](x: f[a])(implicit i: Alternative[f]): Op_<|>[f, a] = new Op_<|>[f, a](x)
 

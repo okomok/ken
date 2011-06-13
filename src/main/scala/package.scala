@@ -15,9 +15,9 @@ package object ken {
 // Booleans
     def not(b: Boolean): Boolean = !b
 
-    def op_&&(b: Boolean)(c: &[Boolean]): Boolean = b && c.!
+    def op_&&(b: Boolean)(c: => Boolean): Boolean = b && c
 
-    def op_||(b: Boolean)(c: &[Boolean]): Boolean = b || c.!
+    def op_||(b: Boolean)(c: => Boolean): Boolean = b || c
 
 // Tuples
     def fst[a, b](p: (a, b)): a = p match {
@@ -133,15 +133,15 @@ package object ken {
         case x :: xs => foldl(f)(x)(xs.!)
     }
 
-    def foldr[a, b](f: a => &[b] => b)(z: b)(xs: List[a]): b = xs match {
+    def foldr[a, b](f: a => (=> b) => b)(z: b)(xs: List[a]): b = xs match {
         case Nil => z
-        case x :: xs => f(x)(&(foldr(f)(z)(xs.!)))
+        case x :: xs => f(x)(foldr(f)(z)(xs.!))
     }
 
-    def foldr1[a](f: a => &[a] => a)(xs: List[a]): a = xs match {
+    def foldr1[a](f: a => (=> a) => a)(xs: List[a]): a = xs match {
         case Nil => error("empty List")
         case x !:: Nil => x
-        case x :: xs => f(x)(&(foldr1(f)(xs.!)))
+        case x :: xs => f(x)(foldr1(f)(xs.!))
     }
 
 // Special folds
@@ -157,9 +157,9 @@ package object ken {
 
     def product[a](xs: List[a])(implicit i: Numeric[a]): a = foldl(curry(i.times))(i.one)(xs)
 
-    def concat[a](xs: List[List[a]]): List[a] = foldr(List.appendr[a])(Nil)(xs)
+    def concat[a](xs: List[List[a]]): List[a] = foldr(op_++[a])(Nil)(xs)
 
-    def concatMap[a, b](f: a => List[b])(xs: List[a]): List[b] = foldr[a, List[b]](x => y => f(x) ++ y.!)(Nil)(xs)
+    def concatMap[a, b](f: a => List[b])(xs: List[a]): List[b] = foldr[a, List[b]](x => y => f(x) ::: y)(Nil)(xs)
 
     def maximum[a](xs: List[a])(implicit i: Ordering[a]): a = xs match {
         case Nil => error("empty List")
@@ -184,20 +184,20 @@ package object ken {
         case x :: xs => scanl(f)(x)(xs.!)
     }
 
-    def scanr[a, b](f: a => &[b] => b)(q0: b)(xs: List[a]): List[b] = xs match {
+    def scanr[a, b](f: a => (=> b) => b)(q0: b)(xs: List[a]): List[b] = xs match {
         case Nil => q0 :: Nil
         case x :: xs => {
             lazy val qs = scanr(f)(q0)(xs.!)
-            f(x)(&(head(qs))) :: qs
+            f(x)(head(qs)) :: qs
         }
     }
 
-    def scanr1[a](f: a => &[a] => a)(xs: List[a]): List[a] = xs match {
+    def scanr1[a](f: a => (=> a) => a)(xs: List[a]): List[a] = xs match {
         case Nil => Nil
         case x !:: Nil => x :: Nil
         case x :: xs => {
             lazy val qs = scanr1(f)(xs.!)
-            f(x)(&(head(qs))) :: qs
+            f(x)(head(qs)) :: qs
         }
     }
 
@@ -282,7 +282,7 @@ package object ken {
     }
 
     def unzip[a, b](xs: List[(a, b)]): (List[a], List[b]) = {
-        foldr[(a, b), (List[a], List[b])](ab => abs => (ab._1 :: abs.!._1, ab._2 :: abs.!._2))((Nil, Nil))(xs)
+        foldr[(a, b), (List[a], List[b])](ab => abs => { lazy val _abs = abs; (ab._1 :: _abs._1, ab._2 :: _abs._2) })((Nil, Nil))(xs)
     }
 
 // Functions on strings

@@ -14,7 +14,6 @@ import scala.annotation.tailrec
 sealed abstract class List[+a] {
     def of[b >: a]: List[b] = this
 
-    def ++[b >: a](that: => List[b]): List[b] = op_++[b](this)(that)
     def !!(n: Int): a = op_!!(this)(n)
 
     def filter(p: a => Boolean): List[a] = ken.filter(p)(this)
@@ -52,7 +51,7 @@ object List extends Alternative[List] with MonadPlus[List] {
 
     private[ken] class OfName[a](xs: => List[a]) {
         def ::(x: a): List[a] = new ken.::(x, &(xs))
-        def :::(ys: List[a]): List[a] = ys ++ xs
+        def :::(ys: List[a]): List[a] = op_++(ys)(xs)
     }
     implicit def ofName[a](xs: => List[a]): OfName[a] = new OfName(xs)
 
@@ -69,18 +68,18 @@ object List extends Alternative[List] with MonadPlus[List] {
     private[this] type m[a] = List[a]
     // Alternative
     override def empty[a]: m[a] = Nil
-    override def op_<|>[a](x: m[a])(y: m[a]): m[a] = x ++ y
+    override def op_<|>[a](x: m[a])(y: => m[a]): m[a] = x ::: y
     // Monad
     override def `return`[a](x: => a): m[a] = x :: Nil
     override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = concat(map(y)(x))
     // MonadPlus
     override def mzero[a]: m[a] = Nil
-    override def mplus[a](x: m[a])(y: m[a]): m[a] = x ++ y
+    override def mplus[a](x: m[a])(y: => m[a]): m[a] = x ::: y
 
     implicit def monoidInstance[a]: Monoid[List[a]] = new Monoid[List[a]] {
         private[this] type m = List[a]
         override def mempty: m = Nil
-        override def mappend(x: m)(y: m): m = x ++ y
+        override def mappend(x: m)(y: => m): m = x ::: y
     }
 
     def cons[a]: a => List[a] => List[a] = { x => xs => x :: xs }
