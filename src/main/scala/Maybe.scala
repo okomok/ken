@@ -9,7 +9,10 @@ package ken
 
 
 sealed abstract class Maybe[+a] {
-    def of[b >: a]: Maybe[b] = this
+    @inline
+    final def of[b >: a]: Maybe[b] = this
+    @inline
+    final def asMaybe: Maybe[a] = this
 }
 
 

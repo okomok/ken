@@ -14,9 +14,13 @@ import scala.annotation.tailrec
 sealed abstract class List[+a] {
     @inline
     final def of[b >: a]: List[b] = this
+    @inline
+    final def asList: List[a] = this
 
     final def !!(n: Int): a = op_!!(this)(n)
     final def !::[b >: a](x: b): List[b] = op_!::[b](x)(this)
+
+    final def \\[b >: a](that: List[b]): List[b] = List.op_\\[b](this)(that)
 
     final def filter(p: a => Boolean): List[a] = ken.filter(p)(this)
     final def withFilter(p: a => Boolean): List[a] = ken.filter(p)(this)
@@ -33,6 +37,7 @@ object Nil extends List[Nothing] {
 }
 
 case class ::[+a](head: a, tail: Lazy[List[a]]) extends List[a] {
+    override def toString: String = take(100)(this).toScalaList.toString
     override def equals(that: Any): Boolean = that match {
         case that: List[_] => List.op_==(this)(that)
         case _ => false
@@ -90,6 +95,18 @@ object List extends Alternative[List] with MonadPlus[List] {
     def unapplySeq[a](xs: List[a]): Option[Seq[a]] = Some(xs.toScalaList)
 
     implicit def fromIterable[a](xs: scala.Iterable[a]): List[a] = if (xs.isEmpty) Nil else (xs.head :: from(xs.tail))
+
+// List
+    def delete[a](x: a)(xs: List[a]) = deleteBy[a](s => t => s == t)(x)(xs)
+
+    def deleteBy[a](eq: a => a => Boolean)(x: a)(xs: List[a]): List[a] = xs match {
+        case Nil => Nil
+        case y :: ys => if (x == y) ys.! else (y :: deleteBy(eq)(x)(ys.!))
+    }
+
+    def op_\\[a](xs: List[a])(ys: List[a]): List[a] = foldl(flip(delete[a]))(xs)(ys)
+
+    def sort[a](xs: List[a])(implicit i: Ordering[a]): List[a] = from(xs.toScalaList.sortWith(i.lt))
 }
 
 
