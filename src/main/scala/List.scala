@@ -23,7 +23,7 @@ sealed abstract class List[+a] {
 
     final def toScalaList: scala.List[a] = this match {
         case Nil => scala.Nil
-        case x :: xs => scala.::(x, (xs).toScalaList)
+        case x :: xs => scala.::(x, xs.!.toScalaList)
     }
 }
 
@@ -43,7 +43,7 @@ case class ::[+a](head: a, tail: Lazy[List[a]]) extends List[a] {
 object !:: { // strict extractor
     def unapply[a](xs: List[a]): Option[(a, List[a])] = xs match {
         case Nil => None
-        case x :: xs => Some(x, xs)
+        case x :: xs => Some(x, xs.!)
     }
 }
 
@@ -57,7 +57,7 @@ object List extends Alternative[List] with MonadPlus[List] {
         case (Nil, _) => false
         case (_, Nil) => false
         case (x :: xs, y :: ys) => {
-            if (x == y) op_==(xs)(ys) else false
+            if (x == y) op_==(xs.!)(ys.!) else false
         }
     }
 

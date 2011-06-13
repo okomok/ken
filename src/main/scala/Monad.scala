@@ -65,7 +65,7 @@ object Monad {
         case Nil => `return`(Nil)
         case x :: xs => for {
             flg <- p(x)
-            ys <- filterM(p)(xs)
+            ys <- filterM(p)(xs.!)
         } yield (if (flg) (x :: ys) else ys)
     }
 
@@ -98,7 +98,7 @@ object Monad {
 
     def foldM[m[_], a, b](f: a => b => m[a])(a: a)(xs: List[b])(implicit i: Monad[m]): m[a] = xs match {
         case Nil => `return`(a)
-        case x :: xs => f(a)(x) >>= (fax => foldM(f)(fax)(xs))
+        case x :: xs => f(a)(x) >>= (fax => foldM(f)(fax)(xs.!))
     }
 
     def foldM_[m[_], a, b](f: a => b => m[a])(a: a)(xs: List[b])(implicit i: Monad[m]): m[Unit] = {
