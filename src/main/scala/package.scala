@@ -59,9 +59,9 @@ package object ken {
         case x :: xs => f(x) :: map(f)(xs.!)
     }
 
-    def op_++[a](xs: List[a])(ys: List[a]): List[a] = xs match {
+    def op_++[a](xs: List[a])(ys: => List[a]): List[a] = xs match {
         case Nil => ys
-        case x :: xs => x :: (xs.! ++ ys)
+        case x :: xs => x :: op_++(xs.!)(ys)
     }
 
     def filter[a](pred: a => Boolean)(xs: List[a]): List[a] = xs match {
@@ -205,7 +205,7 @@ package object ken {
     def iterate[a](f: a => a)(x: a): List[a] = x :: iterate(f)(f(x))
 
     def repeat[a](x: a): List[a] = {
-        lazy val xs: List[a] = x :: xs
+        def xs: List[a] = x :: xs
         xs
     }
 
@@ -214,7 +214,7 @@ package object ken {
     def cycle[a](xs: List[a]): List[a] = xs match {
         case Nil => error("empty List")
         case xs => {
-            lazy val _xs: List[a] = xs ::: _xs
+            def _xs: List[a] = xs ::: _xs
             _xs
         }
     }
