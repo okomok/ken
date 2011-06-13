@@ -31,6 +31,14 @@ class TrivialTest extends org.scalatest.junit.JUnit3Suite {
         expect(false)(6 :: 7 :: Nil == ys)
     }
 
+    def testLazy {
+        class Foo {
+            def eval: Int = 3
+        }
+        val x = Lazy(new Foo)
+        expect(3)(x.eval)
+    }
+
     def compileImplicit {
         import Monad.>>=
         (1 :: 2 :: Nil) >>= (x => x :: Nil)
@@ -45,7 +53,7 @@ class TrivialTest extends org.scalatest.junit.JUnit3Suite {
     def teztIO {
         import Monad.`for`
    //     val io = getChar >>= { x => putChar(x) }
-   //     io.!
+   //     io
 
         val io = for {
             x <- getChar

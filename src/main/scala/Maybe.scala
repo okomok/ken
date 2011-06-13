@@ -63,7 +63,7 @@ object Maybe extends Alternative[Maybe] with MonadPlus[Maybe] {
     def mapMaybe[a, b](f: a => Maybe[b])(xs: List[a]): List[b] = xs match {
         case Nil => Nil
         case x :: xs => {
-            lazy val rs: List[b] = mapMaybe(f)(xs.!)
+            lazy val rs: List[b] = mapMaybe(f)(xs)
             f(x) match {
                 case Nothing => rs
                 case Just(r) => r :: rs

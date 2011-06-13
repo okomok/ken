@@ -9,18 +9,18 @@ package ken
 
 
 sealed abstract class Lazy[+a] {
-    def ! : a
+    private[ken] def eval: a
 }
 
 object Lazy {
     def apply[a](x: => a): Lazy[a] = new Lazy[a] {
-        override lazy val ! : a = x
+        override lazy val eval: a = x
     }
 
-    // implicit def toStrict[a](x: &[a]): a = x.!
+    implicit def eval[a](x: Lazy[a]): a = x.eval
 }
 
 
 object ! {
-    def unapply[a](x: Lazy[a]): Option[a] = Some(x.!)
+    def unapply[a](x: Lazy[a]): Option[a] = Some(x.eval)
 }
