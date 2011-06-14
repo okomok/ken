@@ -51,15 +51,15 @@ object Monad {
 
     def sequence[m[_], a](ms: List[m[a]])(implicit i: Monad[m]): m[List[a]] = {
         def k(m: m[a])(_m: => m[List[a]]): m[List[a]] = for { x <- m; xs <- _m } yield (x :: xs)
-        foldr(k)(`return`(Nil))(ms)
+        List.foldr(k)(`return`(Nil))(ms)
     }
 
     def sequence_[m[_], a](ms: List[m[a]])(implicit i: Monad[m]): m[Unit] = {
-        foldr(op_>>[m, a, Unit])(`return`(()))(ms)
+        List.foldr(op_>>[m, a, Unit])(`return`(()))(ms)
     }
 
-    def mapM[m[_], a, b](f: a => m[b])(as: List[a])(implicit i: Monad[m]): m[List[b]] = sequence(map(f)(as))
-    def mapM_[m[_], a, b](f: a => m[b])(as: List[a])(implicit i: Monad[m]): m[Unit] = sequence_(map(f)(as))
+    def mapM[m[_], a, b](f: a => m[b])(as: List[a])(implicit i: Monad[m]): m[List[b]] = sequence(List.map(f)(as))
+    def mapM_[m[_], a, b](f: a => m[b])(as: List[a])(implicit i: Monad[m]): m[Unit] = sequence_(List.map(f)(as))
 
     def filterM[m[_], a](p: a => m[Boolean])(xs: List[a])(implicit i: Monad[m]): m[List[a]] = xs match {
         case Nil => `return`(Nil)
@@ -90,11 +90,11 @@ object Monad {
     def join[m[_], a](x: m[m[a]])(implicit i: Monad[m]): m[a] = x >>= id
 
     def mapAndUnzipM[m[_], a, b, c](f: a => m[(b, c)])(xs: List[a])(implicit i: Monad[m]): m[(List[b], List[c])] = {
-        mapM(f)(xs) >>= (ys => `return`(unzip(ys)))
+        mapM(f)(xs) >>= (ys => `return`(List.unzip(ys)))
     }
 
-    def zipWithM[m[_], a, b, c](f: a => b => m[c])(xs: List[a])(ys: List[b])(implicit i: Monad[m]): m[List[c]] = sequence(zipWith(f)(xs)(ys))
-    def zipWithM_[m[_], a, b, c](f: a => b => m[c])(xs: List[a])(ys: List[b])(implicit i: Monad[m]): m[Unit] = sequence_(zipWith(f)(xs)(ys))
+    def zipWithM[m[_], a, b, c](f: a => b => m[c])(xs: List[a])(ys: List[b])(implicit i: Monad[m]): m[List[c]] = sequence(List.zipWith(f)(xs)(ys))
+    def zipWithM_[m[_], a, b, c](f: a => b => m[c])(xs: List[a])(ys: List[b])(implicit i: Monad[m]): m[Unit] = sequence_(List.zipWith(f)(xs)(ys))
 
     def foldM[m[_], a, b](f: a => b => m[a])(a: a)(xs: List[b])(implicit i: Monad[m]): m[a] = xs match {
         case Nil => `return`(a)
@@ -105,8 +105,8 @@ object Monad {
         foldM(f)(a)(xs) >> `return`(())
     }
 
-    def replicateM[m[_], a](n: Int)(x: m[a])(implicit i: Monad[m]): m[List[a]] = sequence(replicate(n)(x))
-    def replicateM_[m[_], a](n: Int)(x: m[a])(implicit i: Monad[m]): m[Unit] = sequence_(replicate(n)(x))
+    def replicateM[m[_], a](n: Int)(x: m[a])(implicit i: Monad[m]): m[List[a]] = sequence(List.replicate(n)(x))
+    def replicateM_[m[_], a](n: Int)(x: m[a])(implicit i: Monad[m]): m[Unit] = sequence_(List.replicate(n)(x))
 
     def when[m[_]](p: Boolean)(s: => m[Unit])(implicit i: Monad[m]): m[Unit] = if (p) s else `return`(())
     def unless[m[_]](p: Boolean)(s: => m[Unit])(implicit i: Monad[m]): m[Unit] = if (p) `return`(()) else s

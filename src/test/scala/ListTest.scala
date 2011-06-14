@@ -23,12 +23,12 @@ class ListTest extends org.scalatest.junit.JUnit3Suite {
     }
 
     def testRepeat {
-        val xs = repeat(3)
-        expect(List(3,3,3,3))(take(4)(xs))
+        val xs = List.repeat(3)
+        expect(List(3,3,3,3))(List.take(4)(xs))
     }
 
     def testCycle {
-        val xs = cycle(List(1,2,3))
-        expect(List(1,2,3,1,2,3,1,2,3,1))(take(10)(xs))
+        val xs = List.cycle(List(1,2,3))
+        expect(List(1,2,3,1,2,3,1,2,3,1))(List.take(10)(xs))
     }
 }

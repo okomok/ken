@@ -9,6 +9,7 @@ package com.github.okomok.kentest
 
 import com.github.okomok.ken._
 import Monad.`for`
+import List._
 
 
 class EscapeFromZurgTest extends org.scalatest.junit.JUnit3Suite {
@@ -36,8 +37,8 @@ class EscapeFromZurgTest extends org.scalatest.junit.JUnit3Suite {
         import Toys._
 
         sealed abstract class Pos
-        object L extends Pos
-        object R extends Pos
+        case object L extends Pos
+        case object R extends Pos
 
         type Group = List[Toy]
         type BridgePos = (Pos, Group)
@@ -54,11 +55,11 @@ class EscapeFromZurgTest extends org.scalatest.junit.JUnit3Suite {
 
         def duration(xs: List[Move]): Int = sum(map(Either.either(time)((g: Group) => maximum(map(time)(g))))(xs))
 
-        def backw(xs: List[Toy]): List[(Move, BridgePos)] = for { x <- xs } yield (Left(x), (L, List.sort(x :: (toys \\ xs))))
+        def backw(xs: List[Toy]): List[(Move, BridgePos)] = for { x <- xs } yield (Left(x), (L, sort(x :: (toys \\ xs))))
 
         def forw(xs: List[Toy]): List[(Move, BridgePos)] = for {
-            x <- xs; ys = List.delete(x)(xs); y <- ys if x < y
-        } yield (Right(x :: y :: Nil), (R, List.delete(y)(ys)))
+            x <- xs; ys = delete(x)(xs); y <- ys if x < y
+        } yield (Right(x :: y :: Nil), (R, delete(y)(ys)))
 
         def solution = Instance.solutions(L, toys)
 

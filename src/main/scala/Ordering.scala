@@ -10,6 +10,6 @@ package ken
 
 sealed abstract class Ordering
 
-object LT extends Ordering
-object EQ extends Ordering
-object GT extends Ordering
+case object LT extends Ordering
+case object EQ extends Ordering
+case object GT extends Ordering

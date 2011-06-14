@@ -19,7 +19,7 @@ class ApplicativeTest extends org.scalatest.junit.JUnit3Suite {
         import Applicative._
         xs match {
             case Nil => pure(Nil.of[a])(i)
-            case x !:: xs => (op_!::[a] _) <@> x <*> distList(xs)
+            case x !:: xs => (List.op_!::[a] _) <@> x <*> distList(xs)
         }
     }
 
@@ -27,7 +27,7 @@ class ApplicativeTest extends org.scalatest.junit.JUnit3Suite {
         import Applicative._
         xs match {
             case Nil => pure(Nil.of[b])(i)
-            case x !:: xs => (op_!::[b] _) <@> f(x) <*> traverseList(f)(xs)
+            case x !:: xs => (List.op_!::[b] _) <@> f(x) <*> traverseList(f)(xs)
         }
     }
 

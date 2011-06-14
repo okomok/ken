@@ -56,8 +56,8 @@ class TrivialTest extends org.scalatest.junit.JUnit3Suite {
    //     io
 
         val io = for {
-            x <- getChar
-            u <- putChar(x)
+            x <- IO.getChar
+            u <- IO.putChar(x)
         } yield u
 
         io.unIO()
@@ -65,6 +65,7 @@ class TrivialTest extends org.scalatest.junit.JUnit3Suite {
 
     def teztIOAp {
         import Applicative._
+        import IO._
 
         val io = { (c1: Char) => (c2: Char) => println(c1); println(c2) } <@> getChar <*> getChar
         io.unIO()

@@ -28,5 +28,5 @@ object MonadPlus {
         case false => i.mzero
     }
 
-    def msum[m[_], a](xs: List[m[a]])(implicit i: MonadPlus[m]): m[a] = foldr(i.mplus[a])(i.mzero)(xs)
+    def msum[m[_], a](xs: List[m[a]])(implicit i: MonadPlus[m]): m[a] = List.foldr(i.mplus[a])(i.mzero)(xs)
 }
