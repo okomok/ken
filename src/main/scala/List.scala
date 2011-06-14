@@ -103,11 +103,11 @@ object List extends Alternative[List] with MonadPlus[List] {
     implicit def ordInstance[a](implicit i: Ord[a]): Ord[List[a]] = new Ord[List[a]] {
         @tailrec
         override def compare(x: List[a])(y: List[a]): Ordering = (x, y) match {
-            case (Nil, Nil) => EQ
+            case (Nil, Nil) => EQ_
             case (Nil, _ :: _) => LT
             case (_ :: _, Nil) => GT
             case (x :: xs, y :: ys) => i.compare(x)(y) match {
-                case EQ => compare(xs.!)(ys.!)
+                case EQ_ => compare(xs.!)(ys.!)
                 case other => other
             }
         }
@@ -318,6 +318,10 @@ object List extends Alternative[List] with MonadPlus[List] {
     }
 
 // Unfolding
+    def unfoldr[a, b](f: b => Maybe[(a, b)])(b: b): List[a] = f(b) match {
+        case Just((a, new_b)) => a :: unfoldr(f)(new_b)
+        case Nothing => Nil
+    }
 
 // Sublists
     def take[a](n: Int)(xs: List[a]): List[a] = (n, xs) match {
@@ -358,6 +362,23 @@ object List extends Alternative[List] with MonadPlus[List] {
     }
 
     def break[a](p: a => Boolean)(xs: List[a]): (List[a], List[a]) = span[a](!p(_))(xs)
+
+    @tailrec
+    def stripPrefix[a](xs: List[a])(ys: List[a]): Maybe[List[a]] = (xs, ys) match {
+        case (Nil, ys) => Just(ys)
+        case (x :: xs, y :: ys) if x == y => stripPrefix(xs.!)(ys.!)
+        case _ => Nothing
+    }
+
+    def group[a](xs: List[a]): List[List[a]] = groupBy(Eq.op_==[a])(xs)
+
+    def groupBy[a](eq: a => a => Boolean)(xs: List[a]): List[List[a]] = xs match {
+        case Nil => Nil
+        case x :: xs => {
+            val (ys, zs) = span(eq(x))(xs.!)
+            (x :: ys) :: groupBy(eq)(zs)
+        }
+    }
 
 // Predicates
 
@@ -411,21 +432,17 @@ object List extends Alternative[List] with MonadPlus[List] {
 // Functions on strings
 
 // Set operations
+    def delete[a](x: a)(xs: List[a]) = deleteBy(Eq.op_==[a])(x)(xs)
 
-    def delete[a](x: a)(xs: List[a]) = deleteBy[a](s => t => s == t)(x)(xs)
-
-    def op_\\[a](xs: List[a])(ys: List[a]): List[a] = foldl(flip(delete[a]))(xs)(ys)
-
-// Ordered lists
-    def sort[a](xs: List[a])(implicit i: scala.Ordering[a]): List[a] = from(xs.toScalaList.sortWith(i.lt))
-
-// User-supplied equality
     def deleteBy[a](eq: a => a => Boolean)(x: a)(xs: List[a]): List[a] = xs match {
         case Nil => Nil
         case y :: ys => if (x == y) ys.! else (y :: deleteBy(eq)(x)(ys.!))
     }
 
-// User-supplied comparison
+    def op_\\[a](xs: List[a])(ys: List[a]): List[a] = foldl(flip(delete[a]))(xs)(ys)
+
+// Ordered lists
+    def sort[a](xs: List[a])(implicit i: scala.Ordering[a]): List[a] = from(xs.toScalaList.sortWith(i.lt))
 
 // The generic operations
 }

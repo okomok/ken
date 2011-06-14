@@ -8,8 +8,9 @@ package com.github.okomok
 package ken
 
 
-sealed abstract class Ordering
+trait Eq[a]
 
-case object LT extends Ordering
-case object EQ_ extends Ordering
-case object GT extends Ordering
+object Eq {
+    def op_==[a](x: a)(y: a): Boolean = x == y
+    def op_/=[a](x: a)(y: a): Boolean = x != y
+}
