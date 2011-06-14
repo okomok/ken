@@ -17,6 +17,7 @@ sealed abstract class List[+a] {
     @inline
     final def asList: List[a] = this
 
+    // FIX ME
     final override def toString: String = List.take(512)(this).toScalaList.toString
     final override lazy val hashCode: Int = toScalaList.hashCode
 
@@ -75,7 +76,7 @@ object List extends Alternative[List] with MonadPlus[List] {
 
     private[ken] class OfName[a](xs: => List[a]) {
         def ::(x: a): List[a] = op_::(x)(xs)
-        def :::(ys: List[a]): List[a] = op_++(ys)(xs)
+        def :::(ys: List[a]): List[a] = op_:::(ys)(xs)
     }
     implicit def ofName[a](xs: => List[a]): OfName[a] = new OfName(xs)
 
@@ -112,18 +113,19 @@ object List extends Alternative[List] with MonadPlus[List] {
         }
     }
 
-// conversions
+// Conversions
     def from[a](that: List[a]): List[a] = that
 
     def apply[a](xs: a*): List[a] = from(xs)
     def unapplySeq[a](xs: List[a]): Option[Seq[a]] = Some(xs.toScalaList)
 
     implicit def fromIterable[a](xs: scala.Iterable[a]): List[a] = if (xs.isEmpty) Nil else (xs.head :: from(xs.tail))
+    implicit def fromString(xs: String): List[Char] = fromIterable(xs)
 
 // Basic functions
-    def op_++[a](xs: List[a])(ys: => List[a]): List[a] = xs match {
+    def op_:::[a](xs: List[a])(ys: => List[a]): List[a] = xs match {
         case Nil => ys
-        case x :: xs => x :: op_++(xs.!)(ys)
+        case x :: xs => x :: op_:::(xs.!)(ys)
     }
 
     def head[a](xs: List[a]): a = xs match {
@@ -171,6 +173,50 @@ object List extends Alternative[List] with MonadPlus[List] {
 
     def reverse[a](xs: List[a]): List[a] = foldl(flip(op_!::[a]))(Nil)(xs)
 
+    def intersperse[a](sep: a)(xs: List[a]): List[a] = xs match {
+        case Nil => Nil
+        case x !:: Nil => x :: Nil
+        case x :: xs => x :: sep :: intersperse(sep)(xs.!)
+    }
+
+    def intercalate[a](xs: List[a])(xss: List[List[a]]): List[a] = concat(intersperse(xs)(xss))
+
+    import Monad.`for`
+
+    def transpose[a](xss: List[List[a]]): List[List[a]] = xss match {
+        case Nil => Nil
+        case Nil :: xss => transpose(xss.!)
+        case (x :: xs) :: xss => (x :: (for { h :: _ <- xss.!} yield h)) :: transpose(xs.! :: (for { _ :: t <- xss.! } yield t.!))
+    }
+
+    def subsequences[a](xs: List[a]): List[List[a]] = Nil :: (nonEmptySubsequences(xs))
+
+    def nonEmptySubsequences[a](xs: List[a]): List[List[a]] = xs match {
+        case Nil => Nil
+        case x :: xs => {
+            def f(ys: List[a])(r: => List[List[a]]): List[List[a]] = ys :: (x :: ys) :: r
+            (x :: Nil) :: foldr(f)(Nil)(nonEmptySubsequences(xs.!))
+        }
+    }
+
+    def permutations[a](xs0: List[a]): List[List[a]] = {
+        def perms(ts: List[a])(is: List[a]): List[List[a]] = ts match {
+            case Nil => Nil
+            case t :: ts => {
+                def interleave(xs: List[a])(r: => List[List[a]]): List[List[a]] = interleave_(id)(xs)(r)._2
+                def interleave_(f: List[a] => List[a])(ys: List[a])(r: List[List[a]]): (List[a], List[List[a]]) = ys match {
+                    case Nil => (ts.!, r)
+                    case y :: ys => {
+                        lazy val uzs = interleave_(f compose (y :: _))(ys.!)(r)
+                        (y :: uzs._1, f(t :: y :: uzs._1) :: uzs._2)
+                    }
+                }
+                foldr(interleave)(perms(ts.!)(t :: is))(permutations(is))
+            }
+        }
+        xs0 :: perms(xs0)(Nil)
+    }
+
 // Reducing lists (folds)
     @tailrec
     def foldl[a, b](f: a => b => a)(z: a)(xs: List[b]): a = xs match {
@@ -195,7 +241,7 @@ object List extends Alternative[List] with MonadPlus[List] {
     }
 
 // Special folds
-    def concat[a](xs: List[List[a]]): List[a] = foldr(op_++[a])(Nil)(xs)
+    def concat[a](xs: List[List[a]]): List[a] = foldr(op_:::[a])(Nil)(xs)
 
     def concatMap[a, b](f: a => List[b])(xs: List[a]): List[b] = foldr[a, List[b]](x => y => f(x) ::: y)(Nil)(xs)
 
@@ -266,8 +312,8 @@ object List extends Alternative[List] with MonadPlus[List] {
     def cycle[a](xs: List[a]): List[a] = xs match {
         case Nil => error("empty List")
         case xs => {
-            def _xs: List[a] = xs ::: _xs
-            _xs
+            def xs_ : List[a] = xs ::: xs_
+            xs_
         }
     }
 
@@ -296,14 +342,14 @@ object List extends Alternative[List] with MonadPlus[List] {
     @tailrec
     def dropWhile[a](p: a => Boolean)(xs: List[a]): List[a] = xs match {
         case Nil => Nil
-        case x :: _xs => if (p(x)) dropWhile(p)(_xs.!) else xs
+        case x :: xs_ => if (p(x)) dropWhile(p)(xs_.!) else xs
     }
 
     def span[a](p: a => Boolean)(xs: List[a]): (List[a], List[a]) = xs match {
         case Nil => (Nil, Nil)
-        case x :: _xs => {
+        case x :: xs_ => {
             if (p(x)) {
-                val (ys, zs) = span(p)(_xs.!)
+                val (ys, zs) = span(p)(xs_.!)
                 (x :: ys, zs)
             } else {
                 (Nil, xs)

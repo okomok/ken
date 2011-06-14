@@ -31,4 +31,25 @@ class ListTest extends org.scalatest.junit.JUnit3Suite {
         val xs = List.cycle(List(1,2,3))
         expect(List(1,2,3,1,2,3,1,2,3,1))(List.take(10)(xs))
     }
+
+    def testTranspose {
+        import List.from
+        val xs = List(List(1,2,3),List(4,5,6))
+        val as = List(List(1,4),List(2,5),List(3,6))
+        expect(as)(List.transpose(xs))
+    }
+
+    def testSubsequences {
+        import List.from
+        val xs = from("abc")
+        val as = List(from(""),from("a"),from("b"),from("ab"),from("c"),from("ac"),from("bc"),from("abc"))
+        expect(as)(List.subsequences(xs))
+    }
+
+    def testPermutations {
+        import List.from
+        val xs = from("abc")
+        val as = List(from("abc"),from("bac"),from("cba"),from("bca"),from("cab"),from("acb"))
+        expect(as)(List.permutations(xs))
+    }
 }
