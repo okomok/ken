@@ -9,7 +9,7 @@ package ken
 
 
 trait Ord[a] {
-    def compare(x: a)(y: a): Ordering = if (x == y) EQ_ else if (op_<=(x)(y)) LT else GT
+    def compare(x: a)(y: a): Ordering = if (x == y) EQ else if (op_<=(x)(y)) LT else GT
     def op_<(x: a)(y: a): Boolean = compare(x)(y) match { case LT => true; case _ => false }
     def op_<=(x: a)(y: a): Boolean = compare(x)(y) match { case GT => false; case _ => true }
     def op_>(x: a)(y: a): Boolean = compare(x)(y) match { case GT => true; case _ => false }
@@ -49,7 +49,7 @@ object Ord {
 
     implicit def instanceOfOrdering[a](implicit i: scala.Ordering[a]): Ord[a] = new Ord[a] {
         override def compare(x: a)(y: a): Ordering = i.compare(x, y) match {
-            case 0 => EQ_
+            case 0 => EQ
             case s if s < 0 => LT
             case s if s > 0 => GT
         }

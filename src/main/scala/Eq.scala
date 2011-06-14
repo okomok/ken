@@ -8,9 +8,12 @@ package com.github.okomok
 package ken
 
 
-trait Eq[a]
-
-object Eq {
-    def op_==[a](x: a)(y: a): Boolean = x == y
-    def op_/=[a](x: a)(y: a): Boolean = x != y
+// Works around name-collision against Ordering EQ.
+// Note toplevel identifiers are case-insensitive wrt file-system.
+private[ken] object _Eq {
+    trait Eq[a]
+    object Eq {
+        def op_==[a](x: a)(y: a): Boolean = x == y
+        def op_/=[a](x: a)(y: a): Boolean = x != y
+    }
 }

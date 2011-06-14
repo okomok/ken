@@ -12,6 +12,10 @@ import scala.annotation.tailrec
 
 package object ken {
 
+// Eq
+    type Eq[a] = _Eq.Eq[a]
+    val Eq = _Eq.Eq
+
 // Booleans
     def not(b: Boolean): Boolean = !b
 

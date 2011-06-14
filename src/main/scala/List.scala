@@ -103,11 +103,11 @@ object List extends Alternative[List] with MonadPlus[List] {
     implicit def ordInstance[a](implicit i: Ord[a]): Ord[List[a]] = new Ord[List[a]] {
         @tailrec
         override def compare(x: List[a])(y: List[a]): Ordering = (x, y) match {
-            case (Nil, Nil) => EQ_
+            case (Nil, Nil) => EQ
             case (Nil, _ :: _) => LT
             case (_ :: _, Nil) => GT
             case (x :: xs, y :: ys) => i.compare(x)(y) match {
-                case EQ_ => compare(xs.!)(ys.!)
+                case EQ => compare(xs.!)(ys.!)
                 case other => other
             }
         }
