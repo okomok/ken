@@ -88,7 +88,7 @@ object List extends Alternative[List] with MonadPlus[List] {
     override def empty[a]: m[a] = Nil
     override def op_<|>[a](x: m[a])(y: => m[a]): m[a] = x ::: y
     // Monad
-    override def `return`[a](x: => a): m[a] = x :: Nil
+    override def `return`[a](x: => a): m[a] = List(x)
     override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = concat(map(y)(x))
     // MonadPlus
     override def mzero[a]: m[a] = Nil
@@ -119,14 +119,17 @@ object List extends Alternative[List] with MonadPlus[List] {
     def apply[a](xs: a*): List[a] = from(xs)
     def unapplySeq[a](xs: List[a]): Option[Seq[a]] = Some(xs.toScalaList)
 
-    implicit def fromIterable[a](xs: scala.Iterable[a]): List[a] = if (xs.isEmpty) Nil else (xs.head :: from(xs.tail))
+    implicit def fromArray[a](xs: Array[a]): List[a] = fromIterable(xs)
     implicit def fromString(xs: String): List[Char] = fromIterable(xs)
+    implicit def fromIterable[a](xs: scala.Iterable[a]): List[a] = if (xs.isEmpty) Nil else (xs.head :: from(xs.tail))
 
 // Basic functions
     def op_:::[a](xs: List[a])(ys: => List[a]): List[a] = xs match {
         case Nil => ys
         case x :: xs => x :: op_:::(xs.!)(ys)
     }
+
+    def op_!:::[a](xs: List[a])(ys: List[a]): List[a] = op_:::(xs)(ys)
 
     def head[a](xs: List[a]): a = xs match {
         case Nil => error("empty List")
@@ -175,7 +178,7 @@ object List extends Alternative[List] with MonadPlus[List] {
 
     def intersperse[a](sep: a)(xs: List[a]): List[a] = xs match {
         case Nil => Nil
-        case x !:: Nil => x :: Nil
+        case x !:: Nil => List(x)
         case x :: xs => x :: sep :: intersperse(sep)(xs.!)
     }
 
@@ -281,7 +284,7 @@ object List extends Alternative[List] with MonadPlus[List] {
     }
 
     def scanr[a, b](f: a => (=> b) => b)(q0: b)(xs: List[a]): List[b] = xs match {
-        case Nil => q0 :: Nil
+        case Nil => List(q0)
         case x :: xs => {
             lazy val qs = scanr(f)(q0)(xs.!)
             f(x)(head(qs)) :: qs
@@ -290,7 +293,7 @@ object List extends Alternative[List] with MonadPlus[List] {
 
     def scanr1[a](f: a => (=> a) => a)(xs: List[a]): List[a] = xs match {
         case Nil => Nil
-        case x !:: Nil => x :: Nil
+        case x !:: Nil => List(x)
         case x :: xs => {
             lazy val qs = scanr1(f)(xs.!)
             f(x)(head(qs)) :: qs
@@ -372,18 +375,28 @@ object List extends Alternative[List] with MonadPlus[List] {
 
     def group[a](xs: List[a]): List[List[a]] = groupBy(Eq.op_==[a])(xs)
 
-    def groupBy[a](eq: a => a => Boolean)(xs: List[a]): List[List[a]] = xs match {
-        case Nil => Nil
-        case x :: xs => {
-            val (ys, zs) = span(eq(x))(xs.!)
-            (x :: ys) :: groupBy(eq)(zs)
-        }
+    def inits[a](xs: List[a]): List[List[a]] = xs match {
+        case Nil => List(Nil)
+        case x :: xs => List(Nil) ::: map(op_!::(x))(inits(xs.!))
+    }
+
+    def tails[a](xxs: List[a]): List[List[a]] = xxs match {
+        case Nil => List(Nil)
+        case _ :: xs => xxs :: tails(xs.!)
     }
 
 // Predicates
+    def isPrefixOf[a](xs: List[a])(ys: List[a]): Boolean = (xs, ys) match {
+        case (Nil, _) => true
+        case (_, Nil) => false
+        case (x :: xs, y :: ys) => (x == y) && isPrefixOf(xs.!)(ys.!)
+    }
+
+    def isSuffixOf[a](x: List[a])(y: List[a]): Boolean = isPrefixOf(reverse(x))(reverse(y))
+
+    def isInfixOf[a](needle: List[a])(haystack: List[a]): Boolean = any(isPrefixOf(needle))(tails(haystack))
 
 // Searching by equality
-
     def elem[a](x: a)(xs: List[a]): Boolean = any[a](x == _)(xs)
 
     def notElem[a](x: a)(xs: List[a]): Boolean = all[a](x != _)(xs)
@@ -430,19 +443,99 @@ object List extends Alternative[List] with MonadPlus[List] {
     }
 
 // Functions on strings
+    def stringize(cs: List[Char]): String = foldl[StringBuilder, Char](sb => c => { sb += c; sb })(new StringBuilder)(cs).toString
+
+    def lines(s: List[Char]): List[List[Char]] = map(fromString)(from(stringize(s).split("\\r?\\n")))
+
+    def unlines(ls: List[List[Char]]): List[Char] = concatMap(op_!:::("\n"))(ls)
+
+    def words(s: List[Char]): List[List[Char]] = map(fromString)(from(stringize(s).split("\\W+")))
+
+    def unwords(ws: List[List[Char]]): List[Char] = ws match {
+        case Nil => ""
+        case w !:: Nil => w
+        case w :: ws => w ::: (' ' :: unwords(ws.!))
+    }
 
 // Set operations
+    def nub[a](xs: List[a]): List[a] = nubBy(Eq.op_==[a])(xs)
+
     def delete[a](x: a)(xs: List[a]) = deleteBy(Eq.op_==[a])(x)(xs)
+
+    def op_\\[a](xs: List[a])(ys: List[a]): List[a] = foldl(flip(delete[a]))(xs)(ys)
+
+    def union[a](xs: List[a])(ys: List[a]): List[a] = unionBy(Eq.op_==[a])(xs)(ys)
+
+    def intersect[a](xs: List[a])(ys: List[a]): List[a] = intersectBy(Eq.op_==[a])(xs)(ys)
+
+// Ordered lists
+    def sort[a](xs: List[a])(implicit i: Ord[a]): List[a] = sortBy(i.compare)(xs)
+
+    def insert[a](e: a)(ls: List[a])(implicit i: Ord[a]): List[a] = insertBy(i.compare)(e)(ls)
+
+// User-supplied equality
+    def nubBy[a](eq: a => a => Boolean)(xs: List[a]): List[a] = xs match {
+        case Nil => Nil
+        case x :: xs => x :: nubBy(eq)(filter[a](y => not(eq(x)(y)))(xs.!))
+    }
 
     def deleteBy[a](eq: a => a => Boolean)(x: a)(xs: List[a]): List[a] = xs match {
         case Nil => Nil
         case y :: ys => if (x == y) ys.! else (y :: deleteBy(eq)(x)(ys.!))
     }
 
-    def op_\\[a](xs: List[a])(ys: List[a]): List[a] = foldl(flip(delete[a]))(xs)(ys)
+    def deleteFirstBy[a](eq: a => a => Boolean)(xs: List[a])(ys: List[a]): List[a] = {
+        foldl(flip(deleteBy(eq)))(xs)(ys)
+    }
 
-// Ordered lists
-    def sort[a](xs: List[a])(implicit i: scala.Ordering[a]): List[a] = from(xs.toScalaList.sortWith(i.lt))
+    def unionBy[a](eq: a => a => Boolean)(xs: List[a])(ys: List[a]): List[a] = {
+        xs ::: foldl(flip(deleteBy(eq)))(nubBy(eq)(ys))(xs)
+    }
+
+    def intersectBy[a](eq: a => a => Boolean)(xs: List[a])(ys: List[a]): List[a] = {
+        for { x <- xs if any(eq(x))(ys) } yield x
+    }
+
+    def groupBy[a](eq: a => a => Boolean)(xs: List[a]): List[List[a]] = xs match {
+        case Nil => Nil
+        case x :: xs => {
+            val (ys, zs) = span(eq(x))(xs.!)
+            (x :: ys) :: groupBy(eq)(zs)
+        }
+    }
+
+// User-supplied comparison
+    def sortBy[a](cmp: a => a => Ordering)(xs: List[a]): List[a] = foldr[a, List[a]](x => ys => insertBy(cmp)(x)(ys))(Nil)(xs)
+
+    def insertBy[a](cmp: a => a => Ordering)(x: a)(ys: List[a]): List[a] = ys match {
+        case Nil => List(x)
+        case y :: ys_ => cmp(x)(y) match {
+            case GT => y :: insertBy(cmp)(x)(ys_.!)
+            case _ => x :: ys
+        }
+    }
+
+    def maximumBy[a](cmp: a => a => Ordering)(xs: List[a]): a = xs match {
+        case Nil => error("empty List")
+        case xs => {
+            def maxBy(x: a)(y: a): a = cmp(x)(y) match {
+                case GT => x
+                case _ => y
+            }
+            foldl1(maxBy)(xs)
+        }
+    }
+
+    def minimumBy[a](cmp: a => a => Ordering)(xs: List[a]): a = xs match {
+        case Nil => error("empty List")
+        case xs => {
+            def minBy(x: a)(y: a): a = cmp(x)(y) match {
+                case GT => y
+                case _ => x
+            }
+            foldl1(minBy)(xs)
+        }
+    }
 
 // The generic operations
 }

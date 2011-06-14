@@ -52,4 +52,16 @@ class ListTest extends org.scalatest.junit.JUnit3Suite {
         val as = List(from("abc"),from("bac"),from("cba"),from("bca"),from("cab"),from("acb"))
         expect(as)(List.permutations(xs))
     }
+
+    def testLines {
+        val xs = List.from("ABC\nDE\nFGHI\n")
+        val as = List("ABC","DE","FGHI")
+        expect(as)(List.map(List.stringize)(List.lines(xs)))
+    }
+
+    def testWords {
+        val xs = List.from("ABC DE \n  FGHI   \n   ")
+        val as = List("ABC","DE","FGHI")
+        expect(as)(List.map(List.stringize)(List.words(xs)))
+    }
 }

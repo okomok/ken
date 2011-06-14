@@ -51,7 +51,7 @@ object Maybe extends Alternative[Maybe] with MonadPlus[Maybe] {
 
     def maybeToList[a](m: Maybe[a]): List[a] = m match {
         case Nothing => Nil
-        case Just(x) => x :: Nil
+        case Just(x) => List(x)
     }
 
     def listToMaybe[a](xs: List[a]): Maybe[a] = xs match {
