@@ -164,14 +164,14 @@ package object ken {
 
     def concatMap[a, b](f: a => List[b])(xs: List[a]): List[b] = foldr[a, List[b]](x => y => f(x) ::: y)(Nil)(xs)
 
-    def maximum[a](xs: List[a])(implicit i: Ordering[a]): a = xs match {
+    def maximum[a](xs: List[a])(implicit i: Ord[a]): a = xs match {
         case Nil => error("empty List")
-        case xs => foldl1(curry(i.max))(xs)
+        case xs => foldl1(i.max)(xs)
     }
 
-    def minimum[a](xs: List[a])(implicit i: Ordering[a]): a = xs match {
+    def minimum[a](xs: List[a])(implicit i: Ord[a]): a = xs match {
         case Nil => error("empty List")
-        case xs => foldl1(curry(i.min))(xs)
+        case xs => foldl1(i.min)(xs)
     }
 
 // Building lists

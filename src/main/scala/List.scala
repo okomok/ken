@@ -89,6 +89,19 @@ object List extends Alternative[List] with MonadPlus[List] {
         override def mappend(x: m)(y: => m): m = x ::: y
     }
 
+    implicit def ordInstance[a](implicit i: Ord[a]): Ord[List[a]] = new Ord[List[a]] {
+        @tailrec
+        override def compare(x: List[a])(y: List[a]): Ordering = (x, y) match {
+            case (Nil, Nil) => EQ
+            case (Nil, _ :: _) => LT
+            case (_ :: _, Nil) => GT
+            case (x :: xs, y :: ys) => i.compare(x)(y) match {
+                case EQ => compare(xs.!)(ys.!)
+                case other => other
+            }
+        }
+    }
+
     def from[a](that: List[a]): List[a] = that
 
     def apply[a](xs: a*): List[a] = from(xs)
@@ -106,7 +119,7 @@ object List extends Alternative[List] with MonadPlus[List] {
 
     def op_\\[a](xs: List[a])(ys: List[a]): List[a] = foldl(flip(delete[a]))(xs)(ys)
 
-    def sort[a](xs: List[a])(implicit i: Ordering[a]): List[a] = from(xs.toScalaList.sortWith(i.lt))
+    def sort[a](xs: List[a])(implicit i: scala.Ordering[a]): List[a] = from(xs.toScalaList.sortWith(i.lt))
 }
 
 
