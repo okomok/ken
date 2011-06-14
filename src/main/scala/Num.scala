@@ -9,14 +9,15 @@ package ken
 
 
 trait Num[a] {
-    def op_+ : a => a => a
-    def op_- : a => a => a = { x => y => op_+(x)(negate(y)) }
-    def op_* : a => a => a
-    def negate: a => a = { x => op_-(fromInteger(0))(x) }
-    def abs: a => a
-    def signum: a => a
-    def fromInteger: Int => a
+    def op_+(x: a)(y: a): a
+    def op_-(x: a)(y: a): a = op_+(x)(negate(y))
+    def op_*(x: a)(y: a): a
+    def negate(x: a): a = op_-(fromInteger(0))(x)
+    def abs(x: a): a
+    def signum(x: a): a
+    def fromInteger(n: Int): a
 }
+
 
 object Num {
     def op_+[a](x: a)(y: a)(implicit i: Num[a]): a = i.op_+(x)(y)
@@ -44,12 +45,12 @@ object Num {
     implicit def *[a](x: a)(implicit i: Num[a]): Op_*[a] = new Op_*[a](x)
 
     implicit def instanceOfNumeric[a](implicit i: Numeric[a]): Num[a] = new Num[a] {
-        override def op_+ : a => a => a = { x => y => i.plus(x, y) }
-        override def op_- : a => a => a = { x => y => i.minus(x, y) }
-        override def op_* : a => a => a = { x => y => i.times(x, y) }
-        override def negate: a => a = i.negate
-        override def abs: a => a = i.abs
-        override def signum: a => a = { x => fromInteger(i.signum(x)) }
-        override def fromInteger: Int => a = i.fromInt
+        override def op_+(x: a)(y: a): a = i.plus(x, y)
+        override def op_-(x: a)(y: a): a = i.minus(x, y)
+        override def op_*(x: a)(y: a): a = i.times(x, y)
+        override def negate(x: a): a = i.negate(x)
+        override def abs(x: a): a = i.abs(x)
+        override def signum(x: a): a = fromInteger(i.signum(x))
+        override def fromInteger(n: Int): a = i.fromInt(n)
     }
 }

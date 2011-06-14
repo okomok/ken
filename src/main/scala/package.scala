@@ -156,9 +156,9 @@ package object ken {
 
     def all[a](p: a => Boolean)(xs: List[a]): Boolean = and(map(p)(xs))
 
-    def sum[a](xs: List[a])(implicit i: Numeric[a]): a = foldl(curry(i.plus))(i.zero)(xs)
+    def sum[a](xs: List[a])(implicit i: Num[a]): a = foldl(i.op_+)(i.fromInteger(0))(xs)
 
-    def product[a](xs: List[a])(implicit i: Numeric[a]): a = foldl(curry(i.times))(i.one)(xs)
+    def product[a](xs: List[a])(implicit i: Num[a]): a = foldl(i.op_*)(i.fromInteger(1))(xs)
 
     def concat[a](xs: List[List[a]]): List[a] = foldr(op_++[a])(Nil)(xs)
 
