@@ -505,7 +505,10 @@ object List extends Alternative[List] with MonadPlus[List] {
     }
 
 // User-supplied comparison
-    def sortBy[a](cmp: a => a => Ordering)(xs: List[a]): List[a] = foldr[a, List[a]](x => ys => insertBy(cmp)(x)(ys))(Nil)(xs)
+    def sortBy[a](cmp: a => a => Ordering)(xs: List[a]): List[a] = {
+        import ByName._
+        foldr(insertBy(cmp))(Nil)(xs)
+    }
 
     def insertBy[a](cmp: a => a => Ordering)(x: a)(ys: List[a]): List[a] = ys match {
         case Nil => List(x)
