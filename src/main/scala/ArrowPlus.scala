@@ -8,9 +8,6 @@ package com.github.okomok
 package ken
 
 
-trait Functor[f[_]] {
-    def fmap[a, b](x: a => b)(y: f[a]): f[b]
+trait ArrowPlus[a[_, _]] extends ArrowZero[a] {
+    def op_<+>[b, c](f: a[b, c])(g: => a[b, c]): a[b, c]
 }
-
-
-object Functor extends ApplicativeInstance

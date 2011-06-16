@@ -9,8 +9,8 @@ package ken
 
 
 trait Monad[m[_]] extends Applicative[m] {
-    import Monad.{>>=, `for`}
     private[this] implicit val i = this
+    import Monad.{>>=, `for`}
 
     def `return`[a](x: => a): m[a]
     def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b]
@@ -72,16 +72,16 @@ object Monad {
     def forM[m[_], a, b](xs: List[a])(f: a => m[b])(implicit i: Monad[m]): m[List[b]] = mapM(f)(xs)
     def forM_[m[_], a, b](xs: List[a])(f: a => m[b])(implicit i: Monad[m]): m[Unit] = mapM_(f)(xs)
 
-    def op_>=>[m[_], a, b, c](f: a => m[b])(g: b => m[c])(x: a)(implicit i: Monad[m]): m[c] = f(x) >>= g
-    def op_<=<[m[_], a, b, c](g: b => m[c])(f: a => m[b])(x: a)(implicit i: Monad[m]): m[c] = op_>=>(f)(g)(x)
+    def op_>=>[m[_], a, b, c](f: a => m[b])(g: b => m[c])(implicit i: Monad[m]): a => m[c] = { x => f(x) >>= g }
+    def op_<=<[m[_], a, b, c](g: b => m[c])(f: a => m[b])(implicit i: Monad[m]): a => m[c] = op_>=>(f)(g)
 
     private[ken] class Op_>=>[m[_], a, b](f: a => m[b])(implicit i: Monad[m]) {
-        def >=>[c](g: b => m[c])(x: a): m[c] = op_>=>(f)(g)(x)
+        def >=>[c](g: b => m[c]): a => m[c] = op_>=>(f)(g)
     }
     implicit def >=>[m[_], a, b](f: a => m[b])(implicit i: Monad[m]): Op_>=>[m, a, b] = new Op_>=>[m, a, b](f)
 
     private[ken] class Op_<=<[m[_], b, c](g: b => m[c])(implicit i: Monad[m]) {
-        def <=<[a](f: a => m[b])(x: a): m[c] = op_<=<(g)(f)(x)
+        def <=<[a](f: a => m[b]): a => m[c] = op_<=<(g)(f)
     }
     implicit def <=<[m[_], b, c](g: b => m[c])(implicit i: Monad[m]): Op_<=<[m, b, c] = new Op_<=<[m, b, c](g)
 

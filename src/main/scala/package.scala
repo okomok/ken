@@ -41,7 +41,7 @@ package object ken {
 
     def const[a](x: a): Any => a = { _ => x }
 
-    def compose[a, b, c](f: b => c)(g: a => b): a => c = { x => f(g(x)) }
+    def op_compose[a, b, c](f: b => c)(g: a => b): a => c = { x => f(g(x)) }
 
     def flip[a, b, c](f: a => b => c): b => a => c = { x => y => f(y)(x) }
 
