@@ -9,6 +9,7 @@ package ken
 
 
 import scala.annotation.tailrec
+import Monad.`for`
 
 
 sealed abstract class List[+a] {
@@ -183,8 +184,6 @@ object List extends Alternative[List] with MonadPlus[List] {
     }
 
     def intercalate[a](xs: List[a])(xss: List[List[a]]): List[a] = concat(intersperse(xs)(xss))
-
-    import Monad.`for`
 
     def transpose[a](xss: List[List[a]]): List[List[a]] = xss match {
         case Nil => Nil
@@ -458,6 +457,14 @@ object List extends Alternative[List] with MonadPlus[List] {
         case (x :: _, 0) => x
         case (_ :: xs, n) => xs.! !! (n-1)
     }
+
+    def elemIndex[a](x: a)(xs: List[a]): Maybe[Int] = findIndex(Eq.op_==(x))(xs)
+
+    def elemIndices[a](x: a)(xs: List[a]): List[Int] = findIndices(Eq.op_==(x))(xs)
+
+    def findIndex[a](p: a => Boolean)(xs: List[a]): Maybe[Int] = Maybe.listToMaybe(findIndices(p)(xs))
+
+    def findIndices[a](p: a => Boolean)(xs: List[a]): List[Int] = for { (x, i) <- zip(xs)(iterate[Int](_ + 1)(0)) if p(x) } yield i
 
 // Zipping and unzipping lists
     def zip[a, b](xs: List[a])(ys: List[b]): List[(a, b)] = (xs, ys) match {
