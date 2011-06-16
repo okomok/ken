@@ -301,6 +301,23 @@ object List extends Alternative[List] with MonadPlus[List] {
     }
 
 // Accumulating maps
+    def mapAccumL[acc, x, y](f: acc => x => (acc, y))(s: acc)(xs: List[x]): (acc, List[y]) = xs match {
+        case Nil => (s, Nil)
+        case x :: xs => {
+            val (s_, y) = f(s)(x)
+            val (s__, ys) = mapAccumL(f)(s_)(xs.!)
+            (s__, y :: ys)
+        }
+    }
+
+    def mapAccumR[acc, x, y](f: (=> acc) => x => (acc, y))(s: acc)(xs: List[x]): (acc, List[y]) = xs match {
+        case Nil => (s, Nil)
+        case x :: xs => {
+            lazy val s_ys = mapAccumR(f)(s)(xs.!)
+            val (s__, y) = f(s_ys._1)(x)
+            (s__, y :: s_ys._2)
+        }
+    }
 
 // Infinite lists
     def iterate[a](f: a => a)(x: a): List[a] = x :: iterate(f)(f(x))
@@ -408,6 +425,8 @@ object List extends Alternative[List] with MonadPlus[List] {
     }
 
 // Searching with a predicate
+    def find[a](p: a => Boolean)(xs: List[a]): Maybe[a] = Maybe.listToMaybe(filter(p)(xs))
+
     def filter[a](pred: a => Boolean)(xs: List[a]): List[a] = xs match {
         case Nil => Nil
         case x :: xs => {
@@ -416,6 +435,19 @@ object List extends Alternative[List] with MonadPlus[List] {
             } else {
                 filter(pred)(xs.!)
             }
+        }
+    }
+
+    def partition[a](p: a => Boolean)(xs: List[a]): (List[a], List[a]) = {
+        import ByName._
+        foldr(select(p))((Nil, Nil))(xs)
+    }
+
+    def select[a](p: a => Boolean)(x: a)(tfs: (List[a], List[a])): (List[a], List[a]) = {
+        if (p(x)) {
+            (x :: tfs._1, tfs._2)
+        } else {
+            (tfs._1, x :: tfs._2)
         }
     }
 
