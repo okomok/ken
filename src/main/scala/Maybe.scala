@@ -21,9 +21,7 @@ object Nothing extends Maybe[scala.Nothing]
 case class Just[+a](x: a) extends Maybe[a]
 
 
-object Maybe extends Alternative[Maybe] with MonadPlus[Maybe] {
-    implicit val theInstance = this
-
+object Maybe {
     def maybe[a, b](n: b)(f: a => b)(m: Maybe[a]): b = m match {
         case Nothing => n
         case Just(x) => f(x)
@@ -74,25 +72,27 @@ object Maybe extends Alternative[Maybe] with MonadPlus[Maybe] {
         }
     }
 
-    private[this] type m[a] = Maybe[a]
-    // Alternative
-    override def empty[a]: m[a] = Nothing
-    override def op_<|>[a](x: m[a])(y: => m[a]): m[a] = (x, y) match {
-        case (Nothing, p) => p
-        case (Just(p), _) => Just(p)
-    }
-    // Monad
-    override def `return`[a](x: => a): m[a] = Just(x)
-    override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = x match {
-        case Just(x) => y(x)
-        case Nothing => Nothing
-    }
-    // MonadPlus
-    override def mzero[a]: m[a] = Nothing
-    override def mplus[a](x: m[a])(y: => m[a]): m[a] = (x, y) match {
-        case (Nothing, Nothing) => Nothing
-        case (Just(p), Nothing) => Just(p)
-        case (Nothing, Just(p)) => Just(p)
-        case (Just(p), Just(q)) => Just(p)
+    implicit object theInstance extends Alternative[Maybe] with MonadPlus[Maybe] {
+        private[this] type m[a] = Maybe[a]
+        // Alternative
+        override def empty[a]: m[a] = Nothing
+        override def op_<|>[a](x: m[a])(y: => m[a]): m[a] = (x, y) match {
+            case (Nothing, p) => p
+            case (Just(p), _) => Just(p)
+        }
+        // Monad
+        override def `return`[a](x: => a): m[a] = Just(x)
+        override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = x match {
+            case Just(x) => y(x)
+            case Nothing => Nothing
+        }
+        // MonadPlus
+        override def mzero[a]: m[a] = Nothing
+        override def mplus[a](x: m[a])(y: => m[a]): m[a] = (x, y) match {
+            case (Nothing, Nothing) => Nothing
+            case (Just(p), Nothing) => Just(p)
+            case (Nothing, Just(p)) => Just(p)
+            case (Just(p), Just(q)) => Just(p)
+        }
     }
 }

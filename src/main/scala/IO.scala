@@ -12,16 +12,15 @@ trait IO[+a] {
     def unIO(): a
 }
 
-object IO extends Monad[IO] {
-    implicit val theInstance = this
-
-    private[this] type m[a] = IO[a]
-    override def `return`[a](x: => a): m[a] = new IO[a] {
-        override def unIO(): a = x
+object IO {
+    implicit object theInstance extends Monad[IO] {
+        private[this] type m[a] = IO[a]
+        override def `return`[a](x: => a): m[a] = new IO[a] {
+            override def unIO(): a = x
+        }
+        override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = y(x.unIO())
     }
-    override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = y(x.unIO())
 
-// Basic I/O operations
     def putChar(x: Char): IO[Unit] = print(x)
 
     def putStr(x: String): IO[Unit] = print(x)
