@@ -64,4 +64,8 @@ class ListTest extends org.scalatest.junit.JUnit3Suite {
         val as = List("ABC","DE","FGHI")
         expect(as)(List.map(List.stringize)(List.words(xs)))
     }
+
+    def teztRepeat2 {
+        expect(42)(List.repeat(42) !! (1000000*100))
+    }
 }

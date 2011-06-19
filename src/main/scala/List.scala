@@ -321,7 +321,9 @@ object List {
     def iterate[a](f: a => a)(x: a): List[a] = x :: iterate(f)(f(x))
 
     def repeat[a](x: a): List[a] = {
-        def xs: List[a] = x :: xs
+        // `lazy val` works around "forward reference extends over definition of value xs".
+        // Notice `def xs` falls into space-leak.
+        lazy val xs: List[a] = x :: xs
         xs
     }
 
@@ -330,7 +332,7 @@ object List {
     def cycle[a](xs: List[a]): List[a] = xs match {
         case Nil => error("empty List")
         case xs => {
-            def xs_ : List[a] = xs ::: xs_
+            lazy val xs_ : List[a] = xs ::: xs_
             xs_
         }
     }
@@ -450,11 +452,12 @@ object List {
     }
 
 // Indexing lists
+    @tailrec
     def op_!![a](xs: List[a])(n: Int): a = (xs, n) match {
         case (_, n) if n < 0 => error("negative index")
         case (Nil, _) => error("index too large")
         case (x :: _, 0) => x
-        case (_ :: xs, n) => xs.! !! (n-1)
+        case (_ :: xs, n) => op_!!(xs.!)(n-1)
     }
 
     def elemIndex[a](x: a)(xs: List[a]): Maybe[Int] = findIndex(Eq.op_==(x))(xs)
