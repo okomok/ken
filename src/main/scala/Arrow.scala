@@ -8,12 +8,9 @@ package com.github.okomok
 package ken
 
 
-import Category.{<<<, >>>}
-
-
 trait Arrow[a[_, _]] extends Category[a] {
     private[this] implicit val i = this
-    import Arrow.***
+    import Arrow.{<<<,>>>,***}
 
     def arr[b, c](f: b => c): a[b, c]
     def first[b, c, d](f: a[b, c]): a[(b, d), (c, d)]
@@ -29,7 +26,47 @@ trait Arrow[a[_, _]] extends Category[a] {
 }
 
 
-object Arrow {
+trait ArrowZero[a[_, _]] extends Arrow[a] {
+    def zeroArrow[b, c]: a[b, c]
+}
+
+
+trait ArrowPlus[a[_, _]] extends ArrowZero[a] {
+    def op_<+>[b, c](f: a[b, c])(g: => a[b, c]): a[b, c]
+}
+
+
+trait ArrowChoice[a[_, _]] extends Arrow[a] {
+    private[this] implicit val i = this
+    import Arrow.{>>>, +++}
+
+    def left[b, c, d](f: a[b, c]): a[Either[b, d], Either[c, d]]
+
+    def right[b, c, d](f: a[b, c]): a[Either[d, b], Either[d, c]] = {
+        def mirror[x, y](v: Either[x, y]): Either[y, x] = v match {
+            case Left(x) => Right(x)
+            case Right(y) => Left(y)
+        }
+        arr[Either[d, b], Either[b, d]](mirror) >>> left(f) >>> arr(mirror)
+    }
+
+    def op_+++[b, c, b_, c_](f: a[b, c])(g: a[b_, c_]): a[Either[b, b_], Either[c, c_]] = {
+        left(f) >>> right(g)
+    }
+
+    def op_|||[b, c, d](f: a[b, d])(g: a[c, d]): a[Either[b, c], d] = {
+        def utag[x](v: Either[x, x]): x = v match {
+            case Left(x) => x
+            case Right(y) => y
+        }
+        f +++ g >>> arr(utag)
+    }
+}
+
+
+object Arrow extends CategoryOp {
+
+// Arrow
     def arr[a[_, _], b, c](f: b => c)(implicit i: Arrow[a]): a[b, c] = i.arr(f)
     def first[a[_, _], b, c, d](f: a[b, c])(implicit i: Arrow[a]): a[(b, d), (c, d)] = i.first(f)
     def second[a[_, _], b, c, d](f: a[b, c])(implicit i: Arrow[a]): a[(d, b), (d, c)] = i.second(f)
@@ -82,4 +119,31 @@ object Arrow {
         override def op_***[b, c, b_, c_](f: a[b, c])(g: a[b_, c_]): a[(b, b_), (c, c_)] = { case (x, y) => (f(x), g(y)) }
     }
     /*implicit*/ val instanceOfFunction1 = new InstanceOfFunction1
+
+// ArrowZero
+    def zeroArrow[a[_, _], b, c](implicit i: ArrowZero[a]): a[b, c] = i.zeroArrow
+
+// ArrowPlus
+    def op_<+>[a[_, _], b, c](f: a[b, c])(g: => a[b, c])(implicit i: ArrowPlus[a]): a[b, c] = i.op_<+>(f)(g)
+
+    private[ken] class Op_<+>[a[_, _], b, c](f: a[b, c])(implicit i: ArrowPlus[a]) {
+        def <+>(g: => a[b, c]): a[b, c] = op_<+>(f)(g)
+    }
+    implicit def <+>[a[_, _], b, c](f: a[b, c])(implicit i: ArrowPlus[a]): Op_<+>[a, b, c] = new Op_<+>[a, b, c](f)
+
+// ArrowChoice
+    def left[a[_, _], b, c, d](f: a[b, c])(implicit i: ArrowChoice[a]): a[Either[b, d], Either[c, d]] = i.left(f)
+    def right[a[_, _], b, c, d](f: a[b, c])(implicit i: ArrowChoice[a]): a[Either[d, b], Either[d, c]] = i.right(f)
+    def op_+++[a[_, _], b, c, b_, c_](f: a[b, c])(g: a[b_, c_])(implicit i: ArrowChoice[a]): a[Either[b, b_], Either[c, c_]] = i.op_+++(f)(g)
+    def op_|||[a[_, _], b, c, d](f: a[b, d])(g: a[c, d])(implicit i: ArrowChoice[a]): a[Either[b, c], d] = i.op_|||(f)(g)
+
+    private[ken] class Op_+++[a[_, _], b, c](f: a[b, c])(implicit i: ArrowChoice[a]) {
+        def +++[b_, c_](g: a[b_, c_]): a[Either[b, b_], Either[c, c_]] = op_+++(f)(g)
+    }
+    implicit def +++[a[_, _], b, c](f: a[b, c])(implicit i: ArrowChoice[a]): Op_+++[a, b, c] = new Op_+++[a, b, c](f)
+
+    private[ken] class Op_|||[a[_, _], b, d](f: a[b, d])(implicit i: ArrowChoice[a]) {
+        def |||[c](g: a[c, d]): a[Either[b, c], d] = op_|||(f)(g)
+    }
+    implicit def |||[a[_, _], b, d](f: a[b, d])(implicit i: ArrowChoice[a]): Op_|||[a, b, d] = new Op_|||[a, b, d](f)
 }

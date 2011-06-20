@@ -13,9 +13,10 @@ trait Typeable[a] {
 }
 
 object Typeable {
-    implicit def instanceOfAny[a](implicit ac: ClassManifest[a]): Typeable[a] = new Typeable[a] {
+    class Instance[a](implicit ac: ClassManifest[a]) extends Typeable[a] {
         override def typeOf(x: => a): ClassManifest[a] = ac
     }
+    implicit def instance[a](implicit ac: ClassManifest[a]): Typeable[a] = new Instance[a]
 
     // For some reason, result type-ascription doesn't work.
     def cast[a, b](x: => a, y: Type[b])(implicit ac: Typeable[a], bc: Typeable[b]): Maybe[b] = {

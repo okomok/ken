@@ -419,9 +419,9 @@ object List {
     def notElem[a](x: a)(xs: List[a]): Boolean = all[a](x != _)(xs)
 
     @tailrec
-    def lookup[a, b](key: a)(xs: List[(a, b)]): Option[b] = xs match {
-        case Nil => None
-        case (x, y) :: xys => if (key == x) Some(y) else lookup(key)(xys.!)
+    def lookup[a, b](key: a)(xs: List[(a, b)]): Maybe[b] = xs match {
+        case Nil => Nothing
+        case (x, y) :: xys => if (key == x) Just(y) else lookup(key)(xys.!)
     }
 
 // Searching with a predicate
