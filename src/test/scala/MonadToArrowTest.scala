@@ -18,38 +18,53 @@ class MonadToArrowTest extends org.scalatest.junit.JUnit3Suite {
         (f &&& g) >>> arr{case (b, c) => op(b)(c)}
     }
 
-    sealed abstract class Exp
+    /*sealed*/ abstract class Exp
     case class Var(x: String) extends Exp
     case class Add(l: Exp, r: Exp) extends Exp
+    case class If(b: Exp, t: Exp, e: Exp) extends Exp
 
-    sealed abstract class Val
+    /*sealed*/ abstract class Val
     case class Num(x: Int) extends Val
+    case class Bl(b: Boolean) extends Val
 
     type Env = List[(String, Val)]
-
     def lookup[a, b](key: a)(xs: List[(a, b)]): b = Maybe.fromJust(List.lookup(key)(xs))
 
     def add(v1: Val)(v2: Val): Val = (v1, v2) match {
         case (Num(u), Num(v)) => Num(u+v)
     }
 
-    def evalM[m[_]](exp: Exp)(env: Env)(implicit i: Monad[m]): m[Val] = exp match {
-        case Var(s) => Monad.`return`(lookup(s)(env))
-        case Add(e1, e2) => Monad.liftM2(add)(evalM(e1)(env))(evalM(e2)(env))
+    object Monadic {
+        import Monad._
+        def eval[m[_]](exp: Exp)(env: Env)(implicit i: Monad[m]): m[Val] = exp match {
+            case Var(s) => `return`(lookup(s)(env))
+            case Add(e1, e2) => liftM2(add)(eval(e1)(env))(eval(e2)(env))
+            case If(e1, e2, e3) => eval(e1)(env) >>= { case Bl(b) =>
+                if (b) eval(e2)(env) else eval(e3)(env)
+            }
+        }
     }
 
     val theEnv = List(("x", Num(1)), ("y", Num(2)), ("z", Num(3)))
 
-    def test_evalM {
-        val Num(x) !:: Nil = evalM[List](Add(Add(Var("x"), Var("y")), Var("z")))(theEnv)
+    def testMonadic {
+        val Num(x) !:: Nil = Monadic.eval[List](Add(Add(Var("x"), Var("y")), Var("z")))(theEnv)
         expect(6)(x)
 
-        val Just(Num(y)) = evalM[Maybe](Add(Add(Var("x"), Var("y")), Var("z")))(theEnv)
+        val Just(Num(y)) = Monadic.eval[Maybe](Add(Add(Var("x"), Var("y")), Var("z")))(theEnv)
         expect(6)(y)
     }
 
-    def eval[a[_, _]](exp: Exp)(implicit i: Arrow[a]): a[Env, Val] = exp match {
-        case Var(s) => Arrow.arr(lookup(s))
-        case Add(e1, e2) => liftA2(add)(eval(e1))(eval(e2))
+    object ArrowWay {
+        import Arrow._
+        def eval[a[_, _]](exp: Exp)(implicit i: ArrowChoice[a]): a[Env, Val] = exp match {
+            case Var(s) => Arrow.arr(lookup(s))
+            case Add(e1, e2) => liftA2(add)(eval(e1))(eval(e2))
+            case If(e1, e2, e3) => {
+                (eval(e1) &&& arr(id[Env])) >>>
+                arr{ case (Bl(b), env) => if (b) Left(env).asEither else Right(env).asEither } >>>
+                (eval(e2) ||| eval(e3))
+            }
+        }
     }
 }

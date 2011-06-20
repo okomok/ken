@@ -40,7 +40,6 @@ trait ArrowPlus[a[_, _]] extends ArrowZero[a] {
 
 trait ArrowChoice[a[_, _]] extends Arrow[a] {
     private[this] implicit val i = this
-    import Arrow.{>>>, +++}
 
     def left[b, c, d](f: a[b, c]): a[Either[b, d], Either[c, d]]
 
@@ -63,6 +62,16 @@ trait ArrowChoice[a[_, _]] extends Arrow[a] {
         }
         f +++ g >>> arr(utag)
     }
+}
+
+
+trait ArrowApply[a[_, _]] extends Arrow[a] {
+    def app[b, c]: a[(a[b, c], b), c]
+}
+
+
+trait ArrowLoop[a[_, _]] extends Arrow[a] {
+    def loop[b, c, d](f: a[(b, d), (c, d)]): a[b, c]
 }
 
 
@@ -110,16 +119,6 @@ object Arrow extends CategoryOp {
     }
     implicit def ^<<[a[_, _], c, d](f: c => d)(implicit i: Arrow[a]): Op_^<<[a, c, d] = new Op_^<<[a, c, d](f)
 
-    class InstanceOfFunction1 extends Category.InstanceOfFunction1 with Arrow[Function1] {
-        private[this] implicit val i = this
-        private[this] type a[a, b] = Function1[a, b]
-        override def arr[b, c](f: b => c): a[b, c] = f
-        override def first[b, c, d](f: a[b, c]): a[(b, d), (c, d)] = f *** ken.id[d]
-        override def second[b, c, d](f: a[b, c]): a[(d, b), (d, c)] = ken.id[d]_ *** f
-        override def op_***[b, c, b_, c_](f: a[b, c])(g: a[b_, c_]): a[(b, b_), (c, c_)] = { case (x, y) => (f(x), g(y)) }
-    }
-    /*implicit*/ val instanceOfFunction1 = new InstanceOfFunction1
-
 // ArrowZero
     def zeroArrow[a[_, _], b, c](implicit i: ArrowZero[a]): a[b, c] = i.zeroArrow
 
@@ -146,4 +145,23 @@ object Arrow extends CategoryOp {
         def |||[c](g: a[c, d]): a[Either[b, c], d] = op_|||(f)(g)
     }
     implicit def |||[a[_, _], b, d](f: a[b, d])(implicit i: ArrowChoice[a]): Op_|||[a, b, d] = new Op_|||[a, b, d](f)
+
+// Instance
+    class InstanceOfFunction1 extends Category.InstanceOfFunction1 with ArrowChoice[Function1] with ArrowApply[Function1] {
+        private[this] implicit val i = this
+        private[this] type a[a, b] = Function1[a, b]
+    // Arrow
+        override def arr[b, c](f: b => c): a[b, c] = f
+        override def first[b, c, d](f: a[b, c]): a[(b, d), (c, d)] = f *** ken.id[d]
+        override def second[b, c, d](f: a[b, c]): a[(d, b), (d, c)] = ken.id[d]_ *** f
+        override def op_***[b, c, b_, c_](f: a[b, c])(g: a[b_, c_]): a[(b, b_), (c, c_)] = { case (x, y) => (f(x), g(y)) }
+    // ArrowChoice
+        override def left[b, c, d](f: a[b, c]): a[Either[b, d], Either[c, d]] = f +++ ken.id[d]
+        override def right[b, c, d](f: a[b, c]): a[Either[d, b], Either[d, c]] = ken.id[d]_ +++ f
+        override def op_+++[b, c, b_, c_](f: a[b, c])(g: a[b_, c_]): a[Either[b, b_], Either[c, c_]] = ((x: b) => Left(f(x)).of[c, c_]) ||| ((x: b_) => Right(g(x)).of[c, c_])
+        override def op_|||[b, c, d](f: a[b, d])(g: a[c, d]): a[Either[b, c], d] = Either.either(f)(g)
+    // ArrowApply
+        override def app[b, c]: a[(a[b, c], b), c] = { case (f, x) => f(x) }
+    }
+    /*implicit*/ val instanceOfFunction1 = new InstanceOfFunction1
 }
