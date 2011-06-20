@@ -8,9 +8,11 @@ package com.github.okomok
 package ken
 
 
+import Monad._
+
+
 trait Monad[m[_]] extends Applicative[m] {
     private[this] implicit val i = this
-    import Monad.{>>=, `for`}
 
     def `return`[a](x: => a): m[a]
     def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b]
@@ -18,6 +20,12 @@ trait Monad[m[_]] extends Applicative[m] {
 
     final override def pure[a](x: => a): m[a] = `return`(x)
     override def op_<*>[a, b](x: m[a => b])(y: m[a]): m[b] = for { _x <- x; _y <- y } yield _x(_y)
+}
+
+
+trait MonadPlus[m[_]] extends Monad[m] {
+    def mzero[a]: m[a]
+    def mplus[a](x: m[a])(y: => m[a]): m[a]
 }
 
 
@@ -118,4 +126,20 @@ object Monad {
     def liftM5[m[_], a1, a2, a3, a4, a5, r](f: a1 => a2 => a3 => a4 => a5 => r)(m1: m[a1])(m2: m[a2])(m3: m[a3])(m4: m[a4])(m5: m[a5])(implicit i: Monad[m]): m[r] = for { x1 <- m1; x2 <- m2; x3 <- m3; x4 <- m4; x5 <- m5 } yield f(x1)(x2)(x3)(x4)(x5)
 
     def ap[m[_], a, b](x: m[a => b])(y: m[a])(implicit i: Monad[m]): m[b] = liftM2(id[a => b])(x)(y) // op_<*>(x)(y)
+
+// MonadPlus
+    def mzero[m[_], a](implicit i: MonadPlus[m]): m[a] = i.mzero
+    def mplus[m[_], a](x: m[a])(y: => m[a])(implicit i: MonadPlus[m]): m[a] = i.mplus(x)(y)
+
+    private[ken] class _Mplus_[m[_], a](x: m[a])(implicit i: MonadPlus[m]) {
+        def _mplus_(y: => m[a]): m[a] = mplus(x)(y)
+    }
+    implicit def _mplus_[m[_], a](x: m[a])(implicit i: MonadPlus[m]): _Mplus_[m, a] = new _Mplus_[m, a](x)
+
+    def guard[m[_], a](b: Boolean)(implicit i: MonadPlus[m]): m[Unit] = b match {
+        case true => i.`return`(())
+        case false => i.mzero
+    }
+
+    def msum[m[_], a](xs: List[m[a]])(implicit i: MonadPlus[m]): m[a] = List.foldr(i.mplus[a])(i.mzero)(xs)
 }

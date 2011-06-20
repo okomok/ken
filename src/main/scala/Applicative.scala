@@ -8,8 +8,10 @@ package com.github.okomok
 package ken
 
 
+import Applicative._
+
+
 trait Applicative[f[_]] extends Functor[f] {
-    import Applicative.{<*>, liftA2}
     private[this] implicit val i = this
 
     def pure[a](x: => a): f[a]
@@ -18,6 +20,28 @@ trait Applicative[f[_]] extends Functor[f] {
     def op_<*[a, b](x: f[a])(y: f[b]): f[a] = liftA2[f, a, b, a](const)(x)(y)
 
     override def fmap[a, b](x: a => b)(y: f[a]): f[b] = pure(x) <*> y
+}
+
+
+trait Alternative[f[_]] extends Applicative[f] {
+    private[this] implicit val i = this
+
+    def empty[a]: f[a]
+    def op_<|>[a](x: f[a])(y: => f[a]): f[a]
+
+    def some[a](v: f[a]): f[List[a]] = {
+        def many_v: f[List[a]] = some_v <|> pure(Nil)
+        def some_v: f[List[a]] = _cons[a] <@> v <*> many_v
+        some_v
+    }
+
+    def many[a](v: f[a]): f[List[a]] = {
+        def many_v: f[List[a]] = some_v <|> pure(Nil)
+        def some_v: f[List[a]] = _cons[a] <@> v <*> many_v
+        many_v
+    }
+
+    private[this] def _cons[a]: a => List[a] => List[a] = x => xs => x :: xs
 }
 
 
@@ -66,6 +90,20 @@ object Applicative extends ApplicativeInstance {
     def liftA[f[_], a, b](x: a => b)(y: f[a])(implicit i: Applicative[f]): f[b] = pure(x)(i) <*> y
     def liftA2[f[_], a, b, c](x: a => b => c)(y: f[a])(z: f[b])(implicit i: Applicative[f]): f[c] = x <@> y <*> z
     def liftA3[f[_], a, b, c, d](x: a => b => c => d)(y: f[a])(z: f[b])(w: f[c])(implicit i: Applicative[f]): f[d] = x <@> y <*> z <*> w
+
+// Alternative
+    def empty[f[_], a](implicit i: Alternative[f]): f[a] = i.empty[a]
+    def op_<|>[f[_], a](x: f[a])(y: => f[a])(implicit i: Alternative[f]): f[a] = i.op_<|>(x)(y)
+
+    def some[f[_], a](v: f[a])(implicit i: Alternative[f]): f[List[a]] = i.some(v)
+    def many[f[_], a](v: f[a])(implicit i: Alternative[f]): f[List[a]] = i.many(v)
+
+    private[ken] class Op_<|>[f[_], a](x: f[a])(implicit i: Alternative[f]) {
+        def <|>(y: => f[a]): f[a] = op_<|>(x)(y)
+    }
+    implicit def <|>[f[_], a](x: f[a])(implicit i: Alternative[f]): Op_<|>[f, a] = new Op_<|>[f, a](x)
+
+    def optional[f[_], a](x: f[a])(implicit i: Alternative[f]): f[Maybe[a]] = (Just(_: a).of[a]) <@> x <|> pure(Nothing.of[a])(i)
 }
 
 

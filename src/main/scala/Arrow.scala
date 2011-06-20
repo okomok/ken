@@ -8,9 +8,11 @@ package com.github.okomok
 package ken
 
 
+import Arrow._
+
+
 trait Arrow[a[_, _]] extends Category[a] {
     private[this] implicit val i = this
-    import Arrow.{<<<,>>>,***}
 
     def arr[b, c](f: b => c): a[b, c]
     def first[b, c, d](f: a[b, c]): a[(b, d), (c, d)]
@@ -65,8 +67,6 @@ trait ArrowChoice[a[_, _]] extends Arrow[a] {
 
 
 object Arrow extends CategoryOp {
-
-// Arrow
     def arr[a[_, _], b, c](f: b => c)(implicit i: Arrow[a]): a[b, c] = i.arr(f)
     def first[a[_, _], b, c, d](f: a[b, c])(implicit i: Arrow[a]): a[(b, d), (c, d)] = i.first(f)
     def second[a[_, _], b, c, d](f: a[b, c])(implicit i: Arrow[a]): a[(d, b), (d, c)] = i.second(f)

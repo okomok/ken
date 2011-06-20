@@ -8,8 +8,7 @@ package com.github.okomok
 package ken
 
 
-import Monad.{`return`, >>=}
-import MonadPlus.{mzero, _mplus_}
+import Monad.{`return`, >>=, mzero, _mplus_}
 
 
 final class Kind1[m[_]] {
