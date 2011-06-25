@@ -30,6 +30,8 @@ trait MonadPlus[m[_]] extends Monad[m] {
 
 
 object Monad {
+    def asMonad[m[_], a](x: m[a])(implicit i: Monad[m]): m[a] = x
+
     def `return`[m[_], a](x: => a)(implicit i: Monad[m]): m[a] = i.pure(x)
     def op_>>=[m[_], a, b](x: m[a])(y: a => m[b])(implicit i: Monad[m]): m[b] = i.op_>>=(x)(y)
     def op_>>[m[_], a, b](x: m[a])(y: => m[b])(implicit i: Monad[m]): m[b] = i.op_>>(x)(y)
