@@ -13,4 +13,12 @@ trait Functor[f[_]] {
 }
 
 
-object Functor extends ApplicativeInstance
+object Functor extends FunctorOp with FunctorInstance
+
+
+trait FunctorOp {
+    def fmap[f[_], a, b](x: a => b)(y: f[a])(implicit i: Functor[f]): f[b] = i.fmap(x)(y)
+}
+
+trait FunctorInstance extends ApplicativeInstance {
+}

@@ -23,15 +23,19 @@ trait Monad[m[_]] extends Applicative[m] {
 }
 
 
-trait MonadPlus[m[_]] extends Monad[m] {
+trait MonadPlus[m[_]] extends Monad[m] with Alternative[m] {
     def mzero[a]: m[a]
     def mplus[a](x: m[a])(y: => m[a]): m[a]
+
+    override def empty[a]: m[a] = mzero
+    override def op_<|>[a](x: m[a])(y: => m[a]): m[a] = mplus(x)(y)
 }
 
 
-object Monad {
-    def asMonad[m[_], a](x: m[a])(implicit i: Monad[m]): m[a] = x
+object Monad extends MonadOp with MonadInstance
 
+
+trait MonadOp extends ApplicativeOp {
     def `return`[m[_], a](x: => a)(implicit i: Monad[m]): m[a] = i.pure(x)
     def op_>>=[m[_], a, b](x: m[a])(y: a => m[b])(implicit i: Monad[m]): m[b] = i.op_>>=(x)(y)
     def op_>>[m[_], a, b](x: m[a])(y: => m[b])(implicit i: Monad[m]): m[b] = i.op_>>(x)(y)
@@ -49,6 +53,7 @@ object Monad {
     private[ken] class For[m[_], a](x: m[a])(implicit i: Monad[m]) {
        def map[b](y: a => b): m[b] = op_>>=(x)(_x => `return`(y(_x)))
        def flatMap[b](y: a => m[b]): m[b] = op_>>=(x)(y)
+       // def foreach(y: a => Unit): m[Unit] = op_>>=(x)(_x => `return`(y(_x)))
     }
     implicit def `for`[m[_], a](x: m[a])(implicit i: Monad[m]): For[m, a] = new For[m, a](x)
 
@@ -144,4 +149,8 @@ object Monad {
     }
 
     def msum[m[_], a](xs: List[m[a]])(implicit i: MonadPlus[m]): m[a] = List.foldr(i.mplus[a])(i.mzero)(xs)
+}
+
+
+trait MonadInstance {
 }

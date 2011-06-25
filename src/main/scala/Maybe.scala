@@ -74,12 +74,6 @@ object Maybe {
 
     implicit object theInstance extends Alternative[Maybe] with MonadPlus[Maybe] {
         private[this] type m[a] = Maybe[a]
-        // Alternative
-        override def empty[a]: m[a] = Nothing
-        override def op_<|>[a](x: m[a])(y: => m[a]): m[a] = (x, y) match {
-            case (Nothing, p) => p
-            case (Just(p), _) => Just(p)
-        }
         // Monad
         override def `return`[a](x: => a): m[a] = Just(x)
         override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = x match {
@@ -89,10 +83,8 @@ object Maybe {
         // MonadPlus
         override def mzero[a]: m[a] = Nothing
         override def mplus[a](x: m[a])(y: => m[a]): m[a] = (x, y) match {
-            case (Nothing, Nothing) => Nothing
-            case (Just(p), Nothing) => Just(p)
-            case (Nothing, Just(p)) => Just(p)
-            case (Just(p), Just(q)) => Just(p)
+            case (Nothing, p) => p
+            case (Just(p), _) => Just(p)
         }
     }
 }

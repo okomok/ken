@@ -83,9 +83,6 @@ object List {
 
     implicit object theInstance extends Alternative[List] with MonadPlus[List] {
         private[this] type m[a] = List[a]
-        // Alternative
-        override def empty[a]: m[a] = Nil
-        override def op_<|>[a](x: m[a])(y: => m[a]): m[a] = x ::: y
         // Monad
         override def `return`[a](x: => a): m[a] = List(x)
         override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = concat(map(y)(x))

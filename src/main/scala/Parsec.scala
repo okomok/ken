@@ -29,29 +29,18 @@ object Parsec {
     def setSourceColumn(pos: SourcePos)(n: Column): SourcePos = pos.copy(column = n)
 
 // Prim
-    type Parser[+a] = GenParser[Char, Unit, a]
+    type ParserT[+a] = GenParser[Char, Unit, a]
 
-    trait GenParser[tok, st, +a] {
-        def parse: State[tok, st] => Consumed[Reply[tok, st, a]]
+    abstract class GenParser[tok, st, +a] {
+        def parse: State[tok, st] => ConsumedT[Reply[tok, st, a]]
     }
+    final case class Parser[tok, st, +a](override val parse: State[tok, st] => ConsumedT[Reply[tok, st, a]]) extends GenParser[tok, st, a]
 
-    trait GenParserProxy[tok, st, +a] extends GenParser[tok, st, a] with Proxy {
-        def self: GenParser[tok, st, a]
-        override val parse: State[tok, st] => Consumed[Reply[tok, st, a]] = self.parse
-    }
+    def runP[tok, st, a](p: GenParser[tok, st, a]): State[tok, st] => ConsumedT[Reply[tok, st, a]] = p.parse
 
-    object Parser {
-        def apply[tok, st, a](p: State[tok, st] => Consumed[Reply[tok, st, a]]): GenParser[tok, st, a] = new GenParser[tok, st, a] {
-            override val parse = p
-        }
-        def unapply[tok, st, a](p: GenParser[tok, st, a]): Option[State[tok, st] => Consumed[Reply[tok, st, a]]] = Some(p.parse)
-    }
-
-    def runP[tok, st, a](p: GenParser[tok, st, a]): State[tok, st] => Consumed[Reply[tok, st, a]] = p.parse
-
-    sealed abstract class Consumed[+a]
-    final case class Consumed_[+a](_1: a) extends Consumed[a]
-    final case class Empty[+a](_2: a) extends Consumed[a]
+    sealed abstract class ConsumedT[+a]
+    final case class Consumed[+a](_1: a) extends ConsumedT[a]
+    final case class Empty[+a](_2: a) extends ConsumedT[a]
 
     sealed abstract class Reply[+tok, +st, +a]
     final case class Ok[+tok, +st, +a](x: a, state: State[tok, st], err: ParseError) extends Reply[tok, st, a]
@@ -63,20 +52,23 @@ object Parsec {
     def statePos[tok, st](state: State[tok, st]): SourcePos = state.pos
     def stateUser[tok, st](state: State[tok,st]): st = state.user
 
-    trait GenParserMonad[tok, st] {
-        final class ParserMonadWrap[a](override val self: GenParser[tok, st, a]) extends GenParserProxy[tok, st, a]
-
-        object ParserMonadWrap {
-            class MonadInstance extends Monad[ParserMonadWrap] {
-                private[this] type m[a] = ParserMonadWrap[a]
-                // Monad
-                override def `return`[a](x: => a): m[a] = from(parsecReturn(x))
-                override def op_>>=[a, b](p: m[a])(f: a => m[b]): m[b] = from(parsecBind(p.self)(x => f(x).self))
-            }
-            implicit def monadInstance: Monad[ParserMonadWrap] = new MonadInstance
+    trait GenParserMonad[tok, st] extends MonadOp {
+        final class GenParser_tok_st[+a](override val self: GenParser[tok, st, a]) extends GenParser[tok, st, a] with Proxy {
+            override val parse = self.parse
         }
 
-        def from[a](from: GenParser[tok, st, a]): ParserMonadWrap[a] = new ParserMonadWrap(from)
+        implicit object MonadInstance extends MonadPlus[GenParser_tok_st] {
+            private[this] type m[a] = GenParser_tok_st[a]
+            // Monad
+            override def `return`[a](x: => a): m[a] = monad(parsecReturn(x))
+            override def op_>>=[a, b](p: m[a])(f: a => m[b]): m[b] = monad(parsecBind(p)(f))
+            // MonadPlus
+            override def mzero[a]: m[a] = monad(parsecZero)
+            override def mplus[a](x: m[a])(y: => m[a]): m[a] = monad(parsecPlus(x)(y))
+        }
+
+        def monad[a](p: GenParser[tok, st, a]): GenParser_tok_st[a] = new GenParser_tok_st(p)
+        def monad[a](ps: List[GenParser[tok, st, a]]): List[GenParser_tok_st[a]] = ps.map(new GenParser_tok_st(_))
     }
 
     def parsecReturn[tok, st, a](x: a): GenParser[tok, st, a] = {
@@ -88,13 +80,13 @@ object Parsec {
     def parsecBind[tok, st, a, b](p: GenParser[tok, st, a])(f: a => GenParser[tok, st, b]): GenParser[tok, st, b] = {
         Parser { (state: State[tok, st]) =>
             runP(p)(state) match {
-                case Consumed_(reply1) => {
-                    Consumed_ {
+                case Consumed(reply1) => {
+                    Consumed {
                         reply1 match {
                             case Ok(x, state1, err1) => {
                                 runP(f(x))(state1) match {
                                     case Empty(reply2) => mergeErrorReply(err1)(reply2)
-                                    case Consumed_(reply2) => reply2
+                                    case Consumed(reply2) => reply2
                                 }
                             }
                             case Error(err1) => Error(err1)
@@ -116,6 +108,26 @@ object Parsec {
         }
     }
 
+    def parsecZero[tok, st, a]: GenParser[tok, st, a] = {
+        Parser { (state: State[tok, st]) =>
+            Empty(Error(unknownError(state)))
+        }
+    }
+
+    def parsecPlus[tok, st, a](p1: GenParser[tok, st, a])(p2: => GenParser[tok, st, a]): GenParser[tok, st, a] = {
+        Parser { (state: State[tok, st]) =>
+            runP(p1)(state) match {
+                case Empty(Error(err)) => {
+                    runP(p2)(state) match {
+                        case Empty(reply) => Empty(mergeErrorReply(err)(reply))
+                        case consumed => consumed
+                    }
+                }
+                case other => other
+            }
+        }
+    }
+
     def mergeErrorReply[tok, st, a](err1: ParseError)(reply: Reply[tok, st, a]) = reply match {
         case Ok(x, state, err2) => Ok(x, state, (mergeError(err1)(err2)))
         case Error(err2) => Error(mergeError(err1)(err2))
@@ -123,32 +135,41 @@ object Parsec {
 
     def unknownError[tok, st](state: State[tok, st]): ParseError = newErrorUnknown(statePos(state))
 
-    def usingMonad[tok, st, a, b](p: GenParser[tok, st, a])(f: a => b): GenParser[tok, st, b] = {
-        //type g[a] = GenParser_[tok, st]#T[a]
-        //val q: g[a] = p
-        import Monad.`for`
-        new GenParserMonad[tok, st] {
-            val r = for {
-                x <- from(p)
-            } yield f(x)
-        }.r
-    }
-
 // Error
-    sealed abstract class Message
-    final case class SysUnExpect(s: String) extends Message
-    final case class UnExpect(s: String) extends Message
-    final case class Expect(s: String) extends Message
-    final case class Message_(s: String) extends Message
+    sealed abstract class MessageT
+    final case class SysUnExpect(s: String) extends MessageT
+    final case class UnExpect(s: String) extends MessageT
+    final case class Expect(s: String) extends MessageT
+    final case class Message(s: String) extends MessageT
 
-    final case class ParseError(pos: SourcePos, msg: List[Message])
+    final case class ParseError(pos: SourcePos, msg: List[MessageT])
     def errorPos(err: ParseError): SourcePos = err.pos
-    def errorMessage(err: ParseError): List[Message] = err.msg
+    def errorMessage(err: ParseError): List[MessageT] = err.msg
     def errorIsUnknown(err: ParseError): Boolean = List.`null`(err.msg)
 
     def newErrorUnknown(pos: SourcePos): ParseError = ParseError(pos, Nil)
 
     def mergeError(err1: ParseError)(err2: ParseError): ParseError = (err1, err2) match {
         case (ParseError(pos, msg1), ParseError(_, msg2)) => ParseError(pos, msg1 ::: msg2)
+    }
+
+// Combinators
+    def choice[tok, st, a](ps: List[GenParser[tok, st, a]]): GenParser[tok, st, a] = {
+        new GenParserMonad[tok, st] {
+            val r = List.foldr[GenParser_tok_st[a], GenParser_tok_st[a]](op_<|>)(mzero)(monad(ps))
+        }.r
+    }
+    def option[tok, st, a](x: a)(p: GenParser[tok, st, a]): GenParser[tok, st, a] = {
+        new GenParserMonad[tok, st] {
+            val r = monad(p) <|> `return`(x)
+        }.r
+    }
+
+    def optional[tok, st, a](p: GenParser[tok, st, a]): GenParser[tok, st, Unit] = {
+        new GenParserMonad[tok, st] {
+            val r = {
+                for { _ <- monad(p); _ <- `return`() } yield ()
+            } <|> `return`()
+        }.r
     }
 }

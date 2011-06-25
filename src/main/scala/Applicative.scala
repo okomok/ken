@@ -45,7 +45,10 @@ trait Alternative[f[_]] extends Applicative[f] {
 }
 
 
-object Applicative extends ApplicativeInstance {
+object Applicative extends ApplicativeOp with ApplicativeInstance
+
+
+trait ApplicativeOp extends FunctorOp {
     def pure[f[_], a](x: => a)(implicit i: Applicative[f]): f[a] = i.pure(x)
     def op_<*>[f[_], a, b](x: f[a => b])(y: f[a])(implicit i: Applicative[f]): f[b] = i.op_<*>(x)(y)
 
@@ -107,7 +110,7 @@ object Applicative extends ApplicativeInstance {
 }
 
 
-trait ApplicativeInstance {
+trait ApplicativeInstance extends MonadInstance {
     implicit val ofId = Id
 
     implicit def ofFunction1[A]: Applicative[({type f[a] = A => a})#f] = new Applicative[({type f[a] = A => a})#f] {
