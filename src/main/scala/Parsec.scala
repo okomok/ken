@@ -52,23 +52,16 @@ object Parsec {
     def statePos[tok, st](state: State[tok, st]): SourcePos = state.pos
     def stateUser[tok, st](state: State[tok,st]): st = state.user
 
-    trait GenParserMonad[tok, st] extends MonadOp {
-        final class GenParser_tok_st[+a](override val self: GenParser[tok, st, a]) extends GenParser[tok, st, a] with Proxy {
-            override val parse = self.parse
-        }
-
-        implicit object MonadInstance extends MonadPlus[GenParser_tok_st] {
-            private[this] type m[a] = GenParser_tok_st[a]
+    object GenParser {
+        implicit def monad[tok, st]: MonadPlus[({type m[x] = GenParser[tok, st, x]})#m] = new MonadPlus[({type m[x] = GenParser[tok, st, x]})#m] {
+            private[this] type m[x] = GenParser[tok, st, x]
             // Monad
-            override def `return`[a](x: => a): m[a] = monad(parsecReturn(x))
-            override def op_>>=[a, b](p: m[a])(f: a => m[b]): m[b] = monad(parsecBind(p)(f))
+            override def `return`[a](x: => a): m[a] = parsecReturn(x)
+            override def op_>>=[a, b](p: m[a])(f: a => m[b]): m[b] = parsecBind(p)(f)
             // MonadPlus
-            override def mzero[a]: m[a] = monad(parsecZero)
-            override def mplus[a](x: m[a])(y: => m[a]): m[a] = monad(parsecPlus(x)(y))
+            override def mzero[a]: m[a] = parsecZero
+            override def mplus[a](x: m[a])(y: => m[a]): m[a] = parsecPlus(x)(y)
         }
-
-        def monad[a](p: GenParser[tok, st, a]): GenParser_tok_st[a] = new GenParser_tok_st(p)
-        def monad[a](ps: List[GenParser[tok, st, a]]): List[GenParser_tok_st[a]] = ps.map(new GenParser_tok_st(_))
     }
 
     def parsecReturn[tok, st, a](x: a): GenParser[tok, st, a] = {
@@ -154,22 +147,20 @@ object Parsec {
     }
 
 // Combinators
+    import Monad._
+
     def choice[tok, st, a](ps: List[GenParser[tok, st, a]]): GenParser[tok, st, a] = {
-        new GenParserMonad[tok, st] {
-            val r = List.foldr[GenParser_tok_st[a], GenParser_tok_st[a]](op_<|>)(mzero)(monad(ps))
-        }.r
+        type m[a] = GenParser[tok, st, a]
+        List.foldr[m[a], m[a]](op_<|>)(mzero[m, a])(ps)
     }
+
     def option[tok, st, a](x: a)(p: GenParser[tok, st, a]): GenParser[tok, st, a] = {
-        new GenParserMonad[tok, st] {
-            val r = monad(p) <|> `return`(x)
-        }.r
+        type m[a] = GenParser[tok, st, a]
+        (p: m[a]) <|> `return`[m, a](x)
     }
 
     def optional[tok, st, a](p: GenParser[tok, st, a]): GenParser[tok, st, Unit] = {
-        new GenParserMonad[tok, st] {
-            val r = {
-                for { _ <- monad(p); _ <- `return`() } yield ()
-            } <|> `return`()
-        }.r
+        type m[a] = GenParser[tok, st, a]
+        (for { _ <- (p: m[a]); _ <- `return`[m, Unit]() } yield ()) <|> `return`[m, Unit]()
     }
 }
