@@ -7,7 +7,7 @@
 package com.github.okomok
 package ken
 
-
+/*
 final class Type1[m] {
 
     case class Const[b](getConst: m)
@@ -49,3 +49,4 @@ final class Type1[m] {
     }
     */
 }
+*/

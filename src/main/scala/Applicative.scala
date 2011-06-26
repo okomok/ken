@@ -49,6 +49,9 @@ object Applicative extends ApplicativeOp with ApplicativeInstance
 
 
 trait ApplicativeOp extends FunctorOp {
+    def applicative[f[_]](implicit i: Applicative[f]): Applicative[f] = i
+    def alternative[f[_]](implicit i: Alternative[f]): Alternative[f] = i
+
     def pure[f[_], a](x: => a)(implicit i: Applicative[f]): f[a] = i.pure(x)
     def op_<*>[f[_], a, b](x: f[a => b])(y: f[a])(implicit i: Applicative[f]): f[b] = i.op_<*>(x)(y)
 

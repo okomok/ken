@@ -8,6 +8,7 @@ package com.github.okomok
 package ken
 
 
+/*
 import Monad.{`return`, >>=, mzero, _mplus_}
 
 
@@ -48,3 +49,4 @@ final class Kind1[m[_]] {
         implicit def arrowPlusInstance(implicit i: MonadPlus[m]): ArrowPlus[Kleisli] = new ArrowPlusInstance
     }
 }
+*/

@@ -63,6 +63,20 @@ class TrivialTest extends org.scalatest.junit.JUnit3Suite {
         io.unIO()
     }
 
+    def teztIO2 {
+        import Monad.`for`
+   //     val io = getChar >>= { x => putChar(x) }
+   //     io
+
+        val io: IO[Unit] = for {
+            x <- IO.getChar
+        } {
+            IO.putChar(x)
+        }
+
+        io.unIO()
+    }
+
     def teztIOAp {
         import Applicative._
         import IO._

@@ -36,6 +36,9 @@ object Monad extends MonadOp with MonadInstance
 
 
 trait MonadOp extends ApplicativeOp {
+    def monad[m[_]](implicit i: Monad[m]): Monad[m] = i
+    def monadPlus[m[_]](implicit i: MonadPlus[m]): MonadPlus[m] = i
+
     def `return`[m[_], a](x: => a)(implicit i: Monad[m]): m[a] = i.pure(x)
     def op_>>=[m[_], a, b](x: m[a])(y: a => m[b])(implicit i: Monad[m]): m[b] = i.op_>>=(x)(y)
     def op_>>[m[_], a, b](x: m[a])(y: => m[b])(implicit i: Monad[m]): m[b] = i.op_>>(x)(y)
@@ -53,7 +56,7 @@ trait MonadOp extends ApplicativeOp {
     private[ken] class For[m[_], a](x: m[a])(implicit i: Monad[m]) {
        def map[b](y: a => b): m[b] = op_>>=(x)(_x => `return`(y(_x)))
        def flatMap[b](y: a => m[b]): m[b] = op_>>=(x)(y)
-       // def foreach(y: a => Unit): m[Unit] = op_>>=(x)(_x => `return`(y(_x)))
+       def foreach(y: a => m[Unit]): m[Unit] = op_>>=(x)(_x => y(_x))
     }
     implicit def `for`[m[_], a](x: m[a])(implicit i: Monad[m]): For[m, a] = new For[m, a](x)
 

@@ -17,6 +17,7 @@ object Functor extends FunctorOp with FunctorInstance
 
 
 trait FunctorOp {
+    def functor[f[_]](implicit i: Functor[f]): Functor[f] = i
     def fmap[f[_], a, b](x: a => b)(y: f[a])(implicit i: Functor[f]): f[b] = i.fmap(x)(y)
 }
 

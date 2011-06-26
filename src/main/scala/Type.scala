@@ -13,5 +13,14 @@ sealed abstract class Type[a] {
 }
 
 object Type {
-    def apply[a]: Type[a] = new Type[a] {}
+    def apply[a]: Type[a] = new Type[a]{}
+}
+
+
+sealed abstract class Type1[a[_]] {
+    type get[x] = a[x]
+}
+
+object Type1 {
+    def apply[a[_]]: Type1[a] = new Type1[a]{}
 }
