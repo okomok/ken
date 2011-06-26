@@ -29,12 +29,10 @@ object Parsec {
     def setSourceColumn(pos: SourcePos)(n: Column): SourcePos = pos.copy(column = n)
 
 // Prim
-    type ParserT[+a] = GenParser[Char, Unit, a]
+    type Parser[+a] = GenParser[Char, Unit, a]
 
-    abstract class GenParser[tok, st, +a] {
-        def parse: State[tok, st] => ConsumedT[Reply[tok, st, a]]
-    }
-    final case class Parser[tok, st, +a](override val parse: State[tok, st] => ConsumedT[Reply[tok, st, a]]) extends GenParser[tok, st, a]
+    final case class GenParser[tok, st, +a](parse: State[tok, st] => ConsumedT[Reply[tok, st, a]])
+    val Parser = GenParser
 
     def runP[tok, st, a](p: GenParser[tok, st, a]): State[tok, st] => ConsumedT[Reply[tok, st, a]] = p.parse
 
