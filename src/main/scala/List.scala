@@ -39,11 +39,11 @@ sealed abstract class List[+a] extends Up[List[a]] {
 }
 
 
-object Nil extends List[Nothing] {
+case object Nil extends List[Nothing] {
     def ::[a](x: a): List[a] = new ::[a](x, Lazy(this))
 }
 
-case class ::[+a](head: a, tail: Lazy[List[a]]) extends List[a] {
+final case class ::[+a](head: a, tail: Lazy[List[a]]) extends List[a] {
     override def equals(that: Any): Boolean = that match {
         case that: List[_] => List.op_==(this)(that)
         case _ => false
