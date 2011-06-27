@@ -1,7 +1,7 @@
 
 # ken 0.1.0-SNAPSHOT
 
-`ken` is a Haskell DSL in scala without any elaborate techniques:
+`ken` is a Haskell DSL in Scala without any elaborate techniques:
 
     import com.github.okomok.ken
 
