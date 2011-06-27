@@ -114,9 +114,18 @@ object List {
     def apply[a](xs: a*): List[a] = from(xs)
     def unapplySeq[a](xs: List[a]): Option[Seq[a]] = Some(xs.toScalaList)
 
+    implicit def fromIterator[a](it: scala.Iterator[a]): List[a] = {
+        if (it.hasNext) {
+            val x = it.next
+            x :: fromIterator(it)
+        } else {
+            Nil
+        }
+    }
+
     implicit def fromArray[a](xs: Array[a]): List[a] = fromIterable(xs)
     implicit def fromString(xs: String): List[Char] = fromIterable(xs)
-    implicit def fromIterable[a](xs: scala.Iterable[a]): List[a] = if (xs.isEmpty) Nil else (xs.head :: from(xs.tail))
+    implicit def fromIterable[a](xs: scala.Iterable[a]): List[a] = fromIterator(xs.iterator)
 
 // Basic functions
     def op_:::[a](xs: List[a])(ys: => List[a]): List[a] = xs match {
@@ -577,4 +586,14 @@ object List {
     }
 
 // The generic operations
+
+// Misc
+    @tailrec
+    def foreach[a](f: a => Unit)(xs: List[a]): Unit = xs match {
+        case Nil => ()
+        case x :: xs => {
+            f(x)
+            foreach(f)(xs.!)
+        }
+    }
 }
