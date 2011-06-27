@@ -42,8 +42,8 @@ trait MonadPlus[m[_]] extends Monad[m] with Alternative[m] {
 
 trait MonadPlusProxy[m[_]] extends MonadPlus[m] with MonadProxy[m] with AlternativeProxy[m] {
     def self: MonadPlus[m]
-    override def mzero[a]: m[a]
-    override def mplus[a](x: m[a])(y: => m[a]): m[a]
+    override def mzero[a]: m[a] = self.mzero
+    override def mplus[a](x: m[a])(y: => m[a]): m[a] = self.mplus(x)(y)
 }
 
 
