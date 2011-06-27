@@ -14,7 +14,7 @@ import Monad._
 trait Monad[m[_]] extends Applicative[m] {
     private[this] implicit val i = this
 
-    def `return`[a](x: => a): m[a]
+    def `return`[a](x: a): m[a]
     def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b]
     def op_>>[a, b](x: m[a])(y: => m[b]): m[b] = { lazy val _y = y; x >>= (_ => _y) }
 
@@ -25,7 +25,7 @@ trait Monad[m[_]] extends Applicative[m] {
 
 trait MonadProxy[m[_]] extends Monad[m] with ApplicativeProxy[m] {
     def self: Monad[m]
-    override def `return`[a](x: => a): m[a] = self.`return`(x)
+    override def `return`[a](x: a): m[a] = self.`return`(x)
     override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = self.op_>>=(x)(y)
     override def op_>>[a, b](x: m[a])(y: => m[b]): m[b] = self.op_>>(x)(y)
 }
@@ -54,7 +54,7 @@ trait MonadOp extends ApplicativeOp {
     def monad[m[_]](implicit i: Monad[m]): Monad[m] = i
     def monadPlus[m[_]](implicit i: MonadPlus[m]): MonadPlus[m] = i
 
-    def `return`[m[_], a](x: => a)(implicit i: Monad[m]): m[a] = i.pure(x)
+    def `return`[m[_], a](x: a)(implicit i: Monad[m]): m[a] = i.pure(x)
     def op_>>=[m[_], a, b](x: m[a])(y: a => m[b])(implicit i: Monad[m]): m[b] = i.op_>>=(x)(y)
     def op_>>[m[_], a, b](x: m[a])(y: => m[b])(implicit i: Monad[m]): m[b] = i.op_>>(x)(y)
 

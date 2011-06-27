@@ -74,7 +74,7 @@ object Maybe {
     implicit object theInstance extends MonadPlus[Maybe] {
         private[this] type m[a] = Maybe[a]
         // Monad
-        override def `return`[a](x: => a): m[a] = Just(x)
+        override def `return`[a](x: a): m[a] = Just(x)
         override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = x match {
             case Just(x) => y(x)
             case Nothing => Nothing

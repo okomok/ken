@@ -54,7 +54,7 @@ object Parsec {
         implicit def monadInstance[tok, st]: MonadPlus[({type m[x] = GenParser[tok, st, x]})#m] = new MonadPlus[({type m[x] = GenParser[tok, st, x]})#m] {
             private[this] type m[x] = GenParser[tok, st, x]
             // Monad
-            override def `return`[a](x: => a): m[a] = parsecReturn(x)
+            override def `return`[a](x: a): m[a] = parsecReturn(x)
             override def op_>>=[a, b](p: m[a])(f: a => m[b]): m[b] = parsecBind(p)(f)
             // MonadPlus
             override def mzero[a]: m[a] = parsecZero
