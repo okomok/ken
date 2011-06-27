@@ -1,0 +1,47 @@
+
+
+// Copyright Shunsuke Sogame 2011.
+// Distributed under the terms of an MIT-style license.
+
+
+package com.github.okomok
+package ken
+
+
+case class Kleisli[m[_], a, b](runKleisli: a => m[b])
+
+
+object Kleisli {
+    import Monad._
+
+    private[this] class ArrowInstance[m[_]](implicit i: Monad[m]) extends Arrow[({type a[a, b] = Kleisli[m, a, b]})#a] {
+        protected[this] type cat[a, b] = Kleisli[m, a, b]
+        override def id[a]: cat[a, a] = Kleisli { a => `return`(a) }
+        override def op_<<<[a, b, c](f: cat[b, c])(g: cat[a, b]): cat[a, c] = Kleisli { b =>
+            g.runKleisli(b) >>= f.runKleisli
+        }
+
+        protected[this] type a[a, b] = Kleisli[m, a, b]
+        override def arr[b, c](f: b => c): a[b, c] = Kleisli { b => `return`(f(b)) }
+        override def first[b, c, d](f: a[b, c]): a[(b, d), (c, d)] = Kleisli { case (b, d) =>
+            f.runKleisli(b) >>= (c => `return`(c, d))
+        }
+        override def second[b, c, d](f: a[b, c]): a[(d, b), (d, c)] = Kleisli { case (d, b) =>
+            f.runKleisli(b) >>= (c => `return`(d, c))
+        }
+    }
+
+    private[this] class ArrowZeroInstance[m[_]](implicit i: MonadPlus[m]) extends ArrowInstance[m] with ArrowZero[({type a[a, b] = Kleisli[m, a, b]})#a] {
+        override def zeroArrow[b, c]: a[b, c] = Kleisli { _ => mzero }
+    }
+
+    private[this] class ArrowPlusInstance[m[_]](implicit i: MonadPlus[m]) extends ArrowZeroInstance[m] with ArrowPlus[({type a[a, b] = Kleisli[m, a, b]})#a] {
+        override def op_<+>[b, c](f: a[b, c])(g: => a[b, c]): a[b, c] = Kleisli { x =>
+            f.runKleisli(x) _mplus_ g.runKleisli(x)
+        }
+    }
+
+    implicit def arrowInstance[m[_]](implicit i: Monad[m]): Arrow[({type a[a, b] = Kleisli[m, a, b]})#a] = new ArrowInstance[m]
+    implicit def arrowZeroInstance[m[_]](implicit i: MonadPlus[m]): ArrowZero[({type a[a, b] = Kleisli[m, a, b]})#a] = new ArrowZeroInstance[m]
+    implicit def arrowPlusInstance[m[_]](implicit i: MonadPlus[m]): ArrowPlus[({type a[a, b] = Kleisli[m, a, b]})#a] = new ArrowPlusInstance[m]
+}
