@@ -51,7 +51,7 @@ object Parsec {
     def stateUser[tok, st](state: State[tok,st]): st = state.user
 
     object GenParser {
-        class MonadInstance[tok, st] extends MonadPlus[({type m[x] = GenParser[tok, st, x]})#m] {
+        implicit def monadInstance[tok, st]: MonadPlus[({type m[x] = GenParser[tok, st, x]})#m] = new MonadPlus[({type m[x] = GenParser[tok, st, x]})#m] {
             private[this] type m[x] = GenParser[tok, st, x]
             // Monad
             override def `return`[a](x: => a): m[a] = parsecReturn(x)
@@ -60,7 +60,6 @@ object Parsec {
             override def mzero[a]: m[a] = parsecZero
             override def mplus[a](x: m[a])(y: => m[a]): m[a] = parsecPlus(x)(y)
         }
-        implicit def monadInstance[tok, st]: MonadPlus[({type m[x] = GenParser[tok, st, x]})#m] = new MonadInstance[tok, st]
     }
 
     def parsecReturn[tok, st, a](x: a): GenParser[tok, st, a] = {

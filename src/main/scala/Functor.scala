@@ -28,4 +28,4 @@ trait FunctorOp {
 }
 
 
-trait FunctorInstance extends ApplicativeInstance
+trait FunctorInstance extends ArrowInstance

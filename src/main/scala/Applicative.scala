@@ -134,14 +134,14 @@ trait ApplicativeOp extends FunctorOp {
 trait ApplicativeInstance extends MonadInstance {
     implicit val ofId = Id
 
-    implicit def ofFunction1[A]: Applicative[({type f[a] = A => a})#f] = new Applicative[({type f[a] = A => a})#f] {
-        private[this] type f[a] = A => a
+    implicit def ofFunction1[z]: Applicative[({type f[a] = z => a})#f] = new Applicative[({type f[a] = z => a})#f] {
+        private[this] type f[a] = z => a
         override def pure[a](x: => a): f[a] = const(x)
         override def op_<*>[a, b](x: f[a => b])(y: f[a]): f[b] = z => x(z)(y(z))
     }
 
-    implicit def ofMonoid[a](implicit ma: Monoid[a]): Applicative[({type f[x] = (a, x)})#f] = new Applicative[({type f[x] = (a, x)})#f] {
-        private[this] type f[x] = (a, x)
+    implicit def ofMonoid[z](implicit ma: Monoid[z]): Applicative[({type f[a] = (z, a)})#f] = new Applicative[({type f[a] = (z, a)})#f] {
+        private[this] type f[a] = (z, a)
         override def pure[a](x: => a): f[a] = (ma.mempty, x)
         override def op_<*>[a, b](a1: f[a => b])(a2: f[a]): f[b] = (a1, a2) match {
             case ((u, f), (v, x)) => (ma.mappend(u)(v), f(x))

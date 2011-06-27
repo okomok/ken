@@ -35,11 +35,4 @@ trait CategoryOp {
 }
 
 
-trait CategoryInstance {
-    class InstanceOfFunction1 extends Category[Function1] {
-        private[this] type cat[a, b] = Function1[a, b]
-        override def id[a]: cat[a, a] = ken.id[a]
-        override def op_<<<[a, b, c](f: cat[b, c])(g: cat[a, b]): cat[a, c] = f.compose(g)
-    }
-    implicit val instanceOfFunction1 = new InstanceOfFunction1
-}
+trait CategoryInstance extends ApplicativeInstance
