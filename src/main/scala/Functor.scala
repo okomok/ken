@@ -13,6 +13,12 @@ trait Functor[f[_]] {
 }
 
 
+trait FunctorProxy[f[_]] extends Functor[f] with Proxy {
+    def self: Functor[f]
+    override def fmap[a, b](x: a => b)(y: f[a]): f[b] = self.fmap(x)(y)
+}
+
+
 object Functor extends FunctorOp with FunctorInstance
 
 
@@ -21,5 +27,5 @@ trait FunctorOp {
     def fmap[f[_], a, b](x: a => b)(y: f[a])(implicit i: Functor[f]): f[b] = i.fmap(x)(y)
 }
 
-trait FunctorInstance extends ApplicativeInstance {
-}
+
+trait FunctorInstance extends ApplicativeInstance

@@ -12,6 +12,13 @@ trait Typeable[a] {
     def typeOf(x: => a): ClassManifest[a]
 }
 
+
+trait TypeableProxy[a] extends Typeable[a] with Proxy {
+    def self: Typeable[a]
+    override def typeOf(x: => a): ClassManifest[a] = self.typeOf(x)
+}
+
+
 object Typeable {
     class Instance[a](implicit ac: ClassManifest[a]) extends Typeable[a] {
         override def typeOf(x: => a): ClassManifest[a] = ac

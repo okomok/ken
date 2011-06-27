@@ -12,6 +12,13 @@ trait IO[+a] {
     def unIO(): a
 }
 
+
+trait IOProxy[+a] extends IO[a] with Proxy {
+    def self: IO[a]
+    override def unIO(): a = self.unIO()
+}
+
+
 object IO {
     implicit object theInstance extends Monad[IO] {
         private[this] type m[a] = IO[a]

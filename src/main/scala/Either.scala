@@ -8,11 +8,9 @@ package com.github.okomok
 package ken
 
 
-sealed abstract class Either[+a, +b] {
+sealed abstract class Either[+a, +b] extends Up[Either[a, b]]{
     @inline
     final def of[a_ >: a, b_ >: b]: Either[a_, b_] = this
-    @inline
-    final def asEither: Either[a, b] = this
 }
 
 case class Left[+a, +b](x: a) extends Either[a, b]

@@ -18,8 +18,16 @@ trait Monad[m[_]] extends Applicative[m] {
     def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b]
     def op_>>[a, b](x: m[a])(y: => m[b]): m[b] = { lazy val _y = y; x >>= (_ => _y) }
 
-    final override def pure[a](x: => a): m[a] = `return`(x)
+    override def pure[a](x: => a): m[a] = `return`(x)
     override def op_<*>[a, b](x: m[a => b])(y: m[a]): m[b] = for { _x <- x; _y <- y } yield _x(_y)
+}
+
+
+trait MonadProxy[m[_]] extends Monad[m] with ApplicativeProxy[m] {
+    def self: Monad[m]
+    override def `return`[a](x: => a): m[a] = self.`return`(x)
+    override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = self.op_>>=(x)(y)
+    override def op_>>[a, b](x: m[a])(y: => m[b]): m[b] = self.op_>>(x)(y)
 }
 
 
@@ -29,6 +37,13 @@ trait MonadPlus[m[_]] extends Monad[m] with Alternative[m] {
 
     override def empty[a]: m[a] = mzero
     override def op_<|>[a](x: m[a])(y: => m[a]): m[a] = mplus(x)(y)
+}
+
+
+trait MonadPlusProxy[m[_]] extends MonadPlus[m] with MonadProxy[m] with AlternativeProxy[m] {
+    def self: MonadPlus[m]
+    override def mzero[a]: m[a]
+    override def mplus[a](x: m[a])(y: => m[a]): m[a]
 }
 
 
@@ -155,5 +170,4 @@ trait MonadOp extends ApplicativeOp {
 }
 
 
-trait MonadInstance {
-}
+trait MonadInstance

@@ -23,6 +23,15 @@ trait Applicative[f[_]] extends Functor[f] {
 }
 
 
+trait ApplicativeProxy[f[_]] extends Applicative[f] with FunctorProxy[f] {
+    def self: Applicative[f]
+    override def pure[a](x: => a): f[a] = self.pure(x)
+    override def op_<*>[a, b](x: f[a => b])(y: f[a]): f[b] = self.op_<*>(x)(y)
+    override def op_*>[a, b](x: f[a])(y: f[b]): f[b] = self.op_*>(x)(y)
+    override def op_<*[a, b](x: f[a])(y: f[b]): f[a] = self.op_<*(x)(y)
+}
+
+
 trait Alternative[f[_]] extends Applicative[f] {
     private[this] implicit val i = this
 
@@ -42,6 +51,15 @@ trait Alternative[f[_]] extends Applicative[f] {
     }
 
     private[this] def _cons[a]: a => List[a] => List[a] = x => xs => x :: xs
+}
+
+
+trait AlternativeProxy[f[_]] extends Alternative[f] with ApplicativeProxy[f] {
+    def self: Alternative[f]
+    override def empty[a]: f[a] = self.empty
+    override def op_<|>[a](x: f[a])(y: => f[a]): f[a] = self.op_<|>(x)(y)
+    override def some[a](v: f[a]): f[List[a]] = self.some(v)
+    override def many[a](v: f[a]): f[List[a]] = self.many(v)
 }
 
 
@@ -109,7 +127,7 @@ trait ApplicativeOp extends FunctorOp {
     }
     implicit def <|>[f[_], a](x: f[a])(implicit i: Alternative[f]): Op_<|>[f, a] = new Op_<|>[f, a](x)
 
-    def optional[f[_], a](x: f[a])(implicit i: Alternative[f]): f[Maybe[a]] = (Just(_: a).of[a]) <@> x <|> pure(Nothing.of[a])(i)
+    def optional[f[_], a](x: f[a])(implicit i: Alternative[f]): f[Maybe[a]] = (Just(_: a).up) <@> x <|> pure(Nothing.of[a])(i)
 }
 
 

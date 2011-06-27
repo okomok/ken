@@ -75,7 +75,10 @@ trait ArrowLoop[a[_, _]] extends Arrow[a] {
 }
 
 
-object Arrow extends CategoryOp {
+object Arrow extends ArrowOp with ArrowInstance
+
+
+trait ArrowOp extends CategoryOp {
     def arr[a[_, _], b, c](f: b => c)(implicit i: Arrow[a]): a[b, c] = i.arr(f)
     def first[a[_, _], b, c, d](f: a[b, c])(implicit i: Arrow[a]): a[(b, d), (c, d)] = i.first(f)
     def second[a[_, _], b, c, d](f: a[b, c])(implicit i: Arrow[a]): a[(d, b), (d, c)] = i.second(f)
@@ -145,8 +148,10 @@ object Arrow extends CategoryOp {
         def |||[c](g: a[c, d]): a[Either[b, c], d] = op_|||(f)(g)
     }
     implicit def |||[a[_, _], b, d](f: a[b, d])(implicit i: ArrowChoice[a]): Op_|||[a, b, d] = new Op_|||[a, b, d](f)
+}
 
-// Instance
+
+trait ArrowInstance {
     class InstanceOfFunction1 extends Category.InstanceOfFunction1 with ArrowChoice[Function1] with ArrowApply[Function1] {
         private[this] implicit val i = this
         private[this] type a[a, b] = Function1[a, b]

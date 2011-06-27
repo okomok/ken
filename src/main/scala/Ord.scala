@@ -19,6 +19,18 @@ trait Ord[a] {
 }
 
 
+trait OrdProxy[a] extends Ord[a] with Proxy {
+    def self: Ord[a]
+    override def compare(x: a)(y: a): Ordering = self.compare(x)(y)
+    override def op_<(x: a)(y: a): Boolean = self.op_<(x)(y)
+    override def op_<=(x: a)(y: a): Boolean = self.op_<=(x)(y)
+    override def op_>(x: a)(y: a): Boolean = self.op_>(x)(y)
+    override def op_>=(x: a)(y: a): Boolean = self.op_>=(x)(y)
+    override def max(x: a)(y: a): a = self.max(x)(y)
+    override def min(x: a)(y: a): a = self.min(x)(y)
+}
+
+
 object Ord {
     def op_<[a](x: a)(y: a)(implicit i: Ord[a]): Boolean = i.op_<(x)(y)
     def op_<=[a](x: a)(y: a)(implicit i: Ord[a]): Boolean = i.op_<=(x)(y)

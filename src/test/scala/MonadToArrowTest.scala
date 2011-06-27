@@ -62,7 +62,7 @@ class MonadToArrowTest extends org.scalatest.junit.JUnit3Suite {
             case Add(e1, e2) => liftA2(add)(eval(e1))(eval(e2))
             case If(e1, e2, e3) => {
                 (eval(e1) &&& arr(id[Env])) >>>
-                arr{ case (Bl(b), env) => if (b) Left(env).asEither else Right(env).asEither } >>>
+                arr{ case (Bl(b), env) => if (b) Left(env).up else Right(env).up } >>>
                 (eval(e2) ||| eval(e3))
             }
         }

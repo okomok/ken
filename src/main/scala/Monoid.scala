@@ -16,7 +16,10 @@ trait Monoid[m] {
 }
 
 
-object Monoid extends MonoidInstance {
+object Monoid extends MonoidOp with MonoidInstance
+
+
+trait MonoidOp {
     def mempty[m](implicit i: Monoid[m]): m = i.mempty
     def mappend[m](x: m)(y: => m)(implicit i: Monoid[m]): m = i.mappend(x)(y)
     def mconcat[m](x: List[m])(implicit i: Monoid[m]): m = i.mconcat(x)

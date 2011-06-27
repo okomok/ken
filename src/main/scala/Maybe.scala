@@ -8,11 +8,9 @@ package com.github.okomok
 package ken
 
 
-sealed abstract class Maybe[+a] {
+sealed abstract class Maybe[+a] extends Up[Maybe[a]] {
     @inline
     final def of[b >: a]: Maybe[b] = this
-    @inline
-    final def asMaybe: Maybe[a] = this
 }
 
 
@@ -57,9 +55,10 @@ object Maybe {
         case a :: _ => Just(a)
     }
 
-    import Monad.`for`
-
-    def catMaybes[a](ls: List[Maybe[a]]): List[a] = for { Just(x) <- ls } yield x
+    def catMaybes[a](ls: List[Maybe[a]]): List[a] = {
+        import Monad.`for`
+        for { Just(x) <- ls } yield x
+    }
 
     def mapMaybe[a, b](f: a => Maybe[b])(xs: List[a]): List[b] = xs match {
         case Nil => Nil
@@ -72,7 +71,7 @@ object Maybe {
         }
     }
 
-    implicit object theInstance extends Alternative[Maybe] with MonadPlus[Maybe] {
+    implicit object theInstance extends MonadPlus[Maybe] {
         private[this] type m[a] = Maybe[a]
         // Monad
         override def `return`[a](x: => a): m[a] = Just(x)

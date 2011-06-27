@@ -12,11 +12,9 @@ import scala.annotation.tailrec
 import Monad.`for`
 
 
-sealed abstract class List[+a] {
+sealed abstract class List[+a] extends Up[List[a]] {
     @inline
     final def of[b >: a]: List[b] = this
-    @inline
-    final def asList: List[a] = this
 
     // FIX ME
     final override def toString: String = List.take(512)(this).toScalaList.toString
@@ -81,7 +79,7 @@ object List {
     }
     implicit def ofName[a](xs: => List[a]): OfName[a] = new OfName(xs)
 
-    implicit object theInstance extends Alternative[List] with MonadPlus[List] {
+    implicit object theInstance extends MonadPlus[List] {
         private[this] type m[a] = List[a]
         // Monad
         override def `return`[a](x: => a): m[a] = List(x)
@@ -251,9 +249,9 @@ object List {
 
     def all[a](p: a => Boolean)(xs: List[a]): Boolean = and(map(p)(xs))
 
-    def sum[a](xs: List[a])(implicit i: Num[a]): a = foldl(i.op_+)(i.fromInteger(0))(xs)
+    def sum[a](xs: List[a])(implicit i: Num[a]): a = foldl(i.op_+)(i.fromInt(0))(xs)
 
-    def product[a](xs: List[a])(implicit i: Num[a]): a = foldl(i.op_*)(i.fromInteger(1))(xs)
+    def product[a](xs: List[a])(implicit i: Num[a]): a = foldl(i.op_*)(i.fromInt(1))(xs)
 
     def maximum[a](xs: List[a])(implicit i: Ord[a]): a = xs match {
         case Nil => error("empty List")

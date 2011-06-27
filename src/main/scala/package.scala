@@ -7,9 +7,6 @@
 package com.github.okomok
 
 
-import scala.annotation.tailrec
-
-
 package object ken {
 
 // Eq
