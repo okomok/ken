@@ -9,17 +9,16 @@ package ken
 
 
 trait Category[cat[_, _]] {
-    def id[a]: cat[a, a]
+    def cid[a]: cat[a, a]
     def op_<<<[a, b, c](f: cat[b, c])(g: cat[a, b]): cat[a, c]
 }
 
 
-object Category extends CategoryOp with CategoryInstance {
-    def id[cat[_, _], a](implicit i: Category[cat]): cat[a, a] = i.id[a]
-}
+object Category extends CategoryOp with CategoryInstance
 
 
 trait CategoryOp {
+    def cid[cat[_, _], a](implicit i: Category[cat]): cat[a, a] = i.cid[a]
     def op_<<<[cat[_, _], a, b, c](f: cat[b, c])(g: cat[a, b])(implicit i: Category[cat]): cat[a, c] = i.op_<<<(f)(g)
     def op_>>>[cat[_, _], a, b, c](f: cat[a, b])(g: cat[b, c])(implicit i: Category[cat]): cat[a, c] = i.op_<<<(g)(f)
 
@@ -35,4 +34,4 @@ trait CategoryOp {
 }
 
 
-trait CategoryInstance extends ApplicativeInstance
+trait CategoryInstance extends ArrowInstance

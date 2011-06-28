@@ -24,7 +24,7 @@ trait Arrow[a[_, _]] extends Category[a] {
     def op_***[b, c, b_, c_](f: a[b, c])(g: a[b_, c_]): a[(b, b_), (c, c_)] = first(f) >>> second(g)
     def op_&&&[b, c, c_](f: a[b, c])(g: a[b, c_]): a[b, (c, c_)] = arr((b: b) => (b, b)) >>> f *** g
 
-    override def id[a_]: a[a_, a_] = arr(ken.id[a_])
+    override def cid[a_]: a[a_, a_] = arr(ken.id[a_])
 }
 
 
@@ -162,7 +162,7 @@ trait ArrowInstance {
         private[this] implicit val i = this
         // Category
         private[this] type cat[a, b] = Function1[a, b]
-        override def id[a]: cat[a, a] = ken.id[a]
+        override def cid[a]: cat[a, a] = ken.id[a]
         override def op_<<<[a, b, c](f: cat[b, c])(g: cat[a, b]): cat[a, c] = f.compose(g)
         // Arrow
         private[this] type a[a, b] = Function1[a, b]
@@ -184,7 +184,7 @@ trait ArrowInstance {
     private[this] class OfKleisliArrow[m[_]](implicit i: Monad[m]) extends Arrow[({type a[a, b] = a => m[b]})#a] {
         // Category
         protected[this] type cat[a, b] = a => m[b]
-        override def id[a]: cat[a, a] = { a => `return`(a) }
+        override def cid[a]: cat[a, a] = { a => `return`(a) }
         override def op_<<<[a, b, c](f: cat[b, c])(g: cat[a, b]): cat[a, c] = { b =>
             g(b) >>= f
         }

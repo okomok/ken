@@ -16,7 +16,7 @@ object Kleisli {
 
     private[this] class ArrowInstance[m[_]](implicit i: Monad[m]) extends Arrow[({type a[a, b] = Kleisli[m, a, b]})#a] {
         protected[this] type cat[a, b] = Kleisli[m, a, b]
-        override def id[a]: cat[a, a] = Kleisli { a => `return`(a) }
+        override def cid[a]: cat[a, a] = Kleisli { a => `return`(a) }
         override def op_<<<[a, b, c](f: cat[b, c])(g: cat[a, b]): cat[a, c] = Kleisli { b =>
             g.runKleisli(b) >>= f.runKleisli
         }

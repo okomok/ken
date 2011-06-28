@@ -159,6 +159,6 @@ object Parsec {
 
     def optional[tok, st, a](p: GenParser[tok, st, a]): GenParser[tok, st, Unit] = {
         type m[a] = GenParser[tok, st, a]
-        ( for { _ <- (p: m[a]) } `return`()(monad[m]) ) <|> `return`()(monad[m])
+        ( for (_ <- (p: m[a])) `return`()(monad[m]) ) <|> `return`()(monad[m])
     }
 }
