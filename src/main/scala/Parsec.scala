@@ -4,6 +4,9 @@
 // Distributed under the terms of an MIT-style license.
 
 
+// Copyright 1999-2000, Daan Leijen. All rights reserved.
+
+
 package com.github.okomok
 package ken
 
@@ -44,13 +47,13 @@ object Parsec {
     final case class GenParser[tok, st, +a](parse: State[tok, st] => ConsumedT[Reply[tok, st, a]])
     val Parser = GenParser
 
-    def runP[tok, st, a](p: GenParser[tok, st, a]): State[tok, st] => ConsumedT[Reply[tok, st, a]] = p.parse
+    def runP[tok, st, a](p: GenParser[tok, st, a])(state: State[tok, st]): ConsumedT[Reply[tok, st, a]] = p.parse(state)
 
-    sealed abstract class ConsumedT[+a]
+    sealed abstract class ConsumedT[+a] extends Up[ConsumedT[a]]
     final case class Consumed[+a](_1: a) extends ConsumedT[a]
     final case class Empty[+a](_2: a) extends ConsumedT[a]
 
-    sealed abstract class Reply[+tok, +st, +a]
+    sealed abstract class Reply[+tok, +st, +a] extends Up[Reply[tok, st, a]]
     final case class Ok[+tok, +st, +a](x: a, state: State[tok, st], err: ParseError) extends Reply[tok, st, a]
     final case class Error(err: ParseError) extends Reply[Nothing, Nothing, Nothing]
 
@@ -72,12 +75,14 @@ object Parsec {
         }
     }
 
+    /** epsilon **/
     def parsecReturn[tok, st, a](x: a): GenParser[tok, st, a] = {
         Parser { (state: State[tok, st]) =>
             Empty(Ok(x, state, unknownError(state)))
         }
     }
 
+    /** sequential **/
     def parsecBind[tok, st, a, b](p: GenParser[tok, st, a])(f: a => GenParser[tok, st, b]): GenParser[tok, st, b] = {
         Parser { (state: State[tok, st]) =>
             runP(p)(state) match {
@@ -114,12 +119,14 @@ object Parsec {
         case Error(err2) => Error(mergeError(err1)(err2))
     }
 
+    /** failure **/
     def parsecZero[tok, st, a]: GenParser[tok, st, a] = {
         Parser { (state: State[tok, st]) =>
             Empty(Error(unknownError(state)))
         }
     }
 
+    /** alternative **/
     def parsecPlus[tok, st, a](p1: GenParser[tok, st, a])(p2: => GenParser[tok, st, a]): GenParser[tok, st, a] = {
         Parser { (state: State[tok, st]) =>
             runP(p1)(state) match {
@@ -147,7 +154,7 @@ object Parsec {
     def unknownError[tok, st](state: State[tok, st]): ParseError = newErrorUnknown(statePos(state))
 
 // Error
-    sealed abstract class MessageT
+    sealed abstract class MessageT extends Up[MessageT]
     final case class SysUnExpect(s: String) extends MessageT
     final case class UnExpect(s: String) extends MessageT
     final case class Expect(s: String) extends MessageT
@@ -200,8 +207,24 @@ object Parsec {
         (p: m[a]) <|> `return`(x)(monad[m])
     }
 
-    def optional[tok, st, a](p: GenParser[tok, st, a]): GenParser[tok, st, Unit] = {
+    def optional[tok, st](p: GenParser[tok, st, _]): GenParser[tok, st, Unit] = {
         type m[a] = GenParser[tok, st, a]
-        ( for (_ <- (p: m[a])) `return`()(monad[m]) ) <|> `return`()(monad[m])
+        ( for { _ <- (p: m[_]) } yield () ) <|> `return`()(monad[m])
+    }
+
+    def between[tok, st, a](open: GenParser[tok, st, _])(close: GenParser[tok, st, _])(p: GenParser[tok, st, a]): GenParser[tok, st, a] = {
+        type m[a] = GenParser[tok, st, a]
+        for { _ <- (open: m[_]); x <- (p: m[a]); _ <- (close: m[_]) } yield x
+    }
+
+    def skipMany1[tok, st](p: GenParser[tok, st, _]): GenParser[tok, st, Unit] = {
+        type m[a] = GenParser[tok, st, a]
+        for { _ <- (p: m[_]); r <- (skipMany1(p): m[Unit]) } yield r
+    }
+
+    def skipMany[tok, st](p: GenParser[tok, st, _]): GenParser[tok, st, Unit] = {
+        type m[a] = GenParser[tok, st, a]
+        lazy val scan: GenParser[tok, st, Unit] = ( for { _ <- (p: m[_]); _ <- (scan: m[Unit]) } yield () ) <|> `return`()(monad[m])
+        scan
     }
 }

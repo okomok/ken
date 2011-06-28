@@ -6,15 +6,13 @@
     import com.github.okomok.ken
 
     class ExampleTest extends org.scalatest.junit.JUnit3Suite {
-
         def teztIO {
             import ken.Monad.`for`
 
             val io = for {
                 x <- ken.IO.getChar
-            } {
-                ken.IO.putChar(x)
-            }
+                r <- ken.IO.putChar(x)
+            } yield r
 
             io.unIO()
         }

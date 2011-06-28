@@ -16,9 +16,8 @@ package com.github.okomok.kentest
 
             val io = for {
                 x <- ken.IO.getChar
-            } {
-                ken.IO.putChar(x)
-            }
+                r <- ken.IO.putChar(x)
+            } yield r
 
             io.unIO()
         }

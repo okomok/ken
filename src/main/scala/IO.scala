@@ -68,13 +68,11 @@ object IO {
     }
 
     def getContents: IO[List[Char]] = {
-        for (s <- getLine) yield (s ::: getContents.unIO)
+        for { s <- getLine } yield (s ::: getContents.unIO)
     }
 
     def interact(f: List[Char] => List[Char]): IO[Unit] = {
-        for (s <- getContents) {
-            putStr(f(s))
-        }
+        for { s <- getContents; r <- putStr(f(s)) } yield r
     }
 
 // Files

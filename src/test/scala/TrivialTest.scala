@@ -70,9 +70,8 @@ class TrivialTest extends org.scalatest.junit.JUnit3Suite {
 
         val io: IO[Unit] = for {
             x <- IO.getChar
-        } {
-            IO.putChar(x)
-        }
+            r <- IO.putChar(x)
+        } yield r
 
         io.unIO()
     }

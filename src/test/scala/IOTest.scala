@@ -23,9 +23,11 @@ class IOTest extends org.scalatest.junit.JUnit3Suite {
 
     def teztGetLine {
         import Monad._
-        val io = for (line <- IO.getLine) {
-            IO.putStr(line)
-        }
+        val io = for {
+            line <- IO.getLine
+            r <- IO.putStr(line)
+        } yield r
+
         io.unIO()
     }
 
