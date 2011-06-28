@@ -11,7 +11,7 @@ package ken
 // Works around name-collision against Ordering EQ.
 // Note toplevel identifiers are case-insensitive wrt file-system.
 private[ken] object _Eq {
-    trait Eq[a]
+    trait Eq[a] // unused
     object Eq {
         def op_==[a](x: a)(y: a): Boolean = x == y
         def op_/=[a](x: a)(y: a): Boolean = x != y

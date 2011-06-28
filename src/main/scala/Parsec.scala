@@ -28,6 +28,16 @@ object Parsec {
     def setSourceLine(pos: SourcePos)(n: Line): SourcePos = pos.copy(line = n)
     def setSourceColumn(pos: SourcePos)(n: Column): SourcePos = pos.copy(column = n)
 
+    def updatePosString(pos: SourcePos)(string: String): SourcePos = List.foldl(updatePosChar)(pos)(string)
+
+    def updatePosChar(pos: SourcePos)(c: Char): SourcePos = c match {
+        case '\n' => pos.copy(line = pos.line + 1, column =1)
+        case '\t' => pos.copy(column = pos.column + 8 - ((pos.column - 1) % 8))
+        case _ => pos.copy(column = pos.column + 1)
+    }
+
+    def forcePos(pos: SourcePos): SourcePos = seq(pos.line)(seq(pos.column)(pos)) // no effects
+
 // Prim
     type Parser[+a] = GenParser[Char, Unit, a]
 
@@ -99,6 +109,11 @@ object Parsec {
         }
     }
 
+    def mergeErrorReply[tok, st, a](err1: ParseError)(reply: Reply[tok, st, a]) = reply match {
+        case Ok(x, state, err2) => Ok(x, state, (mergeError(err1)(err2)))
+        case Error(err2) => Error(mergeError(err1)(err2))
+    }
+
     def parsecZero[tok, st, a]: GenParser[tok, st, a] = {
         Parser { (state: State[tok, st]) =>
             Empty(Error(unknownError(state)))
@@ -119,9 +134,14 @@ object Parsec {
         }
     }
 
-    def mergeErrorReply[tok, st, a](err1: ParseError)(reply: Reply[tok, st, a]) = reply match {
-        case Ok(x, state, err2) => Ok(x, state, (mergeError(err1)(err2)))
-        case Error(err2) => Error(mergeError(err1)(err2))
+    def `try`[tok, st, a](p: GenParser[tok, st, a]): GenParser[tok, st, a] = {
+        Parser { case state@State(input, pos, user) =>
+            runP(p)(state) match {
+                case Consumed(Error(err)) => Empty(Error(setErrorPos(pos)(err)))
+                case Consumed(ok) => Consumed(ok)
+                case empty => empty
+            }
+        }
     }
 
     def unknownError[tok, st](state: State[tok, st]): ParseError = newErrorUnknown(statePos(state))
@@ -133,16 +153,39 @@ object Parsec {
     final case class Expect(s: String) extends MessageT
     final case class Message(s: String) extends MessageT
 
-    final case class ParseError(pos: SourcePos, msg: List[MessageT])
+    def messageToEnum(msg: MessageT): Int = msg match {
+        case SysUnExpect(_) => 0
+        case UnExpect(_) => 1
+        case Expect(_) => 2
+        case Message(_) => 3
+    }
+
+    def messageCompare(msg1: MessageT)(msg2: MessageT): Ordering = {
+        Ord.compare(messageToEnum(msg1))(messageToEnum(msg2))
+    }
+
+    def messageString(msg: MessageT): String = msg match {
+        case SysUnExpect(s) => s
+        case UnExpect(s) => s
+        case Expect(s) => s
+        case Message(s) => s
+    }
+
+    def messageEq(msg1: MessageT)(msg2: MessageT): Boolean = {
+        messageCompare(msg1)(msg2) == EQ
+    }
+
+    final case class ParseError(pos: SourcePos, msgs: List[MessageT])
     def errorPos(err: ParseError): SourcePos = err.pos
-    def errorMessage(err: ParseError): List[MessageT] = err.msg
-    def errorIsUnknown(err: ParseError): Boolean = List.`null`(err.msg)
+    def errorMessage(err: ParseError): List[MessageT] = err.msgs
+    def errorIsUnknown(err: ParseError): Boolean = List.`null`(err.msgs)
 
     def newErrorUnknown(pos: SourcePos): ParseError = ParseError(pos, Nil)
-
-    def mergeError(err1: ParseError)(err2: ParseError): ParseError = (err1, err2) match {
-        case (ParseError(pos, msg1), ParseError(_, msg2)) => ParseError(pos, msg1 ::: msg2)
-    }
+    def newErrorMessage(msg: MessageT)(pos: SourcePos): ParseError = ParseError(pos, List(msg))
+    def addErrorMessage(msg: MessageT)(err: ParseError): ParseError = err.copy(msgs = msg :: err.msgs)
+    def setErrorPos(pos: SourcePos)(err: ParseError): ParseError = err.copy(pos = pos)
+    def setErrorMessage(msg: MessageT)(err: ParseError): ParseError = err.copy(msgs = List.filter(not _ compose messageEq(msg))(err.msgs))
+    def mergeError(err1: ParseError)(err2: ParseError): ParseError = ParseError(err1.pos, err1.msgs ::: err2.msgs)
 
 // Combinators
     import Monad._

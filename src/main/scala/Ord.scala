@@ -32,6 +32,7 @@ trait OrdProxy[a] extends Ord[a] with Proxy {
 
 
 object Ord {
+    def compare[a](x: a)(y: a)(implicit i: Ord[a]): Ordering = i.compare(x)(y)
     def op_<[a](x: a)(y: a)(implicit i: Ord[a]): Boolean = i.op_<(x)(y)
     def op_<=[a](x: a)(y: a)(implicit i: Ord[a]): Boolean = i.op_<=(x)(y)
     def op_>[a](x: a)(y: a)(implicit i: Ord[a]): Boolean = i.op_>(x)(y)

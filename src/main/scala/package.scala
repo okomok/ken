@@ -18,7 +18,7 @@ package object ken {
 
     def op_&&(b: Boolean)(c: => Boolean): Boolean = b && c
 
-    def op_||(b: Boolean)(c: => Boolean): Boolean = b || c
+    def op_||(b : Boolean)(c: => Boolean): Boolean = b || c
 
 // Tuples
     def fst[a, b](p: (a, b)): a = p match {
@@ -42,7 +42,7 @@ package object ken {
 
     def flip[a, b, c](f: a => b => c): b => a => c = { x => y => f(y)(x) }
 
-    def `@`[a, b](f: a => b)(x: a): b = f(x)
+    def op_@[a, b](f: a => b)(x: a): b = f(x)
 
     def until[a](p: a => Boolean)(f: a => a)(x: a): a = {
         if (p(x)) x else until(p)(f)(f(x))
@@ -53,6 +53,10 @@ package object ken {
     def error(msg: String): Nothing = throw new Error(msg)
 
     def undefined: Nothing = throw new Error("undefined")
+
+    def seq[a, b](x: a)(y: b): b = y // no effects
+
+    def op_@![a, b](f: a => b)(x: a): b = f(x) // same as op_@
 
 // Converting to String
     def show(x: Any): String = x.toString
