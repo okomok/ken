@@ -44,7 +44,9 @@ object Parsec {
 // Prim
     type Parser[+a] = GenParser[Char, Unit, a]
 
-    final case class GenParser[tok, st, +a](parse: State[tok, st] => ConsumedT[Reply[tok, st, a]])
+    final case class GenParser[tok, st, +a](parse: State[tok, st] => ConsumedT[Reply[tok, st, a]]) {
+        // add monad methods?
+    }
     val Parser = GenParser
 
     def runP[tok, st, a](p: GenParser[tok, st, a])(state: State[tok, st]): ConsumedT[Reply[tok, st, a]] = p.parse(state)
@@ -119,14 +121,14 @@ object Parsec {
         case Error(err2) => Error(mergeError(err1)(err2))
     }
 
-    /** failure **/
+    /** fail **/
     def parsecZero[tok, st, a]: GenParser[tok, st, a] = {
         Parser { (state: State[tok, st]) =>
             Empty(Error(unknownError(state)))
         }
     }
 
-    /** alternative **/
+    /** alternative (non-backtracking) **/
     def parsecPlus[tok, st, a](p1: GenParser[tok, st, a])(p2: => GenParser[tok, st, a]): GenParser[tok, st, a] = {
         Parser { (state: State[tok, st]) =>
             runP(p1)(state) match {
@@ -141,6 +143,7 @@ object Parsec {
         }
     }
 
+    /** make it backtrackable **/
     def `try`[tok, st, a](p: GenParser[tok, st, a]): GenParser[tok, st, a] = {
         Parser { case state@State(input, pos, user) =>
             runP(p)(state) match {
@@ -151,6 +154,101 @@ object Parsec {
         }
     }
 
+    def token[tok, st, a](show: tok => String)
+        (tokpos: tok => SourcePos)
+        (test: tok => Maybe[a]): GenParser[tok, st, a] =
+    {
+        def nextpos(__ : Any)(tok: tok)(toks: List[tok]): SourcePos = toks match {
+            case tok :: _ => tokpos(tok)
+            case Nil => tokpos(tok)
+        }
+        tokenPrim(show)(nextpos)(test)
+    }
+
+    def tokenPrim[tok, st, a](show: tok => String)
+        (nextpos: SourcePos => tok => List[tok] => SourcePos)
+        (test: tok => Maybe[a]): GenParser[tok, st, a] = tokenPrimEx(show)(nextpos)(Nothing)(test)
+
+    def tokenPrimEx[tok, st, a](show: tok => String)
+        (nextpos: SourcePos => tok => List[tok] => SourcePos)
+        (mbNextState: Maybe[SourcePos => tok => List[tok] => st => st])
+        (test: tok => Maybe[a]): GenParser[tok, st, a] =
+    {
+        mbNextState match {
+            case Nothing =>
+                Parser { case state@State(input, pos, user) =>
+                    input match {
+                        case c :: cs => test(c) match {
+                            case Just(x) => {
+                                val newpos = nextpos(pos)(c)(cs.!)
+                                val newstate = State(cs.!, newpos, user)
+                                Consumed(Ok(x, newstate, newErrorUnknown(newpos)))
+                            }
+                            case Nothing => Empty(sysUnExpectError(show(c))(pos))
+                        }
+                        case Nil => Empty(sysUnExpectError("")(pos))
+                    }
+                }
+            case Just(nextState) =>
+                Parser { case state@State(input, pos, user) =>
+                    input match {
+                        case c :: cs => test(c) match {
+                            case Just(x) => {
+                                val newpos = nextpos(pos)(c)(cs.!)
+                                val newuser = nextState(pos)(c)(cs.!)(user)
+                                val newstate = State(cs.!, newpos, newuser)
+                                Consumed(Ok(x, newstate, newErrorUnknown(newpos)))
+                            }
+                            case Nothing => Empty(sysUnExpectError(show(c))(pos))
+                        }
+                        case Nil => Empty(sysUnExpectError("")(pos))
+                    }
+                }
+        }
+    }
+
+    def label[tok, st, a](p: GenParser[tok, st, a])(msg: String): GenParser[tok, st, a] = labels(p)(List(msg))
+
+    def labels[tok, st, a](p: GenParser[tok, st, a])(msgs: List[String]): GenParser[tok, st, a] = {
+        Parser { (state: State[tok, st]) =>
+            runP(p)(state) match {
+                case Empty(reply) => Empty {
+                    reply match {
+                        case Error(err) => Error(setExpectErrors(err)(msgs))
+                        case Ok(x, state1, err) => {
+                            if (errorIsUnknown(err)) {
+                                reply
+                            } else {
+                                Ok(x, state1, setExpectErrors(err)(msgs))
+                            }
+                        }
+                    }
+                }
+                case other => other
+            }
+        }
+    }
+
+    def updateParserState[tok, st](f: State[tok, st] => State[tok, st]): GenParser[tok, st, State[tok, st]] = {
+        Parser { (state: State[tok, st]) => {
+            val newstate = f(state)
+            Empty(Ok(state, newstate, unknownError(newstate)))
+        } }
+    }
+
+    def setExpectErrors(err: ParseError)(msgs: List[String]): ParseError = msgs match {
+        case Nil => setErrorMessage(Expect(""))(err)
+        case msg !:: Nil => setErrorMessage(Expect(msg))(err)
+        case msg :: msgs => List.foldr[String, ParseError](msg => err => addErrorMessage(Expect(msg))(err))(setErrorMessage(Expect(msg))(err))(msgs.!)
+    }
+
+    def expected[tok, st](msg: String): GenParser[tok, st, Nothing] = {
+        Parser { (state: State[tok, st]) => Empty(Error(newErrorMessage(UnExpect(msg))(statePos(state)))) }
+    }
+
+    def foo[tok, st, Int]: GenParser[tok, st, Int] = expected[tok, st]("hello")
+
+    def sysUnExpectError(msg: String)(pos: SourcePos): Reply[Nothing, Nothing, Nothing] = Error(newErrorMessage(SysUnExpect(msg))(pos))
     def unknownError[tok, st](state: State[tok, st]): ParseError = newErrorUnknown(statePos(state))
 
 // Error

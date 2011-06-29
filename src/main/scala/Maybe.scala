@@ -14,7 +14,7 @@ sealed abstract class Maybe[+a] extends Up[Maybe[a]] {
 }
 
 
-object Nothing extends Maybe[scala.Nothing]
+case object Nothing extends Maybe[Nothing]
 
 case class Just[+a](x: a) extends Maybe[a]
 
