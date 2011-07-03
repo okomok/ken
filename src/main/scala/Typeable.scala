@@ -14,7 +14,7 @@ trait Typeable[a] {
 
 
 trait TypeableProxy[a] extends Typeable[a] with Proxy {
-    def self: Typeable[a]
+    override def self: Typeable[a]
     override def typeOf(x: => a): ClassManifest[a] = self.typeOf(x)
 }
 

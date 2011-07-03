@@ -20,7 +20,7 @@ trait Ord[a] {
 
 
 trait OrdProxy[a] extends Ord[a] with Proxy {
-    def self: Ord[a]
+    override def self: Ord[a]
     override def compare(x: a)(y: a): Ordering = self.compare(x)(y)
     override def op_<(x: a)(y: a): Boolean = self.op_<(x)(y)
     override def op_<=(x: a)(y: a): Boolean = self.op_<=(x)(y)

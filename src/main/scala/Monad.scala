@@ -32,7 +32,7 @@ trait MonadObj[m[+_], +a] extends ApplicativeObj[m, a] {
 }
 
 trait MonadProxy[m[_]] extends Monad[m] with ApplicativeProxy[m] {
-    def self: Monad[m]
+    override def self: Monad[m]
     override def `return`[a](x: a): m[a] = self.`return`(x)
     override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = self.op_>>=(x)(y)
     override def op_>>[a, b](x: m[a])(y: => m[b]): m[b] = self.op_>>(x)(y)
@@ -53,7 +53,7 @@ trait MonadPlusObj[m[+_], +a] extends MonadObj[m, a] with AlternativeObj[m, a] {
 }
 
 trait MonadPlusProxy[m[_]] extends MonadPlus[m] with MonadProxy[m] with AlternativeProxy[m] {
-    def self: MonadPlus[m]
+    override def self: MonadPlus[m]
     override def mzero[a]: m[a] = self.mzero
     override def mplus[a](x: m[a])(y: => m[a]): m[a] = self.mplus(x)(y)
 }

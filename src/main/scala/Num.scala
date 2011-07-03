@@ -20,7 +20,7 @@ trait Num[a] {
 
 
 trait NumProxy[a] extends Num[a] with Proxy {
-    def self: Num[a]
+    override def self: Num[a]
     override def op_+(x: a)(y: a): a = self.op_+(x)(y)
     override def op_-(x: a)(y: a): a = self.op_-(x)(y)
     override def op_*(x: a)(y: a): a = self.op_*(x)(y)

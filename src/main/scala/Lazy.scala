@@ -8,13 +8,20 @@ package com.github.okomok
 package ken
 
 
-sealed abstract class Lazy[+a] {
+sealed abstract class Lazy[+a] extends MonadObj[Lazy, a] {
+    override val obj = this
     def ! : a
 }
 
 object Lazy {
     def apply[a](x: => a): Lazy[a] = new Lazy[a] {
         override lazy val ! : a = x
+    }
+
+    implicit object theInstance extends Monad[Lazy] {
+        private[this] type m[a] = Lazy[a]
+        override def `return`[a](x: a): m[a] = Lazy { x }
+        override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = Lazy { y(x.!).! }
     }
 
     // implicit def eval[a](x: Lazy[a]): a = x.!

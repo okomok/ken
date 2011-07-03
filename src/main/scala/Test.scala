@@ -11,5 +11,5 @@ package ken
 object Test {
     import Applicative.function1
 
-    val r = ((x: Int) => (y: Int) => x + y) <@> ((x: Int) => x)
+    val r: Int => Int => Int = ((x: Int) => (y: Int) => x + y) <@> ((x: Int) => x)
 }
