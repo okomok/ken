@@ -22,11 +22,11 @@ trait Applicative[f[_]] extends Functor[f] {
     override def fmap[a, b](x: a => b)(y: f[a]): f[b] = pure(x) <*> y
 }
 
-trait ApplicativeMethod[f[+_], +a] { self: f[a] =>
-    final def <*>[_a, b](y: f[_a])(implicit i: Applicative[f], pre: f[a] <:< f[_a => b]): f[b] = op_<*>(pre(self))(y)
-    final def *>[b](y: f[b])(implicit i: Applicative[f]): f[b] = op_*>(self)(y)
-    final def <*[_a, b](y: f[b])(implicit i: Applicative[f], pre: f[a] <:< f[_a]): f[_a] = op_<*(self)(y)
-    final def <**>[b](y: f[a => b])(implicit i: Applicative[f]): f[b] = op_<**>(self)(y)
+trait ApplicativeObj[f[+_], +a] extends FunctorObj[f, a] {
+    final def <*>[_a, b](y: f[_a])(implicit i: Applicative[f], pre: f[a] <:< f[_a => b]): f[b] = op_<*>(pre(obj))(y)
+    final def *>[b](y: f[b])(implicit i: Applicative[f]): f[b] = op_*>(obj)(y)
+    final def <*[_a, b](y: f[b])(implicit i: Applicative[f], pre: f[a] <:< f[_a]): f[_a] = op_<*(obj)(y)
+    final def <**>[b](y: f[a => b])(implicit i: Applicative[f]): f[b] = op_<**>(obj)(y)
 }
 
 trait ApplicativeProxy[f[_]] extends Applicative[f] with FunctorProxy[f] {
@@ -59,8 +59,8 @@ trait Alternative[f[_]] extends Applicative[f] {
     private[this] def _cons[a]: a => List[a] => List[a] = x => xs => x :: xs
 }
 
-trait AlternativeMethod[f[+_], +a] extends ApplicativeMethod[f, a] { self: f[a] =>
-    final def <|>[b >: a](y: => f[b])(implicit i: Alternative[f]): f[b] = op_<|>[f, b](self)(y)
+trait AlternativeObj[f[+_], +a] extends ApplicativeObj[f, a] {
+    final def <|>[b >: a](y: => f[b])(implicit i: Alternative[f]): f[b] = op_<|>[f, b](obj)(y)
 }
 
 trait AlternativeProxy[f[_]] extends Alternative[f] with ApplicativeProxy[f] {
@@ -84,20 +84,6 @@ trait ApplicativeOp extends FunctorOp {
 
     def op_*>[f[_], a, b](x: f[a])(y: f[b])(implicit i: Applicative[f]): f[b] = i.op_*>(x)(y)
     def op_<*[f[_], a, b](x: f[a])(y: f[b])(implicit i: Applicative[f]): f[a] = i.op_<*(x)(y)
-
-    def op_<@>[f[_], a, b](x: a => b)(y: f[a])(implicit i: Functor[f]): f[b] = i.fmap(x)(y)
-
-    private[ken] class Op_<@>[f[_], a, b](x: a => b)(implicit i: Functor[f]) {
-        def <@>(y: f[a]): f[b] = op_<@>(x)(y)
-    }
-    implicit def <@>[f[_], a, b](x: a => b)(implicit i: Functor[f]): Op_<@>[f, a, b] = new Op_<@>[f, a, b](x)
-
-    def op_<@[f[_], a, b](x: => a)(y: f[b])(implicit i: Functor[f]): f[a] = i.fmap[b, a](_ => x)(y)
-
-    private[ken] class Op_<@[f[_], a](x: => a)(implicit i: Functor[f]) {
-        def <@[b](y: f[b]): f[a] = op_<@(x)(y)
-    }
-    implicit def <@[f[_], a](x: => a)(implicit i: Functor[f]): Op_<@[f, a] = new Op_<@[f, a](x)
 
     private[ken] class Op_<*>[f[_], a, b](x: f[a => b])(implicit i: Applicative[f]) {
         def <*>(y: f[a]): f[b] = op_<*>(x)(y)
@@ -147,6 +133,10 @@ trait ApplicativeInstance extends MonadInstance {
         private[this] type f[a] = z => a
         override def pure[a](x: => a): f[a] = const(x)
         override def op_<*>[a, b](x: f[a => b])(y: f[a]): f[b] = z => x(z)(y(z))
+    }
+
+    implicit def function1[z, a](f: z => a): ApplicativeObj[({type f[+a] = z => a})#f, a] = new ApplicativeObj[({type f[+a] = z => a})#f, a] {
+        override val obj = f
     }
 
     implicit def ofMonoid[z](implicit ma: Monoid[z]): Applicative[({type f[a] = (z, a)})#f] = new Applicative[({type f[a] = (z, a)})#f] {

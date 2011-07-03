@@ -8,7 +8,8 @@ package com.github.okomok
 package ken
 
 
-trait IO[+a] extends MonadPlusMethod[IO, a] {
+trait IO[+a] extends MonadPlusObj[IO, a] {
+    override val obj = this
     /**
      * Guarantees side-effect.
      * This may be implicitly called before your explicit call.

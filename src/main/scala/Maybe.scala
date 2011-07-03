@@ -8,7 +8,9 @@ package com.github.okomok
 package ken
 
 
-sealed abstract class Maybe[+a] extends Up[Maybe[a]] with MonadPlusMethod[Maybe, a] {
+sealed abstract class Maybe[+a] extends Up[Maybe[a]] with MonadPlusObj[Maybe, a] {
+    override val obj = this
+
     @inline
     final def of[b >: a]: Maybe[b] = this
 }

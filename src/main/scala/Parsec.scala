@@ -48,7 +48,10 @@ object Parsec {
     type Parser[+a] = GenParser[Char, Unit, a]
 
     final case class GenParser[tok, st, +a](parse: State[tok, st] => ConsumedT[Reply[tok, st, a]]) extends
-        MonadPlusMethod[({type m[+x] = GenParser[tok, st, x]})#m, a]
+        MonadPlusObj[({type m[+x] = GenParser[tok, st, x]})#m, a]
+    {
+        override val obj = this
+    }
 
     val Parser = GenParser
 
