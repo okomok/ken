@@ -51,7 +51,6 @@ class TrivialTest extends org.scalatest.junit.JUnit3Suite {
     }
 
     def teztIO {
-        import Monad.`for`
    //     val io = getChar >>= { x => putChar(x) }
    //     io
 
@@ -64,7 +63,6 @@ class TrivialTest extends org.scalatest.junit.JUnit3Suite {
     }
 
     def teztIO2 {
-        import Monad.`for`
    //     val io = getChar >>= { x => putChar(x) }
    //     io
 

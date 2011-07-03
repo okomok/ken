@@ -22,6 +22,14 @@ trait Applicative[f[_]] extends Functor[f] {
     override def fmap[a, b](x: a => b)(y: f[a]): f[b] = pure(x) <*> y
 }
 
+trait ApplicativeMethod[f[+_], +a] {
+    private[this] val _this = this.asInstanceOf[f[a]]
+
+    final def <*>[_a, b](y: f[_a])(implicit i: Applicative[f], pre: f[a] <:< f[_a => b]): f[b] = pre(_this) <*> y
+    final def *>[b](y: f[b])(implicit i: Applicative[f]): f[b] = _this *> y
+    final def <*[_a, b](y: f[b])(implicit i: Applicative[f], pre: f[a] <:< f[_a]): f[_a] = _this <* y
+    final def <**>[b](y: f[a => b])(implicit i: Applicative[f]): f[b] = _this <**> y
+}
 
 trait ApplicativeProxy[f[_]] extends Applicative[f] with FunctorProxy[f] {
     def self: Applicative[f]
@@ -53,6 +61,11 @@ trait Alternative[f[_]] extends Applicative[f] {
     private[this] def _cons[a]: a => List[a] => List[a] = x => xs => x :: xs
 }
 
+trait AlternativeMethod[f[+_], +a] extends ApplicativeMethod[f, a] {
+    private[this] val _this = this.asInstanceOf[f[a]]
+
+    final def <|>[b >: a](y: => f[b])(implicit i: Alternative[f]): f[b] = op_<|>[f, b](_this)(y)
+}
 
 trait AlternativeProxy[f[_]] extends Alternative[f] with ApplicativeProxy[f] {
     def self: Alternative[f]

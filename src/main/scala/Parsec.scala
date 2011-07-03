@@ -11,6 +11,9 @@ package com.github.okomok
 package ken
 
 
+import scala.annotation.tailrec
+
+
 object Parsec {
 
 // Pos
@@ -44,9 +47,9 @@ object Parsec {
 // Prim
     type Parser[+a] = GenParser[Char, Unit, a]
 
-    final case class GenParser[tok, st, +a](parse: State[tok, st] => ConsumedT[Reply[tok, st, a]]) {
-        // add monad methods?
-    }
+    final case class GenParser[tok, st, +a](parse: State[tok, st] => ConsumedT[Reply[tok, st, a]]) extends
+        MonadPlusMethod[({type m[+x] = GenParser[tok, st, x]})#m, a]
+
     val Parser = GenParser
 
     def runP[tok, st, a](p: GenParser[tok, st, a])(state: State[tok, st]): ConsumedT[Reply[tok, st, a]] = p.parse(state)
@@ -236,20 +239,66 @@ object Parsec {
         } }
     }
 
+    def unexpected[tok, st](msg: String): GenParser[tok, st, Nothing] = {
+        Parser { (state: State[tok, st]) => Empty(Error(newErrorMessage(UnExpect(msg))(statePos(state)))) }
+    }
+
     def setExpectErrors(err: ParseError)(msgs: List[String]): ParseError = msgs match {
         case Nil => setErrorMessage(Expect(""))(err)
         case msg !:: Nil => setErrorMessage(Expect(msg))(err)
         case msg :: msgs => List.foldr[String, ParseError](msg => err => addErrorMessage(Expect(msg))(err))(setErrorMessage(Expect(msg))(err))(msgs.!)
     }
 
-    def expected[tok, st](msg: String): GenParser[tok, st, Nothing] = {
-        Parser { (state: State[tok, st]) => Empty(Error(newErrorMessage(UnExpect(msg))(statePos(state)))) }
-    }
-
-    def foo[tok, st, Int]: GenParser[tok, st, Int] = expected[tok, st]("hello")
-
     def sysUnExpectError(msg: String)(pos: SourcePos): Reply[Nothing, Nothing, Nothing] = Error(newErrorMessage(SysUnExpect(msg))(pos))
     def unknownError[tok, st](state: State[tok, st]): ParseError = newErrorUnknown(statePos(state))
+
+    /** star **/
+    def many[tok, st, a](p: GenParser[tok, st, a]): GenParser[tok, st, List[a]] = {
+        for { xs <- manyAccum(List.op_::[a])(p) } yield List.reverse(xs)
+        /*
+        type m[a] = GenParser[tok, st, a]
+        // For some reason, Monad.`for` doesn't work.
+        Monad.op_>>=(manyAccum(List.op_::[a])(p): m[List[a]]) { xs =>
+            Monad.`return`(List.reverse(xs))(Monad.monad[m])
+        }
+        */
+    }
+
+    /** star **/
+    def skipMany[tok, st](p: GenParser[tok, st, _]): GenParser[tok, st, Unit] = {
+        for { xs <- manyAccum[tok, st, Any](x => y => Nil)(p) } yield ()
+        /*
+        type m[a] = GenParser[tok, st, a]
+        // For some reason, Monad.`for` doesn't work.
+        Monad.op_>>=(manyAccum[tok, st, Any](x => y => Nil)(p): m[List[_]]) { xs =>
+            Monad.`return`(())(Monad.monad[m])
+        }
+        */
+    }
+
+    /** star **/
+    def manyAccum[tok, st, a](accum: a => (=> List[a]) => List[a])(p: GenParser[tok, st, a]): GenParser[tok, st, List[a]] = {
+        Parser { (state: State[tok, st]) =>
+            @tailrec
+            def walk(xs: List[a])(state: State[tok, st])(c: ConsumedT[Reply[tok, st, a]]): Reply[tok, st, List[a]] = c match {
+                case Empty(Error(err)) => Ok(xs, state, err)
+                case Empty(ok) => error("parser shall consume in successful match.")
+                case Consumed(Error(err)) => Error(err)
+                case Consumed(Ok(x, state_, err)) => {
+                    val ys = accum(x)(xs)
+                    walk(ys)(state_)(runP(p)(state_))
+                }
+            }
+
+            runP(p)(state) match {
+                case Empty(reply) => reply match {
+                    case Ok(x, state_, err) => error("parser shall consume in successful match.")
+                    case Error(err) => Empty(Ok(Nil, state, err))
+                }
+                case consumed => Consumed(walk(Nil)(state)(consumed))
+            }
+        }
+    }
 
 // Error
     sealed abstract class MessageT extends Up[MessageT]
@@ -293,36 +342,32 @@ object Parsec {
     def mergeError(err1: ParseError)(err2: ParseError): ParseError = ParseError(err1.pos, err1.msgs ::: err2.msgs)
 
 // Combinators
-    import Monad._
-
     def choice[tok, st, a](ps: List[GenParser[tok, st, a]]): GenParser[tok, st, a] = {
+        import Monad._
         type m[a] = GenParser[tok, st, a]
         List.foldr[m[a], m[a]](op_<|>)(mzero(monadPlus[m]))(ps)
     }
 
     def option[tok, st, a](x: a)(p: GenParser[tok, st, a]): GenParser[tok, st, a] = {
-        type m[a] = GenParser[tok, st, a]
-        (p: m[a]) <|> `return`(x)(monad[m])
+        p <|> p.`return`(x)
     }
 
     def optional[tok, st](p: GenParser[tok, st, _]): GenParser[tok, st, Unit] = {
-        type m[a] = GenParser[tok, st, a]
-        ( for { _ <- (p: m[_]) } yield () ) <|> `return`()(monad[m])
+        ( for { _ <- p } yield () ) <|> p.`return`()
     }
 
     def between[tok, st, a](open: GenParser[tok, st, _])(close: GenParser[tok, st, _])(p: GenParser[tok, st, a]): GenParser[tok, st, a] = {
-        type m[a] = GenParser[tok, st, a]
-        for { _ <- (open: m[_]); x <- (p: m[a]); _ <- (close: m[_]) } yield x
+        for { _ <- open; x <- p; _ <- close } yield x
     }
 
     def skipMany1[tok, st](p: GenParser[tok, st, _]): GenParser[tok, st, Unit] = {
-        type m[a] = GenParser[tok, st, a]
-        for { _ <- (p: m[_]); r <- (skipMany1(p): m[Unit]) } yield r
+        for { _ <- p; r <- skipMany1(p) } yield r
     }
-
+    /*
     def skipMany[tok, st](p: GenParser[tok, st, _]): GenParser[tok, st, Unit] = {
         type m[a] = GenParser[tok, st, a]
-        lazy val scan: GenParser[tok, st, Unit] = ( for { _ <- (p: m[_]); _ <- (scan: m[Unit]) } yield () ) <|> `return`()(monad[m])
+        lazy val scan: GenParser[tok, st, Unit] = ( for { _ <- p: m[_]; _ <- scan: m[Unit] } yield () ) <|> `return`()(monad[m])
         scan
     }
+    */
 }

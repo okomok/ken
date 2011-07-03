@@ -8,17 +8,13 @@ package com.github.okomok
 package ken
 
 
-import Monad.`for`
-
-
-trait IO[+a] {
+trait IO[+a] extends MonadPlusMethod[IO, a] {
     /**
      * Guarantees side-effect.
      * This may be implicitly called before your explicit call.
      */
     def unIO(): a
 }
-
 
 trait IOProxy[+a] extends IO[a] with Proxy {
     def self: IO[a]
@@ -44,7 +40,7 @@ object IO {
     }
 
     def putStrLn(s: List[Char]): IO[Unit] = {
-        for (_ <- putStr(s); _ <- putChar('\n')) yield ()
+        for { _ <- putStr(s); _ <- putChar('\n') } yield ()
     }
 
     def print[a](x: a): IO[Unit] = new IO[Unit] {

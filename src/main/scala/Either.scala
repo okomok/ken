@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-sealed abstract class Either[+a, +b] extends Up[Either[a, b]]{
+sealed abstract class Either[+a, +b] extends Up[Either[a, b]] {
     @inline
     final def of[a_ >: a, b_ >: b]: Either[a_, b_] = this
 }
@@ -22,8 +22,6 @@ object Either {
         case Left(x) => f(x)
         case Right(y) => g(y)
     }
-
-    import Monad.`for`
 
     def lefts[a, b](x: List[Either[a, b]]): List[a] = for { Left(a) <- x } yield a
     def rights[a, b](x: List[Either[a, b]]): List[b] = for { Right(a) <- x } yield a

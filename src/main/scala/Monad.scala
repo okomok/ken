@@ -22,6 +22,16 @@ trait Monad[m[_]] extends Applicative[m] {
     override def op_<*>[a, b](x: m[a => b])(y: m[a]): m[b] = for { _x <- x; _y <- y } yield _x(_y)
 }
 
+trait MonadMethod[m[+_], +a] extends ApplicativeMethod[m, a] {
+    private[this] val _this = this.asInstanceOf[m[a]]
+
+    final def `return`[b](x: b)(implicit i: Monad[m]): m[b] = Monad.`return`(x)
+    final def >>=[b](y: a => m[b])(implicit i: Monad[m]): m[b] = _this >>= y
+    final def >>[b >: a](y: m[b])(implicit i: Monad[m]): m[b] = _this >> y
+
+    final def flatMap[b](y: a => m[b])(implicit i: Monad[m]): m[b] = _this >>= y
+    final def map[b](y: a => b)(implicit i: Monad[m]): m[b] = _this >>= (_x => Monad.`return`(y(_x)))
+}
 
 trait MonadProxy[m[_]] extends Monad[m] with ApplicativeProxy[m] {
     def self: Monad[m]
@@ -39,6 +49,12 @@ trait MonadPlus[m[_]] extends Monad[m] with Alternative[m] {
     override def op_<|>[a](x: m[a])(y: => m[a]): m[a] = mplus(x)(y)
 }
 
+trait MonadPlusMethod[m[+_], +a] extends MonadMethod[m, a] with AlternativeMethod[m, a] {
+    private[this] val _this = this.asInstanceOf[m[a]]
+
+    final def mzero(implicit i: MonadPlus[m]): m[Nothing] = Monad.mzero
+    final def _mplus_[b >: a](y: => m[b])(implicit i: MonadPlus[m]): m[b] = Monad.mplus[m, b](_this)(y)
+}
 
 trait MonadPlusProxy[m[_]] extends MonadPlus[m] with MonadProxy[m] with AlternativeProxy[m] {
     def self: MonadPlus[m]

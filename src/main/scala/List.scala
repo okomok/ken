@@ -9,10 +9,9 @@ package ken
 
 
 import scala.annotation.tailrec
-import Monad.`for`
 
 
-sealed abstract class List[+a] extends Up[List[a]] {
+sealed abstract class List[+a] extends Up[List[a]] with MonadPlusMethod[List, a] {
     @inline
     final def of[b >: a]: List[b] = this
 

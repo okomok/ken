@@ -3,15 +3,14 @@
 
 `ken` is a Haskell DSL in Scala without any elaborate techniques:
 
-    import com.github.okomok.ken
+    import com.github.okomok.ken.IO
 
     class ExampleTest extends org.scalatest.junit.JUnit3Suite {
-        def teztIO {
-            import ken.Monad.`for`
 
+        def teztIO {
             val io = for {
-                x <- ken.IO.getChar
-                r <- ken.IO.putChar(x)
+                x <- IO.getChar
+                r <- IO.putChar(x)
             } yield r
 
             io.unIO()

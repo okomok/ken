@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-sealed abstract class Maybe[+a] extends Up[Maybe[a]] {
+sealed abstract class Maybe[+a] extends Up[Maybe[a]] with MonadPlusMethod[Maybe, a] {
     @inline
     final def of[b >: a]: Maybe[b] = this
 }
@@ -56,7 +56,6 @@ object Maybe {
     }
 
     def catMaybes[a](ls: List[Maybe[a]]): List[a] = {
-        import Monad.`for`
         for { Just(x) <- ls } yield x
     }
 
