@@ -12,14 +12,14 @@ case class Const[a, b](getConst: a)
 
 
 object Const {
-    implicit def functorInstance[m]: Functor[({type f[x] = Const[m, x]})#f] = new Functor[({type f[x] = Const[m, x]})#f] {
+    implicit def functor[m]: Functor[({type f[x] = Const[m, x]})#f] = new Functor[({type f[x] = Const[m, x]})#f] {
         private[this] type f[x] = Const[m, x]
         override def fmap[a, b](x: a => b)(y: f[a]): f[b] = y match {
             case Const(v) => Const(v)
         }
     }
 
-    implicit def applicativeInstance[m](implicit i: Monoid[m]): Applicative[({type f[x] = Const[m, x]})#f] = new Applicative[({type f[x] = Const[m, x]})#f] {
+    implicit def applicative[m](implicit i: Monoid[m]): Applicative[({type f[x] = Const[m, x]})#f] = new Applicative[({type f[x] = Const[m, x]})#f] {
         private[this] type f[x] = Const[m, x]
         override def pure[a](x: => a): f[a] = Const(i.mempty)
         override def op_<*>[a, b](x: f[a => b])(y: f[a]): f[b] = (x, y) match {

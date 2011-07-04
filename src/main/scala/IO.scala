@@ -24,7 +24,7 @@ object IO {
         override def unIO = x
     }
 
-    implicit object theInstance extends Monad[IO] {
+    implicit val monad: Monad[IO] = new Monad[IO] {
         private[this] type m[a] = IO[a]
         override def `return`[a](x: a): m[a] = IO { x }
         override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = IO {

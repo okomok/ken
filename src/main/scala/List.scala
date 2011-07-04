@@ -80,7 +80,7 @@ object List {
     }
     implicit def ofName[a](xs: => List[a]): OfName[a] = new OfName(xs)
 
-    implicit object theInstance extends MonadPlus[List] {
+    implicit val monad: MonadPlus[List] = new MonadPlus[List] {
         private[this] type m[a] = List[a]
         // Monad
         override def `return`[a](x: a): m[a] = List(x)
@@ -90,13 +90,13 @@ object List {
         override def mplus[a](x: m[a])(y: => m[a]): m[a] = x ::: y
     }
 
-    implicit def monoidInstance[a]: Monoid[List[a]] = new Monoid[List[a]] {
+    implicit def monoid[a]: Monoid[List[a]] = new Monoid[List[a]] {
         private[this] type m = List[a]
         override def mempty: m = Nil
         override def mappend(x: m)(y: => m): m = x ::: y
     }
 
-    implicit def ordInstance[a](implicit i: Ord[a]): Ord[List[a]] = new Ord[List[a]] {
+    implicit def ord[a](implicit i: Ord[a]): Ord[List[a]] = new Ord[List[a]] {
         @tailrec
         override def compare(x: List[a])(y: List[a]): Ordering = (x, y) match {
             case (Nil, Nil) => EQ

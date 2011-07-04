@@ -18,7 +18,7 @@ object Lazy {
         override lazy val ! : a = x
     }
 
-    implicit object theInstance extends Monad[Lazy] {
+    implicit val monad: Monad[Lazy] = new Monad[Lazy] {
         private[this] type m[a] = Lazy[a]
         override def `return`[a](x: a): m[a] = Lazy { x }
         override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = Lazy { y(x.!).! }

@@ -173,7 +173,7 @@ trait MonadOp extends ApplicativeOp {
     }
     implicit def _mplus_[m[_], a](x: m[a])(implicit i: MonadPlus[m]): _Mplus_[m, a] = new _Mplus_[m, a](x)
 
-    def guard[m[_], a](b: Boolean)(implicit i: MonadPlus[m]): m[Unit] = b match {
+    def guard[m[_]](b: Boolean)(implicit i: MonadPlus[m]): m[Unit] = b match {
         case true => i.`return`(())
         case false => i.mzero
     }

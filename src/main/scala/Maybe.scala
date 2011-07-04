@@ -15,13 +15,13 @@ sealed abstract class Maybe[+a] extends Up[Maybe[a]] with MonadPlusObj[Maybe, a]
     final def of[b >: a]: Maybe[b] = this
 }
 
-
 case object Nothing extends Maybe[Nothing]
-
 case class Just[+a](x: a) extends Maybe[a]
 
 
 object Maybe {
+    def just[a](x: a): Maybe[a] = Just(x)
+
     def maybe[a, b](n: b)(f: a => b)(m: Maybe[a]): b = m match {
         case Nothing => n
         case Just(x) => f(x)
@@ -72,7 +72,7 @@ object Maybe {
         }
     }
 
-    implicit object theInstance extends MonadPlus[Maybe] {
+    implicit val monad: MonadPlus[Maybe] = new MonadPlus[Maybe] {
         private[this] type m[a] = Maybe[a]
         // Monad
         override def `return`[a](x: a): m[a] = Just(x)
@@ -87,4 +87,21 @@ object Maybe {
             case (Just(p), _) => Just(p)
         }
     }
+
+    /*
+    implicit def ofMonadT[n[_]](implicit i: Monad[n]): Monad[({type m[a] = n[Maybe[a]]})#m] = new Monad[({type m[a] = n[Maybe[a]]})#m] {
+//        private[this] type m[a] = n[Maybe[a]]
+        override def `return`[a](x: a): n[Maybe[a]] = Monad.`return`(Just(x).up)(i)
+        override def op_>>=[a, b](x: n[Maybe[a]])(y: a => n[Maybe[b]]): n[Maybe[b]] = {
+            Monad.op_>>=/*[n, Maybe[a], Maybe[b]]*/(x)({
+                case Nothing => Monad.`return`(Nothing.of[b])(i)
+                case Just(v) => y(v)
+            })(i)
+        }
+    }
+
+    implicit def monadT[n[_], a](x: n[Maybe[a]]): MonadObj[({type m[+a] = n[Maybe[a]]})#m, a] = new MonadObj[({type m[+a] = n[Maybe[a]]})#m, a] {
+        override val obj = x
+    }
+    */
 }
