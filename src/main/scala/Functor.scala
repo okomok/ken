@@ -9,6 +9,8 @@ package ken
 
 
 trait Functor[f[_]] {
+    type apply[a] = f[a]
+
     def fmap[a, b](x: a => b)(y: f[a]): f[b]
 
     final def op_<@>[a, b](x: a => b)(y: f[a]): f[b] = fmap(x)(y)

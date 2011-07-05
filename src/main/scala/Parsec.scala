@@ -159,7 +159,7 @@ object Parsec {
         (tokpos: tok => SourcePos)
         (test: tok => Maybe[a]): GenParser[tok, st, a] =
     {
-        def nextpos(__ : Any)(tok: tok)(toks: List[tok]): SourcePos = toks match {
+        def nextpos(* : Any)(tok: tok)(toks: List[tok]): SourcePos = toks match {
             case tok :: _ => tokpos(tok)
             case Nil => tokpos(tok)
         }
@@ -253,31 +253,15 @@ object Parsec {
     /** star **/
     def many[tok, st, a](p: GenParser[tok, st, a]): GenParser[tok, st, List[a]] = {
         val i = GenParser.monad[tok, st]
-        import i.`for`
-
+        import i._
         for { xs <- manyAccum(List.op_::[a])(p) } yield List.reverse(xs)
-        /*
-        type m[a] = GenParser[tok, st, a]
-        // For some reason, Monad.`for` doesn't work.
-        Monad.op_>>=(manyAccum(List.op_::[a])(p): m[List[a]]) { xs =>
-            Monad.`return`(List.reverse(xs))(Monad.monad[m])
-        }
-        */
     }
 
     /** star **/
     def skipMany[tok, st](p: GenParser[tok, st, _]): GenParser[tok, st, Unit] = {
         val i = GenParser.monad[tok, st]
-        import i.`for`
-
+        import i._
         for { xs <- manyAccum[tok, st, Any](x => y => Nil)(p) } yield ()
-        /*
-        type m[a] = GenParser[tok, st, a]
-        // For some reason, Monad.`for` doesn't work.
-        Monad.op_>>=(manyAccum[tok, st, Any](x => y => Nil)(p): m[List[_]]) { xs =>
-            Monad.`return`(())(Monad.monad[m])
-        }
-        */
     }
 
     /** star **/
@@ -348,31 +332,31 @@ object Parsec {
 // Combinators
     def choice[tok, st, a](ps: List[GenParser[tok, st, a]]): GenParser[tok, st, a] = {
         val i = GenParser.monad[tok, st]
-        type m[a] = GenParser[tok, st, a]
-        List.foldr[m[a], m[a]](i.op_<|>)(i.mzero)(ps)
+        import i._
+        List.foldr[apply[a], apply[a]](op_<|>)(mzero)(ps)
     }
 
     def option[tok, st, a](x: a)(p: GenParser[tok, st, a]): GenParser[tok, st, a] = {
         val i = GenParser.monad[tok, st]
-        import i.<|>
-        p <|> i.`return`(x)
+        import i._
+        p <|> `return`(x)
     }
 
     def optional[tok, st](p: GenParser[tok, st, _]): GenParser[tok, st, Unit] = {
         val i = GenParser.monad[tok, st]
-        import i.{`for`, <|>}
-        ( for { _ <- p } yield () ) <|> i.`return`()
+        import i._
+        ( for { _ <- p } yield () ) <|> `return`()
     }
 
     def between[tok, st, a](open: GenParser[tok, st, _])(close: GenParser[tok, st, _])(p: GenParser[tok, st, a]): GenParser[tok, st, a] = {
         val i = GenParser.monad[tok, st]
-        import i.`for`
+        import i._
         for { _ <- open; x <- p; _ <- close } yield x
     }
 
     def skipMany1[tok, st](p: GenParser[tok, st, _]): GenParser[tok, st, Unit] = {
         val i = GenParser.monad[tok, st]
-        import i.`for`
+        import i._
         for { _ <- p; r <- skipMany1(p) } yield r
     }
     /*

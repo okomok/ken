@@ -17,7 +17,23 @@ case object Nothing extends Maybe[Nothing]
 case class Just[+a](x: a) extends Maybe[a]
 
 
-object Maybe {
+object Maybe extends MonadPlus[Maybe] {
+    implicit val monad: MonadPlus[Maybe] = this
+
+    private[this] type m[a] = Maybe[a]
+    // Monad
+    override def `return`[a](x: a): m[a] = Just(x)
+    override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = x match {
+        case Just(x) => y(x)
+        case Nothing => Nothing
+    }
+    // MonadPlus
+    override def mzero[a]: m[a] = Nothing
+    override def mplus[a](x: m[a])(y: => m[a]): m[a] = (x, y) match {
+        case (Nothing, p) => p
+        case (Just(p), _) => Just(p)
+    }
+
     def just[a](x: a): Maybe[a] = Just(x)
 
     def maybe[a, b](n: b)(f: a => b)(m: Maybe[a]): b = m match {
@@ -56,7 +72,6 @@ object Maybe {
     }
 
     def catMaybes[a](ls: List[Maybe[a]]): List[a] = {
-        import List.monad._
         for { Just(x) <- ls } yield x
     }
 
@@ -68,22 +83,6 @@ object Maybe {
                 case Nothing => rs
                 case Just(r) => r :: rs
             }
-        }
-    }
-
-    implicit val monad: MonadPlus[Maybe] = new MonadPlus[Maybe] {
-        private[this] type m[a] = Maybe[a]
-        // Monad
-        override def `return`[a](x: a): m[a] = Just(x)
-        override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = x match {
-            case Just(x) => y(x)
-            case Nothing => Nothing
-        }
-        // MonadPlus
-        override def mzero[a]: m[a] = Nothing
-        override def mplus[a](x: m[a])(y: => m[a]): m[a] = (x, y) match {
-            case (Nothing, p) => p
-            case (Just(p), _) => Just(p)
         }
     }
 

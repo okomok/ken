@@ -8,13 +8,19 @@ package com.github.okomok
 package ken
 
 
-final case class MaybeT[n[+_], +a](runMaybeT: n[Maybe[a]])
+final case class MaybeT[n[_], a](runMaybeT: n[Maybe[a]])
 
 
-object MaybeT {
-    def runMaybeT[n[+_], a](x: MaybeT[n, a]): n[Maybe[a]] = x.runMaybeT
+object MaybeT extends MonadTrans[MaybeT] {
+    implicit val monadTrans: MonadTrans[MaybeT] = this
 
-    implicit def monad[n[+_]](implicit i: Monad[n]): MonadPlus[({type m[a] = MaybeT[n, a]})#m] = new MonadPlus[({type m[a] = MaybeT[n, a]})#m] {
+    // MonadTrans
+    private[this] type t[m[_], a] = MaybeT[m, a]
+    override def lift[m[+_], a](x: m[a])(implicit i: Monad[m]): t[m, a] = MaybeT { i.liftM(Maybe.just[a])(x) }
+
+    def runMaybeT[n[_], a](x: MaybeT[n, a]): n[Maybe[a]] = x.runMaybeT
+
+    implicit def monad[n[_]](implicit i: Monad[n]): MonadPlus[({type m[a] = MaybeT[n, a]})#m] = new MonadPlus[({type m[a] = MaybeT[n, a]})#m] {
         private[this] type m[a] = MaybeT[n, a]
         // Monad
         override def `return`[a](x: a): m[a] = MaybeT { i.`return`(Just(x).up) }
@@ -34,10 +40,5 @@ object MaybeT {
                 case Just(_) => runMaybeT(x)
             }
         }
-    }
-
-    implicit val monadTrans: MonadTrans[MaybeT] = new MonadTrans[MaybeT] {
-        private[this] type t[m[+_], +a] = MaybeT[m, a]
-        def lift[m[+_], a](x: m[a])(implicit i: Monad[m]): t[m, a] = MaybeT { i.liftM(Maybe.just[a])(x) }
     }
 }

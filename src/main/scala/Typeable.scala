@@ -19,7 +19,7 @@ trait TypeableProxy[a] extends Typeable[a] with Proxy {
 
 
 object Typeable {
-    implicit def instance[a](implicit i: ClassManifest[a]): Typeable[a] = new Typeable[a] {
+    implicit def ofAny[a](implicit i: ClassManifest[a]): Typeable[a] = new Typeable[a] {
         override def typeOf(x: => a): ClassManifest[a] = i
     }
 

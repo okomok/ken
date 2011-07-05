@@ -12,15 +12,16 @@ sealed abstract class Lazy[+a] {
     def ! : a
 }
 
-object Lazy {
+object Lazy extends Monad[Lazy] {
+    implicit val monad: Monad[Lazy] = this
+
+    // Monad
+    private[this] type m[a] = Lazy[a]
+    override def `return`[a](x: a): m[a] = Lazy { x }
+    override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = Lazy { y(x.!).! }
+
     def apply[a](x: => a): Lazy[a] = new Lazy[a] {
         override lazy val ! : a = x
-    }
-
-    implicit val monad: Monad[Lazy] = new Monad[Lazy] {
-        private[this] type m[a] = Lazy[a]
-        override def `return`[a](x: a): m[a] = Lazy { x }
-        override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = Lazy { y(x.!).! }
     }
 
     // implicit def eval[a](x: Lazy[a]): a = x.!
