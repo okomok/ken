@@ -14,7 +14,7 @@ import com.github.okomok.ken._
 class MonadToArrowTest extends org.scalatest.junit.JUnit3Suite {
 
     def liftA2[a[_, _], b, c, d, e](op: b => c => d)(f: a[e, b])(g: a[e, c])(implicit i: Arrow[a]): a[e, d] = {
-        import Arrow._
+        import i._
         (f &&& g) >>> arr{case (b, c) => op(b)(c)}
     }
 
@@ -36,11 +36,14 @@ class MonadToArrowTest extends org.scalatest.junit.JUnit3Suite {
 
     object Monadic {
         import Monad._
-        def eval[m[_]](exp: Exp)(env: Env)(implicit i: Monad[m]): m[Val] = exp match {
-            case Var(s) => `return`(lookup(s)(env))
-            case Add(e1, e2) => liftM2(add)(eval(e1)(env))(eval(e2)(env))
-            case If(e1, e2, e3) => eval(e1)(env) >>= { case Bl(b) =>
-                if (b) eval(e2)(env) else eval(e3)(env)
+        def eval[m[_]](exp: Exp)(env: Env)(implicit i: Monad[m]): m[Val] = {
+            import i._
+            exp match {
+                case Var(s) => `return`(lookup(s)(env))
+                case Add(e1, e2) => liftM2(add)(eval(e1)(env))(eval(e2)(env))
+                case If(e1, e2, e3) => eval(e1)(env) >>= { case Bl(b) =>
+                    if (b) eval(e2)(env) else eval(e3)(env)
+                }
             }
         }
     }
@@ -56,14 +59,16 @@ class MonadToArrowTest extends org.scalatest.junit.JUnit3Suite {
     }
 
     object ArrowWay {
-        import Arrow._
-        def eval[a[_, _]](exp: Exp)(implicit i: ArrowChoice[a]): a[Env, Val] = exp match {
-            case Var(s) => Arrow.arr(lookup(s))
-            case Add(e1, e2) => liftA2(add)(eval(e1))(eval(e2))
-            case If(e1, e2, e3) => {
-                (eval(e1) &&& arr(id[Env])) >>>
-                arr{ case (Bl(b), env) => if (b) Left(env).up else Right(env).up } >>>
-                (eval(e2) ||| eval(e3))
+        def eval[a[_, _]](exp: Exp)(implicit i: ArrowChoice[a]): a[Env, Val] = {
+            import i._
+            exp match {
+                case Var(s) => arr(lookup(s))
+                case Add(e1, e2) => liftA2(add)(eval(e1))(eval(e2))
+                case If(e1, e2, e3) => {
+                    (eval(e1) &&& arr(id[Env])) >>>
+                    arr{ case (Bl(b), env) => if (b) Left(env).up else Right(env).up } >>>
+                    (eval(e2) ||| eval(e3))
+                }
             }
         }
     }

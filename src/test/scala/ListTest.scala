@@ -13,8 +13,7 @@ import com.github.okomok.ken._
 class ListTest extends org.scalatest.junit.JUnit3Suite {
 
     def testZipList {
-        import Applicative.{<@>, <*>}
-        implicit val i = ZipList
+        import ZipList._
 
         val xs = ((x: Int) => (y: Int) => (z: Int) => x + y + z) <@>
             List(1, 2, 3) <*> List(2, 3, 4) <*> List(3, 4, 5)

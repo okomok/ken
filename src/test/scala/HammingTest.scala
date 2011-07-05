@@ -18,7 +18,7 @@ class HammingTest extends org.scalatest.junit.JUnit3Suite {
     val hamming: List[BigInt] = BigInt(1) :: merge(merge(List.map(mult(2))(hamming))(List.map(mult(3))(hamming)))(List.map(mult(5))(hamming))
 
     def merge[a](xs_ : List[a])(ys_ : List[a])(implicit i: Ord[a]): List[a] = {
-        import Ord._
+        import i._
         val x :: xs = xs_
         val y :: ys = ys_
         if (x < y) {

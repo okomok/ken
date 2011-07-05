@@ -8,8 +8,6 @@ package com.github.okomok.kentest
 
 
 import com.github.okomok.ken._
-import Monad.`for`
-import List._
 
 
 class EscapeFromZurgTest extends org.scalatest.junit.JUnit3Suite {
@@ -25,7 +23,7 @@ class EscapeFromZurgTest extends org.scalatest.junit.JUnit3Suite {
             def expand(ss: Space[m, s]): Space[m, s] = for { (ms, s) <- ss; (ns, t) <- space(s) } yield (ms ::: ns, t)
             step ::: expand(step)
         }
-        def solutions(s: s): Space[m, s] = filter(isSolution)(space(s))
+        def solutions(s: s): Space[m, s] = List.filter(isSolution)(space(s))
     }
 
     object EscapeFromZurg {
@@ -53,13 +51,13 @@ class EscapeFromZurgTest extends org.scalatest.junit.JUnit3Suite {
             case Hamm => 25
         }
 
-        def duration(xs: List[Move]): Int = sum(map(Either.either(time)((g: Group) => maximum(map(time)(g))))(xs))
+        def duration(xs: List[Move]): Int = List.sum(List.map(Either.either(time)((g: Group) => List.maximum(List.map(time)(g))))(xs))
 
-        def backw(xs: List[Toy]): List[(Move, BridgePos)] = for { x <- xs } yield (Left(x), (L, sort(x :: (toys \\ xs))))
+        def backw(xs: List[Toy]): List[(Move, BridgePos)] = for { x <- xs } yield (Left(x), (L, List.sort(x :: (toys \\ xs))))
 
         def forw(xs: List[Toy]): List[(Move, BridgePos)] = for {
-            x <- xs; ys = delete(x)(xs); y <- ys if x < y
-        } yield (Right(x :: y :: Nil), (R, delete(y)(ys)))
+            x <- xs; ys = List.delete(x)(xs); y <- ys if x < y
+        } yield (Right(x :: y :: Nil), (R, List.delete(y)(ys)))
 
         def solution = Instance.solutions(L, toys)
 

@@ -16,17 +16,17 @@ class ApplicativeTest extends org.scalatest.junit.JUnit3Suite {
     }
 
     def distList[f[_], a](xs: List[f[a]])(implicit i: Applicative[f]): f[List[a]] = {
-        import Applicative._
+        import i._
         xs match {
-            case Nil => pure(Nil.of[a])(i)
+            case Nil => pure(Nil.of[a])
             case x !:: xs => (List.op_!::[a] _) <@> x <*> distList(xs)
         }
     }
 
     def traverseList[f[_], a, b](f: a => f[b])(xs: List[a])(implicit i: Applicative[f]): f[List[b]] = {
-        import Applicative._
+        import i._
         xs match {
-            case Nil => pure(Nil.of[b])(i)
+            case Nil => pure(Nil.of[b])
             case x !:: xs => (List.op_!::[b] _) <@> f(x) <*> traverseList(f)(xs)
         }
     }
@@ -44,7 +44,7 @@ class ApplicativeTest extends org.scalatest.junit.JUnit3Suite {
     }
 
     def miffy[m[_], a](mb: m[Boolean])(mt: m[a])(me: m[a])(implicit i: Monad[m]): m[a] = {
-        import Monad._
+        import i._
         for {
             b <- mb
             r <- if (b) mt else me // b can influence so that either mt or me is abandoned.
@@ -52,7 +52,7 @@ class ApplicativeTest extends org.scalatest.junit.JUnit3Suite {
     }
 
     def iffy[f[_], a](fb: f[Boolean])(ft: f[a])(fe: f[a])(implicit i: Applicative[f]): f[a] = {
-        import Applicative._
+        import i._
         def cond(b: Boolean)(t: a)(e: a): a = if (b) t else e // both ft and fe are computed.
         (cond _) <@> fb <*> ft <*> fe
     }

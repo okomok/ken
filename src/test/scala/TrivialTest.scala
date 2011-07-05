@@ -13,11 +13,9 @@ import com.github.okomok.ken._
 class TrivialTest extends org.scalatest.junit.JUnit3Suite {
 
     def testList {
-        import Applicative._
-
         val xs: List[Int] = locally {
-            implicit val i = implicitly[Applicative[List]]
-            ((x: Int) => (y: Int) => x + y) <@> (2 :: 3 :: 4 :: Nil) <*> pure(4)(i)
+            import List._
+            ((x: Int) => (y: Int) => x + y) <@> (2 :: 3 :: 4 :: Nil) <*> pure(4)
         }
         expect(6 :: 7 :: 8 :: Nil)(xs)
 
@@ -40,7 +38,7 @@ class TrivialTest extends org.scalatest.junit.JUnit3Suite {
     }
 */
     def compileImplicit {
-        import Monad.>>=
+        import List.>>=
         (1 :: 2 :: Nil) >>= (x => x :: Nil)
 
         def takeImplicit[f[_], a](x: f[a])(implicit i: Monad[f]): Unit = throw new Error
@@ -51,9 +49,6 @@ class TrivialTest extends org.scalatest.junit.JUnit3Suite {
     }
 
     def teztIO {
-   //     val io = getChar >>= { x => putChar(x) }
-   //     io
-
         val io = for {
             x <- IO.getChar
             u <- IO.putChar(x)
@@ -62,20 +57,7 @@ class TrivialTest extends org.scalatest.junit.JUnit3Suite {
         io.unIO()
     }
 
-    def teztIO2 {
-   //     val io = getChar >>= { x => putChar(x) }
-   //     io
-
-        val io: IO[Unit] = for {
-            x <- IO.getChar
-            r <- IO.putChar(x)
-        } yield r
-
-        io.unIO()
-    }
-
     def teztIOAp {
-        import Applicative._
         import IO._
 
         val io = { (c1: Char) => (c2: Char) => println(c1); println(c2) } <@> getChar <*> getChar
