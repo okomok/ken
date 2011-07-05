@@ -13,23 +13,17 @@ trait Monoid[m] {
     def mempty: m
     def mappend(x: m)(y: => m): m
     def mconcat(x: List[m]): m = List.foldr(mappend)(mempty)(x)
-}
 
-
-object Monoid extends MonoidOp with MonoidInstance
-
-
-trait MonoidOp {
-    def mempty[m](implicit i: Monoid[m]): m = i.mempty
-    def mappend[m](x: m)(y: => m)(implicit i: Monoid[m]): m = i.mappend(x)(y)
-    def mconcat[m](x: List[m])(implicit i: Monoid[m]): m = i.mconcat(x)
-
-    private[ken] class Mappend_[m](x: m)(implicit i: Monoid[m]) {
+    final private[ken] class Mappend_(x: m) {
         def _mappend_(y: => m): m = mappend(x)(y)
     }
-    implicit def _mappend_[m](x: m)(implicit i: Monoid[m]): Mappend_[m] = new Mappend_(x)
+    final implicit def _mappend_(x: m): Mappend_ = new Mappend_(x)
 }
 
+
+object Monoid extends MonoidInstance {
+    def apply[m](implicit i: Monoid[m]): Monoid[m] = i
+}
 
 trait MonoidInstance {
     implicit val ofUnit = Unit_

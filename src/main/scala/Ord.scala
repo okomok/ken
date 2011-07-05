@@ -16,8 +16,27 @@ trait Ord[a] {
     def op_>=(x: a)(y: a): Boolean = compare(x)(y) match { case LT => false; case _ => true }
     def max(x: a)(y: a): a = if (op_<=(x)(y)) y else x
     def min(x: a)(y: a): a = if (op_<=(x)(y)) x else y
-}
 
+    final private[ken] class Op_<(x: a) {
+        def <(y: a): Boolean = op_<(x)(y)
+    }
+    final implicit def <(x: a): Op_< = new Op_<(x)
+
+    final private[ken] class Op_<=(x: a) {
+        def <=(y: a): Boolean = op_<=(x)(y)
+    }
+    final implicit def <=(x: a): Op_<= = new Op_<=(x)
+
+    final private[ken] class Op_>(x: a) {
+        def >(y: a): Boolean = op_>(x)(y)
+    }
+    final implicit def >(x: a): Op_> = new Op_>(x)
+
+    final private[ken] class Op_>=(x: a) {
+        def >=(y: a): Boolean = op_>=(x)(y)
+    }
+    final implicit def >=(x: a): Op_>= = new Op_>=(x)
+}
 
 trait OrdProxy[a] extends Ord[a] with Proxy {
     override def self: Ord[a]
@@ -32,35 +51,9 @@ trait OrdProxy[a] extends Ord[a] with Proxy {
 
 
 object Ord {
-    def compare[a](x: a)(y: a)(implicit i: Ord[a]): Ordering = i.compare(x)(y)
-    def op_<[a](x: a)(y: a)(implicit i: Ord[a]): Boolean = i.op_<(x)(y)
-    def op_<=[a](x: a)(y: a)(implicit i: Ord[a]): Boolean = i.op_<=(x)(y)
-    def op_>[a](x: a)(y: a)(implicit i: Ord[a]): Boolean = i.op_>(x)(y)
-    def op_>=[a](x: a)(y: a)(implicit i: Ord[a]): Boolean = i.op_>=(x)(y)
-    def max[a](x: a)(y: a)(implicit i: Ord[a]): a = i.max(x)(y)
-    def min[a](x: a)(y: a)(implicit i: Ord[a]): a = i.min(x)(y)
+    def apply[a](implicit i: Ord[a]): Ord[a] = i
 
-    private[ken] class Op_<[a](x: a)(implicit i: Ord[a]) {
-        def <(y: a): Boolean = op_<(x)(y)
-    }
-    implicit def <[a](x: a)(implicit i: Ord[a]): Op_<[a] = new Op_<[a](x)
-
-    private[ken] class Op_<=[a](x: a)(implicit i: Ord[a]) {
-        def <=(y: a): Boolean = op_<=(x)(y)
-    }
-    implicit def <=[a](x: a)(implicit i: Ord[a]): Op_<=[a] = new Op_<=[a](x)
-
-    private[ken] class Op_>[a](x: a)(implicit i: Ord[a]) {
-        def >(y: a): Boolean = op_>(x)(y)
-    }
-    implicit def >[a](x: a)(implicit i: Ord[a]): Op_>[a] = new Op_>[a](x)
-
-    private[ken] class Op_>=[a](x: a)(implicit i: Ord[a]) {
-        def >=(y: a): Boolean = op_>=(x)(y)
-    }
-    implicit def >=[a](x: a)(implicit i: Ord[a]): Op_>=[a] = new Op_>=[a](x)
-
-    implicit def instanceOfOrdering[a](implicit i: scala.Ordering[a]): Ord[a] = new Ord[a] {
+    implicit def ofOrdering[a](implicit i: scala.Ordering[a]): Ord[a] = new Ord[a] {
         override def compare(x: a)(y: a): Ordering = i.compare(x, y) match {
             case 0 => EQ
             case s if s < 0 => LT

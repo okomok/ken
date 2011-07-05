@@ -8,8 +8,7 @@ package com.github.okomok
 package ken
 
 
-sealed abstract class Lazy[+a] extends MonadObj[Lazy, a] {
-    override val obj = this
+sealed abstract class Lazy[+a] {
     def ! : a
 }
 

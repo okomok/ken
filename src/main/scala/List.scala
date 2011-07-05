@@ -11,9 +11,7 @@ package ken
 import scala.annotation.tailrec
 
 
-sealed abstract class List[+a] extends Up[List[a]] with MonadPlusObj[List, a] {
-    override val obj = this
-
+sealed abstract class List[+a] extends Up[List[a]] {
     @inline
     final def of[b >: a]: List[b] = this
 
@@ -129,6 +127,8 @@ object List {
     implicit def fromIterable[a](xs: scala.Iterable[a]): List[a] = fromIterator(xs.iterator)
 
 // Basic functions
+    import monad.`for`
+
     def op_:::[a](xs: List[a])(ys: => List[a]): List[a] = xs match {
         case Nil => ys
         case x :: xs => x :: op_:::(xs.!)(ys)

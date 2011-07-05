@@ -23,6 +23,8 @@ object Either {
         case Right(y) => g(y)
     }
 
+    import List.monad._
+
     def lefts[a, b](x: List[Either[a, b]]): List[a] = for { Left(a) <- x } yield a
     def rights[a, b](x: List[Either[a, b]]): List[b] = for { Right(a) <- x } yield a
 

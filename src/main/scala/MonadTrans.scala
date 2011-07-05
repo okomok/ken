@@ -13,6 +13,5 @@ trait MonadTrans[t[m[+_], +_]] {
 }
 
 object MonadTrans {
-    // wrong variance crashed compiler.
-    def lift[t[m[+_], +_], m[+_], a](x: m[a])(implicit i: MonadTrans[t], j: Monad[m]): t[m, a] = i.lift(x)
+    def apply[t[m[+_], +_]](implicit i: MonadTrans[t]): MonadTrans[t] = i
 }

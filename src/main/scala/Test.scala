@@ -9,7 +9,8 @@ package ken
 
 
 object Test {
-    import Applicative.function1
+    val i = Applicative.ofFunction1[Int]
+    import i.<@>
 
     val r: Int => Int => Int = ((x: Int) => (y: Int) => x + y) <@> ((x: Int) => x)
 }

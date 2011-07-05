@@ -8,8 +8,7 @@ package com.github.okomok
 package ken
 
 
-trait IO[+a] extends MonadObj[IO, a] {
-    override val obj = this
+trait IO[+a] {
     def unIO(): a
 }
 
@@ -31,6 +30,8 @@ object IO {
             y(x.unIO()).unIO()
         }
     }
+
+    import monad.`for`
 
 // Output functions
     def putChar(c: Char): IO[Unit] = print(c)
