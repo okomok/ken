@@ -70,7 +70,7 @@ trait ArrowPlus[a[_, _]] extends ArrowZero[a] {
     final private[ken] class Op_<+>[b, c](f: a[b, c]) {
         def <+>(g: => a[b, c]): a[b, c] = op_<+>(f)(g)
     }
-    final implicit def <+>[b, c](f: a[b, c])(implicit i: ArrowPlus[a]): Op_<+>[b, c] = new Op_<+>[b, c](f)
+    final implicit def <+>[b, c](f: a[b, c]): Op_<+>[b, c] = new Op_<+>[b, c](f)
 }
 
 trait ArrowChoice[a[_, _]] extends Arrow[a] {
@@ -98,15 +98,15 @@ trait ArrowChoice[a[_, _]] extends Arrow[a] {
         f +++ g >>> arr(utag)
     }
 
-    private[ken] class Op_+++[b, c](f: a[b, c])(implicit i: ArrowChoice[a]) {
+    final private[ken] class Op_+++[b, c](f: a[b, c]) {
         def +++[b_, c_](g: a[b_, c_]): a[Either[b, b_], Either[c, c_]] = op_+++(f)(g)
     }
-    implicit def +++[b, c](f: a[b, c])(implicit i: ArrowChoice[a]): Op_+++[b, c] = new Op_+++[b, c](f)
+    final implicit def +++[b, c](f: a[b, c]): Op_+++[b, c] = new Op_+++[b, c](f)
 
-    private[ken] class Op_|||[b, d](f: a[b, d])(implicit i: ArrowChoice[a]) {
+    final private[ken] class Op_|||[b, d](f: a[b, d]) {
         def |||[c](g: a[c, d]): a[Either[b, c], d] = op_|||(f)(g)
     }
-    implicit def |||[b, d](f: a[b, d])(implicit i: ArrowChoice[a]): Op_|||[b, d] = new Op_|||[b, d](f)
+    final implicit def |||[b, d](f: a[b, d]): Op_|||[b, d] = new Op_|||[b, d](f)
 
 }
 
@@ -145,7 +145,7 @@ object ArrowLoop {
 
 
 trait ArrowInstance {
-    /*implicit*/ object ofFunction1 extends ArrowChoice[Function1] with ArrowApply[Function1] {
+    implicit object ofFunction1 extends ArrowChoice[Function1] with ArrowApply[Function1] {
         private[this] implicit val i = this
         // Category
         private[this] type cat[a, b] = Function1[a, b]

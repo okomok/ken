@@ -13,8 +13,8 @@ sealed abstract class Either[+a, +b] extends Up[Either[a, b]] {
     final def of[a_ >: a, b_ >: b]: Either[a_, b_] = this
 }
 
-case class Left[+a, +b](x: a) extends Either[a, b]
-case class Right[+a, +b](y: b) extends Either[a, b]
+final case class Left[+a, +b](x: a) extends Either[a, b]
+final case class Right[+a, +b](y: b) extends Either[a, b]
 
 
 object Either {

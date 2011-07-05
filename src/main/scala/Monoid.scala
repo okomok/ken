@@ -9,7 +9,8 @@ package ken
 
 
 trait Monoid[m] {
-    type mtype = m
+    type apply = m
+
     def mempty: m
     def mappend(x: m)(y: => m): m
     def mconcat(x: List[m]): m = List.foldr(mappend)(mempty)(x)

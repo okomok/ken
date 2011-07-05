@@ -9,7 +9,7 @@ package ken
 
 
 sealed abstract class Type[a] {
-    type get = a
+    type apply = a
 }
 
 object Type {
@@ -18,7 +18,7 @@ object Type {
 
 
 sealed abstract class Type1[a[_]] {
-    type get[x] = a[x]
+    type apply[x] = a[x]
 }
 
 object Type1 {
