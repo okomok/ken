@@ -19,7 +19,7 @@ trait IOProxy[+a] extends IO[a] with Proxy {
 
 
 object IO extends Monad[IO] {
-    implicit val monad: Monad[IO] = this
+    override implicit def instance = this
 
     // Monad
     private[this] type m[a] = IO[a]

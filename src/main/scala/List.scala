@@ -59,7 +59,7 @@ object !:: { // strict extractor
 
 
 object List extends MonadPlus[List] {
-    implicit val monad: MonadPlus[List] = this
+    override implicit def instance = this
 
     private[this] type m[a] = List[a]
     // Monad

@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-trait Ord[a] { outer =>
+trait Ord[a] extends Klass { outer =>
     def compare(x: a)(y: a): Ordering = if (x == y) EQ else if (op_<=(x)(y)) LT else GT
     def op_<(x: a)(y: a): Boolean = compare(x)(y) match { case LT => true; case _ => false }
     def op_<=(x: a)(y: a): Boolean = compare(x)(y) match { case GT => false; case _ => true }

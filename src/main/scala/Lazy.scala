@@ -13,8 +13,6 @@ sealed abstract class Lazy[+a] {
 }
 
 object Lazy extends Monad[Lazy] {
-    implicit val monad: Monad[Lazy] = this
-
     // Monad
     private[this] type m[a] = Lazy[a]
     override def `return`[a](x: a): m[a] = Lazy { x }

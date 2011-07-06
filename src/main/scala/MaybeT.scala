@@ -12,8 +12,6 @@ final case class MaybeT[n[+_], +a](runMaybeT: n[Maybe[a]])
 
 
 object MaybeT extends MonadTrans[MaybeT] {
-    implicit val monadTrans: MonadTrans[MaybeT] = this
-
     // MonadTrans
     private[this] type t[m[+_], +a] = MaybeT[m, a]
     override def lift[m[+_], a](x: m[a])(implicit i: Monad[m]): t[m, a] = MaybeT { i.liftM(Maybe.just[a])(x) }

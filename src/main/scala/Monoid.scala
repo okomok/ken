@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-trait Monoid[m] { outer =>
+trait Monoid[m] extends Klass { outer =>
     type apply = m
 
     def mempty: m

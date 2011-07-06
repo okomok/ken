@@ -45,8 +45,6 @@ trait ApplicativeProxy[f[+_]] extends Applicative[f] with FunctorProxy[f] {
 
 
 trait Alternative[f[+_]] extends Applicative[f] { outer =>
-    private[this] implicit val i = this
-
     def empty: f[Nothing]
     def op_<|>[a](x: f[a])(y: => f[a]): f[a]
 

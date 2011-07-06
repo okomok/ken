@@ -18,7 +18,7 @@ case class Just[+a](x: a) extends Maybe[a]
 
 
 object Maybe extends MonadPlus[Maybe] {
-    implicit val monad: MonadPlus[Maybe] = this
+    override implicit def instance = this
 
     private[this] type m[+a] = Maybe[a]
     // Monad

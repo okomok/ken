@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-trait Functor[f[+_]] { outer =>
+trait Functor[f[+_]] extends Klass { outer =>
     type apply[+a] = f[a]
 
     def fmap[a, b](x: a => b)(y: f[a]): f[b]

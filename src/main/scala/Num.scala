@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-trait Num[a] { outer =>
+trait Num[a] extends Klass { outer =>
     def op_+(x: a)(y: a): a
     def op_-(x: a)(y: a): a = op_+(x)(negate(y))
     def op_*(x: a)(y: a): a

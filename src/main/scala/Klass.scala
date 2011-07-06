@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-trait Method {
-    def klass: Klass
-    def callee: Any
+// Needed?
+trait Klass {
+    implicit def instance: this.type = this
 }

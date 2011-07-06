@@ -74,8 +74,6 @@ trait ArrowPlus[a[_, _]] extends ArrowZero[a] {
 }
 
 trait ArrowChoice[a[_, _]] extends Arrow[a] {
-    private[this] implicit val i = this
-
     def left[b, c, d](f: a[b, c]): a[Either[b, d], Either[c, d]]
 
     def right[b, c, d](f: a[b, c]): a[Either[d, b], Either[d, c]] = {
@@ -146,7 +144,6 @@ object ArrowLoop {
 
 trait ArrowInstance {
     implicit object ofFunction1 extends ArrowChoice[Function1] with ArrowApply[Function1] {
-        private[this] implicit val i = this
         // Category
         private[this] type cat[a, b] = Function1[a, b]
         override def cid[a]: cat[a, a] = ken.id[a]

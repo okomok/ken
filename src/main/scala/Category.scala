@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-trait Category[cat[_, _]] {
+trait Category[cat[_, _]] extends Klass {
     type apply[a, b] = cat[a, b]
 
     def cid[a]: cat[a, a]
