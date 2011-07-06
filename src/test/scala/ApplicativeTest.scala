@@ -12,7 +12,9 @@ import com.github.okomok.ken._
 
 class ApplicativeTest extends org.scalatest.junit.JUnit3Suite {
 
-    def testDummy {
+    def testFunction1 {
+        import Applicative.function1
+        val r: Int => Int => Int = ((x: Int) => (y: Int) => x + y) <@> ((x: Int) => x)
     }
 
     def distList[f[+_], a](xs: List[f[a]])(implicit i: Applicative[f]): f[List[a]] = {

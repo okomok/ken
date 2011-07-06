@@ -19,8 +19,8 @@ trait Num[a] { outer =>
     final def subtract(x: a)(y: a): a = y - x
 
     implicit def method(x: a): NumMethod[a] = new NumMethod[a] {
-        override val klass = outer
-        override val callee = x
+        override def klass = outer
+        override def callee = x
     }
 }
 

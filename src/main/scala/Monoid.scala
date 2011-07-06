@@ -8,17 +8,30 @@ package com.github.okomok
 package ken
 
 
-trait Monoid[m] {
+trait Monoid[m] { outer =>
     type apply = m
 
     def mempty: m
     def mappend(x: m)(y: => m): m
     def mconcat(x: List[m]): m = List.foldr(mappend)(mempty)(x)
 
-    final private[ken] class Mappend_(x: m) {
-        def _mappend_(y: => m): m = mappend(x)(y)
+    implicit def method(x: m): MonoidMethod[m] = new MonoidMethod[m] {
+        override def klass = outer
+        override def callee = x
     }
-    final implicit def _mappend_(x: m): Mappend_ = new Mappend_(x)
+}
+
+trait MonoidMethod[m] extends Method {
+    override def klass: Monoid[m]
+    override def callee: m
+    final def _mappend_(y: => m): m = klass.mappend(callee)(y)
+}
+
+trait MonoidProxy[m] extends Monoid[m] with Proxy {
+    override def self: Monoid[m]
+    override def mempty: m = self.mempty
+    override def mappend(x: m)(y: => m): m = self.mappend(x)(y)
+    override def mconcat(x: List[m]): m = self.mconcat(x)
 }
 
 
@@ -29,8 +42,8 @@ object Monoid extends MonoidInstance {
 trait MonoidInstance {
     implicit val ofUnit = Unit_
 
-    implicit def ofFunction1[A, b](implicit mb: Monoid[b]): Monoid[A => b] = new Monoid[A => b] {
-        private[this] type m = A => b
+    implicit def ofFunction1[z, b](implicit mb: Monoid[b]): Monoid[z => b] = new Monoid[z => b] {
+        private[this] type m = z => b
         override def mempty: m = _ => mb.mempty
         override def mappend(x: m)(y: => m): m = z => mb.mappend(x(z))(y(z))
     }

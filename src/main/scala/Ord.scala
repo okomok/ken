@@ -18,8 +18,8 @@ trait Ord[a] { outer =>
     def min(x: a)(y: a): a = if (op_<=(x)(y)) x else y
 
     implicit def method(x: a): OrdMethod[a] = new OrdMethod[a] {
-        override val klass = outer
-        override val callee = x
+        override def klass = outer
+        override def callee = x
     }
 }
 

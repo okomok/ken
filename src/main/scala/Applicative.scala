@@ -20,27 +20,7 @@ trait Applicative[f[+_]] extends Functor[f] { outer =>
         override def klass = outer
         override def callee = x
     }
-/*
-    final private[ken] class Op_<*>[a, b](x: f[a => b]) {
-        def <*>(y: f[a]): f[b] = op_<*>(x)(y)
-    }
-    final implicit def <*>[a, b](x: f[a => b]): Op_<*>[a, b] = new Op_<*>[a, b](x)
 
-    final private[ken] class Op_*>[a](x: f[a]) {
-        def *>[b](y: f[b]): f[b] = op_*>(x)(y)
-    }
-    final implicit def *>[a, b](x: f[a]): Op_*>[a] = new Op_*>[a](x)
-
-    final private[ken] class Op_<*[a](x: f[a]) {
-        def <*[b](y: f[b]): f[a] = op_<*(x)(y)
-    }
-    final implicit def <*[a](x: f[a]): Op_<*[a] = new Op_<*[a](x)
-
-    final private[ken] class Op_<**>[a](x: f[a]) {
-        def <**>[b](y: f[a => b]): f[b] = op_<**>(x)(y)
-    }
-    final implicit def <**>[a](x: f[a]): Op_<**>[a] = new Op_<**>[a](x)
-*/
     final def op_<**>[a, b](x: f[a])(y: f[a => b]): f[b] = liftA2[a, a => b, b](flip(op_@))(x)(y)
     final def liftA[a, b](x: a => b)(y: f[a]): f[b] = pure(x) <*> y
     final def liftA2[a, b, c](x: a => b => c)(y: f[a])(z: f[b]): f[c] = x <@> y <*> z
@@ -113,6 +93,11 @@ trait AlternativeProxy[f[+_]] extends Alternative[f] with ApplicativeProxy[f] {
 
 object Applicative extends ApplicativeInstance {
     def apply[f[+_]](implicit i: Applicative[f]): Applicative[f] = i
+
+    implicit def function1[z, a](f: z => a): ApplicativeMethod[({type f[+a] = z => a})#f, a] = new ApplicativeMethod[({type f[+a] = z => a})#f, a] {
+        override val klass = ofFunction1[z]
+        override def callee = f
+    }
 }
 
 object Alternative {
@@ -127,12 +112,6 @@ trait ApplicativeInstance extends MonadInstance {
         override def pure[a](x: => a): f[a] = const(x)
         override def op_<*>[a, b](x: f[a => b])(y: f[a]): f[b] = z => x(z)(y(z))
     }
-
-    /*
-    implicit def function1[z, a](f: z => a): ApplicativeObj[({type f[+a] = z => a})#f, a] = new ApplicativeObj[({type f[+a] = z => a})#f, a] {
-        override val obj = f
-    }
-    */
 
     implicit def ofMonoid[z](implicit ma: Monoid[z]): Applicative[({type f[+a] = (z, a)})#f] = new Applicative[({type f[+a] = (z, a)})#f] {
         private[this] type f[a] = (z, a)

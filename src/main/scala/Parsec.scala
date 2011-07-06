@@ -51,7 +51,7 @@ object Parsec {
         MonadPlusMethod[({type m[+x] = GenParser[tok, st, x]})#m, a]
     {
         override val klass = GenParser.monad[tok, st]
-        override val callee = this
+        override def callee = this
     }
 
     val Parser = GenParser
