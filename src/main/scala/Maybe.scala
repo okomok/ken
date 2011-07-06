@@ -8,7 +8,10 @@ package com.github.okomok
 package ken
 
 
-sealed abstract class Maybe[+a] extends Up[Maybe[a]] {
+sealed abstract class Maybe[+a] extends Up[Maybe[a]] with MonadPlusMethod[Maybe, a] {
+    override val klass = Maybe
+    override val callee = this
+
     @inline
     final def of[b >: a]: Maybe[b] = this
 }
@@ -20,7 +23,7 @@ case class Just[+a](x: a) extends Maybe[a]
 object Maybe extends MonadPlus[Maybe] {
     implicit val monad: MonadPlus[Maybe] = this
 
-    private[this] type m[a] = Maybe[a]
+    private[this] type m[+a] = Maybe[a]
     // Monad
     override def `return`[a](x: a): m[a] = Just(x)
     override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = x match {
@@ -28,7 +31,7 @@ object Maybe extends MonadPlus[Maybe] {
         case Nothing => Nothing
     }
     // MonadPlus
-    override def mzero[a]: m[a] = Nothing
+    override def mzero: m[Nothing] = Nothing
     override def mplus[a](x: m[a])(y: => m[a]): m[a] = (x, y) match {
         case (Nothing, p) => p
         case (Just(p), _) => Just(p)

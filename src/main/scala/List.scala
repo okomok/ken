@@ -66,7 +66,7 @@ object List extends MonadPlus[List] {
     override def `return`[a](x: a): m[a] = List(x)
     override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = concat(map(y)(x))
     // MonadPlus
-    override def mzero[a]: m[a] = Nil
+    override def mzero: m[Nothing] = Nil
     override def mplus[a](x: m[a])(y: => m[a]): m[a] = x ::: y
 
     @tailrec

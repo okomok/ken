@@ -25,16 +25,16 @@ object MaybeT extends MonadTrans[MaybeT] {
         // Monad
         override def `return`[a](x: a): m[a] = MaybeT { i.`return`(Just(x).up) }
         override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = MaybeT {
-            import i.>>=
+            import i.method
             runMaybeT(x) >>= {
                 case Nothing => i.`return`(Nothing.of[b])
                 case Just(v) => runMaybeT(y(v))
             }
         }
         // MonadPlus
-        override def mzero[a]: m[a] = MaybeT { i.`return`(Nothing.of[a]) }
+        override def mzero: m[Nothing] = MaybeT { i.`return`(Nothing) }
         override def mplus[a](x: m[a])(y: => m[a]): m[a] = MaybeT {
-            import i.>>=
+            import i.method
             runMaybeT(x) >>= {
                 case Nothing => runMaybeT(y)
                 case Just(_) => runMaybeT(x)

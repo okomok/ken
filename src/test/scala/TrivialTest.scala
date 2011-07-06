@@ -38,10 +38,9 @@ class TrivialTest extends org.scalatest.junit.JUnit3Suite {
     }
 */
     def compileImplicit {
-        import List.>>=
         (1 :: 2 :: Nil) >>= (x => x :: Nil)
 
-        def takeImplicit[f[_], a](x: f[a])(implicit i: Monad[f]): Unit = throw new Error
+        def takeImplicit[f[+_], a](x: f[a])(implicit i: Monad[f]): Unit = throw new Error
         def takeMonoidImplicit[a](x: a)(implicit i: Monoid[a]): Unit = throw new Error
 
         val u1: Unit = takeImplicit(6 :: Nil)

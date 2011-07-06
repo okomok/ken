@@ -8,14 +8,19 @@ package com.github.okomok
 package ken
 
 
-trait Monad[m[+_]] extends Applicative[m] {
+trait Monad[m[+_]] extends Applicative[m] { outer =>
     def `return`[a](x: a): m[a]
     def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b]
-    def op_>>[a, b](x: m[a])(y: => m[b]): m[b] = { lazy val _y = y; x >>= (_ => _y) }
+    def op_>>[b](x: m[_])(y: => m[b]): m[b] = { lazy val _y = y; x >>= (_ => _y) }
 
     override def pure[a](x: => a): m[a] = `return`(x)
     override def op_<*>[a, b](x: m[a => b])(y: m[a]): m[b] = for { _x <- x; _y <- y } yield _x(_y)
 
+    override implicit def method[a](x: m[a]): MonadMethod[m, a] = new MonadMethod[m, a] {
+        override def klass = outer
+        override def callee = x
+    }
+/*
     final private[ken] class Op_>>=[a](x: m[a]) {
         def >>=[b](y: a => m[b]): m[b] = op_>>=(x)(y)
     }
@@ -32,7 +37,7 @@ trait Monad[m[+_]] extends Applicative[m] {
        // def foreach[b](y: a => m[b]): m[b] = op_>>=(x)(_x => y(_x))
     }
     final implicit def `for`[a](x: m[a]): For[a] = new For[a](x)
-
+*/
     final def op_=<<[a, b](f: a => m[b])(x: m[a]): m[b] = x >>= f
 
     final private[ken] class Op_=<<[a, b](f: a => m[b]) {
@@ -46,7 +51,7 @@ trait Monad[m[+_]] extends Applicative[m] {
     }
 
     final def sequence_[a](ms: List[m[a]]): m[Unit] = {
-        List.foldr(op_>>[a, Unit])(`return`(()))(ms)
+        List.foldr(op_>>[Unit])(`return`(()))(ms)
     }
 
     final def mapM[a, b](f: a => m[b])(as: List[a]): m[List[b]] = sequence(List.map(f)(as))
@@ -111,26 +116,40 @@ trait Monad[m[+_]] extends Applicative[m] {
     final def ap[a, b](x: m[a => b])(y: m[a]): m[b] = liftM2(id[a => b])(x)(y) // op_<*>(x)(y)
 }
 
+trait MonadMethod[m[+_], +a] extends ApplicativeMethod[m, a] {
+    override def klass: Monad[m]
+    final def `return`[b](x: b): m[b] = klass.`return`(x)
+    final def >>=[b](y: a => m[b]): m[b] = klass.op_>>=(callee)(y)
+    final def >>[b](y: m[b]): m[b] = klass.op_>>(callee)(y)
+    final def flatMap[b](y: a => m[b]): m[b] = klass.op_>>=(callee)(y)
+    final def map[b](y: a => b): m[b] = klass.op_>>=(callee)(_x => klass.`return`(y(_x)))
+}
+
 trait MonadProxy[m[+_]] extends Monad[m] with ApplicativeProxy[m] {
     override def self: Monad[m]
     override def `return`[a](x: a): m[a] = self.`return`(x)
     override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = self.op_>>=(x)(y)
-    override def op_>>[a, b](x: m[a])(y: => m[b]): m[b] = self.op_>>(x)(y)
+    override def op_>>[b](x: m[_])(y: => m[b]): m[b] = self.op_>>(x)(y)
 }
 
 
-trait MonadPlus[m[+_]] extends Monad[m] with Alternative[m] {
-    def mzero[a]: m[a]
+trait MonadPlus[m[+_]] extends Monad[m] with Alternative[m] { outer =>
+    def mzero: m[Nothing]
     def mplus[a](x: m[a])(y: => m[a]): m[a]
 
-    override def empty[a]: m[a] = mzero
+    override def empty: m[Nothing] = mzero
     override def op_<|>[a](x: m[a])(y: => m[a]): m[a] = mplus(x)(y)
 
+    override implicit def method[a](x: m[a]): MonadPlusMethod[m, a] = new MonadPlusMethod[m, a] {
+        override def klass = outer
+        override def callee = x
+    }
+/*
     final private[ken] class _Mplus_[a](x: m[a]) {
         def _mplus_(y: => m[a]): m[a] = mplus(x)(y)
     }
     final implicit def _mplus_[a](x: m[a]): _Mplus_[a] = new _Mplus_[a](x)
-
+*/
     final def guard(b: Boolean): m[Unit] = b match {
         case true => `return`()
         case false => mzero
@@ -139,9 +158,15 @@ trait MonadPlus[m[+_]] extends Monad[m] with Alternative[m] {
     final def msum[a](xs: List[m[a]]): m[a] = List.foldr(mplus[a])(mzero)(xs)
 }
 
+trait MonadPlusMethod[m[+_], +a] extends MonadMethod[m, a] with AlternativeMethod[m, a] {
+    override def klass: MonadPlus[m]
+    // final def mzero(implicit i: MonadPlus[m]): m[Nothing] = klass.mzero
+    final def _mplus_[b >: a](y: => m[b]): m[b] = klass.mplus[b](callee)(y)
+}
+
 trait MonadPlusProxy[m[+_]] extends MonadPlus[m] with MonadProxy[m] with AlternativeProxy[m] {
     override def self: MonadPlus[m]
-    override def mzero[a]: m[a] = self.mzero
+    override def mzero: m[Nothing] = self.mzero
     override def mplus[a](x: m[a])(y: => m[a]): m[a] = self.mplus(x)(y)
 }
 

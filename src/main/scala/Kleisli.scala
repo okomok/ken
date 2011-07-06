@@ -13,7 +13,7 @@ final case class Kleisli[m[+_], a, +b](runKleisli: a => m[b])
 
 object Kleisli {
     private[this] class ArrowInstance[m[+_]](implicit i: Monad[m]) extends Arrow[({type a[a, b] = Kleisli[m, a, b]})#a] {
-        import i.{>>=, `return`}
+        import i.{method, `return`}
 
         protected[this] type cat[a, b] = Kleisli[m, a, b]
         override def cid[a]: cat[a, a] = Kleisli { a => `return`(a) }
@@ -37,7 +37,7 @@ object Kleisli {
 
     private[this] class ArrowPlusInstance[m[+_]](implicit i: MonadPlus[m]) extends ArrowZeroInstance[m] with ArrowPlus[({type a[a, b] = Kleisli[m, a, b]})#a] {
         override def op_<+>[b, c](f: a[b, c])(g: => a[b, c]): a[b, c] = Kleisli { x =>
-            import i._mplus_
+            import i.method
             f.runKleisli(x) _mplus_ g.runKleisli(x)
         }
     }

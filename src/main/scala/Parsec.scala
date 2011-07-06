@@ -47,7 +47,13 @@ object Parsec {
 // Prim
     type Parser[+a] = GenParser[Char, Unit, a]
 
-    final case class GenParser[tok, st, +a](parse: State[tok, st] => ConsumedT[Reply[tok, st, a]])
+    final case class GenParser[tok, st, +a](parse: State[tok, st] => ConsumedT[Reply[tok, st, a]]) extends
+        MonadPlusMethod[({type m[+x] = GenParser[tok, st, x]})#m, a]
+    {
+        override val klass = GenParser.monad[tok, st]
+        override val callee = this
+    }
+
     val Parser = GenParser
 
     def runP[tok, st, a](p: GenParser[tok, st, a])(state: State[tok, st]): ConsumedT[Reply[tok, st, a]] = p.parse(state)
@@ -73,7 +79,7 @@ object Parsec {
             override def `return`[a](x: a): m[a] = parsecReturn(x)
             override def op_>>=[a, b](p: m[a])(f: a => m[b]): m[b] = parsecBind(p)(f)
             // MonadPlus
-            override def mzero[a]: m[a] = parsecZero
+            override def mzero: m[Nothing] = parsecZero
             override def mplus[a](x: m[a])(y: => m[a]): m[a] = parsecPlus(x)(y)
         }
     }
@@ -123,7 +129,7 @@ object Parsec {
     }
 
     /** fail **/
-    def parsecZero[tok, st, a]: GenParser[tok, st, a] = {
+    def parsecZero[tok, st, Nothing]: GenParser[tok, st, Nothing] = {
         Parser { (state: State[tok, st]) =>
             Empty(Error(unknownError(state)))
         }
@@ -338,25 +344,19 @@ object Parsec {
 
     def option[tok, st, a](x: a)(p: GenParser[tok, st, a]): GenParser[tok, st, a] = {
         val i = GenParser.monad[tok, st]
-        import i._
-        p <|> `return`(x)
+        p <|> i.`return`(x)
     }
 
     def optional[tok, st](p: GenParser[tok, st, _]): GenParser[tok, st, Unit] = {
         val i = GenParser.monad[tok, st]
-        import i._
-        ( for { _ <- p } yield () ) <|> `return`()
+        ( for { _ <- p } yield () ) <|> i.`return`()
     }
 
     def between[tok, st, a](open: GenParser[tok, st, _])(close: GenParser[tok, st, _])(p: GenParser[tok, st, a]): GenParser[tok, st, a] = {
-        val i = GenParser.monad[tok, st]
-        import i._
         for { _ <- open; x <- p; _ <- close } yield x
     }
 
     def skipMany1[tok, st](p: GenParser[tok, st, _]): GenParser[tok, st, Unit] = {
-        val i = GenParser.monad[tok, st]
-        import i._
         for { _ <- p; r <- skipMany1(p) } yield r
     }
     /*

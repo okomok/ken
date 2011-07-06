@@ -16,7 +16,7 @@ trait Functor[f[+_]] { outer =>
     final def op_<@>[a, b](x: a => b)(y: f[a]): f[b] = fmap(x)(y)
     final def op_<@[a, b](x: => a)(y: f[b]): f[a] = fmap[b, a](_ => x)(y)
 
-    final implicit def functorMethod[a](x: f[a]): FunctorMethod[f, a] = new FunctorMethod[f, a] {
+    implicit def method[a](x: f[a]): FunctorMethod[f, a] = new FunctorMethod[f, a] {
         override def klass = outer
         override def callee = x
     }
@@ -29,14 +29,14 @@ trait Functor[f[+_]] { outer =>
     final private[ken] class Op_<@[a](x: => a) {
         def <@[b](y: f[b]): f[a] = op_<@(x)(y)
     }
-    final implicit def <@[a](x: => a): Op_<@[a] = new Op_<@[a](x)
+    final implicit def <@[a](x: a): Op_<@[a] = new Op_<@[a](x)
 }
 
 trait FunctorMethod[f[+_], +a] extends Method {
     override def klass: Functor[f]
     override def callee: f[a]
-    final def <@>[_a, b](y: f[_a])(implicit i: Functor[f], pre: f[a] <:< Function1[_a, b]): f[b] = klass.op_<@>(pre(callee))(y)
-//    final def <@[_a, b](y: f[_a])(implicit i: Functor[f], pre: f[a] <:< _a): f[b] = op_<@(pre(obj))(y)
+//    final def <@>[_a, b](y: f[_a])(implicit pre: f[a] <:< Function1[_a, b]): f[b] = klass.op_<@>(pre(callee))(y)
+//    final def <@[_a, b](y: f[b])(implicit pre: f[a] <:< _a): f[_a] = klass.op_<@(pre(callee))(y)
 }
 
 trait FunctorProxy[f[+_]] extends Functor[f] with Proxy {

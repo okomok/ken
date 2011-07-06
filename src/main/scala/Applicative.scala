@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-trait Applicative[f[+_]] extends Functor[f] {
+trait Applicative[f[+_]] extends Functor[f] { outer =>
     def pure[a](x: => a): f[a]
     def op_<*>[a, b](x: f[a => b])(y: f[a]): f[b]
     def op_*>[a, b](x: f[a])(y: f[b]): f[b] = liftA2[a, b, b](const(id))(x)(y)
@@ -16,6 +16,11 @@ trait Applicative[f[+_]] extends Functor[f] {
 
     override def fmap[a, b](x: a => b)(y: f[a]): f[b] = pure(x) <*> y
 
+    override implicit def method[a](x: f[a]): ApplicativeMethod[f, a] = new ApplicativeMethod[f, a] {
+        override def klass = outer
+        override def callee = x
+    }
+/*
     final private[ken] class Op_<*>[a, b](x: f[a => b]) {
         def <*>(y: f[a]): f[b] = op_<*>(x)(y)
     }
@@ -35,11 +40,19 @@ trait Applicative[f[+_]] extends Functor[f] {
         def <**>[b](y: f[a => b]): f[b] = op_<**>(x)(y)
     }
     final implicit def <**>[a](x: f[a]): Op_<**>[a] = new Op_<**>[a](x)
-
+*/
     final def op_<**>[a, b](x: f[a])(y: f[a => b]): f[b] = liftA2[a, a => b, b](flip(op_@))(x)(y)
     final def liftA[a, b](x: a => b)(y: f[a]): f[b] = pure(x) <*> y
     final def liftA2[a, b, c](x: a => b => c)(y: f[a])(z: f[b]): f[c] = x <@> y <*> z
     final def liftA3[a, b, c, d](x: a => b => c => d)(y: f[a])(z: f[b])(w: f[c]): f[d] = x <@> y <*> z <*> w
+}
+
+trait ApplicativeMethod[f[+_], +a] extends FunctorMethod[f, a] {
+    override def klass: Applicative[f]
+    final def <*>[_a, b](y: f[_a])(implicit pre: f[a] <:< f[_a => b]): f[b] = klass.op_<*>(pre(callee))(y)
+    final def *>[b](y: f[b]): f[b] = klass.op_*>(callee)(y)
+    final def <*[_a, b](y: f[b])(implicit pre: f[a] <:< f[_a]): f[_a] = klass.op_<*(pre(callee))(y)
+    final def <**>[b](y: f[a => b]): f[b] = klass.op_<**>(callee)(y)
 }
 
 trait ApplicativeProxy[f[+_]] extends Applicative[f] with FunctorProxy[f] {
@@ -51,10 +64,10 @@ trait ApplicativeProxy[f[+_]] extends Applicative[f] with FunctorProxy[f] {
 }
 
 
-trait Alternative[f[+_]] extends Applicative[f] {
+trait Alternative[f[+_]] extends Applicative[f] { outer =>
     private[this] implicit val i = this
 
-    def empty[a]: f[a]
+    def empty: f[Nothing]
     def op_<|>[a](x: f[a])(y: => f[a]): f[a]
 
     def some[a](v: f[a]): f[List[a]] = {
@@ -69,19 +82,29 @@ trait Alternative[f[+_]] extends Applicative[f] {
         many_v
     }
 
-    private[this] def _cons[a]: a => List[a] => List[a] = x => xs => x :: xs
+    override implicit def method[a](x: f[a]): AlternativeMethod[f, a] = new AlternativeMethod[f, a] {
+        override def klass = outer
+        override def callee = x
+    }
 
+    private[this] def _cons[a]: a => List[a] => List[a] = x => xs => x :: xs
+/*
     final private[ken] class Op_<|>[a](x: f[a]) {
         def <|>(y: => f[a]): f[a] = op_<|>(x)(y)
     }
     final implicit def <|>[a](x: f[a]): Op_<|>[a] = new Op_<|>[a](x)
-
+*/
     final def optional[a](x: f[a]): f[Maybe[a]] = (Just(_: a).up) <@> x <|> pure(Nothing.of[a])
+}
+
+trait AlternativeMethod[f[+_], +a] extends ApplicativeMethod[f, a] {
+    override def klass: Alternative[f]
+    final def <|>[b >: a](y: => f[b]): f[b] = klass.op_<|>[b](callee)(y)
 }
 
 trait AlternativeProxy[f[+_]] extends Alternative[f] with ApplicativeProxy[f] {
     def self: Alternative[f]
-    override def empty[a]: f[a] = self.empty
+    override def empty: f[Nothing] = self.empty
     override def op_<|>[a](x: f[a])(y: => f[a]): f[a] = self.op_<|>(x)(y)
     override def some[a](v: f[a]): f[List[a]] = self.some(v)
     override def many[a](v: f[a]): f[List[a]] = self.many(v)

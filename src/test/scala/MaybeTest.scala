@@ -14,7 +14,7 @@ class MaybeTest extends org.scalatest.junit.JUnit3Suite {
 
     def testMonadT {
         val m = MaybeT.monad[IO]
-        import m.`for`
+        import m.method
 
         def isValid(s: List[Char]): Boolean = true
 

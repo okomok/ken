@@ -36,7 +36,7 @@ class MonadToArrowTest extends org.scalatest.junit.JUnit3Suite {
 
     object Monadic {
         import Monad._
-        def eval[m[_]](exp: Exp)(env: Env)(implicit i: Monad[m]): m[Val] = {
+        def eval[m[+_]](exp: Exp)(env: Env)(implicit i: Monad[m]): m[Val] = {
             import i._
             exp match {
                 case Var(s) => `return`(lookup(s)(env))
