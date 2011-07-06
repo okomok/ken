@@ -67,14 +67,9 @@ trait Alternative[f[+_]] extends Applicative[f] { outer =>
         override def callee = x
     }
 
-    private[this] def _cons[a]: a => List[a] => List[a] = x => xs => x :: xs
-/*
-    final private[ken] class Op_<|>[a](x: f[a]) {
-        def <|>(y: => f[a]): f[a] = op_<|>(x)(y)
-    }
-    final implicit def <|>[a](x: f[a]): Op_<|>[a] = new Op_<|>[a](x)
-*/
     final def optional[a](x: f[a]): f[Maybe[a]] = (Just(_: a).up) <@> x <|> pure(Nothing.of[a])
+
+    private[this] def _cons[a]: a => List[a] => List[a] = x => xs => x :: xs
 }
 
 trait AlternativeMethod[f[+_], +a] extends ApplicativeMethod[f, a] {

@@ -20,24 +20,7 @@ trait Monad[m[+_]] extends Applicative[m] { outer =>
         override def klass = outer
         override def callee = x
     }
-/*
-    final private[ken] class Op_>>=[a](x: m[a]) {
-        def >>=[b](y: a => m[b]): m[b] = op_>>=(x)(y)
-    }
-    final implicit def >>=[a](x: m[a]): Op_>>=[a] = new Op_>>=[a](x)
 
-    final private[ken] class Op_>>[a](x: m[a]) {
-        def >>[b](y: => m[b]): m[b] = op_>>(x)(y)
-    }
-    final implicit def >>[a, b](x: m[a]): Op_>>[a] = new Op_>>[a](x)
-
-    private[ken] class For[a](x: m[a]) {
-       def map[b](y: a => b): m[b] = op_>>=(x)(_x => `return`(y(_x)))
-       def flatMap[b](y: a => m[b]): m[b] = op_>>=(x)(y)
-       // def foreach[b](y: a => m[b]): m[b] = op_>>=(x)(_x => y(_x))
-    }
-    final implicit def `for`[a](x: m[a]): For[a] = new For[a](x)
-*/
     final def op_=<<[a, b](f: a => m[b])(x: m[a]): m[b] = x >>= f
 
     final private[ken] class Op_=<<[a, b](f: a => m[b]) {
@@ -144,12 +127,7 @@ trait MonadPlus[m[+_]] extends Monad[m] with Alternative[m] { outer =>
         override def klass = outer
         override def callee = x
     }
-/*
-    final private[ken] class _Mplus_[a](x: m[a]) {
-        def _mplus_(y: => m[a]): m[a] = mplus(x)(y)
-    }
-    final implicit def _mplus_[a](x: m[a]): _Mplus_[a] = new _Mplus_[a](x)
-*/
+
     final def guard(b: Boolean): m[Unit] = b match {
         case true => `return`()
         case false => mzero
@@ -160,7 +138,6 @@ trait MonadPlus[m[+_]] extends Monad[m] with Alternative[m] { outer =>
 
 trait MonadPlusMethod[m[+_], +a] extends MonadMethod[m, a] with AlternativeMethod[m, a] {
     override def klass: MonadPlus[m]
-    // final def mzero(implicit i: MonadPlus[m]): m[Nothing] = klass.mzero
     final def _mplus_[b >: a](y: => m[b]): m[b] = klass.mplus[b](callee)(y)
 }
 

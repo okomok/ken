@@ -37,8 +37,7 @@ trait FunctorMethod[f[+_], +a] extends Method {
     override def callee: f[a]
 
     // for Applicative.function1
-    final def <@>[_a, b](y: f[_a])(implicit pre: f[a] <:< Function1[_a, b]): f[b] = klass.op_<@>(pre(callee))(y)
-    final def <@[_a, b](y: f[b])(implicit pre: f[a] <:< _a): f[_a] = klass.op_<@(pre(callee))(y)
+    final def <@>[z, b](y: f[z])(implicit pre: f[a] <:< Function1[z, b]): f[b] = klass.op_<@>(pre(callee))(y)
 }
 
 trait FunctorProxy[f[+_]] extends Functor[f] with Proxy {
