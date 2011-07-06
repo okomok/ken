@@ -61,14 +61,6 @@ object !:: { // strict extractor
 object List extends MonadPlus[List] {
     override implicit def instance = this
 
-    private[this] type m[a] = List[a]
-    // Monad
-    override def `return`[a](x: a): m[a] = List(x)
-    override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = concat(map(y)(x))
-    // MonadPlus
-    override def mzero: m[Nothing] = Nil
-    override def mplus[a](x: m[a])(y: => m[a]): m[a] = x ::: y
-
     @tailrec
     def op_==(xs: List[_])(ys: List[_]): Boolean = (xs, ys) match {
         case (Nil, Nil) => true
@@ -87,6 +79,15 @@ object List extends MonadPlus[List] {
         def :::(ys: List[a]): List[a] = op_:::(ys)(xs)
     }
     implicit def ofName[a](xs: => List[a]): OfName[a] = new OfName(xs)
+
+// Instance
+    private[this] type m[+a] = List[a]
+    // Monad
+    override def `return`[a](x: a): m[a] = List(x)
+    override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = concat(map(y)(x))
+    // MonadPlus
+    override def mzero: m[Nothing] = Nil
+    override def mplus[a](x: m[a])(y: => m[a]): m[a] = x ::: y
 
     implicit def monoid[a]: Monoid[List[a]] = new Monoid[List[a]] {
         private[this] type m = List[a]

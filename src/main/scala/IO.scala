@@ -21,15 +21,16 @@ trait IOProxy[+a] extends IO[a] with Proxy {
 object IO extends Monad[IO] {
     override implicit def instance = this
 
+    def apply[a](x: => a): IO[a] = new IO[a] {
+        override def unIO = x
+    }
+
+// Instance
+    private[this] type m[+a] = IO[a]
     // Monad
-    private[this] type m[a] = IO[a]
     override def `return`[a](x: a): m[a] = IO { x }
     override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = IO {
         y(x.unIO()).unIO()
-    }
-
-    def apply[a](x: => a): IO[a] = new IO[a] {
-        override def unIO = x
     }
 
 // Output functions
