@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-trait Monad[m[_]] extends Applicative[m] {
+trait Monad[m[+_]] extends Applicative[m] {
     def `return`[a](x: a): m[a]
     def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b]
     def op_>>[a, b](x: m[a])(y: => m[b]): m[b] = { lazy val _y = y; x >>= (_ => _y) }
@@ -111,7 +111,7 @@ trait Monad[m[_]] extends Applicative[m] {
     final def ap[a, b](x: m[a => b])(y: m[a]): m[b] = liftM2(id[a => b])(x)(y) // op_<*>(x)(y)
 }
 
-trait MonadProxy[m[_]] extends Monad[m] with ApplicativeProxy[m] {
+trait MonadProxy[m[+_]] extends Monad[m] with ApplicativeProxy[m] {
     override def self: Monad[m]
     override def `return`[a](x: a): m[a] = self.`return`(x)
     override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = self.op_>>=(x)(y)
@@ -119,7 +119,7 @@ trait MonadProxy[m[_]] extends Monad[m] with ApplicativeProxy[m] {
 }
 
 
-trait MonadPlus[m[_]] extends Monad[m] with Alternative[m] {
+trait MonadPlus[m[+_]] extends Monad[m] with Alternative[m] {
     def mzero[a]: m[a]
     def mplus[a](x: m[a])(y: => m[a]): m[a]
 
@@ -139,7 +139,7 @@ trait MonadPlus[m[_]] extends Monad[m] with Alternative[m] {
     final def msum[a](xs: List[m[a]]): m[a] = List.foldr(mplus[a])(mzero)(xs)
 }
 
-trait MonadPlusProxy[m[_]] extends MonadPlus[m] with MonadProxy[m] with AlternativeProxy[m] {
+trait MonadPlusProxy[m[+_]] extends MonadPlus[m] with MonadProxy[m] with AlternativeProxy[m] {
     override def self: MonadPlus[m]
     override def mzero[a]: m[a] = self.mzero
     override def mplus[a](x: m[a])(y: => m[a]): m[a] = self.mplus(x)(y)
@@ -147,11 +147,11 @@ trait MonadPlusProxy[m[_]] extends MonadPlus[m] with MonadProxy[m] with Alternat
 
 
 object Monad extends MonadInstance {
-    def apply[m[_]](implicit i: Monad[m]): Monad[m] = i
+    def apply[m[+_]](implicit i: Monad[m]): Monad[m] = i
 }
 
 object MonadPlus {
-    def apply[m[_]](implicit i: MonadPlus[m]): MonadPlus[m] = i
+    def apply[m[+_]](implicit i: MonadPlus[m]): MonadPlus[m] = i
 }
 
 trait MonadInstance

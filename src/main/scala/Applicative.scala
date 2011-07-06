@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-trait Applicative[f[_]] extends Functor[f] {
+trait Applicative[f[+_]] extends Functor[f] {
     def pure[a](x: => a): f[a]
     def op_<*>[a, b](x: f[a => b])(y: f[a]): f[b]
     def op_*>[a, b](x: f[a])(y: f[b]): f[b] = liftA2[a, b, b](const(id))(x)(y)
@@ -42,7 +42,7 @@ trait Applicative[f[_]] extends Functor[f] {
     final def liftA3[a, b, c, d](x: a => b => c => d)(y: f[a])(z: f[b])(w: f[c]): f[d] = x <@> y <*> z <*> w
 }
 
-trait ApplicativeProxy[f[_]] extends Applicative[f] with FunctorProxy[f] {
+trait ApplicativeProxy[f[+_]] extends Applicative[f] with FunctorProxy[f] {
     def self: Applicative[f]
     override def pure[a](x: => a): f[a] = self.pure(x)
     override def op_<*>[a, b](x: f[a => b])(y: f[a]): f[b] = self.op_<*>(x)(y)
@@ -51,7 +51,7 @@ trait ApplicativeProxy[f[_]] extends Applicative[f] with FunctorProxy[f] {
 }
 
 
-trait Alternative[f[_]] extends Applicative[f] {
+trait Alternative[f[+_]] extends Applicative[f] {
     private[this] implicit val i = this
 
     def empty[a]: f[a]
@@ -79,7 +79,7 @@ trait Alternative[f[_]] extends Applicative[f] {
     final def optional[a](x: f[a]): f[Maybe[a]] = (Just(_: a).up) <@> x <|> pure(Nothing.of[a])
 }
 
-trait AlternativeProxy[f[_]] extends Alternative[f] with ApplicativeProxy[f] {
+trait AlternativeProxy[f[+_]] extends Alternative[f] with ApplicativeProxy[f] {
     def self: Alternative[f]
     override def empty[a]: f[a] = self.empty
     override def op_<|>[a](x: f[a])(y: => f[a]): f[a] = self.op_<|>(x)(y)
@@ -89,18 +89,18 @@ trait AlternativeProxy[f[_]] extends Alternative[f] with ApplicativeProxy[f] {
 
 
 object Applicative extends ApplicativeInstance {
-    def apply[f[_]](implicit i: Applicative[f]): Applicative[f] = i
+    def apply[f[+_]](implicit i: Applicative[f]): Applicative[f] = i
 }
 
 object Alternative {
-    def apply[f[_]](implicit i: Alternative[f]): Alternative[f] = i
+    def apply[f[+_]](implicit i: Alternative[f]): Alternative[f] = i
 }
 
 trait ApplicativeInstance extends MonadInstance {
     implicit val ofId = Id
 
-    implicit def ofFunction1[z]: Applicative[({type f[a] = z => a})#f] = new Applicative[({type f[a] = z => a})#f] {
-        private[this] type f[a] = z => a
+    implicit def ofFunction1[z]: Applicative[({type f[+a] = z => a})#f] = new Applicative[({type f[+a] = z => a})#f] {
+        private[this] type f[+a] = z => a
         override def pure[a](x: => a): f[a] = const(x)
         override def op_<*>[a, b](x: f[a => b])(y: f[a]): f[b] = z => x(z)(y(z))
     }
@@ -111,7 +111,7 @@ trait ApplicativeInstance extends MonadInstance {
     }
     */
 
-    implicit def ofMonoid[z](implicit ma: Monoid[z]): Applicative[({type f[a] = (z, a)})#f] = new Applicative[({type f[a] = (z, a)})#f] {
+    implicit def ofMonoid[z](implicit ma: Monoid[z]): Applicative[({type f[+a] = (z, a)})#f] = new Applicative[({type f[+a] = (z, a)})#f] {
         private[this] type f[a] = (z, a)
         override def pure[a](x: => a): f[a] = (ma.mempty, x)
         override def op_<*>[a, b](a1: f[a => b])(a2: f[a]): f[b] = (a1, a2) match {

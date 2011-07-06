@@ -8,11 +8,11 @@ package com.github.okomok
 package ken
 
 
-final case class Kleisli[m[_], a, b](runKleisli: a => m[b])
+final case class Kleisli[m[+_], a, +b](runKleisli: a => m[b])
 
 
 object Kleisli {
-    private[this] class ArrowInstance[m[_]](implicit i: Monad[m]) extends Arrow[({type a[a, b] = Kleisli[m, a, b]})#a] {
+    private[this] class ArrowInstance[m[+_]](implicit i: Monad[m]) extends Arrow[({type a[a, b] = Kleisli[m, a, b]})#a] {
         import i.{>>=, `return`}
 
         protected[this] type cat[a, b] = Kleisli[m, a, b]
@@ -31,18 +31,18 @@ object Kleisli {
         }
     }
 
-    private[this] class ArrowZeroInstance[m[_]](implicit i: MonadPlus[m]) extends ArrowInstance[m] with ArrowZero[({type a[a, b] = Kleisli[m, a, b]})#a] {
+    private[this] class ArrowZeroInstance[m[+_]](implicit i: MonadPlus[m]) extends ArrowInstance[m] with ArrowZero[({type a[a, b] = Kleisli[m, a, b]})#a] {
         override def zeroArrow[b, c]: a[b, c] = Kleisli { _ => i.mzero }
     }
 
-    private[this] class ArrowPlusInstance[m[_]](implicit i: MonadPlus[m]) extends ArrowZeroInstance[m] with ArrowPlus[({type a[a, b] = Kleisli[m, a, b]})#a] {
+    private[this] class ArrowPlusInstance[m[+_]](implicit i: MonadPlus[m]) extends ArrowZeroInstance[m] with ArrowPlus[({type a[a, b] = Kleisli[m, a, b]})#a] {
         override def op_<+>[b, c](f: a[b, c])(g: => a[b, c]): a[b, c] = Kleisli { x =>
             import i._mplus_
             f.runKleisli(x) _mplus_ g.runKleisli(x)
         }
     }
 
-    implicit def arrow[m[_]](implicit i: Monad[m]): Arrow[({type a[a, b] = Kleisli[m, a, b]})#a] = new ArrowInstance[m]
-    implicit def arrowZero[m[_]](implicit i: MonadPlus[m]): ArrowZero[({type a[a, b] = Kleisli[m, a, b]})#a] = new ArrowZeroInstance[m]
-    implicit def arrowPlus[m[_]](implicit i: MonadPlus[m]): ArrowPlus[({type a[a, b] = Kleisli[m, a, b]})#a] = new ArrowPlusInstance[m]
+    implicit def arrow[m[+_]](implicit i: Monad[m]): Arrow[({type a[a, b] = Kleisli[m, a, b]})#a] = new ArrowInstance[m]
+    implicit def arrowZero[m[+_]](implicit i: MonadPlus[m]): ArrowZero[({type a[a, b] = Kleisli[m, a, b]})#a] = new ArrowZeroInstance[m]
+    implicit def arrowPlus[m[+_]](implicit i: MonadPlus[m]): ArrowPlus[({type a[a, b] = Kleisli[m, a, b]})#a] = new ArrowPlusInstance[m]
 }

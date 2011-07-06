@@ -32,7 +32,7 @@ object Either {
         List.foldr[Either[a, b], (List[a], List[b])](either(left)(right))((Nil, Nil))(x)
     }
 
-    implicit def functor[A]: Functor[({type f[x] = Either[A, x]})#f] = new Functor[({type f[x] = Either[A, x]})#f] {
+    implicit def functor[A]: Functor[({type f[+x] = Either[A, x]})#f] = new Functor[({type f[+x] = Either[A, x]})#f] {
         private[this] type f[x] = Either[A, x]
         override def fmap[a, b](f: a => b)(e: f[a]): f[b] = e match {
             case Left(x) => Left(x)
