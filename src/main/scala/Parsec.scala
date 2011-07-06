@@ -258,15 +258,11 @@ object Parsec {
 
     /** star **/
     def many[tok, st, a](p: GenParser[tok, st, a]): GenParser[tok, st, List[a]] = {
-        val i = GenParser.monad[tok, st]
-        import i._
         for { xs <- manyAccum(List.op_::[a])(p) } yield List.reverse(xs)
     }
 
     /** star **/
     def skipMany[tok, st](p: GenParser[tok, st, _]): GenParser[tok, st, Unit] = {
-        val i = GenParser.monad[tok, st]
-        import i._
         for { xs <- manyAccum[tok, st, Any](x => y => Nil)(p) } yield ()
     }
 

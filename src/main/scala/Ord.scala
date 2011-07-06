@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-trait Ord[a] {
+trait Ord[a] { outer =>
     def compare(x: a)(y: a): Ordering = if (x == y) EQ else if (op_<=(x)(y)) LT else GT
     def op_<(x: a)(y: a): Boolean = compare(x)(y) match { case LT => true; case _ => false }
     def op_<=(x: a)(y: a): Boolean = compare(x)(y) match { case GT => false; case _ => true }
@@ -17,25 +17,19 @@ trait Ord[a] {
     def max(x: a)(y: a): a = if (op_<=(x)(y)) y else x
     def min(x: a)(y: a): a = if (op_<=(x)(y)) x else y
 
-    final private[ken] class Op_<(x: a) {
-        def <(y: a): Boolean = op_<(x)(y)
+    implicit def method(x: a): OrdMethod[a] = new OrdMethod[a] {
+        override val klass = outer
+        override val callee = x
     }
-    final implicit def <(x: a): Op_< = new Op_<(x)
+}
 
-    final private[ken] class Op_<=(x: a) {
-        def <=(y: a): Boolean = op_<=(x)(y)
-    }
-    final implicit def <=(x: a): Op_<= = new Op_<=(x)
-
-    final private[ken] class Op_>(x: a) {
-        def >(y: a): Boolean = op_>(x)(y)
-    }
-    final implicit def >(x: a): Op_> = new Op_>(x)
-
-    final private[ken] class Op_>=(x: a) {
-        def >=(y: a): Boolean = op_>=(x)(y)
-    }
-    final implicit def >=(x: a): Op_>= = new Op_>=(x)
+trait OrdMethod[a] extends Method {
+    override def klass: Ord[a]
+    override def callee: a
+    final def <(y: a): Boolean = klass.op_<(callee)(y)
+    final def <=(y: a): Boolean = klass.op_<=(callee)(y)
+    final def >(y: a): Boolean = klass.op_>(callee)(y)
+    final def >=(y: a): Boolean = klass.op_>=(callee)(y)
 }
 
 trait OrdProxy[a] extends Ord[a] with Proxy {
@@ -50,9 +44,11 @@ trait OrdProxy[a] extends Ord[a] with Proxy {
 }
 
 
-object Ord {
+object Ord extends OrdInstance {
     def apply[a](implicit i: Ord[a]): Ord[a] = i
+}
 
+trait OrdInstance {
     implicit def ofOrdering[a](implicit i: scala.Ordering[a]): Ord[a] = new Ord[a] {
         override def compare(x: a)(y: a): Ordering = i.compare(x, y) match {
             case 0 => EQ
