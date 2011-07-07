@@ -37,7 +37,7 @@ object Parsec {
     def updatePosString(pos: SourcePos)(string: String): SourcePos = List.foldl(updatePosChar)(pos)(string)
 
     def updatePosChar(pos: SourcePos)(c: Char): SourcePos = c match {
-        case '\n' => pos.copy(line = pos.line + 1, column =1)
+        case '\n' => pos.copy(line = pos.line + 1, column = 1)
         case '\t' => pos.copy(column = pos.column + 8 - ((pos.column - 1) % 8))
         case _ => pos.copy(column = pos.column + 1)
     }
@@ -45,6 +45,9 @@ object Parsec {
     def forcePos(pos: SourcePos): SourcePos = seq(pos.line)(seq(pos.column)(pos)) // no effects
 
 // Prim
+    def getParserState[tok, st]: GenParser[tok, st, State[tok, st]] = updateParserState(id)
+    def setParserState[tok, st](st: State[tok, st]): GenParser[tok, st, State[tok, st]] = updateParserState(const(st))
+
     type Parser[+a] = GenParser[Char, Unit, a]
 
     final case class GenParser[tok, st, +a](parse: State[tok, st] => ConsumedT[Reply[tok, st, a]]) extends
@@ -52,6 +55,8 @@ object Parsec {
     {
         override val klass = GenParser.monad[tok, st]
         override def callee = this
+
+        def <#>(msg: String): GenParser[tok, st, a] = label(this)(msg)
     }
 
     val Parser = GenParser
@@ -74,7 +79,7 @@ object Parsec {
 
     object GenParser {
         implicit def monad[tok, st]: MonadPlus[({type m[+x] = GenParser[tok, st, x]})#m] = new MonadPlus[({type m[+x] = GenParser[tok, st, x]})#m] {
-            private[this] type m[x] = GenParser[tok, st, x]
+            private[this] type m[+x] = GenParser[tok, st, x]
             // Monad
             override def `return`[a](x: a): m[a] = parsecReturn(x)
             override def op_>>=[a, b](p: m[a])(f: a => m[b]): m[b] = parsecBind(p)(f)
@@ -135,7 +140,7 @@ object Parsec {
         }
     }
 
-    /** alternative (non-backtracking) **/
+    /** p1|p2 (non-backtracking) **/
     def parsecPlus[tok, st, a](p1: GenParser[tok, st, a])(p2: => GenParser[tok, st, a]): GenParser[tok, st, a] = {
         Parser { (state: State[tok, st]) =>
             runP(p1)(state) match {
@@ -243,8 +248,11 @@ object Parsec {
         } }
     }
 
+    /** fail **/
     def unexpected[tok, st](msg: String): GenParser[tok, st, Nothing] = {
-        Parser { (state: State[tok, st]) => Empty(Error(newErrorMessage(UnExpect(msg))(statePos(state)))) }
+        Parser { (state: State[tok, st]) =>
+            Empty(Error(newErrorMessage(UnExpect(msg))(statePos(state))))
+        }
     }
 
     def setExpectErrors(err: ParseError)(msgs: List[String]): ParseError = msgs match {
@@ -256,17 +264,17 @@ object Parsec {
     def sysUnExpectError(msg: String)(pos: SourcePos): Reply[Nothing, Nothing, Nothing] = Error(newErrorMessage(SysUnExpect(msg))(pos))
     def unknownError[tok, st](state: State[tok, st]): ParseError = newErrorUnknown(statePos(state))
 
-    /** star **/
+    /** p* **/
     def many[tok, st, a](p: GenParser[tok, st, a]): GenParser[tok, st, List[a]] = {
         for { xs <- manyAccum(List.op_::[a])(p) } yield List.reverse(xs)
     }
 
-    /** star **/
+    /** p* **/
     def skipMany[tok, st](p: GenParser[tok, st, _]): GenParser[tok, st, Unit] = {
         for { xs <- manyAccum[tok, st, Any](x => y => Nil)(p) } yield ()
     }
 
-    /** star **/
+    /** p* **/
     def manyAccum[tok, st, a](accum: a => (=> List[a]) => List[a])(p: GenParser[tok, st, a]): GenParser[tok, st, List[a]] = {
         Parser { (state: State[tok, st]) =>
             @tailrec
@@ -332,12 +340,14 @@ object Parsec {
     def mergeError(err1: ParseError)(err2: ParseError): ParseError = ParseError(err1.pos, err1.msgs ::: err2.msgs)
 
 // Combinators
+    /** p1|p2|...|pn **/
     def choice[tok, st, a](ps: List[GenParser[tok, st, a]]): GenParser[tok, st, a] = {
         val i = GenParser.monad[tok, st]
         import i._
         List.foldr[apply[a], apply[a]](op_<|>)(mzero)(ps)
     }
 
+    /** p? **/
     def option[tok, st, a](x: a)(p: GenParser[tok, st, a]): GenParser[tok, st, a] = {
         val i = GenParser.monad[tok, st]
         p <|> i.`return`(x)
@@ -348,10 +358,12 @@ object Parsec {
         ( for { _ <- p } yield () ) <|> i.`return`()
     }
 
+    /** open p close **/
     def between[tok, st, a](open: GenParser[tok, st, _])(close: GenParser[tok, st, _])(p: GenParser[tok, st, a]): GenParser[tok, st, a] = {
         for { _ <- open; x <- p; _ <- close } yield x
     }
 
+    /** p+ (result abandoned) **/
     def skipMany1[tok, st](p: GenParser[tok, st, _]): GenParser[tok, st, Unit] = {
         for { _ <- p; r <- skipMany1(p) } yield r
     }
@@ -362,4 +374,104 @@ object Parsec {
         scan
     }
     */
+
+    /** p+ **/
+    def many1[tok, st, a](p: GenParser[tok, st, a]): GenParser[tok, st, List[a]] = {
+        for { x <- p; xs <- many(p) } yield (x :: xs)
+    }
+
+    /** p (sep p)* **/
+    def sepBy1[tok, st, a](p: GenParser[tok, st, a])(sep: GenParser[tok, st, _]): GenParser[tok, st, List[a]] = {
+        for { x <- p; xs <- many(sep >> p) } yield (x :: xs)
+    }
+
+    def sepBy[tok, st, a](p: GenParser[tok, st, a])(sep: GenParser[tok, st, _]): GenParser[tok, st, List[a]] = {
+        val i = GenParser.monad[tok, st]
+        sepBy1(p)(sep) <|> i.`return`(Nil)
+    }
+
+    def sepEndBy1[tok, st, a](p: GenParser[tok, st, a])(sep: GenParser[tok, st, _]): GenParser[tok, st, List[a]] = {
+        val i = GenParser.monad[tok, st]
+        for {
+            x <- p
+            y <- ( for { _ <- sep; xs <- sepEndBy(p)(sep) } yield (x :: xs) ) <|> i.`return`(List(x))
+        } yield y
+    }
+
+    def sepEndBy[tok, st, a](p: GenParser[tok, st, a])(sep: GenParser[tok, st, _]): GenParser[tok, st, List[a]] = {
+        val i = GenParser.monad[tok, st]
+        sepEndBy1(p)(sep) <|> i.`return`(Nil)
+    }
+
+    /** (p sep)+ **/
+    def endBy1[tok, st, a](p: GenParser[tok, st, a])(sep: GenParser[tok, st, _]): GenParser[tok, st, List[a]] = {
+        many1 { for { x <- p; _ <- sep } yield x }
+    }
+
+    /** (p sep)* **/
+    def endBy[tok, st, a](p: GenParser[tok, st, a])(sep: GenParser[tok, st, _]): GenParser[tok, st, List[a]] = {
+        many { for { x <- p; _ <- sep } yield x }
+    }
+
+    /** p{n} **/
+    def count[tok, st, a](n: Int)(p: GenParser[tok, st, a]): GenParser[tok, st, List[a]] = {
+        val i = GenParser.monad[tok, st]
+        if (n <= 0) i.`return`(Nil) else i.sequence(List.replicate(n)(p))
+    }
+
+    /** folding with seed **/
+    def chainr[tok, st, a](p: GenParser[tok, st, a])(op: GenParser[tok, st, a => a => a])(x: a): GenParser[tok, st, a] = {
+        val i = GenParser.monad[tok, st]
+        chainr1(p)(op) <|> i.`return`(x)
+    }
+
+    /** folding with seed **/
+    def chainl[tok, st, a](p: GenParser[tok, st, a])(op: GenParser[tok, st, a => a => a])(x: a): GenParser[tok, st, a] = {
+        val i = GenParser.monad[tok, st]
+        chainl1(p)(op) <|> i.`return`(x)
+    }
+
+    /** folding without seed **/
+    def chainr1[tok, st, a](p: GenParser[tok, st, a])(op: GenParser[tok, st, a => a => a]): GenParser[tok, st, a] = {
+        val i = GenParser.monad[tok, st]
+        def rest(x: a): GenParser[tok, st, a] = ( for { f <- op; y <- scan } yield f(x)(y) ) <|> i.`return`(x)
+        lazy val scan: GenParser[tok, st, a] = for { x <- p; y <- rest(x) } yield y
+        scan
+    }
+
+    /** folding without seed **/
+    def chainl1[tok, st, a](p: GenParser[tok, st, a])(op: GenParser[tok, st, a => a => a]): GenParser[tok, st, a] = {
+        val i = GenParser.monad[tok, st]
+        def rest(x: a): GenParser[tok, st, a] = ( for { f <- op; y <- p; z <- rest(f(x)(y)) } yield z ) <|> i.`return`(x)
+        for { x <- p; y <- rest(x) } yield y
+    }
+
+    def anyToken[tok, st]: GenParser[tok, st, tok] = {
+        tokenPrim[tok, st, tok](show)(pos => tok => toks => pos)(Maybe.just)
+    }
+
+    def eof[tok, st]: GenParser[tok, st, Unit] = {
+        notFollowedBy[tok, st](anyToken) <#> "end of input"
+    }
+
+    /** negative lookahead **/
+    def notFollowedBy[tok, st](p: GenParser[tok, st, tok]): GenParser[tok, st, Unit] = {
+        val i = GenParser.monad[tok, st]
+        `try` {
+            (for { c <- p; y <- unexpected(show(List(c))) } yield y ) <|> i.`return`()
+        }
+    }
+
+    /** star-until **/
+    def manyTill[tok, st, a](p: GenParser[tok, st, a])(end: GenParser[tok, st, _]): GenParser[tok, st, List[a]] = {
+        lazy val scan: GenParser[tok, st, List[a]] = {
+            ( for { _ <- end } yield Nil ) <|> ( for { x <- p; xs <- scan } yield (x :: xs) )
+        }
+        scan
+    }
+
+    /** positive lookahead **/
+    def lookAhead[tok, st, a](p: GenParser[tok, st, a]): GenParser[tok, st, a] = {
+        for { state <- getParserState; x <- p; _ <- setParserState(state) } yield x
+    }
 }
