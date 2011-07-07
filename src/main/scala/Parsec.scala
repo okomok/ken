@@ -16,7 +16,9 @@ import scala.annotation.tailrec
 
 object Parsec {
 
+
 // Pos
+
     type SourceName = String
     type Line = Int
     type Column = Int
@@ -44,9 +46,45 @@ object Parsec {
 
     def forcePos(pos: SourcePos): SourcePos = seq(pos.line)(seq(pos.column)(pos)) // no effects
 
+
 // Prim
+
+    // User state combinators
+
+    def getState[tok, st]: GenParser[tok, st, st] = {
+        for { state <- getParserState } yield stateUser(state)
+    }
+
+    def setState[tok, st](st: st): GenParser[tok, st, Unit] = {
+        for { _ <- updateParserState[tok, st] { case State(input, pos, _) => State(input, pos, st) } } yield ()
+    }
+
+    def updateState[tok, st](f: st => st): GenParser[tok, st, Unit] = {
+        for { _ <- updateParserState[tok, st] { case State(input, pos, user) => State(input, pos, f(user)) } } yield ()
+    }
+
+    // Parser state combinators
+
+    def getPosition[tok, st]: GenParser[tok, st, SourcePos] = {
+        for { state <- getParserState } yield statePos(state)
+    }
+
+    def getInput[tok, st]: GenParser[tok, st, List[tok]] = {
+        for { state <- getParserState } yield stateInput(state)
+    }
+
+    def setPosition[tok, st](pos: SourcePos): GenParser[tok, st, Unit] = {
+        for { _ <- updateParserState[tok, st] { case State(input, _, user) => State(input, pos, user) } } yield ()
+    }
+
+    def setInput[tok, st](input: List[tok]): GenParser[tok, st, Unit] = {
+        for { _ <- updateParserState[tok, st] { case State(_, pos, user) => State(input, pos, user) } } yield ()
+    }
+
     def getParserState[tok, st]: GenParser[tok, st, State[tok, st]] = updateParserState(id)
     def setParserState[tok, st](st: State[tok, st]): GenParser[tok, st, State[tok, st]] = updateParserState(const(st))
+
+    // Parser definition
 
     type Parser[+a] = GenParser[Char, Unit, a]
 
@@ -80,6 +118,8 @@ object Parsec {
     object GenParser {
         implicit def monad[tok, st]: MonadPlus[({type m[+x] = GenParser[tok, st, x]})#m] = new MonadPlus[({type m[+x] = GenParser[tok, st, x]})#m] {
             private[this] type m[+x] = GenParser[tok, st, x]
+            // Functor
+            override def fmap[a, b](x: a => b)(y: m[a]): m[b] = parsecMap(x)(y)
             // Monad
             override def `return`[a](x: a): m[a] = parsecReturn(x)
             override def op_>>=[a, b](p: m[a])(f: a => m[b]): m[b] = parsecBind(p)(f)
@@ -88,6 +128,28 @@ object Parsec {
             override def mplus[a](x: m[a])(y: => m[a]): m[a] = parsecPlus(x)(y)
         }
     }
+
+    // run a parser
+
+    // Functor
+
+    def parsecMap[tok, st, a, b](f: a => b)(p: GenParser[tok, st, a]): GenParser[tok, st, b] = {
+        def mapReply(reply: Reply[tok, st, a]): Reply[tok, st, b] = {
+            reply match {
+                case Ok(x, state, err) => Ok(f(x), state, err)
+                case Error(err) => Error(err)
+            }
+        }
+
+        Parser { (state: State[tok, st]) =>
+            runP(p)(state) match {
+                case Consumed(reply) => Consumed(mapReply(reply))
+                case Empty(reply) => Empty(mapReply(reply))
+            }
+        }
+    }
+
+    // Monad
 
     /** epsilon **/
     def parsecReturn[tok, st, a](x: a): GenParser[tok, st, a] = {
@@ -133,6 +195,8 @@ object Parsec {
         case Error(err2) => Error(mergeError(err1)(err2))
     }
 
+    // MonadPlus
+
     /** fail **/
     def parsecZero[tok, st, Nothing]: GenParser[tok, st, Nothing] = {
         Parser { (state: State[tok, st]) =>
@@ -154,6 +218,8 @@ object Parsec {
             }
         }
     }
+
+    // Primitive Parsers
 
     /** make it backtrackable **/
     def `try`[tok, st, a](p: GenParser[tok, st, a]): GenParser[tok, st, a] = {
@@ -241,6 +307,7 @@ object Parsec {
         }
     }
 
+    /** epsilon with state updating **/
     def updateParserState[tok, st](f: State[tok, st] => State[tok, st]): GenParser[tok, st, State[tok, st]] = {
         Parser { (state: State[tok, st]) => {
             val newstate = f(state)
@@ -248,7 +315,7 @@ object Parsec {
         } }
     }
 
-    /** fail **/
+    /** always fail **/
     def unexpected[tok, st](msg: String): GenParser[tok, st, Nothing] = {
         Parser { (state: State[tok, st]) =>
             Empty(Error(newErrorMessage(UnExpect(msg))(statePos(state))))
@@ -264,17 +331,19 @@ object Parsec {
     def sysUnExpectError(msg: String)(pos: SourcePos): Reply[Nothing, Nothing, Nothing] = Error(newErrorMessage(SysUnExpect(msg))(pos))
     def unknownError[tok, st](state: State[tok, st]): ParseError = newErrorUnknown(statePos(state))
 
-    /** p* **/
+    // Parsers unfolded for space
+
+    /** star **/
     def many[tok, st, a](p: GenParser[tok, st, a]): GenParser[tok, st, List[a]] = {
         for { xs <- manyAccum(List.op_::[a])(p) } yield List.reverse(xs)
     }
 
-    /** p* **/
+    /** star **/
     def skipMany[tok, st](p: GenParser[tok, st, _]): GenParser[tok, st, Unit] = {
         for { xs <- manyAccum[tok, st, Any](x => y => Nil)(p) } yield ()
     }
 
-    /** p* **/
+    /** star **/
     def manyAccum[tok, st, a](accum: a => (=> List[a]) => List[a])(p: GenParser[tok, st, a]): GenParser[tok, st, List[a]] = {
         Parser { (state: State[tok, st]) =>
             @tailrec
@@ -298,7 +367,13 @@ object Parsec {
         }
     }
 
+    // Parsers unfolded for speed
+
+
 // Error
+
+    // Message
+
     sealed abstract class MessageT extends Up[MessageT]
     final case class SysUnExpect(s: String) extends MessageT
     final case class UnExpect(s: String) extends MessageT
@@ -327,10 +402,14 @@ object Parsec {
         messageCompare(msg1)(msg2) == EQ
     }
 
+    // ParseErrors
+
     final case class ParseError(pos: SourcePos, msgs: List[MessageT])
     def errorPos(err: ParseError): SourcePos = err.pos
     def errorMessage(err: ParseError): List[MessageT] = err.msgs
     def errorIsUnknown(err: ParseError): Boolean = List.`null`(err.msgs)
+
+    // Create ParseErrors
 
     def newErrorUnknown(pos: SourcePos): ParseError = ParseError(pos, Nil)
     def newErrorMessage(msg: MessageT)(pos: SourcePos): ParseError = ParseError(pos, List(msg))
@@ -339,7 +418,11 @@ object Parsec {
     def setErrorMessage(msg: MessageT)(err: ParseError): ParseError = err.copy(msgs = List.filter(not _ compose messageEq(msg))(err.msgs))
     def mergeError(err1: ParseError)(err2: ParseError): ParseError = ParseError(err1.pos, err1.msgs ::: err2.msgs)
 
+    // Show ParseErrors
+
+
 // Combinators
+
     /** p1|p2|...|pn **/
     def choice[tok, st, a](ps: List[GenParser[tok, st, a]]): GenParser[tok, st, a] = {
         val i = GenParser.monad[tok, st]
@@ -446,6 +529,8 @@ object Parsec {
         for { x <- p; y <- rest(x) } yield y
     }
 
+    // Tricky combinators
+
     def anyToken[tok, st]: GenParser[tok, st, tok] = {
         tokenPrim[tok, st, tok](show)(pos => tok => toks => pos)(Maybe.just)
     }
@@ -458,7 +543,7 @@ object Parsec {
     def notFollowedBy[tok, st](p: GenParser[tok, st, tok]): GenParser[tok, st, Unit] = {
         val i = GenParser.monad[tok, st]
         `try` {
-            (for { c <- p; y <- unexpected(show(List(c))) } yield y ) <|> i.`return`()
+            ( for { c <- p; y <- unexpected(show(List(c))) } yield y ) <|> i.`return`()
         }
     }
 
