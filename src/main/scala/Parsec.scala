@@ -25,6 +25,10 @@ object Parsec {
 
     final case class SourcePos(name: SourceName, line: Line, column: Column)
 
+    def newPos(sourceName: SourceName)(line: Line)(column: Column): SourcePos = SourcePos(sourceName, line, column)
+
+    def initialPos(sourceName: SourceName): SourcePos = newPos(sourceName)(1)(1)
+
     def sourceName(pos: SourcePos): SourceName = pos.name
     def sourceLine(pos: SourcePos): Line = pos.line
     def sourceColumn(pos: SourcePos): Column = pos.column
@@ -129,7 +133,39 @@ object Parsec {
         }
     }
 
-    // run a parser
+    // Run a parser
+
+    def parseFromFile[a](p: Parser[a], fname: SourceName): IO[Either[ParseError, a]] = {
+        for { input <- IO.readFile(fname) } yield parse(p)(fname)(input)
+    }
+
+    def parseTest[tok, a](p: GenParser[tok, Unit, a])(input: List[tok]): IO[Unit] = {
+        runParser(p)(())("")(input) match {
+            case Left(err) => for {
+                _ <- IO.putStr("parse error at ")
+                _ <- IO.print(err)
+            } yield ()
+            case Right(x) => IO.print(x)
+        }
+    }
+
+    def parse[tok, a](p: GenParser[tok, Unit, a])(name: SourceName)(input: List[tok]): Either[ParseError, a] = {
+        runParser(p)(())(name)(input)
+    }
+
+    def runParser[tok, st, a](p: GenParser[tok, st, a])(st: st)(name: SourceName)(input: List[tok]): Either[ParseError, a] = {
+        parserReply(runP(p)(State(input, initialPos(name), st))) match {
+            case Ok(x, _, _) => Right(x)
+            case Error(err) => Left(err)
+        }
+    }
+
+    def parserReply[tok, st, a](result: ConsumedT[Reply[tok, st, a]]): Reply[tok, st, a] = {
+        result match {
+            case Consumed(reply) => reply
+            case Empty(reply) => reply
+        }
+    }
 
     // Functor
 
