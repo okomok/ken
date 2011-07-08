@@ -92,16 +92,29 @@ object Parsec {
 
     type Parser[+a] = GenParser[Char, Unit, a]
 
-    final case class GenParser[tok, st, +a](parse: State[tok, st] => ConsumedT[Reply[tok, st, a]]) extends
-        MonadPlusMethod[({type m[+x] = GenParser[tok, st, x]})#m, a]
-    {
+    sealed abstract class GenParser[tok, st, +a] extends MonadPlusMethod[({type m[+x] = GenParser[tok, st, x]})#m, a] {
         override val klass = GenParser.monad[tok, st]
         override def callee = this
 
-        def <#>(msg: String): GenParser[tok, st, a] = label(this)(msg)
+        def parse(st: State[tok, st]): ConsumedT[Reply[tok, st, a]]
+        final def <#>(msg: String): GenParser[tok, st, a] = label(this)(msg)
     }
 
-    val Parser = GenParser
+    object Parser {
+        def apply[tok, st, a](p: State[tok, st] => ConsumedT[Reply[tok, st, a]]) = new GenParser[tok, st, a] {
+            override def parse(st: State[tok, st]): ConsumedT[Reply[tok, st, a]] = p(st)
+        }
+        def unapply[tok, st, a](p: GenParser[tok, st, a]): Option[State[tok, st] => ConsumedT[Reply[tok, st, a]]] = Some((st: State[tok, st]) => p.parse(st))
+    }
+
+    type Rule[a] = GenRule[Char, Unit, a]
+
+    /** For recursive grammer **/
+    final class GenRule[tok, st, a] extends GenParser[tok, st, a] {
+        @volatile private[this] var p: Lazy[GenParser[tok, st, a]] = null
+        def ::=(that: => GenParser[tok, st, a]): Unit = { p = Lazy(that) }
+        override def parse(st: State[tok, st]): ConsumedT[Reply[tok, st, a]] = p.!.parse(st)
+    }
 
     def runP[tok, st, a](p: GenParser[tok, st, a])(state: State[tok, st]): ConsumedT[Reply[tok, st, a]] = p.parse(state)
 
