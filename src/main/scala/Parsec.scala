@@ -559,4 +559,42 @@ object Parsec {
     def lookAhead[tok, st, a](p: GenParser[tok, st, a]): GenParser[tok, st, a] = {
         for { state <- getParserState; x <- p; _ <- setParserState(state) } yield x
     }
+
+
+// Char
+
+    // Type of character parsers
+
+    type CharParser[st, a] = GenParser[Char, st, a]
+
+    // Character parsers
+
+    def oneOf[st](cs: List[Char]): CharParser[st, Char] = satisfy(c => List.elem(c)(cs))
+    def noneOf[st](cs: List[Char]): CharParser[st, Char] = satisfy(c => not(List.elem(c)(cs)))
+
+    def spaces[st]: CharParser[st, Unit] = skipMany(space[st]) <#> "white space"
+
+    def space[st]: CharParser[st, Char] = satisfy(_.isSpaceChar) <#> "space"
+    def newline[st]: CharParser[st, Char] = char('\n') <#> "new-line"
+    def tab[st]: CharParser[st, Char] = char('\t') <#> "tab"
+
+    def upper[st]: CharParser[st, Char] = satisfy(_.isUpper) <#> "uppercase letter"
+    def lower[st]: CharParser[st, Char] = satisfy(_.isLower) <#> "lowercase letter"
+    def alphaNum[st]: CharParser[st, Char] = satisfy(_.isLetterOrDigit) <#> "letter or digit"
+    def letter[st]: CharParser[st, Char] = satisfy(_.isLetter) <#> "letter"
+    def digit[st]: CharParser[st, Char] = satisfy(_.isDigit) <#> "digit"
+    //def hexDigit[st]: CharParser[st, Char] = satisfy(_.isHexDigit) <#> "hexadecimal digit"
+    //def octDigit[st]: CharParser[st, Char] = satisfy(_.isOctDigit) <#> "octal digit"
+
+    def char[st](c: Char): CharParser[st, Char] = satisfy(_ == c) <#> show(List(c))
+
+    def anyChar[st]: CharParser[st, Char] = satisfy(const(true))
+
+    // Primitive character parsers
+
+    def satisfy[st](f: Char => Boolean): CharParser[st, Char] = {
+        tokenPrim[Char, st, Char](c => show(List(c)))(pos => c => cs => updatePosChar(pos)(c))(c => if (f(c)) Just(c) else Nothing)
+    }
+
+    //def string(s: String): CharParser[st, String] = tokens(show)(updatePosString(s))
 }
