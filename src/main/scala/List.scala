@@ -356,6 +356,7 @@ object List extends MonadPlus[List] {
 
     @tailrec
     def drop[a](n: Int)(xs: List[a]): List[a] = (n, xs) match {
+        case (n, xs) if n <= 0 => xs
         case (_, Nil) => Nil
         case (n, _ :: xs) => drop(n-1)(xs.!)
     }
@@ -594,6 +595,23 @@ object List extends MonadPlus[List] {
         case x :: xs => {
             f(x)
             foreach(f)(xs.!)
+        }
+    }
+
+    def range(n: Int, m: Int): List[Int] = {
+        Predef.require(n <= m)
+        if (n == m) Nil else n :: range(n + 1, m)
+    }
+
+    def rangeFrom(n: Int): List[Int] = n :: rangeFrom(n + 1)
+
+    def slice[a](n: Int, m: Int)(xs: List[a]): List[a] = List.drop(n)(List.take(m)(xs))
+
+    def step[a](n: Int)(xs: List[a]): List[a] = {
+        Predef.require(n > 0)
+        xs match {
+            case Nil => Nil
+            case x :: xs => x :: List.step(n)(List.drop(n - 1)(xs.!))
         }
     }
 }

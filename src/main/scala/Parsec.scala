@@ -246,7 +246,7 @@ object Parsec {
 
     // MonadPlus
 
-    /** fail **/
+    /** always fail **/
     def parsecZero[tok, st, Nothing]: GenParser[tok, st, Nothing] = {
         Parser { (state: State[tok, st]) =>
             Empty(Error(unknownError(state)))
