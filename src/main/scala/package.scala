@@ -9,16 +9,19 @@ package com.github.okomok
 
 package object ken {
 
+// String
+    type StringT = List[Char]
+
 // Eq
     type Eq[a] = _Eq.Eq[a]
     val Eq = _Eq.Eq
 
 // Booleans
-    def not(b: Boolean): Boolean = !b
+    val not: Boolean => Boolean = { b => !b }
 
-    def op_&&(b: Boolean)(c: => Boolean): Boolean = b && c
+    val op_&& : Boolean => (=> Boolean) => Boolean = { b => c => b && c }
 
-    def op_||(b : Boolean)(c: => Boolean): Boolean = b || c
+    val op_|| : Boolean => (=> Boolean) => Boolean = { b => c => b || c }
 
 // Tuples
     def fst[a, b](p: (a, b)): a = p match {
@@ -50,7 +53,7 @@ package object ken {
 
     def asTypeOf[a](x: a): a => a = const(x)
 
-    def error(msg: String): Nothing = throw new Error(msg)
+    val error: String => Nothing = { msg => throw new Error(msg) }
 
     def undefined: Nothing = throw new Error("undefined")
 
@@ -59,5 +62,5 @@ package object ken {
     def op_@![a, b](f: a => b)(x: a): b = f(x) // same as op_@
 
 // Converting to String
-    def show(x: Any): String = x.toString
+    val show: Any => String = _.toString
 }

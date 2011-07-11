@@ -23,7 +23,9 @@ object Parsec {
     type Line = Int
     type Column = Int
 
-    final case class SourcePos(name: SourceName, line: Line, column: Column)
+    final case class SourcePos(name: SourceName, line: Line, column: Column) {
+        override def toString = showSourcePos(name, line, column)
+    }
 
     def newPos(sourceName: SourceName)(line: Line)(column: Column): SourcePos = SourcePos(sourceName, line, column)
 
@@ -50,6 +52,14 @@ object Parsec {
 
     def forcePos(pos: SourcePos): SourcePos = seq(pos.line)(seq(pos.column)(pos)) // no effects
 
+    private[this] def showSourcePos(name: SourceName, line: Line, column: Column): String = {
+        def showLineColumn: String = "(line " + show(line) + ", column " + show(column) + ")"
+        if (name == "") {
+            showLineColumn
+        } else {
+            "\"" + name + "\" " + showLineColumn
+        }
+    }
 
 // Prim
 
@@ -447,15 +457,19 @@ object Parsec {
         case Message(s) => s
     }
 
+    def messageStringT(msg: MessageT): StringT = List.from(messageString(msg))
+
     def messageEq(msg1: MessageT)(msg2: MessageT): Boolean = {
         messageCompare(msg1)(msg2) == EQ
     }
 
     // ParseErrors
 
-    final case class ParseError(pos: SourcePos, msgs: List[MessageT])
+    final case class ParseError(pos: SourcePos, msgs: List[MessageT]) {
+        override def toString = showParseError(this)
+    }
     def errorPos(err: ParseError): SourcePos = err.pos
-    def errorMessage(err: ParseError): List[MessageT] = err.msgs
+    def errorMessages(err: ParseError): List[MessageT] = List.sortBy(messageCompare)(err.msgs)
     def errorIsUnknown(err: ParseError): Boolean = List.`null`(err.msgs)
 
     // Create ParseErrors
@@ -464,10 +478,79 @@ object Parsec {
     def newErrorMessage(msg: MessageT)(pos: SourcePos): ParseError = ParseError(pos, List(msg))
     def addErrorMessage(msg: MessageT)(err: ParseError): ParseError = err.copy(msgs = msg :: err.msgs)
     def setErrorPos(pos: SourcePos)(err: ParseError): ParseError = err.copy(pos = pos)
-    def setErrorMessage(msg: MessageT)(err: ParseError): ParseError = err.copy(msgs = List.filter(not _ compose messageEq(msg))(err.msgs))
+    def setErrorMessage(msg: MessageT)(err: ParseError): ParseError = err.copy(msgs = msg :: List.filter(not compose messageEq(msg))(err.msgs))
     def mergeError(err1: ParseError)(err2: ParseError): ParseError = ParseError(err1.pos, err1.msgs ::: err2.msgs)
 
     // Show ParseErrors
+
+    private[this] def showParseError(err: ParseError): String = {
+        show(errorPos(err)) + ":" +
+            showErrorMessages("or")("unknown parse error")("expecting")("unexpected")("end of input")(errorMessages(err))
+    }
+
+    def showErrorMessages(msgOr: StringT)
+        (msgUnknown: StringT)(msgExpecting: StringT)(msgUnExpected: StringT)
+        (msgEndOfInput: StringT)(msgs: List[MessageT]): String =
+    {
+        val (sysUnExpect, msgs1) = List.span(messageEq(SysUnExpect("")))(msgs)
+        val (unExpect, msgs2) = List.span(messageEq(UnExpect("")))(msgs1)
+        val (expect, messages) = List.span(messageEq(Expect("")))(msgs2)
+
+        def clean(ms: List[StringT]): List[StringT] = List.nub(List.filter[StringT](not compose List.`null`)(ms))
+
+        def separate(sep: StringT)(ms: List[StringT]): StringT = ms match {
+            case Nil => Nil
+            case m !:: Nil => m
+            case m :: ms => m ::: sep ::: separate(sep)(ms.!)
+        }
+
+        def commasOr(s: List[StringT]): StringT = s match {
+            case Nil => Nil
+            case m !:: Nil => m
+            case ms => commaSep(List.init(ms)) ::: " " ::: msgOr ::: " " ::: List.last(ms)
+        }
+
+        def commaSep(ms: List[StringT]): StringT = separate(", ")(clean(ms))
+        def semiSep(ms: List[StringT]): StringT = separate("; ")(clean(ms))
+
+        def showMany(pre: StringT)(msgs: List[MessageT]): StringT = {
+            clean(List.map(messageStringT)(msgs)) match {
+                case Nil => ""
+                case ms => {
+                    if (List.`null`(pre)) {
+                        commasOr(ms)
+                    } else {
+                        pre ::: " " ::: commasOr(ms)
+                    }
+                }
+            }
+        }
+
+        def showExpect: StringT = showMany(msgExpecting)(expect)
+        def showUnExpect: StringT = showMany(msgUnExpected)(unExpect)
+        def showSysUnExpect: StringT = {
+            def firstMsg: StringT = messageStringT(List.head(sysUnExpect))
+
+            if (not(List.`null`(unExpect)) || List.`null`(sysUnExpect)) {
+                ""
+            } else if (List.`null`(firstMsg)) {
+                msgUnExpected ::: " " ::: msgEndOfInput
+            } else {
+                msgUnExpected ::: " " ::: firstMsg
+            }
+        }
+        def showMessages: StringT = showMany("")(messages)
+
+        val r = if (List.`null`(msgs)) {
+            msgUnknown
+        } else {
+            List.concat { List.map((m: StringT) => "\n" ::: m) { clean {
+                List(showSysUnExpect, showUnExpect, showExpect, showMessages)
+            } } }
+        }
+
+        List.stringize(r)
+    }
 
 
 // Combinators

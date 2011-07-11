@@ -48,6 +48,10 @@ object IO extends Monad[IO] {
         Predef.print(x)
     }
 
+    def printLn[a](x: a): IO[Unit] = IO {
+        Predef.println(x)
+    }
+
 // Input functions
     def getChar: IO[Char] = IO {
         Predef.readChar()
