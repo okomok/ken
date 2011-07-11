@@ -42,7 +42,7 @@ object Parsec {
     def setSourceLine(pos: SourcePos)(n: Line): SourcePos = pos.copy(line = n)
     def setSourceColumn(pos: SourcePos)(n: Column): SourcePos = pos.copy(column = n)
 
-    def updatePosString(pos: SourcePos)(string: String): SourcePos = List.foldl(updatePosChar)(pos)(string)
+    def updatePosString(pos: SourcePos)(string: StringT): SourcePos = List.foldl(updatePosChar)(pos)(string)
 
     def updatePosChar(pos: SourcePos)(c: Char): SourcePos = c match {
         case '\n' => pos.copy(line = pos.line + 1, column = 1)
@@ -115,6 +115,8 @@ object Parsec {
             override def parse(st: State[tok, st]): ConsumedT[Reply[tok, st, a]] = p(st)
         }
         def unapply[tok, st, a](p: GenParser[tok, st, a]): Option[State[tok, st] => ConsumedT[Reply[tok, st, a]]] = Some((st: State[tok, st]) => p.parse(st))
+
+        implicit val monad: MonadPlus[({type m[+x] = GenParser[Char, Unit, x]})#m] = GenParser.monad[Char, Unit]
     }
 
     type Rule[a] = GenRule[Char, Unit, a]
@@ -428,6 +430,34 @@ object Parsec {
 
     // Parsers unfolded for speed
 
+    def tokens[tok, st](shows: List[tok] => String)(nextposs: SourcePos => List[tok] => SourcePos)(s: List[tok]): GenParser[tok, st, List[tok]] = {
+        Parser { case state@State(input, pos, user) =>
+            def ok(cs: List[tok]): Reply[tok, st, List[tok]] = {
+                val newpos = nextposs(pos)(s)
+                val newstate = State(cs, newpos, user)
+                Ok(s, newstate, newErrorUnknown(newpos))
+            }
+
+            def errEof: Reply[tok, st, List[tok]] = Error(setErrorMessage(Expect(shows(s)))(newErrorMessage(SysUnExpect(""))(pos)))
+            def errExpect(c: tok): Reply[tok, st, List[tok]] = Error(setErrorMessage(Expect(shows(s)))(newErrorMessage(SysUnExpect(show(List(c))))(pos)))
+
+            @tailrec
+            def walk(xs: List[tok])(cs: List[tok]): Reply[tok, st, List[tok]] = (xs, cs) match {
+                case (Nil, cs) => ok(cs)
+                case (xs, Nil) => errEof
+                case (x :: xs, c :: cs) => if (x == c) walk(xs.!)(cs.!) else errExpect(c)
+            }
+
+            def walk1(xs: List[tok])(cs: List[tok]): ConsumedT[Reply[tok, st, List[tok]]] = (xs, cs) match {
+                case (Nil, cs) => Empty(ok(cs))
+                case (xs, Nil) => Empty(errEof)
+                case (x :: xs, c :: cs) => if (x == c) Consumed(walk(xs.!)(cs.!)) else Empty(errExpect(c))
+            }
+
+            walk1(s)(input)
+        }
+    }
+
 
 // Error
 
@@ -580,7 +610,7 @@ object Parsec {
 
     /** p+ (result abandoned) **/
     def skipMany1[tok, st](p: GenParser[tok, st, _]): GenParser[tok, st, Unit] = {
-        for { _ <- p; r <- skipMany1(p) } yield r
+        for { _ <- p; r <- skipMany(p) } yield r
     }
     /*
     def skipMany[tok, st](p: GenParser[tok, st, _]): GenParser[tok, st, Unit] = {
@@ -697,7 +727,7 @@ object Parsec {
 
     // Type of character parsers
 
-    type CharParser[st, a] = GenParser[Char, st, a]
+    type CharParser[st, +a] = GenParser[Char, st, a]
 
     // Character parsers
 
@@ -728,5 +758,5 @@ object Parsec {
         tokenPrim[Char, st, Char](c => show(List(c)))(pos => c => cs => updatePosChar(pos)(c))(c => if (f(c)) Just(c) else Nothing)
     }
 
-    //def string(s: String): CharParser[st, String] = tokens(show)(updatePosString(s))
+    def string[st](s: StringT): CharParser[st, StringT] = tokens[Char, st](show)(updatePosString)(s)
 }

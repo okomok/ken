@@ -13,7 +13,7 @@ import com.github.okomok.ken._
 
 class TrivialTest extends org.scalatest.junit.JUnit3Suite {
 
-    def testTrivial: Unit = {
+    def teztTrivial: Unit = {
         val p = Parsec.many(Parsec.char[Unit]('a'))
         println {
             Parsec.parse(p)("trivial")(List.from("aaaba"))
@@ -22,4 +22,6 @@ class TrivialTest extends org.scalatest.junit.JUnit3Suite {
             Parsec.runP(p)(Parsec.State(List.from("aaabb"), Parsec.initialPos("trivial"), ()))
         }
     }
+
+    def test_ {}
 }

@@ -16,7 +16,10 @@ sealed abstract class List[+a] extends Up[List[a]] {
     final def of[b >: a]: List[b] = this
 
     // FIX ME
-    final override def toString: String = List.take(512)(this).toScalaList.toString
+    final override def toString: String = this match {
+        case x :: xs if x.isInstanceOf[Char] => "\"" + List.stringize(List.take(512)(this.asInstanceOf[List[Char]])) + "\""
+        case _ => List.take(512)(this).toScalaList.toString
+    }
     final override lazy val hashCode: Int = toScalaList.hashCode
 
     final def !!(n: Int): a = List.op_!!(this)(n)
