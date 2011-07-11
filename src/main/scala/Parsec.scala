@@ -701,8 +701,8 @@ object Parsec {
 
     // Character parsers
 
-    def oneOf[st](cs: List[Char]): CharParser[st, Char] = satisfy(c => List.elem(c)(cs))
-    def noneOf[st](cs: List[Char]): CharParser[st, Char] = satisfy(c => not(List.elem(c)(cs)))
+    def oneOf[st](cs: StringT): CharParser[st, Char] = satisfy(c => List.elem(c)(cs))
+    def noneOf[st](cs: StringT): CharParser[st, Char] = satisfy(c => not(List.elem(c)(cs)))
 
     def spaces[st]: CharParser[st, Unit] = skipMany(space[st]) <#> "white space"
 

@@ -1,0 +1,50 @@
+
+
+// Copyright Shunsuke Sogame 2011.
+// Distributed under the terms of an MIT-style license.
+
+
+package com.github.okomok.kentest
+package listtest
+
+
+import com.github.okomok.ken._
+
+
+class UniqueTest extends org.scalatest.junit.JUnit3Suite {
+
+    def testUnique: Unit = {
+        val tr = List(5,4,4,4,3,2,2,2,2,2,1)
+        val sr = tr.unique
+        expect(List(5,4,3,2,1))(sr)
+        expect(List(5,4,3,2,1))(sr) // traverse again.
+    }
+
+    def testUniqueUnique: Unit = {
+        val tr = List(5,5,5,4,4,4,3,2,2,2,2,2,1)
+        val sr = tr.unique.unique.unique
+        expect(List(5,4,3,2,1))(sr)
+        expect(List(5,4,3,2,1))(sr) // traverse again.
+    }
+
+    def testUnique0: Unit = {
+        val tr = List.empty.of[Int]
+        val sr = tr.unique
+        assert(tr.isEmpty)
+    }
+
+    def testUnique1: Unit = {
+        val tr = List(9)
+        val sr = tr.unique
+        expect(List(9))(sr)
+        expect(List(9))(sr) // traverse again.
+    }
+
+    def testUnique2: Unit = {
+        val tr = List(9,9,9,9,9,9)
+        val sr = tr.unique
+        expect(List(9))(sr)
+        expect(List(9))(sr) // traverse again.
+    }
+
+}
