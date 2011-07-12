@@ -16,12 +16,13 @@ The current status is pre-alpha.
 
 ## Links
 
+* [ekmett/functorial - GitHub](https://github.com/ekmett/functorial "ekmett/functorial - GitHub")
+* [Parsec](http://legacy.cs.uu.nl/daan/parsec.html "Parsec")
+* [runarorama/scarpia - GitHub](https://github.com/runarorama/scarpia "runarorama/scarpia - GitHub")
+* [scalaz](http://code.google.com/p/scalaz/ "scalaz")
 * [Browse Source]
 * [Browse Test Source]
 * [The Scala Programming Language]
-* [ekmett/functorial - GitHub](https://github.com/ekmett/functorial "ekmett/functorial - GitHub")
-* [runarorama/scarpia - GitHub](https://github.com/runarorama/scarpia "runarorama/scarpia - GitHub")
-* [scalaz](http://code.google.com/p/scalaz/ "scalaz")
 
 
 Shunsuke Sogame <<okomok@gmail.com>>
