@@ -36,7 +36,7 @@ trait ApplicativeMethod[f[+_], +a] extends FunctorMethod[f, a] {
 }
 
 trait ApplicativeProxy[f[+_]] extends Applicative[f] with FunctorProxy[f] {
-    def self: Applicative[f]
+    override def self: Applicative[f]
     override def pure[a](x: => a): f[a] = self.pure(x)
     override def op_<*>[a, b](x: f[a => b])(y: f[a]): f[b] = self.op_<*>(x)(y)
     override def op_*>[a, b](x: f[a])(y: f[b]): f[b] = self.op_*>(x)(y)
@@ -76,7 +76,7 @@ trait AlternativeMethod[f[+_], +a] extends ApplicativeMethod[f, a] {
 }
 
 trait AlternativeProxy[f[+_]] extends Alternative[f] with ApplicativeProxy[f] {
-    def self: Alternative[f]
+    override def self: Alternative[f]
     override def empty: f[Nothing] = self.empty
     override def op_<|>[a](x: f[a])(y: => f[a]): f[a] = self.op_<|>(x)(y)
     override def some[a](v: f[a]): f[List[a]] = self.some(v)
