@@ -3,22 +3,15 @@
 
 `ken` is a Haskell DSL in Scala without any elaborate techniques:
 
-    import com.github.okomok.ken.IO
+    import com.github.okomok.ken._
 
-    class ExampleTest extends org.scalatest.junit.JUnit3Suite {
-
-        def teztIO {
-            val io = for {
-                x <- IO.getChar
-                r <- IO.putChar(x)
-            } yield r
-
-            io.unIO()
-        }
+    object TrivialIO extends Main {
+        val main_ = for { x <- IO.getChar
+                          _ <- IO.putChar(x)
+                    } yield ()
     }
 
 The current status is pre-alpha.
-
 
 
 ## Links
@@ -26,10 +19,12 @@ The current status is pre-alpha.
 * [Browse Source]
 * [Browse Test Source]
 * [The Scala Programming Language]
+* [ekmett/functorial - GitHub](https://github.com/ekmett/functorial "ekmett/functorial - GitHub")
+* [runarorama/scarpia - GitHub](https://github.com/runarorama/scarpia "runarorama/scarpia - GitHub")
+* [scalaz](http://code.google.com/p/scalaz/ "scalaz")
 
 
 Shunsuke Sogame <<okomok@gmail.com>>
-
 
 
 [MIT License]: http://www.opensource.org/licenses/mit-license.php "MIT License"
