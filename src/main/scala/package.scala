@@ -23,6 +23,8 @@ package object ken {
 
     val op_|| : Boolean => (=> Boolean) => Boolean = { b => c => b || c }
 
+    final val otherwise = true
+
 // Tuples
     def fst[a, b](p: (a, b)): a = p match {
         case (x, _) => x
@@ -32,9 +34,17 @@ package object ken {
         case (_, y) => y
     }
 
-    def curry[a, b, c](f: (a, b) => c): a => b => c = { x => y => f(x, y) }
+    def curry[a, b, c](f: Tuple2[a, b] => c): a => b => c = { x => y => f((x, y)) }
 
-    def uncurry[a, b, c](f: a => b => c): (a, b) => c = { (x, y) => f(x)(y) }
+    def uncurry[a, b, c](f: a => b => c): Tuple2[a, b] => c = { case (x, y) => f(x)(y) }
+
+    def curry_[a, b, c](f: (a, b) => c): a => b => c = { x => y => f(x, y) }
+
+    def uncurry_[a, b, c](f: a => b => c): (a, b) => c = { (x, y) => f(x)(y) }
+
+    def swap[a, b](p: (a, b)): (b, a) = p match {
+        case (x, y) => (y, x)
+    }
 
 // Miscellaneous functions
     def id[a](x: a): a = x
@@ -47,6 +57,8 @@ package object ken {
 
     def op_@[a, b](f: a => b)(x: a): b = f(x)
 
+    def op_@![a, b](f: a => b)(x: a): b = f(x) // same as op_@
+
     def until[a](p: a => Boolean)(f: a => a)(x: a): a = {
         if (p(x)) x else until(p)(f)(f(x))
     }
@@ -58,8 +70,6 @@ package object ken {
     def undefined: Nothing = throw new Error("undefined")
 
     def seq[a, b](x: a)(y: b): b = y // no effects
-
-    def op_@![a, b](f: a => b)(x: a): b = f(x) // same as op_@
 
 // Converting to String
     val show: Any => String = _.toString
