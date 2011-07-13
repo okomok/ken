@@ -13,7 +13,6 @@ trait MonadState[s, m[+_]] extends Monad[m] { outer =>
     def put(s: s): m[Unit]
 
     final def modify(f: s => s): m[Unit] = for { s <- get; _ <- put(f(s)) } yield ()
-
     final def gets[a](f: s => a): m[a] = for { s <- get } yield f(s)
 }
 
