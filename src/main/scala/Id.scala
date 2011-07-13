@@ -8,6 +8,7 @@ package com.github.okomok
 package ken
 
 
+// @deprecated("use Identity instead")
 object Id extends Applicative[({type f[+a] = a})#f] {
     private[this] type f[+a] = a
     def pure[a](x: => a): f[a] = x

@@ -97,6 +97,10 @@ trait Monad[m[+_]] extends Applicative[m] { outer =>
     final def liftM5[a1, a2, a3, a4, a5, r](f: a1 => a2 => a3 => a4 => a5 => r)(m1: m[a1])(m2: m[a2])(m3: m[a3])(m4: m[a4])(m5: m[a5]): m[r] = for { x1 <- m1; x2 <- m2; x3 <- m3; x4 <- m4; x5 <- m5 } yield f(x1)(x2)(x3)(x4)(x5)
 
     final def ap[a, b](x: m[a => b])(y: m[a]): m[b] = liftM2(id[a => b])(x)(y) // op_<*>(x)(y)
+
+    final def trans: MonadT[m] = new MonadT[m] {
+        override implicit val inner = outer
+    }
 }
 
 trait MonadMethod[m[+_], +a] extends ApplicativeMethod[m, a] {
@@ -106,6 +110,10 @@ trait MonadMethod[m[+_], +a] extends ApplicativeMethod[m, a] {
     final def >>[b](y: m[b]): m[b] = klass.op_>>(callee)(y)
     final def flatMap[b](y: a => m[b]): m[b] = klass.op_>>=(callee)(y)
     final def map[b](y: a => b): m[b] = klass.op_>>=(callee)(_x => klass.`return`(y(_x)))
+
+    // no filter
+    final def filter(y: a => Boolean): m[a] = map(_x => { Predef.require(y(_x)); _x })
+    final def withFilter(y: a => Boolean): m[a] = filter(y)
 }
 
 trait MonadProxy[m[+_]] extends Monad[m] with ApplicativeProxy[m] {

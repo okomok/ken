@@ -73,4 +73,10 @@ package object ken {
 
 // Converting to String
     val show: Any => String = _.toString
+
+// Trivial transformers
+    val identityT = Identity.trans
+    type State[s, +a] = identityT.State[s, a]
+    val State = identityT.State
+
 }

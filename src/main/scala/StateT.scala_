@@ -1,0 +1,134 @@
+
+
+// Copyright Shunsuke Sogame 2011.
+// Distributed under the terms of an MIT-style license.
+
+
+package com.github.okomok
+package ken
+
+
+sealed abstract class StateT[s, m[+_], +a] extends MonadTransfomer[m] with MonadMethod[({type n[+a] = StateT[s, m, a]})#n, a] {
+    def run(s: s): m[(a, s)]
+    override val klass = StateT.monad[s, m]
+    override def callee = this
+}
+
+
+object StateT {
+    def apply[s, m[+_], a](i: Monad[m])(r: s => m[(a, s)]): StateT[s, m, a] = new StateT[s, m, a] {
+        override def inner: Monad[m] = i
+        override def run(s: s): m[(a, s)] = r(s)
+    }
+
+    def runStateT[s, m[+_], a](m: StateT[s, m, a]): s => m[(a, s)] = m.run
+
+    def evalStateT[s, m[+_], a](m: StateT[s, m, a])(s: s): m[a] = {
+        val i = m.inner
+        import i.method
+        for { (a, _) <- runStateT(m)(s) } yield a
+    }
+
+    def execStateT[s, m[+_], a](m: StateT[s, m, a])(s: s): m[s] = {
+        val i = m.inner
+        import i.method
+        for { (_, s) <- runStateT(m)(s) } yield s
+    }
+
+    def mapStateT[s, m[+_], a, b](f: m[(a, s)] => m[(b, s)])(m: StateT[s, m, a]): StateT[s, m, b] = {
+        StateT(m.inner) { f compose runStateT(m) }
+    }
+
+    def withStateT[s, m[+_], a](f: s => s)(m: StateT[s, m, a]): StateT[s, m, a] = {
+        StateT(m.inner) { runStateT(m) compose f }
+    }
+
+    implicit def monad[s, n[+_]](implicit i: Monad[n]): Monad[({type m[+a] = StateT[s, n, a]})#m] with MonadState[s, ({type m[+a] = StateT[s, n, a]})#m] =
+        new Monad[({type m[+a] = StateT[s, n, a]})#m] with MonadState[s, ({type m[+a] = StateT[s, n, a]})#m]
+    {
+        // Functor
+        private[this] type f[+a] = StateT[s, n, a]
+        override def fmap[a, b](f: a => b)(m: f[a]): f[b] = StateT(i) { s =>
+            import i.method
+            for { (x, s_) <- runStateT(m)(s) } yield (f(x), s_)
+        }
+        // Monad
+        private[this] type m[+a] = f[a]
+        override def `return`[a](a: a): m[a] = StateT(i) { s => i.`return`(a, s) }
+        override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = StateT(i) { s =>
+            import i.method
+            for { (a, s_) <- runStateT(m)(s); r <- runStateT(k(a))(s_) } yield r
+        }
+        // MonadStateT
+        override def get: m[s] = StateT(i) { s => i.`return`(s, s) }
+        override def put(s: s): m[Unit] = StateT(i) { _ => i.`return`((), s) }
+    }
+}
+
+
+object State {
+    def apply[s, a](r: s => (a, s)): StateT[s, ({type m[+a] = a})#m, a] = StateT[s, ({type m[+a] = a})#m, a](Identity)(r)
+
+    def test[a, s] {
+        val x: StateT[s, ({type m[+a] = a})#m, a] = throw new java.lang.Error
+        StateT.runStateT(x)
+    }
+}
+
+
+/*
+sealed abstract class State[s, +a] extends MonadMethod[({type m[+a] = State[s, a]})#m, a] {
+    def run(s: s): (a, s)
+    override val klass = State.monad[s]
+    override def callee = this
+}
+
+
+object State {
+    def apply[s, a](r: s => (a, s)): State[s, a] = new State[s, a] {
+        override def run(s: s): (a, s) = r(s)
+    }
+
+    def `lazy`[s, a](m: => State[s, a]): State[s, a] = new State[s, a] {
+        private[this] lazy val _m: State[s, a] = m
+        override def run(s: s): (a, s) = _m.run(s)
+    }
+
+    def runState[s, a](m: State[s, a]): s => (a, s) = m.run
+
+    def evalState[s, a](m: State[s, a])(s: s): a = fst(runState(m)(s))
+
+    def execState[s, a](m: State[s, a])(s: s): s = snd(runState(m)(s))
+
+    def mapState[s, a, b](f: (a, s) => (b, s))(m: State[s, a]): State[s, b] = State { f.tupled compose runState(m) }
+
+    def withState[s, a](f: s => s)(m: State[s, a]): State[s, a] = State { runState(m) compose f }
+
+    implicit def monad[s]: MonadFix[({type m[+a] = State[s, a]})#m] with MonadState[s, ({type m[+a] = State[s, a]})#m] =
+        new MonadFix[({type m[+a] = State[s, a]})#m] with MonadState[s, ({type m[+a] = State[s, a]})#m]
+    {
+        // Functor
+        private[this] type f[+a] = State[s, a]
+        override def fmap[a, b](f: a => b)(m: f[a]): f[b] = State { s =>
+            val (a, s_) = runState(m)(s)
+            (f(a), s_)
+        }
+        // Monad
+        private[this] type m[+a] = f[a]
+        override def `return`[a](a: a): m[a] = State { s => (a, s) }
+        override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = State { s =>
+            val (a, s_) = runState(m)(s)
+            runState(k(a))(s_)
+        }
+        // MonadFix
+        override def mfix[a](f: (=> a) => m[a]): m[a] = State { s =>
+            lazy val as_ : (a, s) = runState(f(a))(s)
+            lazy val (a, s_) = as_
+            as_
+        }
+        // MonadState
+        override def get: m[s] = State { s => (s, s) }
+        override def put(s: s): m[Unit] = State { _ => ((), s) }
+    }
+}
+*/
