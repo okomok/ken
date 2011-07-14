@@ -128,4 +128,6 @@ object Monad extends MonadInstance {
     def apply[m[+_]](implicit i: Monad[m]): Monad[m] = i
 }
 
-trait MonadInstance
+trait MonadInstance {
+    implicit val ofIdentity = Identity
+}

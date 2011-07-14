@@ -11,7 +11,7 @@ import com.github.okomok.ken._
 
 
 class MaybeTest extends org.scalatest.junit.JUnit3Suite {
-
+/*
     def testMonadT {
         val m = MaybeT.monad[IO]
         import m.method
@@ -31,7 +31,7 @@ class MaybeTest extends org.scalatest.junit.JUnit3Suite {
 
         //MaybeT.runMaybeT(askPassword).unIO()
     }
-
+*/
     def testMonadT2 {
         val T = IO.monadT
         import T.MaybeT

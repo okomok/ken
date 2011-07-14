@@ -54,8 +54,6 @@ object Applicative extends ApplicativeInstance {
 }
 
 trait ApplicativeInstance extends MonadInstance {
-    implicit val ofId = Id
-
     implicit def ofFunction1[z]: Applicative[({type f[+a] = z => a})#f] = new Applicative[({type f[+a] = z => a})#f] {
         private[this] type f[+a] = z => a
         override def pure[a](x: => a): f[a] = const(x)
