@@ -8,6 +8,9 @@ package com.github.okomok
 package ken
 
 
+// will be rejected.
+
+
 final case class MaybeT[n[+_], +a](runMaybeT: n[Maybe[a]])
 
 
