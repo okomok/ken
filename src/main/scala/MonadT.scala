@@ -14,6 +14,7 @@ package ken
 trait MonadT[n[+_]] {
     implicit val inner: Monad[n]
 
+// Trans
     trait Trans[m[+_]] extends Klass {
         def lift[a](n: n[a]): m[a]
     }
@@ -23,7 +24,6 @@ trait MonadT[n[+_]] {
     }
 
 // MaybeT
-
     sealed abstract class MaybeT[+a] {
         def run: n[Maybe[a]]
     }
@@ -61,7 +61,6 @@ trait MonadT[n[+_]] {
     }
 
 // StateT
-
     sealed abstract class StateT[s, +a] extends MonadMethod[({type m[+a] = StateT[s, a]})#m, a] {
         def run(s: s): n[(a, s)]
         override val klass = StateT.monad[s]

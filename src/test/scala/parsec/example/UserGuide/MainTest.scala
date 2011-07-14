@@ -12,7 +12,7 @@ import com.github.okomok.ken._
 import Parsec._
 
 
-class MainTest extends org.scalatest.junit.JUnit3Suite {
+class MainTezt /*extends org.scalatest.junit.JUnit3Suite*/ {
 
     // 2.1
 

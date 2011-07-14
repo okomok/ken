@@ -32,9 +32,9 @@ class MaybeTest extends org.scalatest.junit.JUnit3Suite {
         //MaybeT.runMaybeT(askPassword).unIO()
     }
 */
+
     def testMonadT2 {
-        val T = IO.monadT
-        import T.MaybeT
+        import IO.monadT.MaybeT
 
         def isValid(s: List[Char]): Boolean = true
 
