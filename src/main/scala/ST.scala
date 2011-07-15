@@ -21,10 +21,7 @@ final class STs {
     type ST[+a] = State[World, a]
 
     object ST {
-        def apply[a](r: => a): ST[a] = State { s =>
-            (r, s)
-        }
-
+        def apply[a](r: => a): ST[a] = State { s => (r, s) }
         implicit val monad = State.monad[World]
     }
 
