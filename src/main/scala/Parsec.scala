@@ -42,7 +42,7 @@ object Parsec {
     def setSourceLine(pos: SourcePos)(n: Line): SourcePos = pos.copy(line = n)
     def setSourceColumn(pos: SourcePos)(n: Column): SourcePos = pos.copy(column = n)
 
-    def updatePosString(pos: SourcePos)(string: StringT): SourcePos = List.foldl(updatePosChar)(pos)(string)
+    def updatePosString(pos: SourcePos)(string: String_): SourcePos = List.foldl(updatePosChar)(pos)(string)
 
     def updatePosChar(pos: SourcePos)(c: Char): SourcePos = c match {
         case '\n' => pos.copy(line = pos.line + 1, column = 1)
@@ -463,52 +463,52 @@ object Parsec {
 
     // Message
 
-    sealed abstract class MessageT extends Up[MessageT]
-    final case class SysUnExpect(s: String) extends MessageT
-    final case class UnExpect(s: String) extends MessageT
-    final case class Expect(s: String) extends MessageT
-    final case class Message(s: String) extends MessageT
+    sealed abstract class Message_ extends Up[Message_]
+    final case class SysUnExpect(s: String) extends Message_
+    final case class UnExpect(s: String) extends Message_
+    final case class Expect(s: String) extends Message_
+    final case class Message(s: String) extends Message_
 
-    def messageToEnum(msg: MessageT): Int = msg match {
+    def messageToEnum(msg: Message_): Int = msg match {
         case SysUnExpect(_) => 0
         case UnExpect(_) => 1
         case Expect(_) => 2
         case Message(_) => 3
     }
 
-    def messageCompare(msg1: MessageT)(msg2: MessageT): Ordering = {
+    def messageCompare(msg1: Message_)(msg2: Message_): Ordering = {
         Ord[Int].compare(messageToEnum(msg1))(messageToEnum(msg2))
     }
 
-    def messageString(msg: MessageT): String = msg match {
+    def messageString(msg: Message_): String = msg match {
         case SysUnExpect(s) => s
         case UnExpect(s) => s
         case Expect(s) => s
         case Message(s) => s
     }
 
-    def messageStringT(msg: MessageT): StringT = List.from(messageString(msg))
+    def messageStringT(msg: Message_): String_ = List.from(messageString(msg))
 
-    def messageEq(msg1: MessageT)(msg2: MessageT): Boolean = {
+    def messageEq(msg1: Message_)(msg2: Message_): Boolean = {
         messageCompare(msg1)(msg2) == EQ
     }
 
     // ParseErrors
 
-    final case class ParseError(pos: SourcePos, msgs: List[MessageT]) {
+    final case class ParseError(pos: SourcePos, msgs: List[Message_]) {
         override def toString = showParseError(this)
     }
     def errorPos(err: ParseError): SourcePos = err.pos
-    def errorMessages(err: ParseError): List[MessageT] = List.sortBy(messageCompare)(err.msgs)
+    def errorMessages(err: ParseError): List[Message_] = List.sortBy(messageCompare)(err.msgs)
     def errorIsUnknown(err: ParseError): Boolean = List.`null`(err.msgs)
 
     // Create ParseErrors
 
     def newErrorUnknown(pos: SourcePos): ParseError = ParseError(pos, Nil)
-    def newErrorMessage(msg: MessageT)(pos: SourcePos): ParseError = ParseError(pos, List(msg))
-    def addErrorMessage(msg: MessageT)(err: ParseError): ParseError = err.copy(msgs = msg :: err.msgs)
+    def newErrorMessage(msg: Message_)(pos: SourcePos): ParseError = ParseError(pos, List(msg))
+    def addErrorMessage(msg: Message_)(err: ParseError): ParseError = err.copy(msgs = msg :: err.msgs)
     def setErrorPos(pos: SourcePos)(err: ParseError): ParseError = err.copy(pos = pos)
-    def setErrorMessage(msg: MessageT)(err: ParseError): ParseError = err.copy(msgs = msg :: List.filter(not compose messageEq(msg))(err.msgs))
+    def setErrorMessage(msg: Message_)(err: ParseError): ParseError = err.copy(msgs = msg :: List.filter(not compose messageEq(msg))(err.msgs))
     def mergeError(err1: ParseError)(err2: ParseError): ParseError = ParseError(err1.pos, err1.msgs ::: err2.msgs)
 
     // Show ParseErrors
@@ -518,32 +518,32 @@ object Parsec {
             showErrorMessages("or")("unknown parse error")("expecting")("unexpected")("end of input")(errorMessages(err))
     }
 
-    def showErrorMessages(msgOr: StringT)
-        (msgUnknown: StringT)(msgExpecting: StringT)(msgUnExpected: StringT)
-        (msgEndOfInput: StringT)(msgs: List[MessageT]): String =
+    def showErrorMessages(msgOr: String_)
+        (msgUnknown: String_)(msgExpecting: String_)(msgUnExpected: String_)
+        (msgEndOfInput: String_)(msgs: List[Message_]): String =
     {
         val (sysUnExpect, msgs1) = List.span(messageEq(SysUnExpect("")))(msgs)
         val (unExpect, msgs2) = List.span(messageEq(UnExpect("")))(msgs1)
         val (expect, messages) = List.span(messageEq(Expect("")))(msgs2)
 
-        def clean(ms: List[StringT]): List[StringT] = List.nub(List.filter[StringT](not compose List.`null`)(ms))
+        def clean(ms: List[String_]): List[String_] = List.nub(List.filter[String_](not compose List.`null`)(ms))
 
-        def separate(sep: StringT)(ms: List[StringT]): StringT = ms match {
+        def separate(sep: String_)(ms: List[String_]): String_ = ms match {
             case Nil => Nil
             case m !:: Nil => m
             case m :: ms => m ::: sep ::: separate(sep)(ms.!)
         }
 
-        def commasOr(s: List[StringT]): StringT = s match {
+        def commasOr(s: List[String_]): String_ = s match {
             case Nil => Nil
             case m !:: Nil => m
             case ms => commaSep(List.init(ms)) ::: " " ::: msgOr ::: " " ::: List.last(ms)
         }
 
-        def commaSep(ms: List[StringT]): StringT = separate(", ")(clean(ms))
-        def semiSep(ms: List[StringT]): StringT = separate("; ")(clean(ms))
+        def commaSep(ms: List[String_]): String_ = separate(", ")(clean(ms))
+        def semiSep(ms: List[String_]): String_ = separate("; ")(clean(ms))
 
-        def showMany(pre: StringT)(msgs: List[MessageT]): StringT = {
+        def showMany(pre: String_)(msgs: List[Message_]): String_ = {
             clean(List.map(messageStringT)(msgs)) match {
                 case Nil => ""
                 case ms => {
@@ -556,10 +556,10 @@ object Parsec {
             }
         }
 
-        def showExpect: StringT = showMany(msgExpecting)(expect)
-        def showUnExpect: StringT = showMany(msgUnExpected)(unExpect)
-        def showSysUnExpect: StringT = {
-            def firstMsg: StringT = messageStringT(List.head(sysUnExpect))
+        def showExpect: String_ = showMany(msgExpecting)(expect)
+        def showUnExpect: String_ = showMany(msgUnExpected)(unExpect)
+        def showSysUnExpect: String_ = {
+            def firstMsg: String_ = messageStringT(List.head(sysUnExpect))
 
             if (not(List.`null`(unExpect)) || List.`null`(sysUnExpect)) {
                 ""
@@ -569,12 +569,12 @@ object Parsec {
                 msgUnExpected ::: " " ::: firstMsg
             }
         }
-        def showMessages: StringT = showMany("")(messages)
+        def showMessages: String_ = showMany("")(messages)
 
         val r = if (List.`null`(msgs)) {
             msgUnknown
         } else {
-            List.concat { List.map((m: StringT) => "\n" ::: m) { clean {
+            List.concat { List.map((m: String_) => "\n" ::: m) { clean {
                 List(showSysUnExpect, showUnExpect, showExpect, showMessages)
             } } }
         }
@@ -731,8 +731,8 @@ object Parsec {
 
     // Character parsers
 
-    def oneOf[st](cs: StringT): CharParser[st, Char] = satisfy(c => List.elem(c)(cs))
-    def noneOf[st](cs: StringT): CharParser[st, Char] = satisfy(c => not(List.elem(c)(cs)))
+    def oneOf[st](cs: String_): CharParser[st, Char] = satisfy(c => List.elem(c)(cs))
+    def noneOf[st](cs: String_): CharParser[st, Char] = satisfy(c => not(List.elem(c)(cs)))
 
     def spaces[st]: CharParser[st, Unit] = skipMany(space[st]) <#> "white space"
 
@@ -758,5 +758,5 @@ object Parsec {
         tokenPrim[Char, st, Char](c => show(List(c)))(pos => c => cs => updatePosChar(pos)(c))(c => if (f(c)) Just(c) else Nothing)
     }
 
-    def string[st](s: StringT): CharParser[st, StringT] = tokens[Char, st](show)(updatePosString)(s)
+    def string[st](s: String_): CharParser[st, String_] = tokens[Char, st](show)(updatePosString)(s)
 }

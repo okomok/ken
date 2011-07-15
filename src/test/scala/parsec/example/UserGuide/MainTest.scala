@@ -18,7 +18,7 @@ class MainTezt /*extends org.scalatest.junit.JUnit3Suite*/ {
 
     val simple: Parser[Char] = letter
 
-    def run[a](p: Parser[a])(input: StringT): IO[Unit] = {
+    def run[a](p: Parser[a])(input: String_): IO[Unit] = {
         val io = parse(p)("")(input) match {
             case Left(err) => for {
                 _ <- IO.putStr("parse error at ")
@@ -111,19 +111,19 @@ class MainTezt /*extends org.scalatest.junit.JUnit3Suite*/ {
 
     // 2.5 and 2.6
 
-    lazy val _word: Parser[StringT] = for {
+    lazy val _word: Parser[String_] = for {
         c <- letter
         d <- ( for { cs <- _word } yield  c :: cs ) <|> Parser.monad.`return`(List(c))
     } yield d
 
-    val word: Parser[StringT] = many1(letter[Unit] <#> "") <#> "word"
+    val word: Parser[String_] = many1(letter[Unit] <#> "") <#> "word"
 
     def testWord {
         println("---run word---")
         run(word)("hidi,,").unIO()
     }
 
-    lazy val sentence: Parser[List[StringT]] = for {
+    lazy val sentence: Parser[List[String_]] = for {
         words <- sepBy1(word)(separator)
         _ <- oneOf(".?!") <#> "end of sentence"
     } yield words

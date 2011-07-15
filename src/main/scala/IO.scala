@@ -36,11 +36,11 @@ object IO extends Monad[IO] {
 // Output functions
     def putChar(c: Char): IO[Unit] = print(c)
 
-    def putStr(s: StringT): IO[Unit] = IO {
+    def putStr(s: String_): IO[Unit] = IO {
         List.foreach(Predef.print)(s)
     }
 
-    def putStrLn(s: StringT): IO[Unit] = {
+    def putStrLn(s: String_): IO[Unit] = {
         for { _ <- putStr(s); _ <- putChar('\n') } yield ()
     }
 
@@ -57,7 +57,7 @@ object IO extends Monad[IO] {
         Predef.readChar()
     }
 
-    def getLine: IO[StringT] = IO {
+    def getLine: IO[String_] = IO {
         val str = Predef.readLine()
         if (str == null) {
             throw new java.io.EOFException("getLine")
@@ -66,22 +66,22 @@ object IO extends Monad[IO] {
         }
     }
 
-    def getContents: IO[StringT] = {
+    def getContents: IO[String_] = {
         for { s <- getLine } yield (s ::: getContents.unIO)
     }
 
-    def interact(f: StringT => StringT): IO[Unit] = {
+    def interact(f: String_ => String_): IO[Unit] = {
         for { s <- getContents; r <- putStr(f(s)) } yield r
     }
 
 // Files
     type FilePath = String
 
-    def readFile(f: FilePath): IO[StringT] = IO {
+    def readFile(f: FilePath): IO[String_] = IO {
         scala.io.Source.fromFile(f)
     }
 
-    def writeFile(f: FilePath)(txt: StringT): IO[Unit] = IO {
+    def writeFile(f: FilePath)(txt: String_): IO[Unit] = IO {
         val fw = new java.io.FileWriter(f)
         try {
             fw.write(List.stringize(txt))
@@ -90,7 +90,7 @@ object IO extends Monad[IO] {
         }
     }
 
-    def appendFile(f: FilePath)(txt: StringT): IO[Unit] = IO {
+    def appendFile(f: FilePath)(txt: String_): IO[Unit] = IO {
         val fw = new java.io.FileWriter(f, true)
         try {
             fw.write(List.stringize(txt))

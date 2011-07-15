@@ -10,7 +10,7 @@ package com.github.okomok
 package object ken {
 
 // String
-    type StringT = List[Char]
+    type String_ = List[Char]
 
 // Eq
     type Eq[a] = _Eq.Eq[a]

@@ -127,7 +127,7 @@ object List extends MonadPlus[List] {
     }
 
     implicit def fromArray[a](xs: Array[a]): List[a] = fromIterable(xs)
-    implicit def fromString(xs: String): StringT = fromIterable(xs)
+    implicit def fromString(xs: String): String_ = fromIterable(xs)
     implicit def fromIterable[a](xs: scala.Iterable[a]): List[a] = fromIterator(xs.iterator)
 
 // Basic functions
@@ -492,15 +492,15 @@ object List extends MonadPlus[List] {
     }
 
 // Functions on strings
-    def stringize(cs: StringT): String = foldl[StringBuilder, Char](sb => c => { sb += c; sb })(new StringBuilder)(cs).toString
+    def stringize(cs: String_): String = foldl[StringBuilder, Char](sb => c => { sb += c; sb })(new StringBuilder)(cs).toString
 
-    def lines(s: StringT): List[StringT] = map(fromString)(from(stringize(s).split("\\r?\\n")))
+    def lines(s: String_): List[String_] = map(fromString)(from(stringize(s).split("\\r?\\n")))
 
-    def unlines(ls: List[StringT]): StringT = concatMap(op_!:::("\n"))(ls)
+    def unlines(ls: List[String_]): String_ = concatMap(op_!:::("\n"))(ls)
 
-    def words(s: StringT): List[StringT] = map(fromString)(from(stringize(s).split("\\W+")))
+    def words(s: String_): List[String_] = map(fromString)(from(stringize(s).split("\\W+")))
 
-    def unwords(ws: List[StringT]): StringT = ws match {
+    def unwords(ws: List[String_]): String_ = ws match {
         case Nil => ""
         case w !:: Nil => w
         case w :: ws => w ::: (' ' :: unwords(ws.!))

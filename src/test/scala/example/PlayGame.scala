@@ -10,6 +10,7 @@ package com.github.okomok.kentest.example
     import com.github.okomok.ken._
 
     // From: http://www.haskell.org/haskellwiki/State_Monad
+
     object PlayGame extends Main {
         type GameValue = Int
         type GameState = (Boolean, Int)
@@ -18,7 +19,7 @@ package com.github.okomok.kentest.example
         val i = State.monad[GameState]
         import i._
 
-        def playGame(xs: List[Char]): State[GameState, GameValue] = xs match {
+        def playGame(xs: String_): State[GameState, GameValue] = xs match {
             case Nil => for {
                 (_, score) <- get
             } yield score
