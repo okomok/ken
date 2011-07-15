@@ -15,7 +15,8 @@ final class World {
     sealed class Tag
 
     object Tag {
-        implicit val STmonad = ST.monad
+        // ST[a] definition is enough to lookup StateT.monad.
+        // implicit val STmonad = ST.monad
     }
 
     type ST[+a] = State[Tag, a]
