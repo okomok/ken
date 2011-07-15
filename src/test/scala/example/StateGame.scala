@@ -11,7 +11,7 @@ package com.github.okomok.kentest.example
 
     // From: http://www.haskell.org/haskellwiki/State_Monad
 
-    object PlayGame extends Main {
+    object StateGame extends Main {
         type GameValue = Int
         type GameState = (Boolean, Int)
 
@@ -41,8 +41,8 @@ package com.github.okomok.kentest.example
     }
 
 
-class PlayGameTest extends org.scalatest.junit.JUnit3Suite {
+class StateGameTest extends org.scalatest.junit.JUnit3Suite {
     def testTrivial {
-        expect(2)(State.eval(PlayGame.playGame("abcaaacbbcabbab"))(PlayGame.startState))
+        expect(2)(State.eval(StateGame.playGame("abcaaacbbcabbab"))(StateGame.startState))
     }
 }

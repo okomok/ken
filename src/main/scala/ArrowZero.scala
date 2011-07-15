@@ -16,4 +16,3 @@ trait ArrowZero[a[_, _]] extends Arrow[a] {
 object ArrowZero {
     def apply[a[_, _]](implicit i: ArrowZero[a]): ArrowZero[a] = i
 }
-

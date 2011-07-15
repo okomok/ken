@@ -7,7 +7,7 @@
 
     // From: http://www.haskell.org/haskellwiki/State_Monad
 
-    object PlayGame extends Main {
+    object StateGame extends Main {
         type GameValue = Int
         type GameState = (Boolean, Int)
 
