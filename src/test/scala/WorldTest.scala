@@ -10,12 +10,12 @@ package com.github.okomok.kentest
 import com.github.okomok.ken._
 
 
-class STTest extends org.scalatest.junit.JUnit3Suite {
+class WorldTest extends org.scalatest.junit.JUnit3Suite {
 
     def sumST[a](xs: List[a])(implicit i: Num[a]): a = {
-        val sts = new STs
-        import sts._
-        import sts.ST.monad._
+        val w = new World
+        import w._
+        import w.ST.monad._
         import i._
         runST {
             for {
