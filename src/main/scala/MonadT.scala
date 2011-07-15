@@ -14,6 +14,9 @@ package ken
 trait MonadT[n[+_]] {
     implicit val inner: Monad[n]
 
+    // Works around Monad.method.
+    private[this] implicit def innermethod[a](x: n[a]): MonadMethod[n, a] = inner.method(x)
+
 // Trans
     trait Trans[m[+_]] extends Monad[m] {
         def lift[a](n: n[a]): m[a]
@@ -41,7 +44,6 @@ trait MonadT[n[+_]] {
         private[this] type m[+a] = MaybeT[a]
         override def `return`[a](x: a): m[a] = MaybeT { inner.`return`(Just(x).up) }
         override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = MaybeT {
-            import inner.method
             run(x) >>= {
                 case Nothing => inner.`return`(Nothing.of[b])
                 case Just(v) => run(y(v))
@@ -50,7 +52,6 @@ trait MonadT[n[+_]] {
         // MonadPlus
         override def mzero: m[Nothing] = MaybeT { inner.`return`(Nothing) }
         override def mplus[a](x: m[a])(y: => m[a]): m[a] = MaybeT {
-            import inner.method
             run(x) >>= {
                 case Nothing => run(y)
                 case Just(_) => run(x)
@@ -68,9 +69,6 @@ trait MonadT[n[+_]] {
     }
 
     object StateT {
-        // Works around Monad.method.
-        private[this] implicit def innermethod[a](x: n[a]): MonadMethod[n, a] = inner.method(x)
-
         def apply[s, a](r: s => n[(a, s)]): StateT[s, a] = new StateT[s, a] {
             override def run(s: s): n[(a, s)] = r(s)
         }
