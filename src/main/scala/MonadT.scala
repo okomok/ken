@@ -15,7 +15,7 @@ trait MonadT[n[+_]] {
     implicit val inner: Monad[n]
 
 // Trans
-    trait Trans[m[+_]] extends Klass {
+    trait Trans[m[+_]] extends Monad[m] {
         def lift[a](n: n[a]): m[a]
     }
 
@@ -84,8 +84,8 @@ trait MonadT[n[+_]] {
 
         def `with`[s, a](f: s => s)(n: StateT[s, a]): StateT[s, a] = StateT { run(n) compose f }
 
-        implicit def monad[s]: Monad[({type m[+a] = StateT[s, a]})#m] with MonadState[s, ({type m[+a] = StateT[s, a]})#m] =
-            new Monad[({type m[+a] = StateT[s, a]})#m] with MonadState[s, ({type m[+a] = StateT[s, a]})#m]
+        implicit def monad[s]: MonadState[s, ({type m[+a] = StateT[s, a]})#m] with Trans[({type m[+a] = StateT[s, a]})#m] =
+            new MonadState[s, ({type m[+a] = StateT[s, a]})#m] with Trans[({type m[+a] = StateT[s, a]})#m]
         {
             // Functor
             private[this] type f[+a] = StateT[s, a]
@@ -103,11 +103,11 @@ trait MonadT[n[+_]] {
             // MonadState
             override def get: m[s] = StateT { s => inner.`return`(s, s) }
             override def put(s: s): m[Unit] = StateT { _ => inner.`return`((), s) }
-        }
 
-        implicit def trans[s]: Trans[({type m[+a] = StateT[s, a]})#m] = new Trans[({type m[+a] = StateT[s, a]})#m] {
-            private[this] type m[+a] = StateT[s, a]
-            override def lift[a](n: n[a]): m[a] = StateT { s => for { a <- n } yield (a, s) }
+            override def lift[a](n: n[a]): m[a] = StateT { s =>
+                import inner.method
+                for { a <- n } yield (a, s)
+            }
         }
     }
 }
