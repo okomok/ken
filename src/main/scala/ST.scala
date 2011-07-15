@@ -11,24 +11,24 @@ package ken
 // See: http://apocalisp.wordpress.com/2011/03/20/towards-an-effect-system-in-scala-part-1/
 
 
-final class STs[s] {
-    sealed abstract class In[_]
+final class STs {
+    sealed class World
 
-    object In {
+    object World {
         implicit val STmonad = ST.monad
     }
 
-    type ST[+a] = State[In[s], a]
+    type ST[+a] = State[World, a]
 
     object ST {
         def apply[a](r: => a): ST[a] = State { s =>
             (r, s)
         }
 
-        implicit val monad = State.monad[In[s]]
+        implicit val monad = State.monad[World]
     }
 
-    def runST[a](st: ST[a]): a = State.eval(st)(new In[s]{})
+    def runST[a](st: ST[a]): a = State.eval(st)(new World)
 
     sealed class STRef[a](private[STs] var mutvar: a)
 

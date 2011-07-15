@@ -13,8 +13,7 @@ import com.github.okomok.ken._
 class STTest extends org.scalatest.junit.JUnit3Suite {
 
     def sumST[a](xs: List[a])(implicit i: Num[a]): a = {
-        trait aTag
-        val sts = new STs[aTag]
+        val sts = new STs
         import sts._
         import sts.ST.monad._
         import i._
@@ -34,5 +33,4 @@ class STTest extends org.scalatest.junit.JUnit3Suite {
     def testTrival {
         expect(15)(sumST(List(1,2,3,4,5)))
     }
-
 }
