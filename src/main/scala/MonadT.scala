@@ -68,7 +68,8 @@ trait MonadT[n[+_]] {
     }
 
     object StateT {
-        import inner.method
+        // Works around Monad.method.
+        private[this] implicit def innermethod[a](x: n[a]): MonadMethod[n, a] = inner.method(x)
 
         def apply[s, a](r: s => n[(a, s)]): StateT[s, a] = new StateT[s, a] {
             override def run(s: s): n[(a, s)] = r(s)
@@ -90,24 +91,19 @@ trait MonadT[n[+_]] {
             // Functor
             private[this] type f[+a] = StateT[s, a]
             override def fmap[a, b](f: a => b)(m: f[a]): f[b] = StateT { s =>
-                import inner.method // works around Monad.method.
                 for { (x, s_) <- run(m)(s) } yield (f(x), s_)
             }
             // Monad
             private[this] type m[+a] = f[a]
             override def `return`[a](a: a): m[a] = StateT { s => inner.`return`(a, s) }
             override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = StateT { s =>
-                import inner.method
                 for { (a, s_) <- run(m)(s); r <- run(k(a))(s_) } yield r
             }
             // MonadState
             override def get: m[s] = StateT { s => inner.`return`(s, s) }
             override def put(s: s): m[Unit] = StateT { _ => inner.`return`((), s) }
-
-            override def lift[a](n: n[a]): m[a] = StateT { s =>
-                import inner.method
-                for { a <- n } yield (a, s)
-            }
+            // Trans
+            override def lift[a](n: n[a]): m[a] = StateT { s => for { a <- n } yield (a, s) }
         }
     }
 }
