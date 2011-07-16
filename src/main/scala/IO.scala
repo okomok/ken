@@ -18,7 +18,7 @@ trait IOProxy[+a] extends IO[a] with Proxy {
 }
 
 
-object IO extends Monad[IO] {
+object IO extends MonadIO[IO] {
     override implicit def instance = this
 
     def apply[a](x: => a): IO[a] = new IO[a] {
@@ -32,6 +32,8 @@ object IO extends Monad[IO] {
     override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = IO {
         y(x.unIO()).unIO()
     }
+    // MonadIO
+    def liftIO[a](io: IO[a]): m[a] = io
 
 // Output functions
     def putChar(c: Char): IO[Unit] = print(c)

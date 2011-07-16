@@ -11,7 +11,7 @@ package ken
 /**
  * Identity Monad (not wrapped)
  */
-object Identity extends MonadFix[({type f[+a] = a})#f] {
+object Identity extends MonadFix[({type m[+a] = a})#m] {
     override implicit def instance = this
 
     // Functor

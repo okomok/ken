@@ -36,7 +36,7 @@ trait FunctorMethod[f[+_], +a] extends Method {
     override def klass: Functor[f]
     override def callee: f[a]
 
-    // for Applicative.function1
+    // for Monad.function1
     final def <@>[z, b](y: f[z])(implicit pre: f[a] <:< Function1[z, b]): f[b] = klass.op_<@>(pre(callee))(y)
 }
 

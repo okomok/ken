@@ -8,13 +8,21 @@ package com.github.okomok
 package ken
 
 
-trait MonadState[s, m[+_]] extends Monad[m] { outer =>
+trait MonadState[s, m[+_]] extends Monad[m] {
     def get: m[s]
     def put(s: s): m[Unit]
 
     final def modify(f: s => s): m[Unit] = for { s <- get; _ <- put(f(s)) } yield ()
     final def gets[a](f: s => a): m[a] = for { s <- get } yield f(s)
 }
+
+
+trait MonadStateProxy[s, m[+_]] extends MonadState[s, m] with MonadProxy[m] {
+    override def self: MonadState[s, m]
+    override def get: m[s] = self.get
+    override def put(s: s): m[Unit] = self.put(s)
+}
+
 
 object MonadState {
     def apply[s, m[+_]](implicit i: MonadState[s, m]): MonadState[s, m] = i

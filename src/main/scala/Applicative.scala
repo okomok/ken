@@ -46,20 +46,9 @@ trait ApplicativeProxy[f[+_]] extends Applicative[f] with FunctorProxy[f] {
 
 object Applicative extends ApplicativeInstance {
     def apply[f[+_]](implicit i: Applicative[f]): Applicative[f] = i
-
-    implicit def function1[z, a](f: z => a): ApplicativeMethod[({type f[+a] = z => a})#f, a] = new ApplicativeMethod[({type f[+a] = z => a})#f, a] {
-        override val klass = ofFunction1[z]
-        override def callee = f
-    }
 }
 
 trait ApplicativeInstance extends MonadInstance {
-    implicit def ofFunction1[z]: Applicative[({type f[+a] = z => a})#f] = new Applicative[({type f[+a] = z => a})#f] {
-        private[this] type f[+a] = z => a
-        override def pure[a](x: => a): f[a] = const(x)
-        override def op_<*>[a, b](x: f[a => b])(y: f[a]): f[b] = z => x(z)(y(z))
-    }
-
     implicit def ofMonoid[z](implicit ma: Monoid[z]): Applicative[({type f[+a] = (z, a)})#f] = new Applicative[({type f[+a] = (z, a)})#f] {
         private[this] type f[a] = (z, a)
         override def pure[a](x: => a): f[a] = (ma.mempty, x)
