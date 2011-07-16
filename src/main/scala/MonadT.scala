@@ -34,8 +34,8 @@ trait MonadT[n[+_]] {
     object MaybeT extends MonadPlus[MaybeT] with Trans[MaybeT] {
         override implicit def instance = this
 
-        def apply[a](r: n[Maybe[a]]): MaybeT[a] = new MaybeT[a] {
-            override def run: n[Maybe[a]] = r
+        def apply[a](_run: => n[Maybe[a]]): MaybeT[a] = new MaybeT[a] {
+            override def run: n[Maybe[a]] = _run
         }
 
         def run[a](n: MaybeT[a]): n[Maybe[a]] = n.run
@@ -69,8 +69,8 @@ trait MonadT[n[+_]] {
     }
 
     object StateT {
-        def apply[s, a](r: s => n[(a, s)]): StateT[s, a] = new StateT[s, a] {
-            override def run(s: s): n[(a, s)] = r(s)
+        def apply[s, a](_run: s => n[(a, s)]): StateT[s, a] = new StateT[s, a] {
+            override def run(s: s): n[(a, s)] = _run(s)
         }
 
         def run[s, a](n: StateT[s, a]): s => n[(a, s)] = n.run
@@ -104,4 +104,79 @@ trait MonadT[n[+_]] {
             override def lift[a](n: n[a]): m[a] = StateT { s => for { a <- n } yield (a, s) }
         }
     }
+
+// ReaderT
+    sealed abstract class ReaderT[r, +a] extends MonadMethod[({type m[+a] = ReaderT[r, a]})#m, a] {
+        def run(r: r): n[a]
+        override val klass = ReaderT.monad[r]
+        override def callee = this
+    }
+
+    object ReaderT {
+        def apply[r, a](_run: r => n[a]): ReaderT[r, a] = new ReaderT[r, a] {
+            override def run(r: r): n[a] = _run(r)
+        }
+
+        def run[r, a](n: ReaderT[r, a]): r => n[a] = n.run
+
+        def map[r, a, b](f: n[a] => n[b])(n: ReaderT[r, a]): ReaderT[r, b] = ReaderT { f compose run(n) }
+
+        def `with`[r, r_, a](f: r_ => r)(n: ReaderT[r, a]): ReaderT[r_, a] = ReaderT { run(n) compose f }
+
+        implicit def monad[r]: Monad[({type m[+a] = ReaderT[r, a]})#m] with Trans[({type m[+a] = ReaderT[r, a]})#m] =
+            new Monad[({type m[+a] = ReaderT[r, a]})#m] with Trans[({type m[+a] = ReaderT[r, a]})#m]
+        {
+            // Functor
+            private[this] type f[+a] = ReaderT[r, a]
+            override def fmap[a, b](f: a => b)(m: f[a]): f[b] = ReaderT { r =>
+                for { a <- run(m)(r) } yield f(a)
+            }
+            // Monad
+            private[this] type m[+a] = f[a]
+            override def `return`[a](a: a): m[a] = ReaderT { r => inner.`return`(a) }
+            override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = ReaderT { r =>
+                for { a <- run(m)(r); * <- run(k(a))(r) } yield *
+            }
+            // Trans
+            override def lift[a](n: n[a]): m[a] = ReaderT { _ => n }
+        }
+    }
+
+// WriterT
+    final class WriterT[w, +a](_run: () => n[(a, w)])(implicit i: Monoid[w]) extends MonadMethod[({type m[+a] = WriterT[w, a]})#m, a] {
+        def run: n[(a, w)] = _run()
+        override val klass = WriterT.monad[w]
+        override def callee = this
+    }
+
+    object WriterT {
+        def apply[w, a](_run: => n[(a, w)])(implicit i: Monoid[w]): WriterT[w, a] = new WriterT[w, a](() => _run)
+
+        def run[w, a](n: WriterT[w, a]): n[(a, w)] = n.run
+
+        def exec[w, a](n: WriterT[w, a]): n[w] = for { (_, w) <- run(n) } yield w
+
+        def map[w, w_, a, b](f: n[(a, w)] => n[(b, w_)])(n: WriterT[w, a])(implicit i: Monoid[w_]): WriterT[w_, b] = WriterT { f(run(n)) }
+
+        implicit def monad[w](implicit i: Monoid[w]): Monad[({type m[+a] = WriterT[w, a]})#m] with Trans[({type m[+a] = WriterT[w, a]})#m] =
+            new Monad[({type m[+a] = WriterT[w, a]})#m] with Trans[({type m[+a] = WriterT[w, a]})#m]
+        {
+            // Functor
+            private[this] type f[+a] = WriterT[w, a]
+            override def fmap[a, b](f: a => b)(m: f[a]): f[b] = WriterT {
+                for { (a, w) <- run(m) } yield (f(a), w)
+            }
+            // Monad
+            private[this] type m[+a] = f[a]
+            override def `return`[a](a: a): m[a] = WriterT { inner.`return`(a, i.mempty) }
+            override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = WriterT {
+                for { (a, w) <- run(m); (b, w_) <- run(k(a)) } yield (b, i.mappend(w)(w_))
+            }
+            // Trans
+            override def lift[a](n: n[a]): m[a] = WriterT {
+                for { a <- n } yield (a, i.mempty)
+            }
+        }
+    }
+
 }
