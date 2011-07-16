@@ -8,7 +8,6 @@ package com.github.okomok
 package ken
 
 
-// Needed?
 trait Klass {
-    implicit def instance: this.type = this
+    // implicit def instance: this.type = this
 }

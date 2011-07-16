@@ -111,9 +111,8 @@ trait MonadMethod[m[+_], +a] extends ApplicativeMethod[m, a] {
     final def flatMap[b](y: a => m[b]): m[b] = klass.op_>>=(callee)(y)
     final def map[b](y: a => b): m[b] = klass.op_>>=(callee)(_x => klass.`return`(y(_x)))
 
-    // no filter
-    final def filter(y: a => Boolean): m[a] = map(_x => { Predef.require(y(_x)); _x })
-    final def withFilter(y: a => Boolean): m[a] = filter(y)
+    def filter(y: a => Boolean): m[a] = map(_x => { Predef.require(y(_x)); _x })
+    def withFilter(y: a => Boolean): m[a] = filter(y)
 }
 
 trait MonadProxy[m[+_]] extends Monad[m] with ApplicativeProxy[m] {

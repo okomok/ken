@@ -109,7 +109,7 @@ class SybTest extends org.scalatest.junit.JUnit3Suite {
         }
 
         implicit def instanceOfList[a](implicit i: Term[a], k: ClassManifest[List[a]]): Term[List[a]] = new Term[List[a]] {
-            private[this] implicit val instance = this
+            //private[this] implicit val instance = this
             override def typeOf(x: => List[a]) = k
             override def gmapT(f: PolyTermFunc)(x: List[a]) = x match {
                 case Nil => Nil

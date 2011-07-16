@@ -32,8 +32,6 @@ trait MonadT[n[+_]] {
     }
 
     object MaybeT extends MonadPlus[MaybeT] with Trans[MaybeT] {
-        override implicit def instance = this
-
         def apply[a](_run: => n[Maybe[a]]): MaybeT[a] = new MaybeT[a] {
             override def run: n[Maybe[a]] = _run
         }

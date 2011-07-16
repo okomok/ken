@@ -12,8 +12,6 @@ package ken
  * Identity Monad (not wrapped)
  */
 object Identity extends MonadFix[({type m[+a] = a})#m] {
-    override implicit def instance = this
-
     // Functor
     private[this] type f[+a] = a
     override def fmap[a, b](f: a => b)(m: f[a]): f[b] = f(m)
@@ -23,6 +21,8 @@ object Identity extends MonadFix[({type m[+a] = a})#m] {
     override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = k(m)
     // MonadFix
     override def mfix[a](f: (=> a) => m[a]): m[a] = Function.fix(f)
+
+    implicit val monad: MonadFix[({type m[+a] = a})#m] = this
 }
 
 
