@@ -23,6 +23,7 @@ trait Ord[a] extends Klass { outer =>
     }
 }
 
+
 trait OrdMethod[a] extends Method {
     override def klass: Ord[a]
     override def callee: a
@@ -31,6 +32,7 @@ trait OrdMethod[a] extends Method {
     final def >(y: a): Boolean = klass.op_>(callee)(y)
     final def >=(y: a): Boolean = klass.op_>=(callee)(y)
 }
+
 
 trait OrdProxy[a] extends Ord[a] with Proxy {
     override def self: Ord[a]
@@ -44,11 +46,9 @@ trait OrdProxy[a] extends Ord[a] with Proxy {
 }
 
 
-object Ord extends OrdInstance {
+object Ord {
     def apply[a](implicit i: Ord[a]): Ord[a] = i
-}
 
-trait OrdInstance {
     implicit def ofOrdering[a](implicit i: scala.Ordering[a]): Ord[a] = new Ord[a] {
         override def compare(x: a)(y: a): Ordering = i.compare(x, y) match {
             case 0 => EQ

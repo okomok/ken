@@ -27,6 +27,7 @@ trait Applicative[f[+_]] extends Functor[f] { outer =>
     final def liftA3[a, b, c, d](x: a => b => c => d)(y: f[a])(z: f[b])(w: f[c]): f[d] = x <@> y <*> z <*> w
 }
 
+
 trait ApplicativeMethod[f[+_], +a] extends FunctorMethod[f, a] {
     override def klass: Applicative[f]
     final def <*>[_a, b](y: f[_a])(implicit pre: f[a] <:< f[_a => b]): f[b] = klass.op_<*>(pre(callee))(y)
@@ -34,6 +35,7 @@ trait ApplicativeMethod[f[+_], +a] extends FunctorMethod[f, a] {
     final def <*[_a, b](y: f[b])(implicit pre: f[a] <:< f[_a]): f[_a] = klass.op_<*(pre(callee))(y)
     final def <**>[b](y: f[a => b]): f[b] = klass.op_<**>(callee)(y)
 }
+
 
 trait ApplicativeProxy[f[+_]] extends Applicative[f] with FunctorProxy[f] {
     override def self: Applicative[f]
@@ -44,12 +46,13 @@ trait ApplicativeProxy[f[+_]] extends Applicative[f] with FunctorProxy[f] {
 }
 
 
-object Applicative extends ApplicativeInstance {
+object Applicative {
     def apply[f[+_]](implicit i: Applicative[f]): Applicative[f] = i
-}
 
-trait ApplicativeInstance extends MonadInstance {
-    implicit def ofMonoid[z](implicit ma: Monoid[z]): Applicative[({type f[+a] = (z, a)})#f] = new Applicative[({type f[+a] = (z, a)})#f] {
+    implicit val ofIdentity: Applicative[({type m[+a] = a})#m] = Identity.monad
+    implicit def ofFunction[r]: Applicative[({type m[+a] = r => a})#m] = Function.monad[r]
+
+    implicit def ofPair[z](implicit ma: Monoid[z]): Applicative[({type f[+a] = (z, a)})#f] = new Applicative[({type f[+a] = (z, a)})#f] {
         private[this] type f[a] = (z, a)
         override def pure[a](x: => a): f[a] = (ma.mempty, x)
         override def op_<*>[a, b](a1: f[a => b])(a2: f[a]): f[b] = (a1, a2) match {

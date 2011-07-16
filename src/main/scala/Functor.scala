@@ -32,6 +32,7 @@ trait Functor[f[+_]] extends Klass { outer =>
     final implicit def <@[a](x: a): Op_<@[a] = new Op_<@[a](x)
 }
 
+
 trait FunctorMethod[f[+_], +a] extends Method {
     override def klass: Functor[f]
     override def callee: f[a]
@@ -40,14 +41,16 @@ trait FunctorMethod[f[+_], +a] extends Method {
     final def <@>[z, b](y: f[z])(implicit pre: f[a] <:< Function1[z, b]): f[b] = klass.op_<@>(pre(callee))(y)
 }
 
+
 trait FunctorProxy[f[+_]] extends Functor[f] with Proxy {
     override def self: Functor[f]
     override def fmap[a, b](x: a => b)(y: f[a]): f[b] = self.fmap(x)(y)
 }
 
 
-object Functor extends FunctorInstance {
+object Functor {
     def apply[f[+_]](implicit i: Functor[f]): Functor[f] = i
-}
 
-trait FunctorInstance extends ApplicativeInstance
+    implicit val ofIdentity: Functor[({type m[+a] = a})#m] = Identity.monad
+    implicit def ofFunction[r]: Functor[({type m[+a] = r => a})#m] = Function.monad[r]
+}

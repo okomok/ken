@@ -103,6 +103,7 @@ trait Monad[m[+_]] extends Applicative[m] { outer =>
     }
 }
 
+
 trait MonadMethod[m[+_], +a] extends ApplicativeMethod[m, a] {
     override def klass: Monad[m]
     final def `return`[b](x: b): m[b] = klass.`return`(x)
@@ -115,6 +116,7 @@ trait MonadMethod[m[+_], +a] extends ApplicativeMethod[m, a] {
     def withFilter(y: a => Boolean): m[a] = filter(y)
 }
 
+
 trait MonadProxy[m[+_]] extends Monad[m] with ApplicativeProxy[m] {
     override def self: Monad[m]
     override def `return`[a](x: a): m[a] = self.`return`(x)
@@ -123,28 +125,9 @@ trait MonadProxy[m[+_]] extends Monad[m] with ApplicativeProxy[m] {
 }
 
 
-object Monad extends MonadInstance {
+object Monad {
     def apply[m[+_]](implicit i: Monad[m]): Monad[m] = i
-}
 
-trait MonadInstance {
-    implicit val ofIdentity = Identity
-
-    implicit def ofFunction1[r]: Monad[({type m[+a] = r => a})#m] = new Monad[({type m[+a] = r => a})#m] {
-        // Functor
-        private[this] type f[+a] = r => a
-        override def fmap[a, b](x: a => b)(y: f[a]): f[b] = x compose y
-        // Applicative
-        override def pure[a](x: => a): f[a] = const(x)
-        override def op_<*>[a, b](x: f[a => b])(y: f[a]): f[b] = { r => x(r)(y(r)) }
-        // Monad
-        private[this] type m[+a] = f[a]
-        override def `return`[a](x: a): m[a] = const(x)
-        override def op_>>=[a, b](f: m[a])(k: a => m[b]): m[b] = { r => k(f(r))(r) }
-    }
-
-    implicit def function1[r, a](f: r => a): MonadMethod[({type m[+a] = r => a})#m, a] = new MonadMethod[({type m[+a] = r => a})#m, a] {
-        override val klass = ofFunction1[r]
-        override def callee = f
-    }
+    implicit val ofIdentity: Monad[({type m[+a] = a})#m] = Identity.monad
+    implicit def ofFunction[r]: Monad[({type m[+a] = r => a})#m] = Function.monad[r]
 }

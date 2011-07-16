@@ -26,12 +26,5 @@ trait MonadReaderProxy[r, m[+_]] extends MonadReader[r, m] with MonadProxy[m] {
 object MonadReader {
     def apply[r, m[+_]](implicit i: MonadReader[r, m]) = i
 
-    implicit def ofFunction1[r]: MonadReader[r, ({type m[+a] = r => a})#m] =
-        new MonadReader[r, ({type m[+a] = r => a})#m] with MonadProxy[({type m[+a] = r => a})#m]
-    {
-        private[this] type m[+a] = r => a
-        override val self = Monad.ofFunction1[r]
-        override def ask: m[r] = ken.id
-        override def local[a](f: r => r)(m: m[a]): m[a] = m compose f
-    }
+    implicit def ofFunction1[r]: MonadReader[r, ({type m[+a] = r => a})#m] = Function.monad[r]
 }

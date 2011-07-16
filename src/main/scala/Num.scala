@@ -24,6 +24,7 @@ trait Num[a] extends Klass { outer =>
     }
 }
 
+
 trait NumMethod[a] extends Method {
     override def klass: Num[a]
     override def callee: a
@@ -31,6 +32,7 @@ trait NumMethod[a] extends Method {
     final def -(y: a): a = klass.op_-(callee)(y)
     final def *(y: a): a = klass.op_*(callee)(y)
 }
+
 
 trait NumProxy[a] extends Num[a] with Proxy {
     override def self: Num[a]
@@ -44,11 +46,9 @@ trait NumProxy[a] extends Num[a] with Proxy {
 }
 
 
-object Num extends NumInstance {
+object Num {
     def apply[a](implicit i: Num[a]): Num[a] = i
-}
 
-trait NumInstance {
     implicit def ofNumeric[a](implicit i: Numeric[a]): Num[a] = new Num[a] {
         override def op_+(x: a)(y: a): a = i.plus(x, y)
         override def op_-(x: a)(y: a): a = i.minus(x, y)

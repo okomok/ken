@@ -40,13 +40,9 @@ object Monoid extends MonoidInstance {
 }
 
 trait MonoidInstance {
-    implicit val ofUnit = Unit_
+    implicit val ofUnit = Unit_.monoid
 
-    implicit def ofFunction1[z, b](implicit mb: Monoid[b]): Monoid[z => b] = new Monoid[z => b] {
-        private[this] type m = z => b
-        override def mempty: m = _ => mb.mempty
-        override def mappend(x: m)(y: => m): m = z => mb.mappend(x(z))(y(z))
-    }
+    implicit def ofFunction1[z, b](implicit mb: Monoid[b]): Monoid[z => b] = Function.monoid[z, b]
 
     implicit def ofPair[a, b](implicit ma: Monoid[a], mb: Monoid[b]): Monoid[(a, b)] = new Monoid[(a, b)] {
         private[this] type m = (a, b)

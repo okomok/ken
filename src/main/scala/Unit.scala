@@ -13,4 +13,6 @@ object Unit_ extends Monoid[Unit] {
     override def mempty: m = ()
     override def mappend(x: m)(y: => m): m = ()
     override def mconcat(x: List[m]): m = ()
+
+    implicit val monoid: Monoid[Unit] = this
 }
