@@ -74,7 +74,7 @@ object IO extends MonadIO[IO] {
     }
 
     def interact(f: String_ => String_): IO[Unit] = {
-        for { s <- getContents; r <- putStr(f(s)) } yield r
+        for { s <- getContents; * <- putStr(f(s)) } yield *
     }
 
 // Files

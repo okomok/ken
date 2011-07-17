@@ -21,11 +21,11 @@ class WorldTest extends org.scalatest.junit.JUnit3Suite {
                 n <- newSTRef(fromInt(0))
                 _ <- ST.monad.forM_(xs) { x =>
                     for {
-                        r <- modifySTRef(n)(x + _)
-                    } yield r
+                        * <- modifySTRef(n)(x + _)
+                    } yield *
                 }
-                r <- readSTRef(n)
-            } yield r
+                * <- readSTRef(n)
+            } yield *
         }
     }
 

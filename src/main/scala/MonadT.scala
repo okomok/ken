@@ -93,7 +93,7 @@ trait MonadT[n[+_]] {
             private[this] type m[+a] = f[a]
             override def `return`[a](a: a): m[a] = StateT { s => inner.`return`(a, s) }
             override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = StateT { s =>
-                for { (a, s_) <- run(m)(s); r <- run(k(a))(s_) } yield r
+                for { (a, s_) <- run(m)(s); * <- run(k(a))(s_) } yield *
             }
             // MonadState
             override def get: m[s] = StateT { s => inner.`return`(s, s) }

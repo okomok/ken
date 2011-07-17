@@ -31,8 +31,8 @@ package com.github.okomok.kentest.example
                     case 'c' => put(not(on), score)
                     case _ => put(on, score)
                 }
-                r <- playGame(xs.!)
-            } yield r
+                * <- playGame(xs.!)
+            } yield *
         }
 
         val startState = (false, 0)

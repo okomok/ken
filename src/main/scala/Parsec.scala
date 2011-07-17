@@ -610,7 +610,7 @@ object Parsec {
 
     /** p+ (result abandoned) **/
     def skipMany1[tok, st](p: GenParser[tok, st, _]): GenParser[tok, st, Unit] = {
-        for { _ <- p; r <- skipMany(p) } yield r
+        for { _ <- p; * <- skipMany(p) } yield *
     }
     /*
     def skipMany[tok, st](p: GenParser[tok, st, _]): GenParser[tok, st, Unit] = {
