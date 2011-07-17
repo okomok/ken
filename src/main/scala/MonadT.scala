@@ -11,14 +11,13 @@ package ken
 /**
  * Monad Transformers
  */
-trait MonadT[n[+_]] {
-    implicit val inner: Monad[n]
+final class MonadT[n[+_]](implicit val inner: Monad[n]) {
 
-    // Works around Monad.method.
+// Workaround Monad.method.
     private[this] implicit def innermethod[a](x: n[a]): MonadMethod[n, a] = inner.method(x)
 
 // Trans
-    trait Trans[m[+_]] extends Monad[m] {
+    trait Trans[m[+_]] {
         def lift[a](n: n[a]): m[a]
     }
 
@@ -81,8 +80,8 @@ trait MonadT[n[+_]] {
 
         def `with`[s, a](f: s => s)(n: StateT[s, a]): StateT[s, a] = StateT { run(n) compose f }
 
-        implicit def monad[s]: MonadState[s, ({type m[+a] = StateT[s, a]})#m] with Trans[({type m[+a] = StateT[s, a]})#m] =
-            new MonadState[s, ({type m[+a] = StateT[s, a]})#m] with Trans[({type m[+a] = StateT[s, a]})#m]
+        implicit def monad[s]: MonadState[s, ({type m[+a] = StateT[s, a]})#m] =
+            new MonadState[s, ({type m[+a] = StateT[s, a]})#m]
         {
             // Functor
             private[this] type f[+a] = StateT[s, a]
@@ -98,8 +97,66 @@ trait MonadT[n[+_]] {
             // MonadState
             override def get: m[s] = StateT { s => inner.`return`(s, s) }
             override def put(s: s): m[Unit] = StateT { _ => inner.`return`((), s) }
-            // Trans
+        }
+
+        implicit def monadPlus[s](implicit i: MonadPlus[n]): MonadPlus[({type m[+a] = StateT[s, a]})#m] =
+            new MonadPlus[({type m[+a] = StateT[s, a]})#m] with MonadProxy[({type m[+a] = StateT[s, a]})#m]
+        {
+            private[this] type m[+a] = StateT[s, a]
+            override val self = monad[s]
+            override def mzero: m[Nothing] = StateT { _ => i.mzero }
+            override def mplus[a](m: m[a])(n: => m[a]): m[a] = StateT { s => i.mplus(run(m)(s))(run(n)(s)) }
+        }
+
+        implicit def monadFix[s](implicit i: MonadFix[n]): MonadFix[({type m[+a] = StateT[s, a]})#m] =
+            new MonadFix[({type m[+a] = StateT[s, a]})#m] with MonadProxy[({type m[+a] = StateT[s, a]})#m]
+        {
+            private[this] type m[+a] = StateT[s, a]
+            override val self = monad[s]
+            override def mfix[a](f: (=> a) => m[a]): m[a] = StateT { s =>
+                def k(aI_ : => (a, s)) = run(f(aI_._1))(s)
+                i.mfix(k)
+                // scalac sucks.
+                // i.mfix { (aI_ : => (a, s)) => run(f(aI_._1))(s) }
+            }
+        }
+
+        implicit def monadTrans[s]: Trans[({type m[+a] = StateT[s, a]})#m] = new Trans[({type m[+a] = StateT[s, a]})#m] {
+            private[this] type m[+a] = StateT[s, a]
             override def lift[a](n: n[a]): m[a] = StateT { s => for { a <- n } yield (a, s) }
+        }
+
+        implicit def monadIO[s](implicit i: MonadIO[n]): MonadIO[({type m[+a] = StateT[s, a]})#m] =
+            new MonadIO[({type m[+a] = StateT[s, a]})#m] with MonadProxy[({type m[+a] = StateT[s, a]})#m]
+        {
+            private[this] type m[+a] = StateT[s, a]
+            override val self = monad[s]
+            override def liftIO[a](io: IO[a]): m[a] = monadTrans[s].lift(i.liftIO(io))
+        }
+/*
+        implicit def monadCont[s](implicit i: MonadCont[n]): MonadCont[({type m[+a] = StateT[s, a]})#m] =
+            new MonadCont[({type m[+a] = StateT[s, a]})#m] with MonadProxy[({type m[+a] = StateT[s, a]})#m]
+        {
+            private[this] type m[+a] = StateT[s, a]
+            override val self = monad[s]
+            override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = StateT { s =>
+                i.callCC { (c: (a, s) => n[(a, s)]) =>
+                    run(f(a => StateT { s_ => c(a, s_) }))(s)
+                }
+            }
+        }
+*/
+        implicit def monadError[s, e](implicit i: MonadError[e, n]): MonadError[e, ({type m[+a] = StateT[s, a]})#m] =
+            new MonadError[e, ({type m[+a] = StateT[s, a]})#m] with MonadProxy[({type m[+a] = StateT[s, a]})#m]
+        {
+            private[this] type m[+a] = StateT[s, a]
+            override val self = monad[s]
+            override def throwError[a](e: e): m[a] = monadTrans[s].lift(i.throwError(e))
+            override def catchError[a](m: m[a])(h: e => m[a]): m[a] = StateT { s =>
+                i.catchError(run(m)(s)) { e =>
+                    run(h(e))(s)
+                }
+            }
         }
     }
 

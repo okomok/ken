@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-trait MonadFix[m[+_]] extends Monad[m] { outer =>
+trait MonadFix[m[+_]] extends Monad[m] {
     def mfix[a](f: (=> a) => m[a]): m[a]
 }
 

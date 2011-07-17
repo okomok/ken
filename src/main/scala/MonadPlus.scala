@@ -28,10 +28,12 @@ trait MonadPlus[m[+_]] extends Monad[m] with Alternative[m] { outer =>
     final def msum[a](xs: List[m[a]]): m[a] = List.foldr(mplus[a])(mzero)(xs)
 }
 
+
 trait MonadPlusMethod[m[+_], +a] extends MonadMethod[m, a] with AlternativeMethod[m, a] {
     override def klass: MonadPlus[m]
     final def _mplus_[b >: a](y: => m[b]): m[b] = klass.mplus[b](callee)(y)
 }
+
 
 trait MonadPlusProxy[m[+_]] extends MonadPlus[m] with MonadProxy[m] with AlternativeProxy[m] {
     override def self: MonadPlus[m]

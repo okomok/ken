@@ -98,9 +98,7 @@ trait Monad[m[+_]] extends Applicative[m] { outer =>
 
     final def ap[a, b](x: m[a => b])(y: m[a]): m[b] = liftM2(id[a => b])(x)(y) // op_<*>(x)(y)
 
-    final val monadT: MonadT[m] = new MonadT[m] {
-        override implicit val inner = outer
-    }
+    final val monadT: MonadT[m] = new MonadT[m]()(outer)
 }
 
 
