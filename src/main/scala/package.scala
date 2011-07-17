@@ -65,9 +65,9 @@ package object ken {
 
     def asTypeOf[a](x: a): a => a = const(x)
 
-    val error: String => Nothing = { msg => throw new Error(msg) }
+    val error: String => Nothing = { msg => throw new java.lang.Error(msg) }
 
-    def undefined: Nothing = throw new Error("undefined")
+    def undefined: Nothing = throw new java.lang.Error("undefined")
 
     def seq[a, b](x: a)(y: b): b = y // no effects
 

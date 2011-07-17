@@ -34,10 +34,12 @@ trait Alternative[f[+_]] extends Applicative[f] { outer =>
     private[this] def _cons[a]: a => List[a] => List[a] = x => xs => x :: xs
 }
 
+
 trait AlternativeMethod[f[+_], +a] extends ApplicativeMethod[f, a] {
     override def klass: Alternative[f]
     final def <|>[b >: a](y: => f[b]): f[b] = klass.op_<|>[b](callee)(y)
 }
+
 
 trait AlternativeProxy[f[+_]] extends Alternative[f] with ApplicativeProxy[f] {
     override def self: Alternative[f]
