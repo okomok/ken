@@ -23,6 +23,10 @@ final class MonadT[n[+_]](implicit val inner: Monad[n]) {
 
     object Trans {
         def apply[m[+_]](implicit i: Trans[m]): Trans[m] = i
+
+        implicit val trivial: Trans[n] = new Trans[n] {
+            override def lift[a](n: n[a]): n[a] = n
+        }
     }
 
 // MaybeT
