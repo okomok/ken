@@ -21,11 +21,13 @@ trait Monoid[m] extends Klass { outer =>
     }
 }
 
+
 trait MonoidMethod[m] extends Method {
     override def klass: Monoid[m]
     override def callee: m
     final def _mappend_(y: => m): m = klass.mappend(callee)(y)
 }
+
 
 trait MonoidProxy[m] extends Monoid[m] with Proxy {
     override def self: Monoid[m]
@@ -35,11 +37,9 @@ trait MonoidProxy[m] extends Monoid[m] with Proxy {
 }
 
 
-object Monoid extends MonoidInstance {
+object Monoid {
     def apply[m](implicit i: Monoid[m]): Monoid[m] = i
-}
 
-trait MonoidInstance {
     implicit val ofUnit = Unit_.monoid
 
     implicit def ofFunction1[z, b](implicit mb: Monoid[b]): Monoid[z => b] = Function.monoid[z, b]
