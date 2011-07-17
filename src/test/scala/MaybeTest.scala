@@ -58,4 +58,12 @@ class MaybeTest extends org.scalatest.junit.JUnit3Suite {
         val mp = m.monadT.StateT.monadReader[Int, Int]
         ()
     }
+
+    def testImplicit2 {
+        val m = Function.monad[Int]
+        val m_ = implicitly[Monad[m.apply]]
+        import m.monadT.StateT
+        val sm = implicitly[Monad[({type m[+a] = StateT[Int, a]})#m]]
+        ()
+    }
 }

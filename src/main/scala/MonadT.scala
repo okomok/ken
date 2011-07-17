@@ -64,23 +64,7 @@ final class MonadT[n[+_]](implicit val inner: Monad[n]) {
         override def callee = this
     }
 
-    object StateT {
-        def apply[s, a](_run: s => n[(a, s)]): StateT[s, a] = new StateT[s, a] {
-            override def run(s: s): n[(a, s)] = _run(s)
-        }
-
-        implicit def low[s, a](m: StateMonadT[s, n, a]): StateT[s, a] = StateT { m.run }
-
-        def run[s, a](n: StateT[s, a]): s => n[(a, s)] = n.run
-
-        def eval[s, a](n: StateT[s, a])(s: s): n[a] = for { (a, _) <- run(n)(s) } yield a
-
-        def exec[s, a](n: StateT[s, a])(s: s): n[s] = for { (_, s) <- run(n)(s) } yield s
-
-        def map[s, m[+_], a, b](f: n[(a, s)] => m[(b, s)])(n: StateT[s, a]): StateMonadT[s, m, b] = StateMonadT { f compose run(n) }
-
-        def `with`[s, a](f: s => s)(n: StateT[s, a]): StateT[s, a] = StateT { run(n) compose f }
-
+    trait StateTLowPriorityImplicits { self: StateT.type =>
         implicit def monad[s]: MonadState[s, ({type m[+a] = StateT[s, a]})#m] =
             new MonadState[s, ({type m[+a] = StateT[s, a]})#m]
         {
@@ -99,6 +83,24 @@ final class MonadT[n[+_]](implicit val inner: Monad[n]) {
             override def get: m[s] = StateT { s => inner.`return`(s, s) }
             override def put(s: s): m[Unit] = StateT { _ => inner.`return`((), s) }
         }
+    }
+
+    object StateT extends StateTLowPriorityImplicits {
+        def apply[s, a](_run: s => n[(a, s)]): StateT[s, a] = new StateT[s, a] {
+            override def run(s: s): n[(a, s)] = _run(s)
+        }
+
+        implicit def low[s, a](m: StateMonadT[s, n, a]): StateT[s, a] = StateT { m.run }
+
+        def run[s, a](n: StateT[s, a]): s => n[(a, s)] = n.run
+
+        def eval[s, a](n: StateT[s, a])(s: s): n[a] = for { (a, _) <- run(n)(s) } yield a
+
+        def exec[s, a](n: StateT[s, a])(s: s): n[s] = for { (_, s) <- run(n)(s) } yield s
+
+        def map[s, m[+_], a, b](f: n[(a, s)] => m[(b, s)])(n: StateT[s, a]): StateMonadT[s, m, b] = StateMonadT { f compose run(n) }
+
+        def `with`[s, a](f: s => s)(n: StateT[s, a]): StateT[s, a] = StateT { run(n) compose f }
 
         implicit def monadPlus[s](implicit i: MonadPlus[n]): MonadPlus[({type m[+a] = StateT[s, a]})#m] =
             new MonadPlus[({type m[+a] = StateT[s, a]})#m] with MonadProxy[({type m[+a] = StateT[s, a]})#m]
