@@ -76,7 +76,13 @@ package object ken {
 
 // Trivial transformers
     val identityT = Identity.monadT
+
     type State[s, +a] = identityT.StateT[s, a]
     val State = identityT.StateT
 
+    type Reader[r, +a] = identityT.ReaderT[r, a]
+    val Reader = identityT.ReaderT
+
+    type Writer[w, +a] = identityT.WriterT[w, a]
+    val Writer = identityT.WriterT
 }
