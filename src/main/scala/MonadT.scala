@@ -355,6 +355,8 @@ final class MonadT[n[+_]](implicit val inner: Monad[n]) {
             override def monoid: Monoid[w] = i
         }
 
+        implicit def from[w, a](n: _WriterT[w, n, a]): WriterT[w, a] = WriterT(n.run)(n.monoid)
+
         def run[w, a](n: WriterT[w, a]): n[(a, w)] = n.run
 
         def exec[w, a](n: WriterT[w, a]): n[w] = for { (_, w) <- run(n) } yield w
