@@ -52,4 +52,10 @@ class MaybeTest extends org.scalatest.junit.JUnit3Suite {
         //MaybeT.run(askPassword).unIO()
     }
 
+    def testImplicit {
+        val m = Function.monad[Int]
+        import m.monadT.StateT
+        val mp = m.monadT.StateT.monadReader[Int, Int]
+        ()
+    }
 }

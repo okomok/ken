@@ -59,8 +59,7 @@ final class MonadT[n[+_]](implicit val inner: Monad[n]) {
     }
 
 // StateT
-    sealed abstract class StateT[s, +a] extends MonadMethod[({type m[+a] = StateT[s, a]})#m, a] {
-        def run(s: s): n[(a, s)]
+    sealed abstract class StateT[s, +a] extends StateMonadT[s, n, a] with MonadMethod[({type m[+a] = StateT[s, a]})#m, a] {
         override val klass = StateT.monad[s]
         override def callee = this
     }
@@ -70,13 +69,15 @@ final class MonadT[n[+_]](implicit val inner: Monad[n]) {
             override def run(s: s): n[(a, s)] = _run(s)
         }
 
+        implicit def low[s, a](m: StateMonadT[s, n, a]): StateT[s, a] = StateT { m.run }
+
         def run[s, a](n: StateT[s, a]): s => n[(a, s)] = n.run
 
         def eval[s, a](n: StateT[s, a])(s: s): n[a] = for { (a, _) <- run(n)(s) } yield a
 
         def exec[s, a](n: StateT[s, a])(s: s): n[s] = for { (_, s) <- run(n)(s) } yield s
 
-        def map[s, a, b](f: n[(a, s)] => n[(b, s)])(n: StateT[s, a]): StateT[s, b] = StateT { f compose run(n) }
+        def map[s, m[+_], a, b](f: n[(a, s)] => m[(b, s)])(n: StateT[s, a]): StateMonadT[s, m, b] = StateMonadT { f compose run(n) }
 
         def `with`[s, a](f: s => s)(n: StateT[s, a]): StateT[s, a] = StateT { run(n) compose f }
 
@@ -117,7 +118,7 @@ final class MonadT[n[+_]](implicit val inner: Monad[n]) {
                 def k(aI_ : => (a, s)) = run(f(aI_._1))(s)
                 i.mfix(k)
                 // scalac sucks.
-                // i.mfix { (aI_ : => (a, s)) => run(f(aI_._1))(s) }
+                // i.mfix { (aI_ : (=> (a, s))) => run(f(aI_._1))(s) }
             }
         }
 
@@ -133,19 +134,19 @@ final class MonadT[n[+_]](implicit val inner: Monad[n]) {
             override val self = monad[s]
             override def liftIO[a](io: IO[a]): m[a] = monadTrans[s].lift(i.liftIO(io))
         }
-/*
+
         implicit def monadCont[s](implicit i: MonadCont[n]): MonadCont[({type m[+a] = StateT[s, a]})#m] =
             new MonadCont[({type m[+a] = StateT[s, a]})#m] with MonadProxy[({type m[+a] = StateT[s, a]})#m]
         {
             private[this] type m[+a] = StateT[s, a]
             override val self = monad[s]
             override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = StateT { s =>
-                i.callCC { (c: (a, s) => n[(a, s)]) =>
-                    run(f(a => StateT { s_ => c(a, s_) }))(s)
+                i.callCC { (c: ((a, s)) => n[(b, s)]) =>
+                    run( f(a => StateT { s_ => c((a, s_)) }) )(s)
                 }
             }
         }
-*/
+
         implicit def monadError[s, e](implicit i: MonadError[e, n]): MonadError[e, ({type m[+a] = StateT[s, a]})#m] =
             new MonadError[e, ({type m[+a] = StateT[s, a]})#m] with MonadProxy[({type m[+a] = StateT[s, a]})#m]
         {
@@ -155,6 +156,32 @@ final class MonadT[n[+_]](implicit val inner: Monad[n]) {
             override def catchError[a](m: m[a])(h: e => m[a]): m[a] = StateT { s =>
                 i.catchError(run(m)(s)) { e =>
                     run(h(e))(s)
+                }
+            }
+        }
+
+        implicit def monadReader[s, r](implicit i: MonadReader[r, n]): MonadReader[r, ({type m[+a] = StateT[s, a]})#m] =
+            new MonadReader[r, ({type m[+a] = StateT[s, a]})#m] with MonadProxy[({type m[+a] = StateT[s, a]})#m]
+        {
+            private[this] type m[+a] = StateT[s, a]
+            override val self = monad[s]
+            override def ask: m[r] = monadTrans[s].lift(i.ask)
+            override def local[a](f: r => r)(m: m[a]): m[a] = StateT { s => i.local(f)(run(m)(s)) }
+        }
+
+        implicit def monadWriter[s, w](implicit i: MonadWriter[w, n]): MonadWriter[w, ({type m[+a] = StateT[s, a]})#m] =
+            new MonadWriter[w, ({type m[+a] = StateT[s, a]})#m] with MonadProxy[({type m[+a] = StateT[s, a]})#m]
+        {
+            private[this] type m[+a] = StateT[s, a]
+            override val self = monad[s]
+            override def monoid: Monoid[w] = i.monoid
+            override def tell(x: w): m[Unit] = monadTrans[s].lift(i.tell(x))
+            override def listen[a](m: m[a]): m[(a, w)] = StateT { s =>
+                for { ((a, s_), w) <- i.listen(run(m)(s)) } yield ((a, w), s_)
+            }
+            override def pass[a](m: m[(a, w => w)]): m[a] = StateT { s =>
+                i.pass {
+                    for { ((a, f), s_) <- run(m)(s) } yield ((a, s_), f)
                 }
             }
         }
