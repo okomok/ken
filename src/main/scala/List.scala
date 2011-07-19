@@ -15,12 +15,20 @@ sealed abstract class List[+a] extends Up[List[a]] {
     @inline
     final def of[b >: a]: List[b] = this
 
-    // FIX ME
-    final override def toString: String = this match {
-        case x :: xs if x.isInstanceOf[Char] => "\"" + List.stringize(List.take(512)(this.asInstanceOf[List[Char]])) + "\""
-        case _ => List.take(512)(this).toScalaList.toString
+    final override def toString: String = {
+        val (xs, ys) = List.splitAt(512)(this)
+        val ellipse = if (ys == Nil) "" else ".."
+
+        if (xs eq Nil) {
+            "Nil"
+        } else if (List.all[a](_.isInstanceOf[Char])(xs)) {
+            xs.toScalaList.mkString("\"", "", ellipse + "\"")
+        } else {
+            xs.toScalaList.mkString("List(", ",", ellipse + ")")
+        }
     }
-    final override lazy val hashCode: Int = toScalaList.hashCode
+
+    final override def hashCode: Int = toScalaList.hashCode
 
     final def !!(n: Int): a = List.op_!!(this)(n)
     final def !::[b >: a](x: b): List[b] = List.op_!::[b](x)(this)
@@ -30,11 +38,11 @@ sealed abstract class List[+a] extends Up[List[a]] {
     final def filter(p: a => Boolean): List[a] = List.filter(p)(this)
     final def withFilter(p: a => Boolean): List[a] = List.filter(p)(this)
 
-    final lazy val toScalaList: scala.List[a] = this match {
+    final def toScalaList: scala.List[a] = this match {
         case Nil => scala.Nil
         case x :: xs => scala.::(x, xs.!.toScalaList)
     }
-    final lazy val toScalaStream: scala.Stream[a] = this match {
+    final def toScalaStream: scala.Stream[a] = this match {
         case Nil => scala.Stream.empty
         case x :: xs => scala.Stream.cons(x, xs.!.toScalaStream)
     }
