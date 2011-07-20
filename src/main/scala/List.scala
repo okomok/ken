@@ -38,6 +38,10 @@ sealed abstract class List[+a] extends Up[List[a]] {
     final def filter(p: a => Boolean): List[a] = List.filter(p)(this)
     final def withFilter(p: a => Boolean): List[a] = List.filter(p)(this)
 
+    final def breakOut[To](implicit bf: scala.collection.generic.CanBuildFrom[Nothing, a, To]): To = {
+        List.foldl[scala.collection.mutable.Builder[a, To], a](b => x => seq(b += x)(b))(bf())(this).result
+    }
+
     final def toScalaList: scala.List[a] = this match {
         case Nil => scala.Nil
         case x :: xs => scala.::(x, xs.!.toScalaList)

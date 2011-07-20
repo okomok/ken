@@ -67,12 +67,12 @@ package object ken {
 
     def undefined: Nothing = throw new java.lang.Error("undefined")
 
-    def seq[a, b](x: a)(y: b): b = y // no effects
+    def seq[b](x: Any)(y: b): b = y // no special effects
 
 // Converting to String
     def show[a](x: a)(implicit i: Show[a]): String_ = i.show(x)
 
-    val _show: Any => String = _.toString
+    val _show: Any => String = _.toString // will be removed.
 
 // Trivial transformers
     val identityT = Identity.monadT
