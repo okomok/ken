@@ -55,7 +55,7 @@ case object Nil extends List[Nothing] {
 
 final case class ::[+a](head: a, tail: Lazy[List[a]]) extends List[a] {
     override def equals(that: Any): Boolean = that match {
-        case that: List[_] => List.op_==(this)(that)
+        case that: List[_] => List.equal(this)(that)
         case _ => false
     }
 }
@@ -71,13 +71,11 @@ object !:: { // strict extractor
 
 object List extends MonadPlus[List] {
     @tailrec
-    def op_==(xs: List[_])(ys: List[_]): Boolean = (xs, ys) match {
+    def equal(xs: List[_])(ys: List[_]): Boolean = (xs, ys) match {
         case (Nil, Nil) => true
         case (Nil, _) => false
         case (_, Nil) => false
-        case (x :: xs, y :: ys) => {
-            if (x == y) op_==(xs.!)(ys.!) else false
-        }
+        case (x :: xs, y :: ys) => if (x == y) equal(xs.!)(ys.!) else false
     }
 
     def op_::[a](x: a)(xs: => List[a]): List[a] = ::(x, Lazy(xs))
@@ -407,7 +405,7 @@ object List extends MonadPlus[List] {
         case _ => Nothing
     }
 
-    def group[a](xs: List[a]): List[List[a]] = groupBy(Eq.op_==[a])(xs)
+    def group[a](xs: List[a]): List[List[a]] = groupBy(op_==[a])(xs)
 
     def inits[a](xs: List[a]): List[List[a]] = xs match {
         case Nil => List(Nil)
@@ -477,9 +475,9 @@ object List extends MonadPlus[List] {
         case (_ :: xs, n) => op_!!(xs.!)(n-1)
     }
 
-    def elemIndex[a](x: a)(xs: List[a]): Maybe[Int] = findIndex(Eq.op_==(x))(xs)
+    def elemIndex[a](x: a)(xs: List[a]): Maybe[Int] = findIndex(op_==(x))(xs)
 
-    def elemIndices[a](x: a)(xs: List[a]): List[Int] = findIndices(Eq.op_==(x))(xs)
+    def elemIndices[a](x: a)(xs: List[a]): List[Int] = findIndices(op_==(x))(xs)
 
     def findIndex[a](p: a => Boolean)(xs: List[a]): Maybe[Int] = Maybe.listToMaybe(findIndices(p)(xs))
 
@@ -516,15 +514,15 @@ object List extends MonadPlus[List] {
     }
 
 // Set operations
-    def nub[a](xs: List[a]): List[a] = nubBy(Eq.op_==[a])(xs)
+    def nub[a](xs: List[a]): List[a] = nubBy(op_==[a])(xs)
 
-    def delete[a](x: a)(xs: List[a]) = deleteBy(Eq.op_==[a])(x)(xs)
+    def delete[a](x: a)(xs: List[a]) = deleteBy(op_==[a])(x)(xs)
 
     def op_\\[a](xs: List[a])(ys: List[a]): List[a] = foldl(flip(delete[a]))(xs)(ys)
 
-    def union[a](xs: List[a])(ys: List[a]): List[a] = unionBy(Eq.op_==[a])(xs)(ys)
+    def union[a](xs: List[a])(ys: List[a]): List[a] = unionBy(op_==[a])(xs)(ys)
 
-    def intersect[a](xs: List[a])(ys: List[a]): List[a] = intersectBy(Eq.op_==[a])(xs)(ys)
+    def intersect[a](xs: List[a])(ys: List[a]): List[a] = intersectBy(op_==[a])(xs)(ys)
 
 // Ordered lists
     def sort[a](xs: List[a])(implicit i: Ord[a]): List[a] = sortBy(i.compare)(xs)

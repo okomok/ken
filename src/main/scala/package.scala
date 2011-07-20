@@ -13,8 +13,8 @@ package object ken {
     type String_ = List[Char]
 
 // Eq
-    type Eq[a] = _Eq.Eq[a]
-    val Eq = _Eq.Eq
+    def op_==[a](x: a)(y: a): Boolean = x == y
+    def op_/=[a](x: a)(y: a): Boolean = x != y
 
 // Booleans
     val not: Boolean => Boolean = { b => !b }
@@ -57,7 +57,7 @@ package object ken {
 
     def op_@[a, b](f: a => b)(x: a): b = f(x)
 
-    def op_@![a, b](f: a => b)(x: a): b = f(x) // same as op_@
+    def op_!@[a, b](f: a => b)(x: a): b = f(x) // same as op_@
 
     def until[a](p: a => Boolean)(f: a => a)(x: a): a = {
         if (p(x)) x else until(p)(f)(f(x))
