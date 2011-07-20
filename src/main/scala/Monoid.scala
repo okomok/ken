@@ -40,7 +40,7 @@ trait MonoidProxy[m] extends Monoid[m] with Proxy {
 object Monoid {
     def apply[m](implicit i: Monoid[m]): Monoid[m] = i
 
-    implicit val ofUnit = Unit_.monoid
+    implicit val ofUnit = Unit.monoid
 
     implicit def ofFunction1[z, b](implicit mb: Monoid[b]): Monoid[z => b] = Function.monoid[z, b]
 
