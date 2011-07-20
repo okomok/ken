@@ -72,7 +72,9 @@ package object ken {
     def seq[a, b](x: a)(y: b): b = y // no effects
 
 // Converting to String
-    val show: Any => String = _.toString
+    def show[a](x: a)(implicit i: Show[a]): String_ = i.show(x)
+
+    val _show: Any => String = _.toString
 
 // Trivial transformers
     val identityT = Identity.monadT

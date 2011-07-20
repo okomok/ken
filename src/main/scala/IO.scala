@@ -12,6 +12,7 @@ trait IO[+a] {
     def unIO(): a
 }
 
+
 trait IOProxy[+a] extends IO[a] with Proxy {
     override def self: IO[a]
     override def unIO(): a = self.unIO()
@@ -37,7 +38,9 @@ object IO extends MonadIO[IO] {
     implicit val monad: MonadIO[IO] = this
 
 // Output functions
-    def putChar(c: Char): IO[Unit] = print(c)
+    def putChar(c: Char): IO[Unit] = IO {
+        Predef.print(c)
+    }
 
     def putStr(s: String_): IO[Unit] = IO {
         List.foreach(Predef.print)(s)
@@ -47,13 +50,7 @@ object IO extends MonadIO[IO] {
         for { _ <- putStr(s); _ <- putChar('\n') } yield ()
     }
 
-    def print[a](x: a): IO[Unit] = IO {
-        Predef.print(x)
-    }
-
-    def printLn[a](x: a): IO[Unit] = IO {
-        Predef.println(x)
-    }
+    def print[a](x: a)(implicit i: Show[a]): IO[Unit] = putStrLn(i.show(x))
 
 // Input functions
     def getChar: IO[Char] = IO {

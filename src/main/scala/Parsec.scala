@@ -53,7 +53,7 @@ object Parsec {
     def forcePos(pos: SourcePos): SourcePos = seq(pos.line)(seq(pos.column)(pos)) // no effects
 
     private[this] def showSourcePos(name: SourceName, line: Line, column: Column): String = {
-        def showLineColumn: String = "(line " + show(line) + ", column " + show(column) + ")"
+        def showLineColumn: String = "(line " + _show(line) + ", column " + _show(column) + ")"
         if (name == "") {
             showLineColumn
         } else {
@@ -439,7 +439,7 @@ object Parsec {
             }
 
             def errEof: Reply[tok, st, List[tok]] = Error(setErrorMessage(Expect(shows(s)))(newErrorMessage(SysUnExpect(""))(pos)))
-            def errExpect(c: tok): Reply[tok, st, List[tok]] = Error(setErrorMessage(Expect(shows(s)))(newErrorMessage(SysUnExpect(show(List(c))))(pos)))
+            def errExpect(c: tok): Reply[tok, st, List[tok]] = Error(setErrorMessage(Expect(shows(s)))(newErrorMessage(SysUnExpect(_show(List(c))))(pos)))
 
             @tailrec
             def walk(xs: List[tok])(cs: List[tok]): Reply[tok, st, List[tok]] = (xs, cs) match {
@@ -514,7 +514,7 @@ object Parsec {
     // Show ParseErrors
 
     private[this] def showParseError(err: ParseError): String = {
-        show(errorPos(err)) + ":" +
+        _show(errorPos(err)) + ":" +
             showErrorMessages("or")("unknown parse error")("expecting")("unexpected")("end of input")(errorMessages(err))
     }
 
@@ -694,7 +694,7 @@ object Parsec {
     // Tricky combinators
 
     def anyToken[tok, st]: GenParser[tok, st, tok] = {
-        tokenPrim[tok, st, tok](show)(pos => tok => toks => pos)(Maybe.just)
+        tokenPrim[tok, st, tok](_show)(pos => tok => toks => pos)(Maybe.just)
     }
 
     def eof[tok, st]: GenParser[tok, st, Unit] = {
@@ -705,7 +705,7 @@ object Parsec {
     def notFollowedBy[tok, st](p: GenParser[tok, st, tok]): GenParser[tok, st, Unit] = {
         val i = GenParser.monad[tok, st]
         `try` {
-            ( for { c <- p; y <- unexpected(show(List(c))) } yield y ) <|> i.`return`()
+            ( for { c <- p; y <- unexpected(_show(List(c))) } yield y ) <|> i.`return`()
         }
     }
 
@@ -748,15 +748,15 @@ object Parsec {
     //def hexDigit[st]: CharParser[st, Char] = satisfy(_.isHexDigit) <#> "hexadecimal digit"
     //def octDigit[st]: CharParser[st, Char] = satisfy(_.isOctDigit) <#> "octal digit"
 
-    def char[st](c: Char): CharParser[st, Char] = satisfy(_ == c) <#> show(List(c))
+    def char[st](c: Char): CharParser[st, Char] = satisfy(_ == c) <#> _show(List(c))
 
     def anyChar[st]: CharParser[st, Char] = satisfy(const(true))
 
     // Primitive character parsers
 
     def satisfy[st](f: Char => Boolean): CharParser[st, Char] = {
-        tokenPrim[Char, st, Char](c => show(List(c)))(pos => c => cs => updatePosChar(pos)(c))(c => if (f(c)) Just(c) else Nothing)
+        tokenPrim[Char, st, Char](c => _show(List(c)))(pos => c => cs => updatePosChar(pos)(c))(c => if (f(c)) Just(c) else Nothing)
     }
 
-    def string[st](s: String_): CharParser[st, String_] = tokens[Char, st](show)(updatePosString)(s)
+    def string[st](s: String_): CharParser[st, String_] = tokens[Char, st](_show)(updatePosString)(s)
 }
