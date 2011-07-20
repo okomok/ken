@@ -77,6 +77,9 @@ package object ken {
 // Trivial transformers
     val identityT = Identity.monadT
 
+    type Error[e, +a] = identityT.ErrorT[e, a]
+    val Error = identityT.ErrorT
+
     type State[s, +a] = identityT.StateT[s, a]
     val State = identityT.StateT
 

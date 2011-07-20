@@ -24,7 +24,7 @@ class TrivialTest extends org.scalatest.junit.JUnit3Suite {
         expect(true)(6 :: 7 :: 8 :: Nil == 6 :: 7 :: 8 :: Nil)
         expect(false)(6 :: 7 :: Nil == 6 :: 7 :: 8 :: Nil)
 
-        def makeList: List[Int] = throw new Error
+        def makeList: List[Int] = undefined
         val ys = ::(10, Lazy(makeList))
         expect(false)(6 :: 7 :: Nil == ys)
     }
@@ -40,8 +40,8 @@ class TrivialTest extends org.scalatest.junit.JUnit3Suite {
     def compileImplicit {
         (1 :: 2 :: Nil) >>= (x => x :: Nil)
 
-        def takeImplicit[f[+_], a](x: f[a])(implicit i: Monad[f]): Unit = throw new Error
-        def takeMonoidImplicit[a](x: a)(implicit i: Monoid[a]): Unit = throw new Error
+        def takeImplicit[f[+_], a](x: f[a])(implicit i: Monad[f]): Unit = undefined
+        def takeMonoidImplicit[a](x: a)(implicit i: Monoid[a]): Unit = undefined
 
         val u1: Unit = takeImplicit(6 :: Nil)
         val u2: Unit = takeMonoidImplicit(6 :: Nil)

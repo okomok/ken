@@ -9,6 +9,7 @@ package ken
 
 
 trait MonadError[e, m[+_]] extends Monad[m] {
+    def errorClass: ErrorClass[e]
     def throwError[a](e: e): m[a]
     def catchError[a](m: m[a])(h: e => m[a]): m[a]
 }
@@ -16,6 +17,7 @@ trait MonadError[e, m[+_]] extends Monad[m] {
 
 trait MonadErrorProxy[e, m[+_]] extends MonadError[e, m] with MonadProxy[m] {
     override def self: MonadError[e, m]
+    override def errorClass: ErrorClass[e] = self.errorClass
     override def throwError[a](e: e): m[a] = self.throwError(e)
     override def catchError[a](m: m[a])(h: e => m[a]): m[a] = self.catchError(m)(h)
 }
