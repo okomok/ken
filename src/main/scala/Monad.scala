@@ -40,7 +40,7 @@ trait Monad[m[+_]] extends Applicative[m] { outer =>
     final def mapM[a, b](f: a => m[b])(as: List[a]): m[List[b]] = sequence(List.map(f)(as))
     final def mapM_[a, b](f: a => m[b])(as: List[a]): m[Unit] = sequence_(List.map(f)(as))
 
-    final def filterM[a](p: a => m[Boolean])(xs: List[a]): m[List[a]] = xs match {
+    final def filterM[a](p: a => m[Bool])(xs: List[a]): m[List[a]] = xs match {
         case Nil => `return`(Nil)
         case x :: xs => for {
             flg <- p(x)
@@ -87,8 +87,8 @@ trait Monad[m[+_]] extends Applicative[m] { outer =>
     final def replicateM[a](n: Int)(x: m[a]): m[List[a]] = sequence(List.replicate(n)(x))
     final def replicateM_[a](n: Int)(x: m[a]): m[Unit] = sequence_(List.replicate(n)(x))
 
-    final def when(p: Boolean)(s: => m[Unit]): m[Unit] = if (p) s else `return`()
-    final def unless(p: Boolean)(s: => m[Unit]): m[Unit] = if (p) `return`() else s
+    final def when(p: Bool)(s: => m[Unit]): m[Unit] = if (p) s else `return`()
+    final def unless(p: Bool)(s: => m[Unit]): m[Unit] = if (p) `return`() else s
 
     final def liftM[a1, r](f: a1 => r)(m1: m[a1]): m[r] = for { x1 <- m1 } yield f(x1)
     final def liftM2[a1, a2, r](f: a1 => a2 => r)(m1: m[a1])(m2: m[a2]): m[r] = for { x1 <- m1; x2 <- m2 } yield f(x1)(x2)
@@ -110,8 +110,8 @@ trait MonadMethod[m[+_], +a] extends ApplicativeMethod[m, a] {
     final def flatMap[b](y: a => m[b]): m[b] = klass.op_>>=(callee)(y)
     final def map[b](y: a => b): m[b] = klass.op_>>=(callee)(_x => klass.`return`(y(_x)))
 
-    def filter(y: a => Boolean): m[a] = map(_x => { Predef.require(y(_x)); _x })
-    def withFilter(y: a => Boolean): m[a] = filter(y)
+    def filter(y: a => Bool): m[a] = map(_x => { Predef.require(y(_x)); _x })
+    def withFilter(y: a => Bool): m[a] = filter(y)
 }
 
 

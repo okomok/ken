@@ -61,12 +61,7 @@ class ParseErrorTest extends org.scalatest.junit.JUnit3Suite {
     }
 
     def testTrivial {
-        IO.putStrLn(convert("ff69")).unIO()
-        IO.putStrLn(convert("ff6z")).unIO()
-
-        println(Char.ord('A'))
-        println(Char.chr(65))
-
-        println(Char.digitToInt('A'))
+        expect(List.from("65385"))(convert("ff69"))
+        expect(List.from("At Index 4: Invalid character z"))(convert("ff6z"))
     }
 }

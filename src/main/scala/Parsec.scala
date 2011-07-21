@@ -489,7 +489,7 @@ object Parsec {
 
     def messageStringT(msg: Message_): String_ = List.from(messageString(msg))
 
-    def messageEq(msg1: Message_)(msg2: Message_): Boolean = {
+    def messageEq(msg1: Message_)(msg2: Message_): Bool = {
         messageCompare(msg1)(msg2) == EQ
     }
 
@@ -500,7 +500,7 @@ object Parsec {
     }
     def errorPos(err: ParseError): SourcePos = err.pos
     def errorMessages(err: ParseError): List[Message_] = List.sortBy(messageCompare)(err.msgs)
-    def errorIsUnknown(err: ParseError): Boolean = List.`null`(err.msgs)
+    def errorIsUnknown(err: ParseError): Bool = List.`null`(err.msgs)
 
     // Create ParseErrors
 
@@ -754,7 +754,7 @@ object Parsec {
 
     // Primitive character parsers
 
-    def satisfy[st](f: Char => Boolean): CharParser[st, Char] = {
+    def satisfy[st](f: Char => Bool): CharParser[st, Char] = {
         tokenPrim[Char, st, Char](c => _show(List(c)))(pos => c => cs => updatePosChar(pos)(c))(c => if (f(c)) Just(c) else Nothing)
     }
 

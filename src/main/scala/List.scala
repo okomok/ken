@@ -35,8 +35,8 @@ sealed abstract class List[+a] extends Up[List[a]] {
 
     final def \\[b >: a](that: List[b]): List[b] = List.op_\\[b](this)(that)
 
-    final def filter(p: a => Boolean): List[a] = List.filter(p)(this)
-    final def withFilter(p: a => Boolean): List[a] = List.filter(p)(this)
+    final def filter(p: a => Bool): List[a] = List.filter(p)(this)
+    final def withFilter(p: a => Bool): List[a] = List.filter(p)(this)
 
     final def breakOut[To](implicit bf: scala.collection.generic.CanBuildFrom[Nothing, a, To]): To = {
         List.foldl[scala.collection.mutable.Builder[a, To], a](b => x => seq(b += x)(b))(bf())(this).result
@@ -58,7 +58,7 @@ case object Nil extends List[Nothing] {
 }
 
 final case class ::[+a](head: a, tail: Lazy[List[a]]) extends List[a] {
-    override def equals(that: Any): Boolean = that match {
+    override def equals(that: Any): Bool = that match {
         case that: List[_] => List.equal(this)(that)
         case _ => false
     }
@@ -75,7 +75,7 @@ object !:: { // strict extractor
 
 object List extends MonadPlus[List] {
     @tailrec
-    def equal(xs: List[_])(ys: List[_]): Boolean = (xs, ys) match {
+    def equal(xs: List[_])(ys: List[_]): Bool = (xs, ys) match {
         case (Nil, Nil) => true
         case (Nil, _) => false
         case (_, Nil) => false
@@ -172,7 +172,7 @@ object List extends MonadPlus[List] {
         case x :: xs => x :: init(xs.!)
     }
 
-    def `null`(xs: List[_]): Boolean = xs match {
+    def `null`(xs: List[_]): Bool = xs match {
         case Nil => true
         case _ => false
     }
@@ -264,13 +264,13 @@ object List extends MonadPlus[List] {
 
     def concatMap[a, b](f: a => List[b])(xs: List[a]): List[b] = foldr[a, List[b]](x => y => f(x) ::: y)(Nil)(xs)
 
-    def and(xs: List[Boolean]): Boolean = foldr(op_&&)(true)(xs)
+    def and(xs: List[Bool]): Bool = foldr(op_&&)(true)(xs)
 
-    def or(xs: List[Boolean]): Boolean = foldr(op_||)(false)(xs)
+    def or(xs: List[Bool]): Bool = foldr(op_||)(false)(xs)
 
-    def any[a](p: a => Boolean)(xs: List[a]): Boolean = or(map(p)(xs))
+    def any[a](p: a => Bool)(xs: List[a]): Bool = or(map(p)(xs))
 
-    def all[a](p: a => Boolean)(xs: List[a]): Boolean = and(map(p)(xs))
+    def all[a](p: a => Bool)(xs: List[a]): Bool = and(map(p)(xs))
 
     def sum[a](xs: List[a])(implicit i: Num[a]): a = foldl(i.op_+)(i.fromInt(0))(xs)
 
@@ -377,18 +377,18 @@ object List extends MonadPlus[List] {
 
     def splitAt[a](n: Int)(xs: List[a]): (List[a], List[a]) = (take(n)(xs), drop(n)(xs))
 
-    def takeWhile[a](p: a => Boolean)(xs: List[a]): List[a] = xs match {
+    def takeWhile[a](p: a => Bool)(xs: List[a]): List[a] = xs match {
         case Nil => Nil
         case x :: xs => if (p(x)) x :: takeWhile(p)(xs.!) else Nil
     }
 
     @tailrec
-    def dropWhile[a](p: a => Boolean)(xs: List[a]): List[a] = xs match {
+    def dropWhile[a](p: a => Bool)(xs: List[a]): List[a] = xs match {
         case Nil => Nil
         case x :: xs_ => if (p(x)) dropWhile(p)(xs_.!) else xs
     }
 
-    def span[a](p: a => Boolean)(xs: List[a]): (List[a], List[a]) = xs match {
+    def span[a](p: a => Bool)(xs: List[a]): (List[a], List[a]) = xs match {
         case Nil => (Nil, Nil)
         case x :: xs_ => {
             if (p(x)) {
@@ -400,7 +400,7 @@ object List extends MonadPlus[List] {
         }
     }
 
-    def break[a](p: a => Boolean)(xs: List[a]): (List[a], List[a]) = span[a](!p(_))(xs)
+    def break[a](p: a => Bool)(xs: List[a]): (List[a], List[a]) = span[a](!p(_))(xs)
 
     @tailrec
     def stripPrefix[a](xs: List[a])(ys: List[a]): Maybe[List[a]] = (xs, ys) match {
@@ -422,20 +422,20 @@ object List extends MonadPlus[List] {
     }
 
 // Predicates
-    def isPrefixOf[a](xs: List[a])(ys: List[a]): Boolean = (xs, ys) match {
+    def isPrefixOf[a](xs: List[a])(ys: List[a]): Bool = (xs, ys) match {
         case (Nil, _) => true
         case (_, Nil) => false
         case (x :: xs, y :: ys) => (x == y) && isPrefixOf(xs.!)(ys.!)
     }
 
-    def isSuffixOf[a](x: List[a])(y: List[a]): Boolean = isPrefixOf(reverse(x))(reverse(y))
+    def isSuffixOf[a](x: List[a])(y: List[a]): Bool = isPrefixOf(reverse(x))(reverse(y))
 
-    def isInfixOf[a](needle: List[a])(haystack: List[a]): Boolean = any(isPrefixOf(needle))(tails(haystack))
+    def isInfixOf[a](needle: List[a])(haystack: List[a]): Bool = any(isPrefixOf(needle))(tails(haystack))
 
 // Searching by equality
-    def elem[a](x: a)(xs: List[a]): Boolean = any[a](x == _)(xs)
+    def elem[a](x: a)(xs: List[a]): Bool = any[a](x == _)(xs)
 
-    def notElem[a](x: a)(xs: List[a]): Boolean = all[a](x != _)(xs)
+    def notElem[a](x: a)(xs: List[a]): Bool = all[a](x != _)(xs)
 
     @tailrec
     def lookup[a, b](key: a)(xs: List[(a, b)]): Maybe[b] = xs match {
@@ -444,9 +444,9 @@ object List extends MonadPlus[List] {
     }
 
 // Searching with a predicate
-    def find[a](p: a => Boolean)(xs: List[a]): Maybe[a] = Maybe.listToMaybe(filter(p)(xs))
+    def find[a](p: a => Bool)(xs: List[a]): Maybe[a] = Maybe.listToMaybe(filter(p)(xs))
 
-    def filter[a](pred: a => Boolean)(xs: List[a]): List[a] = xs match {
+    def filter[a](pred: a => Bool)(xs: List[a]): List[a] = xs match {
         case Nil => Nil
         case x :: xs => {
             if (pred(x)) {
@@ -457,12 +457,12 @@ object List extends MonadPlus[List] {
         }
     }
 
-    def partition[a](p: a => Boolean)(xs: List[a]): (List[a], List[a]) = {
+    def partition[a](p: a => Bool)(xs: List[a]): (List[a], List[a]) = {
         import ByName._
         foldr(select(p))((Nil, Nil))(xs)
     }
 
-    def select[a](p: a => Boolean)(x: a)(tfs: (List[a], List[a])): (List[a], List[a]) = {
+    def select[a](p: a => Bool)(x: a)(tfs: (List[a], List[a])): (List[a], List[a]) = {
         if (p(x)) {
             (x :: tfs._1, tfs._2)
         } else {
@@ -483,9 +483,9 @@ object List extends MonadPlus[List] {
 
     def elemIndices[a](x: a)(xs: List[a]): List[Int] = findIndices(op_==(x))(xs)
 
-    def findIndex[a](p: a => Boolean)(xs: List[a]): Maybe[Int] = Maybe.listToMaybe(findIndices(p)(xs))
+    def findIndex[a](p: a => Bool)(xs: List[a]): Maybe[Int] = Maybe.listToMaybe(findIndices(p)(xs))
 
-    def findIndices[a](p: a => Boolean)(xs: List[a]): List[Int] = for { (x, i) <- zip(xs)(iterate[Int](_ + 1)(0)) if p(x) } yield i
+    def findIndices[a](p: a => Bool)(xs: List[a]): List[Int] = for { (x, i) <- zip(xs)(iterate[Int](_ + 1)(0)) if p(x) } yield i
 
 // Zipping and unzipping lists
     def zip[a, b](xs: List[a])(ys: List[b]): List[(a, b)] = (xs, ys) match {
@@ -534,29 +534,29 @@ object List extends MonadPlus[List] {
     def insert[a](e: a)(ls: List[a])(implicit i: Ord[a]): List[a] = insertBy(i.compare)(e)(ls)
 
 // User-supplied equality
-    def nubBy[a](eq: a => a => Boolean)(xs: List[a]): List[a] = xs match {
+    def nubBy[a](eq: a => a => Bool)(xs: List[a]): List[a] = xs match {
         case Nil => Nil
         case x :: xs => x :: nubBy(eq)(filter[a](y => not(eq(x)(y)))(xs.!))
     }
 
-    def deleteBy[a](eq: a => a => Boolean)(x: a)(xs: List[a]): List[a] = xs match {
+    def deleteBy[a](eq: a => a => Bool)(x: a)(xs: List[a]): List[a] = xs match {
         case Nil => Nil
         case y :: ys => if (x == y) ys.! else (y :: deleteBy(eq)(x)(ys.!))
     }
 
-    def deleteFirstBy[a](eq: a => a => Boolean)(xs: List[a])(ys: List[a]): List[a] = {
+    def deleteFirstBy[a](eq: a => a => Bool)(xs: List[a])(ys: List[a]): List[a] = {
         foldl(flip(deleteBy(eq)))(xs)(ys)
     }
 
-    def unionBy[a](eq: a => a => Boolean)(xs: List[a])(ys: List[a]): List[a] = {
+    def unionBy[a](eq: a => a => Bool)(xs: List[a])(ys: List[a]): List[a] = {
         xs ::: foldl(flip(deleteBy(eq)))(nubBy(eq)(ys))(xs)
     }
 
-    def intersectBy[a](eq: a => a => Boolean)(xs: List[a])(ys: List[a]): List[a] = {
+    def intersectBy[a](eq: a => a => Bool)(xs: List[a])(ys: List[a]): List[a] = {
         for { x <- xs if any(eq(x))(ys) } yield x
     }
 
-    def groupBy[a](eq: a => a => Boolean)(xs: List[a]): List[List[a]] = xs match {
+    def groupBy[a](eq: a => a => Bool)(xs: List[a]): List[List[a]] = xs match {
         case Nil => Nil
         case x :: xs => {
             val (ys, zs) = span(eq(x))(xs.!)

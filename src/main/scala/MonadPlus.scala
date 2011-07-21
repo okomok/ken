@@ -20,7 +20,7 @@ trait MonadPlus[m[+_]] extends Monad[m] with Alternative[m] { outer =>
         override def callee = x
     }
 
-    final def guard(b: Boolean): m[Unit] = b match {
+    final def guard(b: Bool): m[Unit] = b match {
         case true => `return`()
         case false => mzero
     }

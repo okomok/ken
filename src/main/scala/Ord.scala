@@ -10,10 +10,10 @@ package ken
 
 trait Ord[a] extends Klass { outer =>
     def compare(x: a)(y: a): Ordering = if (x == y) EQ else if (op_<=(x)(y)) LT else GT
-    def op_<(x: a)(y: a): Boolean = compare(x)(y) match { case LT => true; case _ => false }
-    def op_<=(x: a)(y: a): Boolean = compare(x)(y) match { case GT => false; case _ => true }
-    def op_>(x: a)(y: a): Boolean = compare(x)(y) match { case GT => true; case _ => false }
-    def op_>=(x: a)(y: a): Boolean = compare(x)(y) match { case LT => false; case _ => true }
+    def op_<(x: a)(y: a): Bool = compare(x)(y) match { case LT => true; case _ => false }
+    def op_<=(x: a)(y: a): Bool = compare(x)(y) match { case GT => false; case _ => true }
+    def op_>(x: a)(y: a): Bool = compare(x)(y) match { case GT => true; case _ => false }
+    def op_>=(x: a)(y: a): Bool = compare(x)(y) match { case LT => false; case _ => true }
     def max(x: a)(y: a): a = if (op_<=(x)(y)) y else x
     def min(x: a)(y: a): a = if (op_<=(x)(y)) x else y
 
@@ -27,20 +27,20 @@ trait Ord[a] extends Klass { outer =>
 trait OrdMethod[a] extends Method {
     override def klass: Ord[a]
     override def callee: a
-    final def <(y: a): Boolean = klass.op_<(callee)(y)
-    final def <=(y: a): Boolean = klass.op_<=(callee)(y)
-    final def >(y: a): Boolean = klass.op_>(callee)(y)
-    final def >=(y: a): Boolean = klass.op_>=(callee)(y)
+    final def <(y: a): Bool = klass.op_<(callee)(y)
+    final def <=(y: a): Bool = klass.op_<=(callee)(y)
+    final def >(y: a): Bool = klass.op_>(callee)(y)
+    final def >=(y: a): Bool = klass.op_>=(callee)(y)
 }
 
 
 trait OrdProxy[a] extends Ord[a] with Proxy {
     override def self: Ord[a]
     override def compare(x: a)(y: a): Ordering = self.compare(x)(y)
-    override def op_<(x: a)(y: a): Boolean = self.op_<(x)(y)
-    override def op_<=(x: a)(y: a): Boolean = self.op_<=(x)(y)
-    override def op_>(x: a)(y: a): Boolean = self.op_>(x)(y)
-    override def op_>=(x: a)(y: a): Boolean = self.op_>=(x)(y)
+    override def op_<(x: a)(y: a): Bool = self.op_<(x)(y)
+    override def op_<=(x: a)(y: a): Bool = self.op_<=(x)(y)
+    override def op_>(x: a)(y: a): Bool = self.op_>(x)(y)
+    override def op_>=(x: a)(y: a): Bool = self.op_>=(x)(y)
     override def max(x: a)(y: a): a = self.max(x)(y)
     override def min(x: a)(y: a): a = self.min(x)(y)
 }
@@ -55,10 +55,10 @@ object Ord {
             case s if s < 0 => LT
             case s if s > 0 => GT
         }
-        override def op_<(x: a)(y: a): Boolean = i.lt(x, y)
-        override def op_<=(x: a)(y: a): Boolean = i.lteq(x, y)
-        override def op_>(x: a)(y: a): Boolean = i.gt(x, y)
-        override def op_>=(x: a)(y: a): Boolean = i.gteq(x, y)
+        override def op_<(x: a)(y: a): Bool = i.lt(x, y)
+        override def op_<=(x: a)(y: a): Bool = i.lteq(x, y)
+        override def op_>(x: a)(y: a): Bool = i.gt(x, y)
+        override def op_>=(x: a)(y: a): Bool = i.gteq(x, y)
         override def max(x: a)(y: a): a = i.max(x, y)
         override def min(x: a)(y: a): a = i.min(x, y)
     }

@@ -61,7 +61,7 @@ object Show {
 
     def showString(xs: String_): ShowS = List.op_!:::(xs)
 
-    def showParen(b: Boolean)(p: ShowS): ShowS = if (b) showChar('(') compose p compose showChar(')') else p
+    def showParen(b: Bool)(p: ShowS): ShowS = if (b) showChar('(') compose p compose showChar(')') else p
 
     val showSpace: ShowS = { xs => ' ' :: xs }
 }

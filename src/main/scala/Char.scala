@@ -12,19 +12,19 @@ import java.lang.{Character => JChar}
 
 
 object Char {
-    val isAscii: Char => Boolean = ch => ch < 128
-    val isLatin1: Char => Boolean = ch => ch <= 255
-    val isControl: Char => Boolean = ch => JChar.isISOControl(ch)
-    val isSpace: Char => Boolean = ch => JChar.isSpaceChar(ch)
-    val isLower: Char => Boolean = ch => JChar.isLowerCase(ch)
-    val isUpper: Char => Boolean = ch => JChar.isUpperCase(ch)
-    val isAlpha: Char => Boolean = ch => JChar.isLetter(ch)
-    val isAlphaNum: Char => Boolean = ch => JChar.isLetterOrDigit(ch)
-    val isPrint: Char => Boolean = ch => false
-    val isDigit: Char => Boolean = ch => JChar.isDigit(ch)
+    val isAscii: Char => Bool = ch => ch < 128
+    val isLatin1: Char => Bool = ch => ch <= 255
+    val isControl: Char => Bool = ch => JChar.isISOControl(ch)
+    val isSpace: Char => Bool = ch => JChar.isSpaceChar(ch)
+    val isLower: Char => Bool = ch => JChar.isLowerCase(ch)
+    val isUpper: Char => Bool = ch => JChar.isUpperCase(ch)
+    val isAlpha: Char => Bool = ch => JChar.isLetter(ch)
+    val isAlphaNum: Char => Bool = ch => JChar.isLetterOrDigit(ch)
+    val isPrint: Char => Bool = ch => false
+    val isDigit: Char => Bool = ch => JChar.isDigit(ch)
 
-    val isOctDigit: Char => Boolean = ch => String.valueOf(ch).matches("[0-7]")
-    val isHexDigit: Char => Boolean = ch => String.valueOf(ch).matches("[0-9]|[a-f]|[A-F]")
+    val isOctDigit: Char => Bool = ch => String.valueOf(ch).matches("[0-7]")
+    val isHexDigit: Char => Bool = ch => String.valueOf(ch).matches("[0-9]|[a-f]|[A-F]")
 
     val toUpper: Char => Char = ch => JChar.toUpperCase(ch)
     val toLower: Char => Char = ch => JChar.toLowerCase(ch)

@@ -13,15 +13,15 @@ package object ken {
     type String_ = List[Char]
 
 // Eq
-    def op_==[a](x: a)(y: a): Boolean = x == y
-    def op_!=[a](x: a)(y: a): Boolean = x != y
+    def op_==[a](x: a)(y: a): Bool = x == y
+    def op_!=[a](x: a)(y: a): Bool = x != y
 
-// Booleans
-    val not: Boolean => Boolean = { b => !b }
+// Bools
+    val not: Bool => Bool = { b => !b }
 
-    val op_&& : Boolean => (=> Boolean) => Boolean = { b => c => b && c }
+    val op_&& : Bool => (=> Bool) => Bool = { b => c => b && c }
 
-    val op_|| : Boolean => (=> Boolean) => Boolean = { b => c => b || c }
+    val op_|| : Bool => (=> Bool) => Bool = { b => c => b || c }
 
     final val otherwise = true
 
@@ -57,7 +57,7 @@ package object ken {
 
     def op_@[a, b](f: a => b)(x: a): b = f(x)
 
-    def until[a](p: a => Boolean)(f: a => a)(x: a): a = {
+    def until[a](p: a => Bool)(f: a => a)(x: a): a = {
         if (p(x)) x else until(p)(f)(f(x))
     }
 

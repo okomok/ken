@@ -44,12 +44,12 @@ object Maybe extends MonadPlus[Maybe] {
         case Just(x) => f(x)
     }
 
-    def isJust[a](m: Maybe[a]): Boolean = m match {
+    def isJust[a](m: Maybe[a]): Bool = m match {
         case Nothing => false
         case _ => true
     }
 
-    def isNothing[a](m: Maybe[a]): Boolean = m match {
+    def isNothing[a](m: Maybe[a]): Bool = m match {
         case Nothing => true
         case _ => false
     }
