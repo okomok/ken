@@ -8,7 +8,8 @@ package com.github.okomok
 package ken
 
 
-trait Alternative[f[+_]] extends Applicative[f] { outer =>
+trait Alternative[f[+_]] extends Applicative[f] {
+// Overridables
     def empty: f[Nothing]
     def op_<|>[a](x: f[a])(y: => f[a]): f[a]
 
@@ -24,20 +25,16 @@ trait Alternative[f[+_]] extends Applicative[f] { outer =>
         many_v
     }
 
-    override implicit def method[a](x: f[a]): AlternativeMethod[f, a] = new AlternativeMethod[f, a] {
-        override def klass = outer
-        override def callee = x
-    }
-
+// Utilities
     final def optional[a](x: f[a]): f[Maybe[a]] = (Just(_: a).up) <@> x <|> pure(Nothing.of[a])
 
     private[this] def _cons[a]: a => List[a] => List[a] = x => xs => x :: xs
-}
 
-
-trait AlternativeMethod[f[+_], +a] extends ApplicativeMethod[f, a] {
-    override def klass: Alternative[f]
-    final def <|>[b >: a](y: => f[b]): f[b] = klass.op_<|>[b](callee)(y)
+// Infix Operators
+    sealed class Infix_<|>[a](x: f[a]) {
+        def <|>(y: => f[a]): f[a] = op_<|>(x)(y)
+    }
+    implicit def <|>[a](x: f[a]): Infix_<|>[a] = new Infix_<|>(x)
 }
 
 

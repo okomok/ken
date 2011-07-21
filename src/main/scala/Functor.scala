@@ -8,37 +8,26 @@ package com.github.okomok
 package ken
 
 
-trait Functor[f[+_]] extends Klass { outer =>
+trait Functor[f[+_]] extends Klass {
     type apply[+a] = f[a]
 
+// Overridables
     def fmap[a, b](x: a => b)(y: f[a]): f[b]
 
+// Utilities
     final def op_<@>[a, b](x: a => b)(y: f[a]): f[b] = fmap(x)(y)
     final def op_<@[a, b](x: => a)(y: f[b]): f[a] = fmap[b, a](_ => x)(y)
 
-    implicit def method[a](x: f[a]): FunctorMethod[f, a] = new FunctorMethod[f, a] {
-        override def klass = outer
-        override def callee = x
-    }
-
-    final private[ken] class Op_<@>[a, b](x: a => b) {
+// Infix Operators
+    sealed class Infix_<@>[a, b](x: a => b) {
         def <@>(y: f[a]): f[b] = op_<@>(x)(y)
     }
-    final implicit def <@>[a, b](x: a => b): Op_<@>[a, b] = new Op_<@>[a, b](x)
+    final implicit def <@>[a, b](x: a => b): Infix_<@>[a, b] = new Infix_<@>(x)
 
-    final private[ken] class Op_<@[a](x: => a) {
+    sealed class Infix_<@[a](x: => a) {
         def <@[b](y: f[b]): f[a] = op_<@(x)(y)
     }
-    final implicit def <@[a](x: a): Op_<@[a] = new Op_<@[a](x)
-}
-
-
-trait FunctorMethod[f[+_], +a] extends Method {
-    override def klass: Functor[f]
-    override def callee: f[a]
-
-    // for Monad.function1
-    final def <@>[z, b](y: f[z])(implicit pre: f[a] <:< Function1[z, b]): f[b] = klass.op_<@>(pre(callee))(y)
+    final implicit def <@[a](x: a): Infix_<@[a] = new Infix_<@(x)
 }
 
 

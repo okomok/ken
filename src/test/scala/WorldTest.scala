@@ -16,10 +16,11 @@ class WorldTest extends org.scalatest.junit.JUnit3Suite {
         val w = new World
         import w._
         import i._
+        import ST.monad.{`for`, forM_}
         runST {
             for {
                 n <- newSTRef(fromInt(0))
-                _ <- ST.monad.forM_(xs) { x =>
+                _ <- forM_(xs) { x =>
                     for {
                         * <- modifySTRef(n)(x + _)
                     } yield *

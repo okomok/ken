@@ -8,32 +8,37 @@ package com.github.okomok
 package ken
 
 
-trait Applicative[f[+_]] extends Functor[f] { outer =>
+trait Applicative[f[+_]] extends Functor[f] {
+// Overridables
     def pure[a](x: => a): f[a]
     def op_<*>[a, b](x: f[a => b])(y: f[a]): f[b]
     def op_*>[a, b](x: f[a])(y: f[b]): f[b] = liftA2[a, b, b](const(id))(x)(y)
     def op_<*[a, b](x: f[a])(y: f[b]): f[a] = liftA2[a, b, a](const)(x)(y)
 
+// Overrides
     override def fmap[a, b](x: a => b)(y: f[a]): f[b] = pure(x) <*> y
 
-    override implicit def method[a](x: f[a]): ApplicativeMethod[f, a] = new ApplicativeMethod[f, a] {
-        override def klass = outer
-        override def callee = x
-    }
-
+// Utilities
     final def op_<**>[a, b](x: f[a])(y: f[a => b]): f[b] = liftA2[a, a => b, b](flip(op_@))(x)(y)
     final def liftA[a, b](x: a => b)(y: f[a]): f[b] = pure(x) <*> y
     final def liftA2[a, b, c](x: a => b => c)(y: f[a])(z: f[b]): f[c] = x <@> y <*> z
     final def liftA3[a, b, c, d](x: a => b => c => d)(y: f[a])(z: f[b])(w: f[c]): f[d] = x <@> y <*> z <*> w
-}
 
+// Infix Operators
+    sealed class Infix_<*>[a, b](x: f[a => b]) {
+        def <*>(y: f[a]): f[b] = op_<*>(x)(y)
+    }
+    final implicit def <*>[a, b](x: f[a => b]): Infix_<*>[a, b] = new Infix_<*>(x)
 
-trait ApplicativeMethod[f[+_], +a] extends FunctorMethod[f, a] {
-    override def klass: Applicative[f]
-    final def <*>[_a, b](y: f[_a])(implicit pre: f[a] <:< f[_a => b]): f[b] = klass.op_<*>(pre(callee))(y)
-    final def *>[b](y: f[b]): f[b] = klass.op_*>(callee)(y)
-    final def <*[_a, b](y: f[b])(implicit pre: f[a] <:< f[_a]): f[_a] = klass.op_<*(pre(callee))(y)
-    final def <**>[b](y: f[a => b]): f[b] = klass.op_<**>(callee)(y)
+    sealed class Infix_*>[a](x: f[a]) {
+        def *>[b](y: f[b]): f[b] = op_*>(x)(y)
+    }
+    final implicit def *>[a](x: f[a]): Infix_*>[a] = new Infix_*>(x)
+
+    sealed class Infix_<*[a](x: f[a]) {
+        def <*[b](y: f[b]): f[a] = op_<*(x)(y)
+    }
+    final implicit def <*[a](x: f[a]): Infix_<*[a] = new Infix_<*(x)
 }
 
 

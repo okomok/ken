@@ -34,11 +34,6 @@ object Function {
         override def local[a](f: r => r)(m: m[a]): m[a] = m compose f
     }
 
-    implicit def toMonad[r, a](f: r => a): MonadMethod[({type m[+a] = r => a})#m, a] = new MonadMethod[({type m[+a] = r => a})#m, a] {
-        override val klass = monad[r]
-        override def callee = f
-    }
-
     implicit def monoid[z, b](implicit mb: Monoid[b]): Monoid[z => b] = new Monoid[z => b] {
         private[this] type m = z => b
         override def mempty: m = _ => mb.mempty

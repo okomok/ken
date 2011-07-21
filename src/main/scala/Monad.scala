@@ -8,25 +8,18 @@ package com.github.okomok
 package ken
 
 
-trait Monad[m[+_]] extends Applicative[m] { outer =>
+trait Monad[m[+_]] extends Applicative[m] {
+// Overridables
     def `return`[a](x: a): m[a]
     def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b]
     def op_>>[b](x: m[_])(y: => m[b]): m[b] = { lazy val _y = y; x >>= (_ => _y) }
 
+// Overrides
     override def pure[a](x: => a): m[a] = `return`(x)
     override def op_<*>[a, b](x: m[a => b])(y: m[a]): m[b] = for { _x <- x; _y <- y } yield _x(_y)
 
-    override implicit def method[a](x: m[a]): MonadMethod[m, a] = new MonadMethod[m, a] {
-        override def klass = outer
-        override def callee = x
-    }
-
+// Utilities
     final def op_=<<[a, b](f: a => m[b])(x: m[a]): m[b] = x >>= f
-
-    final private[ken] class Op_=<<[a, b](f: a => m[b]) {
-        def =<<(x: m[a]): m[b] = op_=<<(f)(x)
-    }
-    final implicit def =<<[a, b](f: a => m[b]): Op_=<<[a, b] = new Op_=<<[a, b](f)
 
     final def sequence[a](ms: List[m[a]]): m[List[a]] = {
         def k(m: m[a])(_m: => m[List[a]]): m[List[a]] = for { x <- m; xs <- _m } yield (x :: xs)
@@ -98,20 +91,31 @@ trait Monad[m[+_]] extends Applicative[m] { outer =>
 
     final def ap[a, b](x: m[a => b])(y: m[a]): m[b] = liftM2(id[a => b])(x)(y) // op_<*>(x)(y)
 
-    final val monadT: MonadT[m] = new MonadT[m]()(outer)
-}
+    final val monadT: MonadT[m] = new MonadT[m]()(this)
 
+// Infix Operators
+    sealed class Infix_>>=[a](x: m[a]) {
+        def >>=[b](y: a => m[b]): m[b] = op_>>=(x)(y)
+    }
+    final implicit def >>=[a](x: m[a]): Infix_>>=[a] = new Infix_>>=(x)
 
-trait MonadMethod[m[+_], +a] extends ApplicativeMethod[m, a] {
-    override def klass: Monad[m]
-    final def `return`[b](x: b): m[b] = klass.`return`(x)
-    final def >>=[b](y: a => m[b]): m[b] = klass.op_>>=(callee)(y)
-    final def >>[b](y: m[b]): m[b] = klass.op_>>(callee)(y)
-    final def flatMap[b](y: a => m[b]): m[b] = klass.op_>>=(callee)(y)
-    final def map[b](y: a => b): m[b] = klass.op_>>=(callee)(_x => klass.`return`(y(_x)))
+    sealed class Infix_>>(x: m[_]) {
+        def >>[b](y: m[b]): m[b] = op_>>(x)(y)
+    }
+    final implicit def >>(x: m[_]): Infix_>> = new Infix_>>(x)
 
-    def filter(y: a => Bool): m[a] = map(_x => { Predef.require(y(_x)); _x })
-    def withFilter(y: a => Bool): m[a] = filter(y)
+    sealed class For[a](x: m[a]) {
+        def flatMap[b](y: a => m[b]): m[b] = op_>>=(x)(y)
+        def map[b](y: a => b): m[b] = op_>>=(x)(_x => `return`(y(_x)))
+        def filter(y: a => Bool): m[a] = map(_x => seq(Predef.require(y(_x)))(_x))
+        def withFilter(y: a => Bool): m[a] = filter(y)
+    }
+    final implicit def `for`[a](x: m[a]): For[a] = new For(x)
+
+    sealed class Infix_=<<[a, b](f: a => m[b]) {
+        def =<<(x: m[a]): m[b] = op_=<<(f)(x)
+    }
+    final implicit def =<<[a, b](f: a => m[b]): Infix_=<<[a, b] = new Infix_=<<[a, b](f)
 }
 
 

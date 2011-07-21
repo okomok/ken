@@ -8,24 +8,19 @@ package com.github.okomok
 package ken
 
 
-trait Monoid[m] extends Klass { outer =>
+trait Monoid[m] extends Klass {
     type apply = m
 
+// Overridables
     def mempty: m
     def mappend(x: m)(y: => m): m
     def mconcat(x: List[m]): m = List.foldr(mappend)(mempty)(x)
 
-    implicit def method(x: m): MonoidMethod[m] = new MonoidMethod[m] {
-        override def klass = outer
-        override def callee = x
+// Infix Operators
+    sealed class Infix_mappend(x: m) {
+        def _mappend(y: => m): m = mappend(x)(y)
     }
-}
-
-
-trait MonoidMethod[m] extends Method {
-    override def klass: Monoid[m]
-    override def callee: m
-    final def _mappend_(y: => m): m = klass.mappend(callee)(y)
+    final implicit def _mappend_(x: m): Infix_mappend = new Infix_mappend(x)
 }
 
 

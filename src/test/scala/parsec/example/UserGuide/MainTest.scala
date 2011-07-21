@@ -17,6 +17,8 @@ class MainTezt /*extends org.scalatest.junit.JUnit3Suite*/ {
     // 2.1
 
     val simple: Parser[Char] = letter
+    import Parser.monad._
+    val char_ = char[Unit]_
 
     def run[a](p: Parser[a])(input: String_): IO[Unit] = {
         val io = parse(p)("")(input) match {
@@ -43,17 +45,17 @@ class MainTezt /*extends org.scalatest.junit.JUnit3Suite*/ {
     // 2.2
 
     val openClose: Parser[Char] = for {
-        _ <- char('(')
-        c <- char(')')
+        _ <- char_('(')
+        c <- char_(')')
     } yield c
 
     val parens: Parser[Unit] = {
         val i = Parser.monad
 
         ( for {
-            _ <- char('(')
+            _ <- char_('(')
             _ <- parens
-            _ <- char(')')
+            _ <- char_(')')
             _ <- parens
         } yield () ) <|> i.`return`(())
     }
@@ -76,9 +78,9 @@ class MainTezt /*extends org.scalatest.junit.JUnit3Suite*/ {
 
     val testOr1: Parser[Unit] = {
         for {
-            _ <- char('(')
-            _ <- char('a') <|> char('b')
-            _ <- char(')')
+            _ <- char_('(')
+            _ <- char_('a') <|> char_('b')
+            _ <- char_(')')
         } yield ()
     }
 
@@ -95,9 +97,9 @@ class MainTezt /*extends org.scalatest.junit.JUnit3Suite*/ {
         val i = Parser.monad
         val j = Ord[Int]
         ( for {
-            _ <- char('(')
+            _ <- char_('(')
             n <- nesting
-            _ <- char(')')
+            _ <- char_(')')
             m <- nesting
         } yield (j.max(n+1)(m)) ) <|> i.`return`(0)
     }
@@ -112,7 +114,7 @@ class MainTezt /*extends org.scalatest.junit.JUnit3Suite*/ {
     // 2.5 and 2.6
 
     lazy val _word: Parser[String_] = for {
-        c <- letter
+        c <- letter[Unit]
         d <- ( for { cs <- _word } yield  c :: cs ) <|> Parser.monad.`return`(List(c))
     } yield d
 
@@ -125,10 +127,10 @@ class MainTezt /*extends org.scalatest.junit.JUnit3Suite*/ {
 
     lazy val sentence: Parser[List[String_]] = for {
         words <- sepBy1(word)(separator)
-        _ <- oneOf(".?!") <#> "end of sentence"
+        _ <- oneOf[Unit](".?!") <#> "end of sentence"
     } yield words
 
-    lazy val separator: Parser[Unit] = skipMany1(space <|> char(',') <#> "")
+    lazy val separator: Parser[Unit] = skipMany1(space[Unit] <|> char_(',') <#> "")
 
     def testSentence {
         println("---run sentence---")

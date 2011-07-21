@@ -16,8 +16,9 @@ import MonadT._
  */
 final class MonadT[n[+_]](implicit val inner: Monad[n]) {
 
-// Workaround Monad.method.
-    private[this] implicit def innermethod[a](x: n[a]): MonadMethod[n, a] = inner.method(x)
+// Hidden infix operators resurrection
+    private[this] implicit def innerFor[a](x: n[a]): inner.For[a] = inner.`for`(x)
+    private[this] implicit def inner_>>=[a](x: n[a]): inner.Infix_>>=[a] = inner.>>=(x)
 
 // Trans
     trait Trans[m[+_]] {
@@ -33,10 +34,7 @@ final class MonadT[n[+_]](implicit val inner: Monad[n]) {
     }
 
 // ErrorT
-    sealed abstract class ErrorT[e, +a] extends _ErrorT[e, n, a] with MonadMethod[({type m[+a] = ErrorT[e, a]})#m, a] {
-        override lazy val klass = ErrorT.monad[e](errorClass)
-        override def callee = this
-    }
+    sealed abstract class ErrorT[e, +a] extends _ErrorT[e, n, a]
 
     trait ErrorTLowPriorityImplicits { this: ErrorT.type =>
         implicit def monad[e](implicit i: ErrorClass[e]): MonadPlus[({type m[+a] = ErrorT[e, a]})#m] with MonadError[e, ({type m[+a] = ErrorT[e, a]})#m] with Trans[({type m[+a] = ErrorT[e, a]})#m] =
@@ -205,10 +203,7 @@ final class MonadT[n[+_]](implicit val inner: Monad[n]) {
     }
 
 // StateT
-    sealed abstract class StateT[s, +a] extends _StateT[s, n, a] with MonadMethod[({type m[+a] = StateT[s, a]})#m, a] {
-        override val klass = StateT.monad[s]
-        override def callee = this
-    }
+    sealed abstract class StateT[s, +a] extends _StateT[s, n, a]
 
     trait StateTLowPriorityImplicits { this: StateT.type =>
         implicit def monad[s]: MonadState[s, ({type m[+a] = StateT[s, a]})#m] with Trans[({type m[+a] = StateT[s, a]})#m] =
@@ -334,10 +329,7 @@ final class MonadT[n[+_]](implicit val inner: Monad[n]) {
     }
 
 // ReaderT
-    sealed abstract class ReaderT[r, +a] extends _ReaderT[r, n, a] with MonadMethod[({type m[+a] = ReaderT[r, a]})#m, a] {
-        override val klass = ReaderT.monad[r]
-        override def callee = this
-    }
+    sealed abstract class ReaderT[r, +a] extends _ReaderT[r, n, a]
 
     trait ReaderTLowPriorityImplicits { this: ReaderT.type =>
         implicit def monad[r]: MonadReader[r, ({type m[+a] = ReaderT[r, a]})#m] with Trans[({type m[+a] = ReaderT[r, a]})#m] =
@@ -451,10 +443,7 @@ final class MonadT[n[+_]](implicit val inner: Monad[n]) {
     }
 
 // WriterT
-    sealed abstract class WriterT[w, +a] extends _WriterT[w, n, a] with MonadMethod[({type m[+a] = WriterT[w, a]})#m, a] {
-        override lazy val klass = WriterT.monad[w](monoid)
-        override def callee = this
-    }
+    sealed abstract class WriterT[w, +a] extends _WriterT[w, n, a]
 
     trait WriterTLowPriorityImplicits { this: WriterT.type =>
         implicit def monad[w](implicit i: Monoid[w]): MonadWriter[w, ({type m[+a] = WriterT[w, a]})#m] with Trans[({type m[+a] = WriterT[w, a]})#m] =
