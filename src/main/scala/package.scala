@@ -88,4 +88,8 @@ package object ken {
 
     type Writer[w, +a] = identityT.WriterT[w, a]
     val Writer = identityT.WriterT
+
+// Misc
+    type Bool = Boolean
+    type Integer = BigInt
 }

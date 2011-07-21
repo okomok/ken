@@ -9,6 +9,8 @@ package ken
 
 
 trait ErrorClass[+a] extends Klass {
+    type apply = a
+
     def noMsg: a = strMsg("")
     def strMsg: String_ => a = { _ => noMsg }
 }

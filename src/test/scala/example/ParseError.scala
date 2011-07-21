@@ -31,11 +31,9 @@ class ParseErrorTest extends org.scalatest.junit.JUnit3Suite {
 
     import ParseMonad._
 
-    def isHexDigit: Char => Boolean = c => true
-
     def parseHexDigit: Char => Int => ParseMonad[Int] = c => idx => {
-        if (isHexDigit(c)) {
-            `return`(c.toInt)
+        if (Char.isHexDigit(c)) {
+            `return`(Char.digitToInt(c))
         } else {
             throwError(Err(idx)("Invalid character " ::: List(c)))
         }
@@ -56,12 +54,19 @@ class ParseErrorTest extends org.scalatest.junit.JUnit3Suite {
 
     def convert: String_ => String_ = s => {
         val Right(str) = catchError( for { n <- parseHex(s); * <- toString_(n) } yield * ) { e =>
-            `return` { "At Index " ::: show(e.location) ::: ":" ::: e.reason }
+            `return` { "At Index " ::: show(e.location) ::: ": " ::: e.reason }
         } run
 
         str
     }
 
-    def test_ {
+    def testTrivial {
+        IO.putStrLn(convert("ff69")).unIO()
+        IO.putStrLn(convert("ff6z")).unIO()
+
+        println(Char.ord('A'))
+        println(Char.chr(65))
+
+        println(Char.digitToInt('A'))
     }
 }
