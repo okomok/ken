@@ -81,8 +81,6 @@ trait Monad[m[+_]] extends Applicative[m] {
 
     final def ap[a, b](x: m[a => b])(y: m[a]): m[b] = liftM2(id[a => b])(x)(y) // op_<*>(x)(y)
 
-    final val monadT: MonadT[m] = new MonadT[m]()(this)
-
 // Infix Operators
     sealed class Infix_>>=[a](x: m[a]) {
         def >>=[b](y: a => m[b]): m[b] = op_>>=(x)(y)
@@ -116,6 +114,27 @@ trait Monad[m[+_]] extends Applicative[m] {
         def <=<[a](f: a => m[b]): a => m[c] = op_<=<(g)(f)
     }
     final implicit def <=<[b, c](g: b => m[c]): Infix_<=<[b, c] = new Infix_<=<[b, c](g)
+
+// Transformers
+    final lazy val _maybeTs = new _MaybeTs[m](this)
+    type MaybeT[+a] = _maybeTs._MaybeT[a]
+    lazy val MaybeT = _maybeTs._MaybeT
+
+    final lazy val _errorTs = new _ErrorTs[m](this)
+    type ErrorT[e, +a] = _errorTs._ErrorT[e, a]
+    final lazy val ErrorT = _errorTs._ErrorT
+
+    final lazy val _stateTs = new _StateTs[m](this)
+    type StateT[s, +a] = _stateTs._StateT[s, a]
+    final lazy val StateT = _stateTs._StateT
+
+    final lazy val _readerTs = new _ReaderTs[m](this)
+    type ReaderT[r, +a] = _readerTs._ReaderT[r, a]
+    final lazy val ReaderT = _readerTs._ReaderT
+
+    final val _writerTs = new _WriterTs[m](this)
+    type WriterT[w, +a] = _writerTs._WriterT[w, a]
+    final lazy val WriterT = _writerTs._WriterT
 }
 
 

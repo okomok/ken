@@ -18,7 +18,7 @@ case class Just[+a](x: a) extends Maybe[a]
 
 
 object Maybe extends MonadPlusProxy[Maybe] {
-    override val self: MonadPlus[Maybe] = identityT.MaybeT.monad
+    override val self: MonadPlus[Maybe] = Identity.MaybeT.monad
 
 // Instances
     implicit val monad: MonadPlus[Maybe] = this

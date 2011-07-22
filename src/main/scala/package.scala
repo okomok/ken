@@ -75,19 +75,17 @@ package object ken {
     val _show: Any => String = _.toString // will be removed.
 
 // Trivial transformers
-    val identityT = Identity.monadT
+    type Error[e, +a] = Identity.ErrorT[e, a]
+    val Error = Identity.ErrorT
 
-    type Error[e, +a] = identityT.ErrorT[e, a]
-    val Error = identityT.ErrorT
+    type State[s, +a] = Identity.StateT[s, a]
+    val State = Identity.StateT
 
-    type State[s, +a] = identityT.StateT[s, a]
-    val State = identityT.StateT
+    type Reader[r, +a] = Identity.ReaderT[r, a]
+    val Reader = Identity.ReaderT
 
-    type Reader[r, +a] = identityT.ReaderT[r, a]
-    val Reader = identityT.ReaderT
-
-    type Writer[w, +a] = identityT.WriterT[w, a]
-    val Writer = identityT.WriterT
+    type Writer[w, +a] = Identity.WriterT[w, a]
+    val Writer = Identity.WriterT
 
 // Misc
     type Bool = Boolean
