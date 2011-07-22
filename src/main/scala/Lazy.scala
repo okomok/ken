@@ -12,6 +12,7 @@ sealed abstract class Lazy[+a] {
     def ! : a
 }
 
+
 object Lazy extends Monad[Lazy] {
     def apply[a](x: => a): Lazy[a] = new Lazy[a] {
         override lazy val ! : a = x

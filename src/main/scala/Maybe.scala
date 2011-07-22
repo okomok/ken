@@ -98,21 +98,4 @@ object Maybe extends MonadPlus[Maybe] {
             }
         }
     }
-
-    /*
-    implicit def ofMonadT[n[_]](implicit i: Monad[n]): Monad[({type m[a] = n[Maybe[a]]})#m] = new Monad[({type m[a] = n[Maybe[a]]})#m] {
-//        private[this] type m[a] = n[Maybe[a]]
-        override def `return`[a](x: a): n[Maybe[a]] = Monad.`return`(Just(x).up)(i)
-        override def op_>>=[a, b](x: n[Maybe[a]])(y: a => n[Maybe[b]]): n[Maybe[b]] = {
-            Monad.op_>>=/*[n, Maybe[a], Maybe[b]]*/(x)({
-                case Nothing => Monad.`return`(Nothing.of[b])(i)
-                case Just(v) => y(v)
-            })(i)
-        }
-    }
-
-    implicit def monadT[n[_], a](x: n[Maybe[a]]): MonadObj[({type m[+a] = n[Maybe[a]]})#m, a] = new MonadObj[({type m[+a] = n[Maybe[a]]})#m, a] {
-        override val obj = x
-    }
-    */
 }
