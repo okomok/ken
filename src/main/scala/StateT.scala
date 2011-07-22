@@ -43,9 +43,11 @@ final class _StateTs[n[+_]](val inner: Monad[n]) {
             override def apply(s: s): n[(a, s)] = rep(s)
         }
 
-        def eval[s, a](n: _StateT[s, a])(s: s): n[a] = for { (a, _) <- n(s) } yield a
+        def run[s, a](n: _StateT[s, a]): s => n[(a, s)] = s => n(s)
 
-        def exec[s, a](n: _StateT[s, a])(s: s): n[s] = for { (_, s) <- n(s) } yield s
+        def eval[s, a](n: _StateT[s, a]): s => n[a] = s => for { (a, _) <- n(s) } yield a
+
+        def exec[s, a](n: _StateT[s, a]): s => n[s] = s => for { (_, s) <- n(s) } yield s
 
         def map[s, m[+_], a, b](f: n[(a, s)] => m[(b, s)])(n: _StateT[s, a]): s => m[(b, s)] = f compose n
 

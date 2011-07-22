@@ -42,9 +42,12 @@ final class _ReaderTs[n[+_]](val inner: Monad[n]) {
             override def apply(r: r): n[a] = rep(r)
         }
 
+        def run[r, a](n: _ReaderT[r, a]): r => n[a] = r => n(r)
+
         def map[r, m[+_], a, b](f: n[a] => m[b])(n: _ReaderT[r, a]): (r => m[b]) = f compose n
 
         def `with`[r, r_, a](f: r_ => r)(n: _ReaderT[r, a]): _ReaderT[r_, a] = n compose f
+
 
         implicit def monadPlus[r](implicit i: MonadPlus[n]): MonadPlus[({type m[+a] = _ReaderT[r, a]})#m] =
             new MonadPlus[({type m[+a] = _ReaderT[r, a]})#m] with MonadProxy[({type m[+a] = _ReaderT[r, a]})#m]

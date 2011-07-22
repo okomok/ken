@@ -12,7 +12,7 @@ final class _WriterTs[n[+_]](val inner: Monad[n]) {
     private[this] implicit def innerFor[a](x: n[a]): inner.For[a] = inner.`for`(x)
     private[this] implicit def inner_>>=[a](x: n[a]): inner.Infix_>>=[a] = inner.>>=(x)
 
-    sealed abstract class _WriterT[w, +a] extends WriterMonadT[w, n, a]
+    sealed abstract class _WriterT[w, +a] extends (() => n[(a, w)])
 
     trait LowPriorityImplicits { this: _WriterT.type =>
         implicit def monad[w](implicit i: Monoid[w]): MonadWriter[w, ({type m[+a] = _WriterT[w, a]})#m] with inner.Trans[({type m[+a] = _WriterT[w, a]})#m] =
@@ -46,18 +46,17 @@ final class _WriterTs[n[+_]](val inner: Monad[n]) {
     }
 
     object _WriterT extends LowPriorityImplicits {
-        def apply[w, a](_run: => n[(a, w)])(implicit i: Monoid[w]): _WriterT[w, a] = new _WriterT[w, a] {
-            override def monoid: Monoid[w] = i
-            override def run: n[(a, w)] = _run
+        def apply[w, a](rep: => n[(a, w)]): _WriterT[w, a] = new _WriterT[w, a] {
+            override def apply(): n[(a, w)] = rep
         }
 
-        implicit def from[w, a](n: WriterMonadT[w, n, a]): _WriterT[w, a] = _WriterT(n.run)(n.monoid)
+        implicit def from[w, a](n: () => n[(a, w)]): _WriterT[w, a] = _WriterT(n())
 
-        def run[w, a](n: _WriterT[w, a]): n[(a, w)] = n.run
+        def run[w, a](n: _WriterT[w, a]): n[(a, w)] = n()
 
         def exec[w, a](n: _WriterT[w, a]): n[w] = for { (_, w) <- run(n) } yield w
 
-        def map[w, w_, m[+_], a, b](f: n[(a, w)] => m[(b, w_)])(n: _WriterT[w, a])(implicit i: Monoid[w_]): WriterMonadT[w_, m, b] = WriterMonadT { f(run(n)) }
+        def map[w, w_, m[+_], a, b](f: n[(a, w)] => m[(b, w_)])(n: _WriterT[w, a]): () => m[(b, w_)] = () => f(run(n))
 
         implicit def monadPlus[w](implicit i: MonadPlus[n], j: Monoid[w]): MonadPlus[({type m[+a] = _WriterT[w, a]})#m] =
             new MonadPlus[({type m[+a] = _WriterT[w, a]})#m] with MonadProxy[({type m[+a] = _WriterT[w, a]})#m]
