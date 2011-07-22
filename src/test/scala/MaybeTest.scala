@@ -11,6 +11,7 @@ import com.github.okomok.ken._
 
 
 class MaybeTest extends org.scalatest.junit.JUnit3Suite {
+    def ignore(x: => Any) = ()
 /*
     def testMonadT {
         val m = MaybeT.monad[IO]
@@ -34,7 +35,8 @@ class MaybeTest extends org.scalatest.junit.JUnit3Suite {
 */
 
     def testMonadT2 {
-        import IO.monadT.MaybeT
+        import IO.monadT.MaybeT // MaybeT[a] == IO[Maybe[a]]
+        import MaybeT.monad.`for` // hides IO monad.
 
         def isValid(s: List[Char]): Boolean = true
 
@@ -49,7 +51,9 @@ class MaybeTest extends org.scalatest.junit.JUnit3Suite {
             _ <- MaybeT.lift(IO.putStrLn("Storing in database..."))
         } yield ()
 
-        //MaybeT.run(askPassword).unIO()
+        ignore {
+            askPassword.unIO()
+        }
     }
 
     def testImplicit {

@@ -17,21 +17,8 @@ case object Nothing extends Maybe[Nothing]
 case class Just[+a](x: a) extends Maybe[a]
 
 
-object Maybe extends MonadPlus[Maybe] {
-// Overrides
-    private[this] type m[+a] = Maybe[a]
-    // Monad
-    override def `return`[a](x: a): m[a] = Just(x)
-    override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = x match {
-        case Just(x) => y(x)
-        case Nothing => Nothing
-    }
-    // MonadPlus
-    override def mzero: m[Nothing] = Nothing
-    override def mplus[a](x: m[a])(y: => m[a]): m[a] = (x, y) match {
-        case (Nothing, p) => p
-        case (Just(p), _) => Just(p)
-    }
+object Maybe extends MonadPlusProxy[Maybe] {
+    override val self: MonadPlus[Maybe] = identityT.MaybeT.monad
 
 // Instances
     implicit val monad: MonadPlus[Maybe] = this
