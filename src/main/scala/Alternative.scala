@@ -15,20 +15,18 @@ trait Alternative[f[+_]] extends Applicative[f] {
 
     def some[a](v: f[a]): f[List[a]] = {
         def many_v: f[List[a]] = some_v <|> pure(Nil)
-        def some_v: f[List[a]] = _cons[a] <@> v <*> many_v
+        def some_v: f[List[a]] = List.op_!::[a]_ <@> v <*> many_v
         some_v
     }
 
     def many[a](v: f[a]): f[List[a]] = {
         def many_v: f[List[a]] = some_v <|> pure(Nil)
-        def some_v: f[List[a]] = _cons[a] <@> v <*> many_v
+        def some_v: f[List[a]] = List.op_!::[a]_ <@> v <*> many_v
         many_v
     }
 
 // Utilities
     final def optional[a](x: f[a]): f[Maybe[a]] = (Just(_: a).up) <@> x <|> pure(Nothing.of[a])
-
-    private[this] def _cons[a]: a => List[a] => List[a] = x => xs => x :: xs
 
 // Infix Operators
     sealed class Infix_<|>[a](x: f[a]) {

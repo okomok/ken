@@ -47,16 +47,6 @@ trait Monad[m[+_]] extends Applicative[m] {
     final def op_>=>[a, b, c](f: a => m[b])(g: b => m[c]): a => m[c] = { x => f(x) >>= g }
     final def op_<=<[a, b, c](g: b => m[c])(f: a => m[b]): a => m[c] = op_>=>(f)(g)
 
-    final private[ken] class Op_>=>[a, b](f: a => m[b]) {
-        def >=>[c](g: b => m[c]): a => m[c] = op_>=>(f)(g)
-    }
-    final implicit def >=>[a, b](f: a => m[b]): Op_>=>[a, b] = new Op_>=>[a, b](f)
-
-    final private[ken] class Op_<=<[b, c](g: b => m[c]) {
-        def <=<[a](f: a => m[b]): a => m[c] = op_<=<(g)(f)
-    }
-    final implicit def <=<[b, c](g: b => m[c]): Op_<=<[b, c] = new Op_<=<[b, c](g)
-
     final def forever[a](a: m[a]): m[a] = a >>= (_ => forever(a))
 
     final def join[a](x: m[m[a]]): m[a] = x >>= id
@@ -116,6 +106,16 @@ trait Monad[m[+_]] extends Applicative[m] {
         def =<<(x: m[a]): m[b] = op_=<<(f)(x)
     }
     final implicit def =<<[a, b](f: a => m[b]): Infix_=<<[a, b] = new Infix_=<<[a, b](f)
+
+    sealed class Infix_>=>[a, b](f: a => m[b]) {
+        def >=>[c](g: b => m[c]): a => m[c] = op_>=>(f)(g)
+    }
+    final implicit def >=>[a, b](f: a => m[b]): Infix_>=>[a, b] = new Infix_>=>[a, b](f)
+
+    sealed class Infix_<=<[b, c](g: b => m[c]) {
+        def <=<[a](f: a => m[b]): a => m[c] = op_<=<(g)(f)
+    }
+    final implicit def <=<[b, c](g: b => m[c]): Infix_<=<[b, c] = new Infix_<=<[b, c](g)
 }
 
 
