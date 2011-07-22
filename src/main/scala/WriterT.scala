@@ -8,29 +8,15 @@ package com.github.okomok
 package ken
 
 
-final class _WriterTs[n[+_]](inner: Monad[n]) {
-
-// Trans
-    trait Trans[m[+_]] {
-        def lift[a](n: n[a]): m[a]
-    }
-
-    object Trans {
-        def apply[m[+_]](implicit i: Trans[m]): Trans[m] = i
-
-        implicit val trivial: Trans[n] = new Trans[n] {
-            override def lift[a](n: n[a]): n[a] = n
-        }
-    }
-
+final class _WriterTs[n[+_]](val inner: Monad[n]) {
     private[this] implicit def innerFor[a](x: n[a]): inner.For[a] = inner.`for`(x)
     private[this] implicit def inner_>>=[a](x: n[a]): inner.Infix_>>=[a] = inner.>>=(x)
 
     sealed abstract class _WriterT[w, +a] extends WriterMonadT[w, n, a]
 
     trait LowPriorityImplicits { this: _WriterT.type =>
-        implicit def monad[w](implicit i: Monoid[w]): MonadWriter[w, ({type m[+a] = _WriterT[w, a]})#m] with Trans[({type m[+a] = _WriterT[w, a]})#m] =
-            new MonadWriter[w, ({type m[+a] = _WriterT[w, a]})#m] with Trans[({type m[+a] = _WriterT[w, a]})#m]
+        implicit def monad[w](implicit i: Monoid[w]): MonadWriter[w, ({type m[+a] = _WriterT[w, a]})#m] with inner.Trans[({type m[+a] = _WriterT[w, a]})#m] =
+            new MonadWriter[w, ({type m[+a] = _WriterT[w, a]})#m] with inner.Trans[({type m[+a] = _WriterT[w, a]})#m]
         {
             // Functor
             private[this] type f[+a] = _WriterT[w, a]

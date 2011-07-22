@@ -8,26 +8,13 @@ package com.github.okomok
 package ken
 
 
-final class _ErrorTs[n[+_]](inner: Monad[n]) {
-
-// Trans
-    trait Trans[m[+_]] {
-        def lift[a](n: n[a]): m[a]
-    }
-
-    object Trans {
-        def apply[m[+_]](implicit i: Trans[m]): Trans[m] = i
-
-        implicit val trivial: Trans[n] = new Trans[n] {
-            override def lift[a](n: n[a]): n[a] = n
-        }
-    }
+final class _ErrorTs[n[+_]](val inner: Monad[n]) {
 
     type _ErrorT[e, +a] = n[Either[e, a]]
 
     trait LowPriorityImplicits { this: _ErrorT.type =>
-        implicit def monad[e](implicit i: ErrorClass[e]): MonadPlus[({type m[+a] = _ErrorT[e, a]})#m] with MonadError[e, ({type m[+a] = _ErrorT[e, a]})#m] with Trans[({type m[+a] = _ErrorT[e, a]})#m] =
-            new MonadPlus[({type m[+a] = _ErrorT[e, a]})#m] with MonadError[e, ({type m[+a] = _ErrorT[e, a]})#m] with Trans[({type m[+a] = _ErrorT[e, a]})#m]
+        implicit def monad[e](implicit i: ErrorClass[e]): MonadPlus[({type m[+a] = _ErrorT[e, a]})#m] with MonadError[e, ({type m[+a] = _ErrorT[e, a]})#m] with inner.Trans[({type m[+a] = _ErrorT[e, a]})#m] =
+            new MonadPlus[({type m[+a] = _ErrorT[e, a]})#m] with MonadError[e, ({type m[+a] = _ErrorT[e, a]})#m] with inner.Trans[({type m[+a] = _ErrorT[e, a]})#m]
         {
             // Functor
             private[this] type f[+a] = _ErrorT[e, a]

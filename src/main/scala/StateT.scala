@@ -8,21 +8,7 @@ package com.github.okomok
 package ken
 
 
-final class _StateTs[n[+_]](inner: Monad[n]) {
-
-// Trans
-    trait Trans[m[+_]] {
-        def lift[a](n: n[a]): m[a]
-    }
-
-    object Trans {
-        def apply[m[+_]](implicit i: Trans[m]): Trans[m] = i
-
-        implicit val trivial: Trans[n] = new Trans[n] {
-            override def lift[a](n: n[a]): n[a] = n
-        }
-    }
-
+final class _StateTs[n[+_]](val inner: Monad[n]) {
     private[this] implicit def innerFor[a](x: n[a]): inner.For[a] = inner.`for`(x)
     private[this] implicit def inner_>>=[a](x: n[a]): inner.Infix_>>=[a] = inner.>>=(x)
 
@@ -30,8 +16,8 @@ final class _StateTs[n[+_]](inner: Monad[n]) {
     sealed abstract class _StateT[s, +a] extends StateMonadT[s, n, a]
 
     trait LowPriorityImplicits { this: _StateT.type =>
-        implicit def monad[s]: MonadState[s, ({type m[+a] = _StateT[s, a]})#m] with Trans[({type m[+a] = _StateT[s, a]})#m] =
-            new MonadState[s, ({type m[+a] = _StateT[s, a]})#m] with Trans[({type m[+a] = _StateT[s, a]})#m]
+        implicit def monad[s]: MonadState[s, ({type m[+a] = _StateT[s, a]})#m] with inner.Trans[({type m[+a] = _StateT[s, a]})#m] =
+            new MonadState[s, ({type m[+a] = _StateT[s, a]})#m] with inner.Trans[({type m[+a] = _StateT[s, a]})#m]
         {
             // Functor
             private[this] type f[+a] = _StateT[s, a]

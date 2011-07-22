@@ -116,6 +116,18 @@ trait Monad[m[+_]] extends Applicative[m] {
     final implicit def <=<[b, c](g: b => m[c]): Infix_<=<[b, c] = new Infix_<=<[b, c](g)
 
 // Transformers
+    trait Trans[n[+_]] {
+        def lift[a](m: m[a]): n[a]
+    }
+
+    object Trans {
+        def apply[n[+_]](implicit i: Trans[n]): Trans[n] = i
+
+        implicit val trivial: Trans[m] = new Trans[m] {
+            override def lift[a](m: m[a]): m[a] = m
+        }
+    }
+
     final lazy val _maybeTs = new _MaybeTs[m](this)
     type MaybeT[+a] = _maybeTs._MaybeT[a]
     lazy val MaybeT = _maybeTs._MaybeT

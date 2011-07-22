@@ -8,29 +8,15 @@ package com.github.okomok
 package ken
 
 
-final class _ReaderTs[n[+_]](inner: Monad[n]) {
-
-// Trans
-    trait Trans[m[+_]] {
-        def lift[a](n: n[a]): m[a]
-    }
-
-    object Trans {
-        def apply[m[+_]](implicit i: Trans[m]): Trans[m] = i
-
-        implicit val trivial: Trans[n] = new Trans[n] {
-            override def lift[a](n: n[a]): n[a] = n
-        }
-    }
-
+final class _ReaderTs[n[+_]](val inner: Monad[n]) {
     private[this] implicit def innerFor[a](x: n[a]): inner.For[a] = inner.`for`(x)
     private[this] implicit def inner_>>=[a](x: n[a]): inner.Infix_>>=[a] = inner.>>=(x)
 
     sealed abstract class _ReaderT[r, +a] extends ReaderMonadT[r, n, a]
 
     trait LowPriorityImplicits { this: _ReaderT.type =>
-        implicit def monad[r]: MonadReader[r, ({type m[+a] = _ReaderT[r, a]})#m] with Trans[({type m[+a] = _ReaderT[r, a]})#m] =
-            new MonadReader[r, ({type m[+a] = _ReaderT[r, a]})#m] with Trans[({type m[+a] = _ReaderT[r, a]})#m]
+        implicit def monad[r]: MonadReader[r, ({type m[+a] = _ReaderT[r, a]})#m] with inner.Trans[({type m[+a] = _ReaderT[r, a]})#m] =
+            new MonadReader[r, ({type m[+a] = _ReaderT[r, a]})#m] with inner.Trans[({type m[+a] = _ReaderT[r, a]})#m]
         {
             // Functor
             private[this] type f[+a] = _ReaderT[r, a]
