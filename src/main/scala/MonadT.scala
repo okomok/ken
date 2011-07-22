@@ -16,10 +16,6 @@ import MonadT._
  */
 final class MonadT[n[+_]](implicit val inner: Monad[n]) {
 
-// Hidden infix operators resurrection
-    private[this] implicit def innerFor[a](x: n[a]): inner.For[a] = inner.`for`(x)
-    private[this] implicit def inner_>>=[a](x: n[a]): inner.Infix_>>=[a] = inner.>>=(x)
-
 // Trans
     trait Trans[m[+_]] {
         def lift[a](n: n[a]): m[a]
@@ -33,8 +29,14 @@ final class MonadT[n[+_]](implicit val inner: Monad[n]) {
         }
     }
 
+// Hidden name resurrection
+    private[ken] trait InnerMonadMethod {
+        protected[this] implicit def innerFor[a](x: n[a]): inner.For[a] = inner.`for`(x)
+        protected[this] implicit def inner_>>=[a](x: n[a]): inner.Infix_>>=[a] = inner.>>=(x)
+    }
+
 // ErrorT
-    sealed abstract class ErrorT[e, +a] extends _ErrorT[e, n, a]
+    type ErrorT[e, +a] = n[Either[e, a]]
 
     trait ErrorTLowPriorityImplicits { this: ErrorT.type =>
         implicit def monad[e](implicit i: ErrorClass[e]): MonadPlus[({type m[+a] = ErrorT[e, a]})#m] with MonadError[e, ({type m[+a] = ErrorT[e, a]})#m] with Trans[({type m[+a] = ErrorT[e, a]})#m] =
@@ -42,74 +44,70 @@ final class MonadT[n[+_]](implicit val inner: Monad[n]) {
         {
             // Functor
             private[this] type f[+a] = ErrorT[e, a]
-            override def fmap[a, b](f: a => b)(m: f[a]): f[b] = ErrorT {
-                for { a <- run(m) } yield (a match {
+            override def fmap[a, b](f: a => b)(m: f[a]): f[b] = {
+                import inner.`for` // ambiguity buster
+                for { a <- m } yield (a match {
                     case Left(l) => Left(l)
                     case Right(r) => Right(f(r))
                 })
             }
             // Monad
             private[this] type m[+a] = f[a]
-            override def `return`[a](a: a): m[a] = ErrorT { inner.`return`(Right(a)) }
-            override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = ErrorT {
+            override def `return`[a](a: a): m[a] = inner.`return`(Right(a))
+            override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = {
+                import inner.`for`
                 for {
-                    a <- run(m)
+                    a <- m
                     * <- a match {
                         case Left(l) => inner.`return`(Left(l))
-                        case Right(r) => run(k(r))
+                        case Right(r) => k(r)
                     }
                 } yield *
             }
             // MonadPlus
-            override def mzero: m[Nothing] = ErrorT { inner.`return`(Left(i.noMsg)) }
-            override def mplus[a](m: m[a])(n: => m[a]): m[a] = ErrorT {
+            override def mzero: m[Nothing] = inner.`return`(Left(i.noMsg))
+            override def mplus[a](m: m[a])(n: => m[a]): m[a] = {
+                import inner.`for`
                 for {
-                    a <- run(m)
+                    a <- m
                     * <- a match {
-                        case Left(_) => run(n)
+                        case Left(_) => n
                         case Right(r) => inner.`return`(Right(r))
                     }
                 } yield *
             }
             // MonadError
             override def errorClass: ErrorClass[e] = i
-            override def throwError[a](l: e): m[a] = ErrorT { inner.`return`(Left(l)) }
-            override def catchError[a](m: m[a])(h: e => m[a]): m[a] = ErrorT {
+            override def throwError[a](l: e): m[a] = inner.`return`(Left(l))
+            override def catchError[a](m: m[a])(h: e => m[a]): m[a] = {
+                import inner.`for`
                 for {
-                    a <- run(m)
+                    a <- m
                     * <- a match {
-                        case Left(l) => run(h(l))
+                        case Left(l) => h(l)
                         case Right(r) => inner.`return`(Right(r))
                     }
                 } yield *
             }
             // Trans
-            override def lift[a](n: n[a]): m[a] = ErrorT { for { a <- n } yield Right(a) }
+            override def lift[a](n: n[a]): m[a] = {
+                import inner.`for`
+                for { a <- n } yield Right(a)
+            }
         }
     }
 
     object ErrorT extends ErrorTLowPriorityImplicits {
-        def apply[e, a](_run: => n[Either[e, a]])(implicit i: ErrorClass[e]): ErrorT[e, a] = new ErrorT[e, a] {
-            override def errorClass: ErrorClass[e] = i
-            override def run: n[Either[e, a]] = _run
-        }
-
-        implicit def from[e, a](n: _ErrorT[e, n, a]): ErrorT[e, a] = ErrorT(n.run)(n.errorClass)
-
-        def run[e, a](n: ErrorT[e, a]): n[Either[e, a]] = n.run
-
-        def map[e, e_, m[+_], a, b](f: n[Either[e, a]] => m[Either[e_, b]])(n: ErrorT[e, a])(implicit i: ErrorClass[e_]): _ErrorT[e_, m, b] = _ErrorT { f(run(n)) }
-
         implicit def monadFix[e](implicit i: MonadFix[n], j: ErrorClass[e]): MonadFix[({type m[+a] = ErrorT[e, a]})#m] =
             new MonadFix[({type m[+a] = ErrorT[e, a]})#m] with MonadProxy[({type m[+a] = ErrorT[e, a]})#m]
         {
             private[this] type m[+a] = ErrorT[e, a]
             override val self = monad[e]
-            override def mfix[a](f: (=> a) => m[a]): m[a] = ErrorT {
-                def k(a: => Either[e, a]) = run { f { a match {
+            override def mfix[a](f: (=> a) => m[a]): m[a] = {
+                def k(a: => Either[e, a]) = f { a match {
                     case Right(r) => r
                     case _ => error("empty mfix argument")
-                } } }
+                } }
                 i.mfix(k)
             }
         }
@@ -127,9 +125,9 @@ final class MonadT[n[+_]](implicit val inner: Monad[n]) {
         {
             private[this] type m[+a] = ErrorT[e, a]
             override val self = monad[e]
-            override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = ErrorT {
-                i.callCC { (c: (Either[e, a]) => n[Either[e, b]]) =>
-                    run( f(a => ErrorT { c(Right(a)) }) )
+            override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = {
+                i.callCC { (c: Either[e, a] => n[Either[e, b]]) =>
+                    f(a => c(Right(a)))
                 }
             }
         }
@@ -140,7 +138,7 @@ final class MonadT[n[+_]](implicit val inner: Monad[n]) {
             private[this] type m[+a] = ErrorT[e, a]
             override val self = monad[e]
             override def ask: m[r] = self.lift(i.ask)
-            override def local[a](f: r => r)(m: m[a]): m[a] = ErrorT { i.local(f)(run(m)) }
+            override def local[a](f: r => r)(m: m[a]): m[a] = i.local(f)(m)
         }
 
         implicit def monadWriter[e, w](implicit i: MonadWriter[w, n], j: ErrorClass[e]): MonadWriter[w, ({type m[+a] = ErrorT[e, a]})#m] =
@@ -150,16 +148,18 @@ final class MonadT[n[+_]](implicit val inner: Monad[n]) {
             override val self = monad[e]
             override def monoid: Monoid[w] = i.monoid
             override def tell(x: w): m[Unit] = self.lift(i.tell(x))
-            override def listen[a](m: m[a]): m[(a, w)] = ErrorT {
-                for { (a, w) <- i.listen(run(m)) } yield (a match {
+            override def listen[a](m: m[a]): m[(a, w)] = {
+                import inner.`for`
+                for { (a, w) <- i.listen(m) } yield (a match {
                     case Left(l) => Left(l)
                     case Right(r) => Right(r, w)
                 })
             }
-            override def pass[a](m: m[(a, w => w)]): m[a] = ErrorT {
+            override def pass[a](m: m[(a, w => w)]): m[a] = {
+                import inner.`for`
                 i.pass {
                     for {
-                        a <- run(m)
+                        a <- m
                     } yield (a match {
                         case Left(l) => (Left(l), id[w]_)
                         case Right((r, f)) => (Right(r), f)
@@ -174,7 +174,7 @@ final class MonadT[n[+_]](implicit val inner: Monad[n]) {
         def run: n[Maybe[a]]
     }
 
-    object MaybeT extends MonadPlus[MaybeT] with Trans[MaybeT] {
+    object MaybeT extends MonadPlus[MaybeT] with Trans[MaybeT] with InnerMonadMethod {
         def apply[a](_run: => n[Maybe[a]]): MaybeT[a] = new MaybeT[a] {
             override def run: n[Maybe[a]] = _run
         }
@@ -205,7 +205,7 @@ final class MonadT[n[+_]](implicit val inner: Monad[n]) {
 // StateT
     sealed abstract class StateT[s, +a] extends _StateT[s, n, a]
 
-    trait StateTLowPriorityImplicits { this: StateT.type =>
+    trait StateTLowPriorityImplicits extends InnerMonadMethod { this: StateT.type =>
         implicit def monad[s]: MonadState[s, ({type m[+a] = StateT[s, a]})#m] with Trans[({type m[+a] = StateT[s, a]})#m] =
             new MonadState[s, ({type m[+a] = StateT[s, a]})#m] with Trans[({type m[+a] = StateT[s, a]})#m]
         {
@@ -331,7 +331,7 @@ final class MonadT[n[+_]](implicit val inner: Monad[n]) {
 // ReaderT
     sealed abstract class ReaderT[r, +a] extends _ReaderT[r, n, a]
 
-    trait ReaderTLowPriorityImplicits { this: ReaderT.type =>
+    trait ReaderTLowPriorityImplicits extends InnerMonadMethod { this: ReaderT.type =>
         implicit def monad[r]: MonadReader[r, ({type m[+a] = ReaderT[r, a]})#m] with Trans[({type m[+a] = ReaderT[r, a]})#m] =
             new MonadReader[r, ({type m[+a] = ReaderT[r, a]})#m] with Trans[({type m[+a] = ReaderT[r, a]})#m]
         {
@@ -445,7 +445,7 @@ final class MonadT[n[+_]](implicit val inner: Monad[n]) {
 // WriterT
     sealed abstract class WriterT[w, +a] extends _WriterT[w, n, a]
 
-    trait WriterTLowPriorityImplicits { this: WriterT.type =>
+    trait WriterTLowPriorityImplicits extends InnerMonadMethod { this: WriterT.type =>
         implicit def monad[w](implicit i: Monoid[w]): MonadWriter[w, ({type m[+a] = WriterT[w, a]})#m] with Trans[({type m[+a] = WriterT[w, a]})#m] =
             new MonadWriter[w, ({type m[+a] = WriterT[w, a]})#m] with Trans[({type m[+a] = WriterT[w, a]})#m]
         {
@@ -569,25 +569,6 @@ final class MonadT[n[+_]](implicit val inner: Monad[n]) {
  * Types for conversation between MonadTs
  */
 object MonadT {
-
-// ErrorT
-    trait _ErrorT[e, m[+_], +a] extends Up[_ErrorT[e, m, a]] {
-        def errorClass: ErrorClass[e]
-        def run: m[Either[e, a]]
-    }
-
-    trait _ErrorTProxy[e, m[+_], +a] extends _ErrorT[e, m, a] with Proxy {
-        override def self: _ErrorT[e, m, a]
-        override def errorClass: ErrorClass[e] = self.errorClass
-        override def run: m[Either[e, a]] = self.run
-    }
-
-    object _ErrorT {
-        def apply[e, m[+_], a](_run: => m[Either[e, a]])(implicit i: ErrorClass[e]): _ErrorT[e, m, a] = new _ErrorT[e, m, a] {
-            override def errorClass: ErrorClass[e] = i
-            override def run: m[Either[e, a]] = _run
-        }
-    }
 
 // StateT
     trait _StateT[s, m[+_], +a] extends Up[_StateT[s, m, a]] {

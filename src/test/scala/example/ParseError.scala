@@ -27,7 +27,7 @@ class ParseErrorTest extends org.scalatest.junit.JUnit3Suite {
     }
 
     implicit val ParseMonad = Error.monad[ParseError] // Monad[({type m[+a] = ErrorT[ParseError, a]})#m]
-    type ParseMonad[+a] = ParseMonad.apply[a] // ErrorT[ParseError, a]
+    type ParseMonad[+a] = ParseMonad.apply[a] // ErrorT[ParseError, a] == Either[ParseError, a]
 
     import ParseMonad._
 
@@ -55,7 +55,7 @@ class ParseErrorTest extends org.scalatest.junit.JUnit3Suite {
     def convert: String_ => String_ = s => {
         val Right(str) = catchError( for { n <- parseHex(s); * <- toString_(n) } yield * ) { e =>
             `return` { "At Index " ::: show(e.location) ::: ": " ::: e.reason }
-        } run
+        }
 
         str
     }
