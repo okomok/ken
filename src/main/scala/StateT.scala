@@ -12,7 +12,6 @@ final class _StateTs[n[+_]](val inner: Monad[n]) {
     private[this] implicit def innerFor[a](x: n[a]): inner.For[a] = inner.`for`(x)
     private[this] implicit def inner_>>=[a](x: n[a]): inner.Infix_>>=[a] = inner.>>=(x)
 
-// _StateT
     sealed abstract class _StateT[s, +a] extends (s => n[(a, s)])
 
     trait LowPriorityImplicits { this: _StateT.type =>
