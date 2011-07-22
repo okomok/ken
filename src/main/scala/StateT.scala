@@ -26,7 +26,7 @@ final class _StateTs[n[+_]](val inner: Monad[n]) {
             }
             // Monad
             private[this] type m[+a] = f[a]
-            override def `return`[a](a: a): m[a] = _StateT { s => inner.`return`(a, s) }
+            override def `return`[a](a: => a): m[a] = _StateT { s => inner.`return`(a, s) }
             override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = _StateT { s =>
                 for { (a, s_) <- run(m)(s); * <- run(k(a))(s_) } yield *
             }

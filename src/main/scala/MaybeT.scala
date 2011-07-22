@@ -16,7 +16,7 @@ final class _MaybeTs[n[+_]](val inner: Monad[n]) {
         implicit val monad: MonadPlus[_MaybeT] with inner.Trans[_MaybeT] = new MonadPlus[_MaybeT] with inner.Trans[_MaybeT] {
             // Monad
             private[this] type m[+a] = _MaybeT[a]
-            override def `return`[a](x: a): m[a] = inner.`return`(Just(x).up)
+            override def `return`[a](x: => a): m[a] = inner.`return`(Just(x).up)
             override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = {
                 import inner.>>=
                 x >>= {

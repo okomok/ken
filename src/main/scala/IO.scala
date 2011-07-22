@@ -27,7 +27,7 @@ object IO extends MonadIO[IO] {
 // Overrides
     private[this] type m[+a] = IO[a]
     // Monad
-    override def `return`[a](x: a): m[a] = IO { x }
+    override def `return`[a](x: => a): m[a] = IO { x }
     override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = IO {
         y(x.unIO()).unIO()
     }

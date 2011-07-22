@@ -41,7 +41,7 @@ object Either {
         }
         // Monad
         private[this] type m[+a] = f[a]
-        override def `return`[a](x: a): m[a] = Right(x)
+        override def `return`[a](x: => a): m[a] = Right(x)
         override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = m match {
             case Left(l) => Left(l)
             case Right(r) => k(r)

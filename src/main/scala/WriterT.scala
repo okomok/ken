@@ -25,7 +25,7 @@ final class _WriterTs[n[+_]](val inner: Monad[n]) {
             }
             // Monad
             private[this] type m[+a] = f[a]
-            override def `return`[a](a: a): m[a] = _WriterT { inner.`return`(a, i.mempty) }
+            override def `return`[a](a: => a): m[a] = _WriterT { inner.`return`(a, i.mempty) }
             override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = _WriterT {
                 for { (a, w) <- run(m); (b, w_) <- run(k(a)) } yield (b, i.mappend(w)(w_))
             }

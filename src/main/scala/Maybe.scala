@@ -27,7 +27,7 @@ object Maybe extends MonadPlus[Maybe] {
     }
     // Monad
     private[this] type m[+a] = f[a]
-    override def `return`[a](x: a): m[a] = Just(x)
+    override def `return`[a](x: => a): m[a] = Just(x)
     override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = m match {
         case Just(x) => k(x)
         case Nothing => Nothing

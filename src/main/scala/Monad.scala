@@ -10,7 +10,7 @@ package ken
 
 trait Monad[m[+_]] extends Applicative[m] {
 // Overridables
-    def `return`[a](x: a): m[a]
+    def `return`[a](x: => a): m[a]
     def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b]
     def op_>>[b](x: m[_])(y: => m[b]): m[b] = { lazy val _y = y; x >>= (_ => _y) }
 
@@ -156,7 +156,7 @@ trait Monad[m[+_]] extends Applicative[m] {
 
 trait MonadProxy[m[+_]] extends Monad[m] with ApplicativeProxy[m] {
     override def self: Monad[m]
-    override def `return`[a](x: a): m[a] = self.`return`(x)
+    override def `return`[a](x: => a): m[a] = self.`return`(x)
     override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = self.op_>>=(x)(y)
     override def op_>>[b](x: m[_])(y: => m[b]): m[b] = self.op_>>(x)(y)
 }

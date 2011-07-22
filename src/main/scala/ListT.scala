@@ -22,7 +22,7 @@ final class _ListTs[n[+_]](val inner: Monad[n]) {
             }
             // Monad
             private[this] type m[+a] = f[a]
-            override def `return`[a](a: a): m[a] = inner.`return`(List(a))
+            override def `return`[a](a: => a): m[a] = inner.`return`(List(a))
             override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = {
                 import inner.`for`
                 for { a <- m; b <- inner.mapM(k)(a) } yield List.concat(b)

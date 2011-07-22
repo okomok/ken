@@ -94,7 +94,7 @@ object List extends MonadPlus[List] {
 // Overrides
     private[this] type m[+a] = List[a]
     // Monad
-    override def `return`[a](x: a): m[a] = List(x)
+    override def `return`[a](x: => a): m[a] = List(x)
     override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = concat(map(y)(x))
     // MonadPlus
     override def mzero: m[Nothing] = Nil

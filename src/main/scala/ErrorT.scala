@@ -27,7 +27,7 @@ final class _ErrorTs[n[+_]](val inner: Monad[n]) {
             }
             // Monad
             private[this] type m[+a] = f[a]
-            override def `return`[a](a: a): m[a] = inner.`return`(Right(a))
+            override def `return`[a](a: => a): m[a] = inner.`return`(Right(a))
             override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = {
                 import inner.`for`
                 for {

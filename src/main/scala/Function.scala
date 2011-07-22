@@ -27,7 +27,7 @@ object Function {
         override def op_<*>[a, b](x: f[a => b])(y: f[a]): f[b] = { r => x(r)(y(r)) }
         // Monad
         private[this] type m[+a] = f[a]
-        override def `return`[a](x: a): m[a] = const(x)
+        override def `return`[a](x: => a): m[a] = const(x)
         override def op_>>=[a, b](f: m[a])(k: a => m[b]): m[b] = { r => k(f(r))(r) }
         // MonadReader
         override def ask: m[r] = ken.id

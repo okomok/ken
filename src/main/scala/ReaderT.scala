@@ -25,12 +25,12 @@ final class _ReaderTs[n[+_]](val inner: Monad[n]) {
             }
             // Monad
             private[this] type m[+a] = f[a]
-            override def `return`[a](a: a): m[a] = _ReaderT { r => inner.`return`(a) }
+            override def `return`[a](a: => a): m[a] = _ReaderT { r => inner.`return`(a) }
             override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = _ReaderT { r =>
                 for { a <- run(m)(r); * <- run(k(a))(r) } yield *
             }
             // MonadReader
-            override def ask: m[r] = _ReaderT { inner.`return` }
+            override def ask: m[r] = _ReaderT { r => inner.`return`(r) }
             override def local[a](f: r => r)(m: m[a]): m[a] = _ReaderT { r => run(m)(f(r)) }
             // Trans
             override def lift[a](n: n[a]): m[a] = _ReaderT { _ => n }

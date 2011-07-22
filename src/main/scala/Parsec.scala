@@ -160,7 +160,7 @@ object Parsec {
             // Functor
             override def fmap[a, b](x: a => b)(y: m[a]): m[b] = parsecMap(x)(y)
             // Monad
-            override def `return`[a](x: a): m[a] = parsecReturn(x)
+            override def `return`[a](x: => a): m[a] = parsecReturn(x)
             override def op_>>=[a, b](p: m[a])(f: a => m[b]): m[b] = parsecBind(p)(f)
             // MonadPlus
             override def mzero: m[Nothing] = parsecZero
