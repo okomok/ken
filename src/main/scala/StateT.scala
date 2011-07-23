@@ -10,11 +10,28 @@ package ken
 
 final class _StateTs[n[+_]](val inner: Monad[n]) {
     private[this] implicit def innerFor[a](x: n[a]): inner.For[a] = inner.`for`(x)
-    private[this] implicit def inner_>>=[a](x: n[a]): inner.Infix_>>=[a] = inner.>>=(x)
 
-    sealed abstract class _StateT[s, +a] extends (s => n[(a, s)])
+    sealed abstract class _StateT[s, +a] extends Run[s => n[(a, s)]]
 
-    trait LowPriorityImplicits { this: _StateT.type =>
+    object _StateT extends Instances {
+        def apply[s, a](rep: s => n[(a, s)]): _StateT[s, a] = new _StateT[s, a] {
+            override def run: s => n[(a, s)] = rep
+        }
+
+        implicit def from[s, a](n: Run[s => n[(a, s)]]): _StateT[s, a] = _StateT { n.run }
+
+        def run[s, a](n: _StateT[s, a]): s => n[(a, s)] = n.run
+
+        def eval[s, a](n: _StateT[s, a]): s => n[a] = s => for { (a, _) <- run(n)(s) } yield a
+
+        def exec[s, a](n: _StateT[s, a]): s => n[s] = s => for { (_, s) <- run(n)(s) } yield s
+
+        def map[s, m[+_], a, b](f: n[(a, s)] => m[(b, s)])(n: _StateT[s, a]): Run[s => m[(b, s)]] = Run { f compose run(n) }
+
+        def `with`[s, a](f: s => s)(n: _StateT[s, a]): _StateT[s, a] = _StateT { run(n) compose f }
+    }
+
+    trait LowPriorityInstances { this: _StateT.type =>
         implicit def monad[s]: MonadState[s, ({type m[+a] = _StateT[s, a]})#m] with inner.Trans[({type m[+a] = _StateT[s, a]})#m] =
             new MonadState[s, ({type m[+a] = _StateT[s, a]})#m] with inner.Trans[({type m[+a] = _StateT[s, a]})#m]
         {
@@ -37,23 +54,7 @@ final class _StateTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    object _StateT extends LowPriorityImplicits {
-        def apply[s, a](rep: s => n[(a, s)]): _StateT[s, a] = new _StateT[s, a] {
-            override def apply(s: s): n[(a, s)] = rep(s)
-        }
-
-        // implicit def from[s, a](n: StateMonadT[s, n, a]): _StateT[s, a] = _StateT { n.run }
-
-        def run[s, a](n: _StateT[s, a]): s => n[(a, s)] = n(_)
-
-        def eval[s, a](n: _StateT[s, a]): s => n[a] = s => for { (a, _) <- run(n)(s) } yield a
-
-        def exec[s, a](n: _StateT[s, a]): s => n[s] = s => for { (_, s) <- run(n)(s) } yield s
-
-        def map[s, m[+_], a, b](f: n[(a, s)] => m[(b, s)])(n: _StateT[s, a]): s => m[(b, s)] = f compose run(n)
-
-        def `with`[s, a](f: s => s)(n: _StateT[s, a]): _StateT[s, a] = _StateT { run(n) compose f }
-
+    trait Instances extends LowPriorityInstances { this: _StateT.type =>
         implicit def monadPlus[s](implicit i: MonadPlus[n]): MonadPlus[({type m[+a] = _StateT[s, a]})#m] =
             new MonadPlus[({type m[+a] = _StateT[s, a]})#m] with MonadProxy[({type m[+a] = _StateT[s, a]})#m]
         {

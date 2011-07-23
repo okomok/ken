@@ -10,9 +10,22 @@ package ken
 
 final class _ReaderTs[n[+_]](val inner: Monad[n]) {
     private[this] implicit def innerFor[a](x: n[a]): inner.For[a] = inner.`for`(x)
-    private[this] implicit def inner_>>=[a](x: n[a]): inner.Infix_>>=[a] = inner.>>=(x)
 
-    sealed abstract class _ReaderT[r, +a] extends (r => n[a])
+    sealed abstract class _ReaderT[r, +a] extends Run[r => n[a]]
+
+    object _ReaderT extends Instances {
+        def apply[r, a](rep: r => n[a]): _ReaderT[r, a] = new _ReaderT[r, a] {
+            override def run: r => n[a] = rep
+        }
+
+        implicit def from[r, a](n: Run[r => n[a]]): _ReaderT[r, a] = _ReaderT { n.run }
+
+        def run[r, a](n: _ReaderT[r, a]): r => n[a] = n.run
+
+        def map[r, m[+_], a, b](f: n[a] => m[b])(n: _ReaderT[r, a]): Run[r => m[b]] = Run { f compose run(n) }
+
+        def `with`[r, r_, a](f: r_ => r)(n: _ReaderT[r, a]): _ReaderT[r_, a] = _ReaderT { run(n) compose f }
+    }
 
     trait LowPriorityImplicits { this: _ReaderT.type =>
         implicit def monad[r]: MonadReader[r, ({type m[+a] = _ReaderT[r, a]})#m] with inner.Trans[({type m[+a] = _ReaderT[r, a]})#m] =
@@ -37,19 +50,7 @@ final class _ReaderTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    object _ReaderT extends LowPriorityImplicits {
-        implicit def apply[r, a](rep: r => n[a]): _ReaderT[r, a] = new _ReaderT[r, a] {
-            override def apply(r: r): n[a] = rep(r)
-        }
-
-        // implicit def from[r, a](n: ReaderMonadT[r, n, a]): _ReaderT[r, a] = _ReaderT(n.run)
-
-        def run[r, a](n: _ReaderT[r, a]): r => n[a] = n(_)
-
-        def map[r, m[+_], a, b](f: n[a] => m[b])(n: _ReaderT[r, a]): r => m[b] = f compose run(n)
-
-        def `with`[r, r_, a](f: r_ => r)(n: _ReaderT[r, a]): _ReaderT[r_, a] = _ReaderT(run(n) compose f)
-
+    trait Instances extends LowPriorityImplicits { this: _ReaderT.type =>
         implicit def monadPlus[r](implicit i: MonadPlus[n]): MonadPlus[({type m[+a] = _ReaderT[r, a]})#m] =
             new MonadPlus[({type m[+a] = _ReaderT[r, a]})#m] with MonadProxy[({type m[+a] = _ReaderT[r, a]})#m]
         {

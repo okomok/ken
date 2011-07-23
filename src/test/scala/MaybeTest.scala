@@ -52,7 +52,7 @@ class MaybeTest extends org.scalatest.junit.JUnit3Suite {
         } yield ()
 
         ignore {
-            askPassword.unIO()
+            askPassword.run.unIO()
         }
     }
 

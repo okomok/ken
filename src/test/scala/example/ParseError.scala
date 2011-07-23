@@ -55,7 +55,7 @@ class ParseErrorTest extends org.scalatest.junit.JUnit3Suite {
     def convert: String_ => String_ = s => {
         val Right(str) = catchError( for { n <- parseHex(s); * <- toString_(n) } yield * ) { e =>
             `return` { "At Index " ::: show(e.location) ::: ": " ::: e.reason }
-        }
+        } run
 
         str
     }

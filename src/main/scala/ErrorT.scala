@@ -9,79 +9,90 @@ package ken
 
 
 final class _ErrorTs[n[+_]](val inner: Monad[n]) {
+    private[this] implicit def innerFor[a](x: n[a]): inner.For[a] = inner.`for`(x)
 
-    type _ErrorT[e, +a] = n[Either[e, a]]
+    sealed abstract class _ErrorT[e, +a] extends Run[n[Either[e, a]]]
 
-    trait LowPriorityImplicits { this: _ErrorT.type =>
+    object _ErrorT extends Instances {
+        def apply[e, a](rep: n[Either[e, a]]): _ErrorT[e, a] = new _ErrorT[e, a] {
+            override def run: n[Either[e, a]] = rep
+        }
+
+        implicit def from[e, a](n: Run[n[Either[e, a]]]): _ErrorT[e, a] = _ErrorT { n.run }
+
+        def run[e, a](n: _ErrorT[e, a]): n[Either[e, a]] = n.run
+
+        def map[e, e_, m[+_], a, b](f: n[Either[e, a]] => m[Either[e_, b]])(n: _ErrorT[e, a]): Run[m[Either[e_, b]]] = Run { f(run(n)) }
+    }
+
+    trait LowPriorityInstances { this: _ErrorT.type =>
         implicit def monad[e](implicit i: ErrorClass[e]): MonadPlus[({type m[+a] = _ErrorT[e, a]})#m] with MonadError[e, ({type m[+a] = _ErrorT[e, a]})#m] with inner.Trans[({type m[+a] = _ErrorT[e, a]})#m] =
             new MonadPlus[({type m[+a] = _ErrorT[e, a]})#m] with MonadError[e, ({type m[+a] = _ErrorT[e, a]})#m] with inner.Trans[({type m[+a] = _ErrorT[e, a]})#m]
         {
             // Functor
             private[this] type f[+a] = _ErrorT[e, a]
-            override def fmap[a, b](f: a => b)(m: f[a]): f[b] = {
-                import inner.`for` // ambiguity buster
-                for { a <- m } yield (a match {
-                    case Left(l) => Left(l)
-                    case Right(r) => Right(f(r))
-                })
+            override def fmap[a, b](f: a => b)(m: f[a]): f[b] = _ErrorT {
+                for {
+                    a <- run(m)
+                    * <- a match {
+                        case Left(l) => inner.`return`(Left(l))
+                        case Right(r) => inner.`return`(Right(f(r)))
+                    }
+                } yield *
             }
             // Monad
             private[this] type m[+a] = f[a]
-            override def `return`[a](a: => a): m[a] = inner.`return`(Right(a))
-            override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = {
-                import inner.`for`
+            override def `return`[a](a: => a): m[a] = _ErrorT { inner.`return`(Right(a)) }
+            override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = _ErrorT {
                 for {
-                    a <- m
+                    a <- run(m)
                     * <- a match {
                         case Left(l) => inner.`return`(Left(l))
-                        case Right(r) => k(r)
+                        case Right(r) => run(k(r))
                     }
                 } yield *
             }
             // MonadPlus
-            override def mzero: m[Nothing] = inner.`return`(Left(i.noMsg))
-            override def mplus[a](m: m[a])(n: => m[a]): m[a] = {
-                import inner.`for`
+            override def mzero: m[Nothing] = _ErrorT { inner.`return`(Left(i.noMsg)) }
+            override def mplus[a](m: m[a])(n: => m[a]): m[a] = _ErrorT {
                 for {
-                    a <- m
+                    a <- run(m)
                     * <- a match {
-                        case Left(_) => n
+                        case Left(_) => run(n)
                         case Right(r) => inner.`return`(Right(r))
                     }
                 } yield *
             }
             // MonadError
             override def errorClass: ErrorClass[e] = i
-            override def throwError[a](l: e): m[a] = inner.`return`(Left(l))
-            override def catchError[a](m: m[a])(h: e => m[a]): m[a] = {
-                import inner.`for`
+            override def throwError[a](l: e): m[a] = _ErrorT { inner.`return`(Left(l)) }
+            override def catchError[a](m: m[a])(h: e => m[a]): m[a] = _ErrorT {
                 for {
-                    a <- m
+                    a <- run(m)
                     * <- a match {
-                        case Left(l) => h(l)
+                        case Left(l) => run(h(l))
                         case Right(r) => inner.`return`(Right(r))
                     }
                 } yield *
             }
             // Trans
-            override def lift[a](n: n[a]): m[a] = {
-                import inner.`for`
+            override def lift[a](n: n[a]): m[a] = _ErrorT {
                 for { a <- n } yield Right(a)
             }
         }
     }
 
-    object _ErrorT extends LowPriorityImplicits {
+    trait Instances extends LowPriorityInstances { this: _ErrorT.type =>
         implicit def monadFix[e](implicit i: MonadFix[n], j: ErrorClass[e]): MonadFix[({type m[+a] = _ErrorT[e, a]})#m] =
             new MonadFix[({type m[+a] = _ErrorT[e, a]})#m] with MonadProxy[({type m[+a] = _ErrorT[e, a]})#m]
         {
             private[this] type m[+a] = _ErrorT[e, a]
             override val self = monad[e]
-            override def mfix[a](f: (=> a) => m[a]): m[a] = {
-                def k(a: => Either[e, a]) = f { a match {
+            override def mfix[a](f: (=> a) => m[a]): m[a] = _ErrorT {
+                def k(a: => Either[e, a]) = run { f { a match {
                     case Right(r) => r
                     case _ => error("empty mfix argument")
-                } }
+                } } }
                 i.mfix(k)
             }
         }
@@ -99,9 +110,9 @@ final class _ErrorTs[n[+_]](val inner: Monad[n]) {
         {
             private[this] type m[+a] = _ErrorT[e, a]
             override val self = monad[e]
-            override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = {
+            override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = _ErrorT {
                 i.callCC { (c: Either[e, a] => n[Either[e, b]]) =>
-                    f(a => c(Right(a)))
+                    run { f(a => _ErrorT { c(Right(a)) }) }
                 }
             }
         }
@@ -112,7 +123,7 @@ final class _ErrorTs[n[+_]](val inner: Monad[n]) {
             private[this] type m[+a] = _ErrorT[e, a]
             override val self = monad[e]
             override def ask: m[r] = self.lift(i.ask)
-            override def local[a](f: r => r)(m: m[a]): m[a] = i.local(f)(m)
+            override def local[a](f: r => r)(m: m[a]): m[a] = _ErrorT { i.local(f)(run(m)) }
         }
 
         implicit def monadWriter[e, w](implicit i: MonadWriter[w, n], j: ErrorClass[e]): MonadWriter[w, ({type m[+a] = _ErrorT[e, a]})#m] =
@@ -122,22 +133,24 @@ final class _ErrorTs[n[+_]](val inner: Monad[n]) {
             override val self = monad[e]
             override def monoid: Monoid[w] = i.monoid
             override def tell(x: w): m[Unit] = self.lift(i.tell(x))
-            override def listen[a](m: m[a]): m[(a, w)] = {
-                import inner.`for`
-                for { (a, w) <- i.listen(m) } yield (a match {
-                    case Left(l) => Left(l)
-                    case Right(r) => Right(r, w)
-                })
+            override def listen[a](m: m[a]): m[(a, w)] = _ErrorT {
+                for {
+                    (a, w) <- i.listen(run(m))
+                    * <- a match {
+                        case Left(l) => inner.`return`(Left(l))
+                        case Right(r) => inner.`return`(Right(r, w))
+                    }
+                } yield *
             }
-            override def pass[a](m: m[(a, w => w)]): m[a] = {
-                import inner.`for`
+            override def pass[a](m: m[(a, w => w)]): m[a] = _ErrorT {
                 i.pass {
                     for {
-                        a <- m
-                    } yield (a match {
-                        case Left(l) => (Left(l), id[w]_)
-                        case Right((r, f)) => (Right(r), f)
-                    })
+                        a <- run(m)
+                        * <- a match {
+                            case Left(l) => inner.`return`(Left(l), id[w]_)
+                            case Right((r, f)) => inner.`return`(Right(r), f)
+                        }
+                    } yield *
                 }
             }
         }

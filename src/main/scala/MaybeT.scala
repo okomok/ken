@@ -9,36 +9,49 @@ package ken
 
 
 final class _MaybeTs[n[+_]](val inner: Monad[n]) {
+    private[this] implicit def innerFor[a](x: n[a]): inner.For[a] = inner.`for`(x)
+    private[this] implicit def innerInfix_>>=[a](x: n[a]): inner.Infix_>>=[a] = inner.>>=(x)
 
-    type _MaybeT[+a] = n[Maybe[a]]
+    sealed abstract class _MaybeT[+a] extends Run[n[Maybe[a]]]
 
-    trait LowPriorityImplicits { this: _MaybeT.type =>
+    object _MaybeT extends Instances {
+        def apply[a](rep: n[Maybe[a]]): _MaybeT[a] = new _MaybeT[a] {
+            override def run: n[Maybe[a]] = rep
+        }
+
+        implicit def from[a](n: Run[n[Maybe[a]]]): _MaybeT[a] = _MaybeT { n.run }
+
+        def run[a](n: _MaybeT[a]): n[Maybe[a]] = n.run
+
+        def map[m[+_], a, b](f: n[Maybe[a]] => m[Maybe[b]])(n: _MaybeT[a]): Run[m[Maybe[b]]] = Run { f(run(n)) }
+    }
+
+    trait LowPriorityInstances { this: _MaybeT.type =>
         implicit val monad: MonadPlus[_MaybeT] with inner.Trans[_MaybeT] = new MonadPlus[_MaybeT] with inner.Trans[_MaybeT] {
             // Monad
             private[this] type m[+a] = _MaybeT[a]
-            override def `return`[a](a: => a): m[a] = inner.`return`(Just(a).up)
-            override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = {
-                import inner.>>=
-                m >>= {
+            override def `return`[a](a: => a): m[a] = _MaybeT { inner.`return`(Just(a).up) }
+            override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = _MaybeT {
+                run(m) >>= {
                     case Nothing => inner.`return`(Nothing.of[b])
-                    case Just(v) => k(v)
+                    case Just(v) => run(k(v))
                 }
             }
             // MonadPlus
-            override def mzero: m[Nothing] = inner.`return`(Nothing)
-            override def mplus[a](x: m[a])(y: => m[a]): m[a] = {
-                import inner.>>=
-                x >>= {
-                    case Nothing => y
-                    case Just(_) => x
+            override def mzero: m[Nothing] = _MaybeT { inner.`return`(Nothing) }
+            override def mplus[a](x: m[a])(y: => m[a]): m[a] = _MaybeT {
+                val runx = run(x)
+                runx >>= {
+                    case Nothing => run(y)
+                    case Just(_) => runx
                 }
             }
             // Trans
-            override def lift[a](n: n[a]): m[a] = inner.liftM(Maybe.just[a])(n)
+            override def lift[a](n: n[a]): m[a] = _MaybeT { inner.liftM(Maybe.just[a])(n) }
         }
     }
 
-    object _MaybeT extends LowPriorityImplicits {
+    trait Instances extends LowPriorityInstances { this: _MaybeT.type =>
         implicit def monadIO(implicit i: MonadIO[n]): MonadIO[_MaybeT] =
             new MonadIO[_MaybeT] with MonadProxy[_MaybeT]
         {
@@ -52,8 +65,10 @@ final class _MaybeTs[n[+_]](val inner: Monad[n]) {
         {
             private[this] type m[+a] = _MaybeT[a]
             override val self = monad
-            override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = {
-                i.callCC { (c: Maybe[a] => m[b]) => f(a => c(Just(a))) }
+            override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = _MaybeT {
+                i.callCC { (c: Maybe[a] => n[Maybe[b]]) =>
+                    run( f( a => _MaybeT { c(Just(a)) } ) )
+                }
             }
         }
 
@@ -64,8 +79,8 @@ final class _MaybeTs[n[+_]](val inner: Monad[n]) {
             override val self = monad
             override def errorClass: ErrorClass[e] = i.errorClass
             override def throwError[a](e: e): m[a] = self.lift(i.throwError(e))
-            override def catchError[a](m: m[a])(h: e => m[a]): m[a] = {
-                i.catchError(m) { e => h(e) }
+            override def catchError[a](m: m[a])(h: e => m[a]): m[a] = _MaybeT {
+                i.catchError(run(m)) { e => run(h(e)) }
             }
         }
 
@@ -75,7 +90,7 @@ final class _MaybeTs[n[+_]](val inner: Monad[n]) {
             private[this] type m[+a] = _MaybeT[a]
             override val self = monad
             override def ask: m[r] = self.lift(i.ask)
-            override def local[a](f: r => r)(m: m[a]): m[a] = i.local(f)(m)
+            override def local[a](f: r => r)(m: m[a]): m[a] = _MaybeT { i.local(f)(run(m)) }
         }
 
         implicit def monadState[s](implicit i: MonadState[s, n]): MonadState[s, _MaybeT] =

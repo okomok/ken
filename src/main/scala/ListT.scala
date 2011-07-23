@@ -9,39 +9,48 @@ package ken
 
 
 final class _ListTs[n[+_]](val inner: Monad[n]) {
+    private[this] implicit def innerFor[a](x: n[a]): inner.For[a] = inner.`for`(x)
 
-    type _ListT[+a] = n[List[a]]
+    sealed abstract class _ListT[+a] extends Run[n[List[a]]]
 
-    trait LowPriorityImplicits { this: _ListT.type =>
+    object _ListT extends Instances {
+        def apply[a](rep: n[List[a]]): _ListT[a] = new _ListT[a] {
+            override def run: n[List[a]] = rep
+        }
+
+        implicit def from[a](n: Run[n[List[a]]]): _ListT[a] = _ListT { n.run }
+
+        def run[a](n: _ListT[a]): n[List[a]] = n.run
+
+        def map[m[+_], a, b](f: n[List[a]] => m[List[b]])(n: _ListT[a]): Run[m[List[b]]] = Run { f(run(n)) }
+    }
+
+    trait LowPriorityInstances { this: _ListT.type =>
         implicit val monad: MonadPlus[_ListT] with inner.Trans[_ListT] = new MonadPlus[_ListT] with inner.Trans[_ListT] {
             // Functor
             private[this] type f[+a] = _ListT[a]
-            override def fmap[a, b](f: a => b)(m: f[a]): f[b] = {
-                import inner.`for`
-                for { a <- m } yield List.map(f)(a)
+            override def fmap[a, b](f: a => b)(m: f[a]): f[b] = _ListT {
+                for { a <- run(m) } yield List.map(f)(a)
             }
             // Monad
             private[this] type m[+a] = f[a]
-            override def `return`[a](a: => a): m[a] = inner.`return`(List(a))
-            override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = {
-                import inner.`for`
-                for { a <- m; b <- inner.mapM(k)(a) } yield List.concat(b)
+            override def `return`[a](a: => a): m[a] = _ListT { inner.`return`(List(a)) }
+            override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = _ListT {
+                for { a <- run(m); b <- inner.mapM(run[b]_ compose k)(a) } yield List.concat(b)
             }
             // MonadPlus
-            override def mzero: m[Nothing] = inner.`return`(Nil)
-            override def mplus[a](m: m[a])(n: => m[a]): m[a] = {
-                import inner.`for`
-                for { a <- m; b <- n } yield a ::: b
+            override def mzero: m[Nothing] = _ListT { inner.`return`(Nil) }
+            override def mplus[a](m: m[a])(n: => m[a]): m[a] = _ListT {
+                for { a <- run(m); b <- run(n) } yield a ::: b
             }
             // Trans
-            override def lift[a](n: n[a]): m[a] = {
-                import inner.`for`
+            override def lift[a](n: n[a]): m[a] = _ListT {
                 for { a <- n } yield List(a)
             }
         }
     }
 
-    object _ListT extends LowPriorityImplicits {
+    trait Instances extends LowPriorityInstances { this: _ListT.type =>
         implicit def monadIO(implicit i: MonadIO[n]): MonadIO[_ListT] =
             new MonadIO[_ListT] with MonadProxy[_ListT]
         {
@@ -55,8 +64,10 @@ final class _ListTs[n[+_]](val inner: Monad[n]) {
         {
             private[this] type m[+a] = _ListT[a]
             override val self = monad
-            override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = {
-                i.callCC { (c: List[a] => m[b]) => f(a => c(List(a))) }
+            override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = _ListT {
+                i.callCC { (c: List[a] => n[List[b]]) =>
+                    run( f( a => _ListT { c(List(a)) } ) )
+                }
             }
         }
 
@@ -67,8 +78,8 @@ final class _ListTs[n[+_]](val inner: Monad[n]) {
             override val self = monad
             override def errorClass: ErrorClass[e] = i.errorClass
             override def throwError[a](e: e): m[a] = self.lift(i.throwError(e))
-            override def catchError[a](m: m[a])(h: e => m[a]): m[a] = {
-                i.catchError(m) { e => h(e) }
+            override def catchError[a](m: m[a])(h: e => m[a]): m[a] = _ListT {
+                i.catchError(run(m)) { e => run(h(e)) }
             }
         }
 
@@ -78,7 +89,7 @@ final class _ListTs[n[+_]](val inner: Monad[n]) {
             private[this] type m[+a] = _ListT[a]
             override val self = monad
             override def ask: m[r] = self.lift(i.ask)
-            override def local[a](f: r => r)(m: m[a]): m[a] = i.local(f)(m)
+            override def local[a](f: r => r)(m: m[a]): m[a] = _ListT { i.local(f)(run(m)) }
         }
 
         implicit def monadState[s](implicit i: MonadState[s, n]): MonadState[s, _ListT] =
