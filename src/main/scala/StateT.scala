@@ -73,7 +73,7 @@ final class _StateTs[n[+_]](val inner: Monad[n]) {
                 def k(aI_ : => (a, s)) = run(f(aI_._1))(s)
                 i.mfix(k)
                 // scalac sucks.
-                // i.mfix { (aI_ : (=> (a, s))) => f(aI_._1)(s) }
+                // i.mfix { (aI_ : (=> (a, s))) => run(f(aI_._1))(s) }
             }
         }
 

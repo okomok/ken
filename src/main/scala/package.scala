@@ -9,9 +9,6 @@ package com.github.okomok
 
 package object ken {
 
-// String
-    type String_ = List[Char]
-
 // Eq
     def op_==[a](x: a)(y: a): Bool = x == y
     def op_!=[a](x: a)(y: a): Bool = x != y
@@ -87,7 +84,11 @@ package object ken {
     type Writer[w, +a] = Identity.WriterT[w, a]
     val Writer = Identity.WriterT
 
-// Misc
+// Aliases
+    type String_ = List[Char]
     type Bool = Boolean
     type Integer = BigInt
+
+// Misc
+    val ignore: (=> Any) => Unit = { _ => () }
 }
