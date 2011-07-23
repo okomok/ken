@@ -47,7 +47,9 @@ final class _MaybeTs[n[+_]](val inner: Monad[n]) {
                 }
             }
             // Trans
-            override def lift[a](n: n[a]): m[a] = _MaybeT { inner.liftM(Maybe.just[a])(n) }
+            override def lift[a](n: n[a]): m[a] = _MaybeT {
+                for { a <- n } yield Just(a)
+            }
         }
     }
 
