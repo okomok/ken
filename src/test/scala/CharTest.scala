@@ -17,5 +17,6 @@ class CharTest extends org.scalatest.junit.JUnit3Suite {
         expect('A')(Char.chr(65))
         expect(10)(Char.digitToInt('A'))
         expect(10)(Char.digitToInt('a'))
+        assert(Char.isPrint('a'))
     }
 }
