@@ -60,7 +60,7 @@ package object ken {
 
     def asTypeOf[a](x: a): a => a = const(x)
 
-    val error: String => Nothing = { msg => throw new java.lang.Error(msg) }
+    val error: String_ => Nothing = { msg => throw new java.lang.Error(List.stringize(msg)) }
 
     def undefined: Nothing = throw new java.lang.Error("undefined")
 
