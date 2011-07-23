@@ -11,18 +11,18 @@ package ken
 final class _ErrorTs[n[+_]](val inner: Monad[n]) {
     private[this] implicit def innerFor[a](x: n[a]): inner.For[a] = inner.`for`(x)
 
-    sealed abstract class _ErrorT[e, +a] extends Run[n[Either[e, a]]]
+    sealed abstract class _ErrorT[e, +a] extends Wrap[n[Either[e, a]]]
 
     object _ErrorT extends Instances {
         def apply[e, a](rep: n[Either[e, a]]): _ErrorT[e, a] = new _ErrorT[e, a] {
             override def run: n[Either[e, a]] = rep
         }
 
-        implicit def from[e, a](n: Run[n[Either[e, a]]]): _ErrorT[e, a] = _ErrorT { n.run }
+        implicit def from[e, a](n: Wrap[n[Either[e, a]]]): _ErrorT[e, a] = _ErrorT { n.run }
 
         def run[e, a](n: _ErrorT[e, a]): n[Either[e, a]] = n.run
 
-        def map[e, e_, m[+_], a, b](f: n[Either[e, a]] => m[Either[e_, b]])(n: _ErrorT[e, a]): Run[m[Either[e_, b]]] = Run { f(run(n)) }
+        def map[e, e_, m[+_], a, b](f: n[Either[e, a]] => m[Either[e_, b]])(n: _ErrorT[e, a]): Wrap[m[Either[e_, b]]] = Wrap { f(run(n)) }
     }
 
     trait LowPriorityInstances { this: _ErrorT.type =>

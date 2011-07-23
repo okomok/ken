@@ -168,7 +168,7 @@ object Parsec {
         }
     }
 
-    // Run a parser
+    // Wrap a parser
 
     def parseFromFile[a](p: Parser[a], fname: SourceName): IO[Either[ParseError, a]] = {
         for { input <- IO.readFile(fname) } yield parse(p)(fname)(input)

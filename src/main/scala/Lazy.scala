@@ -8,8 +8,9 @@ package com.github.okomok
 package ken
 
 
-sealed abstract class Lazy[+a] {
+sealed abstract class Lazy[+a] extends Wrap[a] {
     def ! : a
+    final override def run: a = this.!
 }
 
 

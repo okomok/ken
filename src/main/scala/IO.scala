@@ -8,8 +8,9 @@ package com.github.okomok
 package ken
 
 
-trait IO[+a] {
+trait IO[+a] extends Wrap[a] {
     def unIO(): a
+    final override def run: a = unIO()
 }
 
 

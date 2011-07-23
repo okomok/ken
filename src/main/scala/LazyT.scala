@@ -11,18 +11,18 @@ package ken
 final class _LazyTs[n[+_]](val inner: Monad[n]) {
     private[this] implicit def innerFor[a](x: n[a]): inner.For[a] = inner.`for`(x)
 
-    sealed abstract class _LazyT[+a] extends Run[n[Lazy[a]]]
+    sealed abstract class _LazyT[+a] extends Wrap[n[Lazy[a]]]
 
     object _LazyT extends Instances {
         def apply[a](rep: n[Lazy[a]]): _LazyT[a] = new _LazyT[a] {
             override def run: n[Lazy[a]] = rep
         }
 
-        implicit def from[a](n: Run[n[Lazy[a]]]): _LazyT[a] = _LazyT { n.run }
+        implicit def from[a](n: Wrap[n[Lazy[a]]]): _LazyT[a] = _LazyT { n.run }
 
         def run[a](n: _LazyT[a]): n[Lazy[a]] = n.run
 
-        def map[m[+_], a, b](f: n[Lazy[a]] => m[Lazy[b]])(n: _LazyT[a]): Run[m[Lazy[b]]] = Run { f(run(n)) }
+        def map[m[+_], a, b](f: n[Lazy[a]] => m[Lazy[b]])(n: _LazyT[a]): Wrap[m[Lazy[b]]] = Wrap { f(run(n)) }
     }
 
     trait LowPriorityInstances { this: _LazyT.type =>
