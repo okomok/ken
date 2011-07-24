@@ -9,7 +9,7 @@ package ken
 
 
 trait MonadWriter[w, m[+_]] extends Monad[m] {
-    def monoid: Monoid[w] // unused?
+    def monoid: Monoid[w]
     def tell(x: w): m[Unit]
     def listen[a](x: m[a]): m[(a, w)]
     def pass[a](x: m[(a, w => w)]): m[a]

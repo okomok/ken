@@ -122,5 +122,14 @@ final class _ReaderTs[n[+_]](val inner: Monad[n]) {
             override def listen[a](m: m[a]): m[(a, w)] = _ReaderT { w => i.listen(run(m)(w)) }
             override def pass[a](m: m[(a, w => w)]): m[a] = _ReaderT { w => i.pass(run(m)(w)) }
         }
+
+        implicit def weak[r]: Weak[({type p[+a] = _ReaderT[r, a]})#p, ({type d[+a] = Function1[r, n[a]]})#d] =
+            new Weak[({type p[+a] = _ReaderT[r, a]})#p, ({type d[+a] = Function1[r, n[a]]})#d]
+        {
+            private[this] type p[+a] = _ReaderT[r, a]
+            private[this] type d[+a] = Function1[r, n[a]]
+            override def wrap[a](d: => d[a]): p[a] = _ReaderT { d }
+            override def unwrap[a](p: p[a]): d[a] = run(p)
+        }
     }
 }

@@ -18,7 +18,7 @@ trait MonadReader[r, m[+_]] extends Monad[m] {
 
 trait MonadReaderProxy[r, m[+_]] extends MonadReader[r, m] with MonadProxy[m] {
     override def self: MonadReader[r, m]
-    override def ask: m[r] = self. ask
+    override def ask: m[r] = self.ask
     override def local[a](f: r => r)(m: m[a]): m[a] = self.local(f)(m)
 }
 

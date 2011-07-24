@@ -25,9 +25,17 @@ object ZipList extends Applicative[ZipList] {
 
 // Instances
     implicit val applicative: Applicative[ZipList] = this
+
+    implicit val weak: Weak[ZipList, List] = new Weak[ZipList, List] {
+        private[this] type p[+a] = ZipList[a]
+        private[this] type d[+a] = List[a]
+        override def wrap[a](d: => d[a]): p[a] = ZipList { d }
+        override def unwrap[a](p: p[a]): d[a] = run(p)
+    }
 }
 
 
+/*
 object WeakZipList extends Applicative[List] {
 // Overrides
     private[this] type f[+a] = List[a]
@@ -37,3 +45,4 @@ object WeakZipList extends Applicative[List] {
 // Instances
     implicit val applicative: Applicative[List] = this
 }
+*/

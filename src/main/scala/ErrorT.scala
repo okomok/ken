@@ -154,5 +154,14 @@ final class _ErrorTs[n[+_]](val inner: Monad[n]) {
                 }
             }
         }
+
+        implicit def weak[e]: Weak[({type p[+a] = _ErrorT[e, a]})#p, ({type d[+a] = n[Either[e, a]]})#d] =
+            new Weak[({type p[+a] = _ErrorT[e, a]})#p, ({type d[+a] = n[Either[e, a]]})#d]
+        {
+            private[this] type p[+a] = _ErrorT[e, a]
+            private[this] type d[+a] = n[Either[e, a]]
+            override def wrap[a](d: => d[a]): p[a] = _ErrorT { d }
+            override def unwrap[a](p: p[a]): d[a] = run(p)
+        }
     }
 }
