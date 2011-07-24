@@ -40,6 +40,6 @@ trait FunctorProxy[f[+_]] extends Functor[f] with Proxy {
 object Functor {
     def apply[f[+_]](implicit i: Functor[f]): Functor[f] = i
 
-    implicit val ofWeakIdentity: Functor[({type m[+a] = a})#m] = WeakIdentity.monad
+    implicit val ofWeakIdentity: Functor[({type m[+a] = a})#m] = Identity.monad
     implicit def ofFunction[r]: Functor[({type m[+a] = r => a})#m] = Function.monad[r]
 }

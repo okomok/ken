@@ -72,17 +72,17 @@ package object ken {
     val _show: Any => String = _.toString // will be removed.
 
 // Trivial transformers
-    type Error[e, +a] = WeakIdentity.ErrorT[e, a]
-    val Error = WeakIdentity.ErrorT
+    type Error[e, +a] = Identity.ErrorT[e, a]
+    val Error = Identity.ErrorT
 
-    type State[s, +a] = WeakIdentity.StateT[s, a]
-    val State = WeakIdentity.StateT
+    type State[s, +a] = Identity.StateT[s, a]
+    val State = Identity.StateT
 
-    type Reader[r, +a] = WeakIdentity.ReaderT[r, a]
-    val Reader = WeakIdentity.ReaderT
+    type Reader[r, +a] = Identity.ReaderT[r, a]
+    val Reader = Identity.ReaderT
 
-    type Writer[w, +a] = WeakIdentity.WriterT[w, a]
-    val Writer = WeakIdentity.WriterT
+    type Writer[w, +a] = Identity.WriterT[w, a]
+    val Writer = Identity.WriterT
 
 // Aliases
     type String_ = List[Char]

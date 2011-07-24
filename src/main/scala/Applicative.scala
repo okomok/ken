@@ -54,7 +54,7 @@ trait ApplicativeProxy[f[+_]] extends Applicative[f] with FunctorProxy[f] {
 object Applicative {
     def apply[f[+_]](implicit i: Applicative[f]): Applicative[f] = i
 
-    implicit val ofWeakIdentity: Applicative[({type m[+a] = a})#m] = WeakIdentity.monad
+    implicit val ofWeakIdentity: Applicative[({type m[+a] = a})#m] = Identity.monad
     implicit def ofFunction[r]: Applicative[({type m[+a] = r => a})#m] = Function.monad[r]
 
     implicit def ofPair[z](implicit ma: Monoid[z]): Applicative[({type f[+a] = (z, a)})#f] = new Applicative[({type f[+a] = (z, a)})#f] {
