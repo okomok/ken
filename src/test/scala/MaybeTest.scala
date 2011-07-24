@@ -12,7 +12,7 @@ import com.github.okomok.ken._
 
 class MaybeTest extends org.scalatest.junit.JUnit3Suite {
     def testMonadT2 {
-        import IO.MaybeT // MaybeT[a] <:< Wrap[IO[Maybe[a]]]
+        import IO.MaybeT // MaybeT[a] <:< Identity[IO[Maybe[a]]]
         import MaybeT.monad._
 
         def isValid(s: List[Char]): Boolean = true

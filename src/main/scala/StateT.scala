@@ -11,14 +11,14 @@ package ken
 final class _StateTs[n[+_]](val inner: Monad[n]) {
     private[this] implicit def innerFor[a](x: n[a]): inner.For[a] = inner.`for`(x)
 
-    sealed abstract class _StateT[s, +a] extends Wrap[s => n[(a, s)]]
+    sealed abstract class _StateT[s, +a] extends Identity[s => n[(a, s)]]
 
     object _StateT extends Instances {
         def apply[s, a](rep: s => n[(a, s)]): _StateT[s, a] = new _StateT[s, a] {
             override def run: s => n[(a, s)] = rep
         }
 
-        implicit def from[s, a](n: Wrap[s => n[(a, s)]]): _StateT[s, a] = _StateT { n.run }
+        implicit def from[s, a](n: Identity[s => n[(a, s)]]): _StateT[s, a] = _StateT { n.run }
 
         def run[s, a](n: _StateT[s, a]): s => n[(a, s)] = n.run
 
@@ -26,7 +26,7 @@ final class _StateTs[n[+_]](val inner: Monad[n]) {
 
         def exec[s, a](n: _StateT[s, a]): s => n[s] = s => for { (_, s) <- run(n)(s) } yield s
 
-        def map[s, m[+_], a, b](f: n[(a, s)] => m[(b, s)])(n: _StateT[s, a]): Wrap[s => m[(b, s)]] = Wrap { f compose run(n) }
+        def map[s, m[+_], a, b](f: n[(a, s)] => m[(b, s)])(n: _StateT[s, a]): Identity[s => m[(b, s)]] = Identity { f compose run(n) }
 
         def `with`[s, a](f: s => s)(n: _StateT[s, a]): _StateT[s, a] = _StateT { run(n) compose f }
     }

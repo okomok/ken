@@ -11,18 +11,18 @@ package ken
 final class _ListTs[n[+_]](val inner: Monad[n]) {
     private[this] implicit def innerFor[a](x: n[a]): inner.For[a] = inner.`for`(x)
 
-    sealed abstract class _ListT[+a] extends Wrap[n[List[a]]]
+    sealed abstract class _ListT[+a] extends Identity[n[List[a]]]
 
     object _ListT extends Instances {
         def apply[a](rep: n[List[a]]): _ListT[a] = new _ListT[a] {
             override def run: n[List[a]] = rep
         }
 
-        implicit def from[a](n: Wrap[n[List[a]]]): _ListT[a] = _ListT { n.run }
+        implicit def from[a](n: Identity[n[List[a]]]): _ListT[a] = _ListT { n.run }
 
         def run[a](n: _ListT[a]): n[List[a]] = n.run
 
-        def map[m[+_], a, b](f: n[List[a]] => m[List[b]])(n: _ListT[a]): Wrap[m[List[b]]] = Wrap { f(run(n)) }
+        def map[m[+_], a, b](f: n[List[a]] => m[List[b]])(n: _ListT[a]): Identity[m[List[b]]] = Identity { f(run(n)) }
     }
 
     trait LowPriorityInstances { this: _ListT.type =>

@@ -11,18 +11,18 @@ package ken
 final class _ReaderTs[n[+_]](val inner: Monad[n]) {
     private[this] implicit def innerFor[a](x: n[a]): inner.For[a] = inner.`for`(x)
 
-    sealed abstract class _ReaderT[r, +a] extends Wrap[r => n[a]]
+    sealed abstract class _ReaderT[r, +a] extends Identity[r => n[a]]
 
     object _ReaderT extends Instances {
         def apply[r, a](rep: r => n[a]): _ReaderT[r, a] = new _ReaderT[r, a] {
             override def run: r => n[a] = rep
         }
 
-        implicit def from[r, a](n: Wrap[r => n[a]]): _ReaderT[r, a] = _ReaderT { n.run }
+        implicit def from[r, a](n: Identity[r => n[a]]): _ReaderT[r, a] = _ReaderT { n.run }
 
         def run[r, a](n: _ReaderT[r, a]): r => n[a] = n.run
 
-        def map[r, m[+_], a, b](f: n[a] => m[b])(n: _ReaderT[r, a]): Wrap[r => m[b]] = Wrap { f compose run(n) }
+        def map[r, m[+_], a, b](f: n[a] => m[b])(n: _ReaderT[r, a]): Identity[r => m[b]] = Identity { f compose run(n) }
 
         def `with`[r, r_, a](f: r_ => r)(n: _ReaderT[r, a]): _ReaderT[r_, a] = _ReaderT { run(n) compose f }
     }

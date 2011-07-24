@@ -11,14 +11,14 @@ package ken
 final class _WriterTs[n[+_]](val inner: Monad[n]) {
     private[this] implicit def innerFor[a](x: n[a]): inner.For[a] = inner.`for`(x)
 
-    sealed abstract class _WriterT[w, +a] extends Wrap[n[(a, w)]]
+    sealed abstract class _WriterT[w, +a] extends Identity[n[(a, w)]]
 
     object _WriterT extends Instances {
         def apply[w, a](rep: n[(a, w)]): _WriterT[w, a] = new _WriterT[w, a] {
             override def run: n[(a, w)] = rep
         }
 
-        implicit def from[w, a](n: Wrap[n[(a, w)]]): _WriterT[w, a] = _WriterT(n.run)
+        implicit def from[w, a](n: Identity[n[(a, w)]]): _WriterT[w, a] = _WriterT(n.run)
 
         def run[w, a](n: _WriterT[w, a]): n[(a, w)] = n.run
 

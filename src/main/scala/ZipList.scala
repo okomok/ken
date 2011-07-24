@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-final case class ZipList[+a](override val run: List[a]) extends Wrap[List[a]]
+final case class ZipList[+a](override val run: List[a]) extends Identity[List[a]]
 
 object ZipList extends Applicative[ZipList] {
     def run[a](m: ZipList[a]): List[a] = m.run

@@ -12,18 +12,18 @@ final class _MaybeTs[n[+_]](val inner: Monad[n]) {
     private[this] implicit def innerFor[a](x: n[a]): inner.For[a] = inner.`for`(x)
     private[this] implicit def innerInfix_>>=[a](x: n[a]): inner.Infix_>>=[a] = inner.>>=(x)
 
-    sealed abstract class _MaybeT[+a] extends Wrap[n[Maybe[a]]]
+    sealed abstract class _MaybeT[+a] extends Identity[n[Maybe[a]]]
 
     object _MaybeT extends Instances {
         def apply[a](rep: n[Maybe[a]]): _MaybeT[a] = new _MaybeT[a] {
             override def run: n[Maybe[a]] = rep
         }
 
-        implicit def from[a](n: Wrap[n[Maybe[a]]]): _MaybeT[a] = _MaybeT { n.run }
+        implicit def from[a](n: Identity[n[Maybe[a]]]): _MaybeT[a] = _MaybeT { n.run }
 
         def run[a](n: _MaybeT[a]): n[Maybe[a]] = n.run
 
-        def map[m[+_], a, b](f: n[Maybe[a]] => m[Maybe[b]])(n: _MaybeT[a]): Wrap[m[Maybe[b]]] = Wrap { f(run(n)) }
+        def map[m[+_], a, b](f: n[Maybe[a]] => m[Maybe[b]])(n: _MaybeT[a]): Identity[m[Maybe[b]]] = Identity { f(run(n)) }
     }
 
     trait LowPriorityInstances { this: _MaybeT.type =>
