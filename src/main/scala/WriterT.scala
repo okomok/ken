@@ -27,7 +27,7 @@ final class _WriterTs[n[+_]](val inner: Monad[n]) {
         def map[w, w_, m[+_], a, b](f: n[(a, w)] => m[(b, w_)])(n: _WriterT[w, a]): m[(b, w_)] = f(run(n))
     }
 
-    trait LowPriorityInstances { this: _WriterT.type =>
+    sealed abstract class LowPriorityInstances { this: _WriterT.type =>
         implicit def monad[w](implicit i: Monoid[w]): MonadWriter[w, ({type m[+a] = _WriterT[w, a]})#m] with inner.Trans[({type m[+a] = _WriterT[w, a]})#m] =
             new MonadWriter[w, ({type m[+a] = _WriterT[w, a]})#m] with inner.Trans[({type m[+a] = _WriterT[w, a]})#m]
         {
@@ -58,7 +58,7 @@ final class _WriterTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    trait Instances extends LowPriorityInstances { this: _WriterT.type =>
+    sealed abstract class Instances extends LowPriorityInstances { this: _WriterT.type =>
         implicit def monadPlus[w](implicit i: MonadPlus[n], j: Monoid[w]): MonadPlus[({type m[+a] = _WriterT[w, a]})#m] =
             new MonadPlus[({type m[+a] = _WriterT[w, a]})#m] with MonadProxy[({type m[+a] = _WriterT[w, a]})#m]
         {

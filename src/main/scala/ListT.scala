@@ -25,7 +25,7 @@ final class _ListTs[n[+_]](val inner: Monad[n]) {
         def map[m[+_], a, b](f: n[List[a]] => m[List[b]])(n: _ListT[a]): Identity[m[List[b]]] = Identity { f(run(n)) }
     }
 
-    trait LowPriorityInstances { this: _ListT.type =>
+    sealed abstract class LowPriorityInstances { this: _ListT.type =>
         implicit val monad: MonadPlus[_ListT] with inner.Trans[_ListT] = new MonadPlus[_ListT] with inner.Trans[_ListT] {
             // Functor
             private[this] type f[+a] = _ListT[a]
@@ -50,7 +50,7 @@ final class _ListTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    trait Instances extends LowPriorityInstances { this: _ListT.type =>
+    sealed abstract class Instances extends LowPriorityInstances { this: _ListT.type =>
         implicit def monadIO(implicit i: MonadIO[n]): MonadIO[_ListT] =
             new MonadIO[_ListT] with MonadProxy[_ListT]
         {

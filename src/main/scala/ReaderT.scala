@@ -27,7 +27,7 @@ final class _ReaderTs[n[+_]](val inner: Monad[n]) {
         def `with`[r, r_, a](f: r_ => r)(n: _ReaderT[r, a]): _ReaderT[r_, a] = _ReaderT { run(n) compose f }
     }
 
-    trait LowPriorityImplicits { this: _ReaderT.type =>
+    sealed abstract class LowPriorityInstances { this: _ReaderT.type =>
         implicit def monad[r]: MonadReader[r, ({type m[+a] = _ReaderT[r, a]})#m] with inner.Trans[({type m[+a] = _ReaderT[r, a]})#m] =
             new MonadReader[r, ({type m[+a] = _ReaderT[r, a]})#m] with inner.Trans[({type m[+a] = _ReaderT[r, a]})#m]
         {
@@ -50,7 +50,7 @@ final class _ReaderTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    trait Instances extends LowPriorityImplicits { this: _ReaderT.type =>
+    sealed abstract class Instances extends LowPriorityInstances { this: _ReaderT.type =>
         implicit def monadPlus[r](implicit i: MonadPlus[n]): MonadPlus[({type m[+a] = _ReaderT[r, a]})#m] =
             new MonadPlus[({type m[+a] = _ReaderT[r, a]})#m] with MonadProxy[({type m[+a] = _ReaderT[r, a]})#m]
         {

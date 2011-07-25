@@ -25,7 +25,7 @@ final class _ErrorTs[n[+_]](val inner: Monad[n]) {
         def map[e, e_, m[+_], a, b](f: n[Either[e, a]] => m[Either[e_, b]])(n: _ErrorT[e, a]): Identity[m[Either[e_, b]]] = Identity { f(run(n)) }
     }
 
-    trait LowPriorityInstances { this: _ErrorT.type =>
+    sealed abstract class LowPriorityInstances { this: _ErrorT.type =>
         implicit def monad[e](implicit i: ErrorClass[e]): MonadPlus[({type m[+a] = _ErrorT[e, a]})#m] with MonadError[e, ({type m[+a] = _ErrorT[e, a]})#m] with inner.Trans[({type m[+a] = _ErrorT[e, a]})#m] =
             new MonadPlus[({type m[+a] = _ErrorT[e, a]})#m] with MonadError[e, ({type m[+a] = _ErrorT[e, a]})#m] with inner.Trans[({type m[+a] = _ErrorT[e, a]})#m]
         {
@@ -82,7 +82,7 @@ final class _ErrorTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    trait Instances extends LowPriorityInstances { this: _ErrorT.type =>
+    sealed abstract class Instances extends LowPriorityInstances { this: _ErrorT.type =>
         implicit def monadFix[e](implicit i: MonadFix[n], j: ErrorClass[e]): MonadFix[({type m[+a] = _ErrorT[e, a]})#m] =
             new MonadFix[({type m[+a] = _ErrorT[e, a]})#m] with MonadProxy[({type m[+a] = _ErrorT[e, a]})#m]
         {

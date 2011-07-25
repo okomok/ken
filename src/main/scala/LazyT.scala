@@ -25,7 +25,7 @@ final class _LazyTs[n[+_]](val inner: Monad[n]) {
         def map[m[+_], a, b](f: n[Lazy[a]] => m[Lazy[b]])(n: _LazyT[a]): Identity[m[Lazy[b]]] = Identity { f(run(n)) }
     }
 
-    trait LowPriorityInstances { this: _LazyT.type =>
+    sealed abstract class LowPriorityInstances { this: _LazyT.type =>
         implicit val monad: Monad[_LazyT] with inner.Trans[_LazyT] = new Monad[_LazyT] with inner.Trans[_LazyT] {
             // Functor
             private[this] type f[+a] = _LazyT[a]
@@ -45,7 +45,7 @@ final class _LazyTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    trait Instances extends LowPriorityInstances { this: _LazyT.type =>
+    sealed abstract class Instances extends LowPriorityInstances { this: _LazyT.type =>
         implicit def monadIO(implicit i: MonadIO[n]): MonadIO[_LazyT] =
             new MonadIO[_LazyT] with MonadProxy[_LazyT]
         {

@@ -31,7 +31,7 @@ final class _StateTs[n[+_]](val inner: Monad[n]) {
         def `with`[s, a](f: s => s)(n: _StateT[s, a]): _StateT[s, a] = _StateT { run(n) compose f }
     }
 
-    trait LowPriorityInstances { this: _StateT.type =>
+    sealed abstract class LowPriorityInstances { this: _StateT.type =>
         implicit def monad[s]: MonadState[s, ({type m[+a] = _StateT[s, a]})#m] with inner.Trans[({type m[+a] = _StateT[s, a]})#m] =
             new MonadState[s, ({type m[+a] = _StateT[s, a]})#m] with inner.Trans[({type m[+a] = _StateT[s, a]})#m]
         {
@@ -54,7 +54,7 @@ final class _StateTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    trait Instances extends LowPriorityInstances { this: _StateT.type =>
+    sealed abstract class Instances extends LowPriorityInstances { this: _StateT.type =>
         implicit def monadPlus[s](implicit i: MonadPlus[n]): MonadPlus[({type m[+a] = _StateT[s, a]})#m] =
             new MonadPlus[({type m[+a] = _StateT[s, a]})#m] with MonadProxy[({type m[+a] = _StateT[s, a]})#m]
         {

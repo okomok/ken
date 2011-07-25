@@ -26,7 +26,7 @@ final class _MaybeTs[n[+_]](val inner: Monad[n]) {
         def map[m[+_], a, b](f: n[Maybe[a]] => m[Maybe[b]])(n: _MaybeT[a]): Identity[m[Maybe[b]]] = Identity { f(run(n)) }
     }
 
-    trait LowPriorityInstances { this: _MaybeT.type =>
+    sealed abstract class LowPriorityInstances { this: _MaybeT.type =>
         implicit val monad: MonadPlus[_MaybeT] with inner.Trans[_MaybeT] = new MonadPlus[_MaybeT] with inner.Trans[_MaybeT] {
             // Monad
             private[this] type m[+a] = _MaybeT[a]
@@ -53,7 +53,7 @@ final class _MaybeTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    trait Instances extends LowPriorityInstances { this: _MaybeT.type =>
+    sealed abstract class Instances extends LowPriorityInstances { this: _MaybeT.type =>
         implicit def monadIO(implicit i: MonadIO[n]): MonadIO[_MaybeT] =
             new MonadIO[_MaybeT] with MonadProxy[_MaybeT]
         {
