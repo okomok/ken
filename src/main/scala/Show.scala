@@ -14,10 +14,14 @@ import Show._
 trait Show[a] extends Klass {
     type apply = a
 
+    final def asShow: Show[a] = this
+
+// Overridables
     def showsPrec(n: Int)(x: a): ShowS
     def show(x: a): String_ = shows(x)("")
     def showList(ls: List[a]): ShowS = { s => showList__(shows)(ls)(s) }
 
+// Utilities
     final def showList__(showx: a => ShowS)(xs: List[a]): ShowS = { s =>
         xs match {
             case Nil => "Nil" ::: s

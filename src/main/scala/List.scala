@@ -12,7 +12,6 @@ import scala.annotation.tailrec
 
 
 sealed abstract class List[+a] extends Up[List[a]] {
-    @inline
     final def of[b >: a]: List[b] = this
 
     final override def toString: String = {
@@ -105,20 +104,23 @@ object List extends MonadPlus[List] {
 
     implicit def monoid[a]: Monoid[List[a]] = new Monoid[List[a]] {
         private[this] type m = List[a]
-        override def mempty: m = Nil
-        override def mappend(x: m)(y: => m): m = x ::: y
+        override val mempty: m = Nil
+        override val mappend: m => (=> m) => m = op_:::[a]
     }
 
     implicit def ord[a](implicit i: Ord[a]): Ord[List[a]] = new Ord[List[a]] {
-        @tailrec
-        override def compare(x: List[a])(y: List[a]): Ordering = (x, y) match {
-            case (Nil, Nil) => EQ
-            case (Nil, _ :: _) => LT
-            case (_ :: _, Nil) => GT
-            case (x :: xs, y :: ys) => i.compare(x)(y) match {
-                case EQ => compare(xs.!)(ys.!)
-                case other => other
+        override val compare: List[a] => List[a] => Ordering = {
+            @tailrec
+            def impl(x: List[a])(y: List[a]): Ordering = (x, y) match {
+                case (Nil, Nil) => EQ
+                case (Nil, _ :: _) => LT
+                case (_ :: _, Nil) => GT
+                case (x :: xs, y :: ys) => i.compare(x)(y) match {
+                    case EQ => impl(xs.!)(ys.!)
+                    case other => other
+                }
             }
+            impl _
         }
     }
 

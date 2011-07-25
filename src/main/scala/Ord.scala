@@ -8,41 +8,52 @@ package com.github.okomok
 package ken
 
 
-trait Ord[a] extends Klass { outer =>
-    def compare(x: a)(y: a): Ordering = if (x == y) EQ else if (op_<=(x)(y)) LT else GT
-    def op_<(x: a)(y: a): Bool = compare(x)(y) match { case LT => true; case _ => false }
-    def op_<=(x: a)(y: a): Bool = compare(x)(y) match { case GT => false; case _ => true }
-    def op_>(x: a)(y: a): Bool = compare(x)(y) match { case GT => true; case _ => false }
-    def op_>=(x: a)(y: a): Bool = compare(x)(y) match { case LT => false; case _ => true }
-    def max(x: a)(y: a): a = if (op_<=(x)(y)) y else x
-    def min(x: a)(y: a): a = if (op_<=(x)(y)) x else y
+trait Ord[a] extends Klass {
+    type apply = a
 
-    implicit def method(x: a): OrdMethod[a] = new OrdMethod[a] {
-        override def klass = outer
-        override def callee = x
+    final def asOrd: Ord[a] = this
+
+// Overridables
+    def compare: a => a => Ordering = { x => y => if (x == y) EQ else if (op_<=(x)(y)) LT else GT }
+    def op_< : a => a => Bool = { x => y => compare(x)(y) match { case LT => true; case _ => false } }
+    def op_<= : a => a => Bool = { x => y => compare(x)(y) match { case GT => false; case _ => true } }
+    def op_> : a => a => Bool = { x => y => compare(x)(y) match { case GT => true; case _ => false } }
+    def op_>= : a => a => Bool = { x => y => compare(x)(y) match { case LT => false; case _ => true } }
+    def max: a => a => a = { x => y => if (op_<=(x)(y)) y else x }
+    def min: a => a => a = { x => y => if (op_<=(x)(y)) x else y }
+
+// Infix Operators
+    sealed class Infix_<(x: a) {
+        def <(y: a): Bool = op_<(x)(y)
     }
-}
+    final implicit def <(x: a): Infix_< = new Infix_<(x)
 
+    sealed class Infix_<=(x: a) {
+        def <=(y: a): Bool = op_<=(x)(y)
+    }
+    final implicit def <=(x: a): Infix_<= = new Infix_<=(x)
 
-trait OrdMethod[a] extends Method {
-    override def klass: Ord[a]
-    override def callee: a
-    final def <(y: a): Bool = klass.op_<(callee)(y)
-    final def <=(y: a): Bool = klass.op_<=(callee)(y)
-    final def >(y: a): Bool = klass.op_>(callee)(y)
-    final def >=(y: a): Bool = klass.op_>=(callee)(y)
+    sealed class Infix_>(x: a) {
+        def >(y: a): Bool = op_>(x)(y)
+    }
+    final implicit def >(x: a): Infix_> = new Infix_>(x)
+
+    sealed class Infix_>=(x: a) {
+        def >=(y: a): Bool = op_>=(x)(y)
+    }
+    final implicit def >=(x: a): Infix_>= = new Infix_>=(x)
 }
 
 
 trait OrdProxy[a] extends Ord[a] with Proxy {
     override def self: Ord[a]
-    override def compare(x: a)(y: a): Ordering = self.compare(x)(y)
-    override def op_<(x: a)(y: a): Bool = self.op_<(x)(y)
-    override def op_<=(x: a)(y: a): Bool = self.op_<=(x)(y)
-    override def op_>(x: a)(y: a): Bool = self.op_>(x)(y)
-    override def op_>=(x: a)(y: a): Bool = self.op_>=(x)(y)
-    override def max(x: a)(y: a): a = self.max(x)(y)
-    override def min(x: a)(y: a): a = self.min(x)(y)
+    override def compare: a => a => Ordering = self.compare
+    override def op_< : a => a => Bool = self.op_<
+    override def op_<= : a => a => Bool = self.op_<=
+    override def op_> : a => a => Bool = self.op_>
+    override def op_>= : a => a => Bool = self.op_>=
+    override def max: a => a => a = self.max
+    override def min: a => a => a = self.min
 }
 
 
@@ -50,16 +61,16 @@ object Ord {
     def apply[a](implicit i: Ord[a]): Ord[a] = i
 
     implicit def ofOrdering[a](implicit i: scala.Ordering[a]): Ord[a] = new Ord[a] {
-        override def compare(x: a)(y: a): Ordering = i.compare(x, y) match {
+        override val compare: a => a => Ordering = { x => y => i.compare(x, y) match {
             case 0 => EQ
             case s if s < 0 => LT
             case s if s > 0 => GT
-        }
-        override def op_<(x: a)(y: a): Bool = i.lt(x, y)
-        override def op_<=(x: a)(y: a): Bool = i.lteq(x, y)
-        override def op_>(x: a)(y: a): Bool = i.gt(x, y)
-        override def op_>=(x: a)(y: a): Bool = i.gteq(x, y)
-        override def max(x: a)(y: a): a = i.max(x, y)
-        override def min(x: a)(y: a): a = i.min(x, y)
+        } }
+        override val op_< : a => a => Bool = { x => y => i.lt(x, y) }
+        override val op_<= : a => a => Bool = { x => y => i.lteq(x, y) }
+        override val op_> : a => a => Bool = { x => y => i.gt(x, y) }
+        override val op_>= : a => a => Bool = { x => y => i.gteq(x, y) }
+        override val max: a => a => a = { x => y => i.max(x, y) }
+        override val min: a => a => a = { x => y => i.min(x, y) }
     }
 }

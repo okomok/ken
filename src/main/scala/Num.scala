@@ -8,41 +8,50 @@ package com.github.okomok
 package ken
 
 
-trait Num[a] extends Klass { outer =>
-    def op_+(x: a)(y: a): a
-    def op_-(x: a)(y: a): a = op_+(x)(negate(y))
-    def op_*(x: a)(y: a): a
-    def negate(x: a): a = op_-(fromInt(0))(x)
-    def abs(x: a): a
-    def signum(x: a): a
-    def fromInt(n: Int): a
-    final def subtract(x: a)(y: a): a = y - x
+trait Num[a] extends Klass {
+    type apply = a
 
-    implicit def method(x: a): NumMethod[a] = new NumMethod[a] {
-        override def klass = outer
-        override def callee = x
+    final def asNum: Num[a] = this
+
+// Overridables
+    def op_+ : a => a => a
+    def op_- : a => a => a = { x => y => op_+(x)(negate(y)) }
+    def op_* : a => a => a
+    def negate: a => a = { x => op_-(fromInt(0))(x) }
+    def abs: a => a
+    def signum: a => a
+    def fromInt: Int => a
+
+// Utilities
+    final def subtract: a => a => a = flip(op_-)
+
+// Infix Operators
+    sealed class Infix_+(x: a) {
+        def +(y: a): a = op_+(x)(y)
     }
-}
+    final implicit def +(x: a): Infix_+ = new Infix_+(x)
 
+    sealed class Infix_-(x: a) {
+        def -(y: a): a = op_-(x)(y)
+    }
+    final implicit def -(x: a): Infix_- = new Infix_-(x)
 
-trait NumMethod[a] extends Method {
-    override def klass: Num[a]
-    override def callee: a
-    final def +(y: a): a = klass.op_+(callee)(y)
-    final def -(y: a): a = klass.op_-(callee)(y)
-    final def *(y: a): a = klass.op_*(callee)(y)
+    sealed class Infix_*(x: a) {
+        def *(y: a): a = op_*(x)(y)
+    }
+    final implicit def *(x: a): Infix_* = new Infix_*(x)
 }
 
 
 trait NumProxy[a] extends Num[a] with Proxy {
     override def self: Num[a]
-    override def op_+(x: a)(y: a): a = self.op_+(x)(y)
-    override def op_-(x: a)(y: a): a = self.op_-(x)(y)
-    override def op_*(x: a)(y: a): a = self.op_*(x)(y)
-    override def negate(x: a): a = self.negate(x)
-    override def abs(x: a): a = self.abs(x)
-    override def signum(x: a): a = self.signum(x)
-    override def fromInt(n: Int): a = self.fromInt(n)
+    override def op_+ : a => a => a = self.op_+
+    override def op_- : a => a => a = self.op_-
+    override def op_* : a => a => a = self.op_*
+    override def negate: a => a = self.negate
+    override def abs: a => a = self.abs
+    override def signum: a => a = self.signum
+    override def fromInt: Int => a = self.fromInt
 }
 
 
@@ -50,12 +59,12 @@ object Num {
     def apply[a](implicit i: Num[a]): Num[a] = i
 
     implicit def ofNumeric[a](implicit i: Numeric[a]): Num[a] = new Num[a] {
-        override def op_+(x: a)(y: a): a = i.plus(x, y)
-        override def op_-(x: a)(y: a): a = i.minus(x, y)
-        override def op_*(x: a)(y: a): a = i.times(x, y)
-        override def negate(x: a): a = i.negate(x)
-        override def abs(x: a): a = i.abs(x)
-        override def signum(x: a): a = fromInt(i.signum(x))
-        override def fromInt(n: Int): a = i.fromInt(n)
+        override val op_+ : a => a => a = { x => y => i.plus(x, y) }
+        override val op_- : a => a => a = { x => y => i.minus(x, y) }
+        override val op_* : a => a => a = { x => y => i.times(x, y) }
+        override val negate: a => a = { x => i.negate(x) }
+        override val abs: a => a = { x => i.abs(x) }
+        override val signum: a => a = { x => fromInt(i.signum(x)) }
+        override val fromInt: Int => a = { n => i.fromInt(n) }
     }
 }

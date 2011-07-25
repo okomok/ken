@@ -36,7 +36,10 @@ object Function {
 
     implicit def monoid[z, b](implicit mb: Monoid[b]): Monoid[z => b] = new Monoid[z => b] {
         private[this] type m = z => b
-        override def mempty: m = _ => mb.mempty
-        override def mappend(x: m)(y: => m): m = z => mb.mappend(x(z))(y(z))
+        override val mempty: m = _ => mb.mempty
+        override val mappend: m => (=> m) => m = { x => y =>
+            val y_ = y // scalac mistery
+            z => mb.mappend(x(z))(y_(z))
+        }
     }
 }

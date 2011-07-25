@@ -9,7 +9,6 @@ package ken
 
 
 trait Monad[m[+_]] extends Applicative[m] {
-    @inline
     final def asMonad: Monad[m] = this
 
 // Overridables

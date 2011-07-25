@@ -20,9 +20,9 @@ object Char {
     val isLatin1: Char => Bool = { ch => ch <= 255 }
     val isControl: Char => Bool = { ch => JChar.isISOControl(ch) }
     val isSpace: Char => Bool = { ch => JChar.isSpaceChar(ch) }
-    val isLower: Char => Bool = {ch => JChar.isLowerCase(ch) }
-    val isUpper: Char => Bool = {ch => JChar.isUpperCase(ch)  }
-    val isAlpha: Char => Bool = {ch => JChar.isLetter(ch) }
+    val isLower: Char => Bool = { ch => JChar.isLowerCase(ch) }
+    val isUpper: Char => Bool = { ch => JChar.isUpperCase(ch)  }
+    val isAlpha: Char => Bool = { ch => JChar.isLetter(ch) }
     val isAlphaNum: Char => Bool = { ch => JChar.isLetterOrDigit(ch) }
     val isPrint: Char => Bool = matches("\\p{Print}")
     val isDigit: Char => Bool = { ch => JChar.isDigit(ch) }

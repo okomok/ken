@@ -9,7 +9,6 @@ package ken
 
 
 trait Applicative[f[+_]] extends Functor[f] {
-    @inline
     final def asApplicative: Applicative[f] = this
 
 // Overridables

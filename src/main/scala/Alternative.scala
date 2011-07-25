@@ -9,6 +9,8 @@ package ken
 
 
 trait Alternative[f[+_]] extends Applicative[f] {
+    final def asAlternative: Alternative[f] = this
+
 // Overridables
     def empty: f[Nothing]
     def op_<|>[a](x: f[a])(y: => f[a]): f[a]
@@ -26,13 +28,13 @@ trait Alternative[f[+_]] extends Applicative[f] {
     }
 
 // Utilities
-    final def optional[a](x: f[a]): f[Maybe[a]] = (Just(_: a).up) <@> x <|> pure(Nothing.of[a])
+    final def optional[a](x: f[a]): f[Maybe[a]] = Maybe.just[a]_ <@> x <|> pure(Nothing.of[a])
 
 // Infix Operators
     sealed class Infix_<|>[a](x: f[a]) {
         def <|>(y: => f[a]): f[a] = op_<|>(x)(y)
     }
-    implicit def <|>[a](x: f[a]): Infix_<|>[a] = new Infix_<|>(x)
+    final implicit def <|>[a](x: f[a]): Infix_<|>[a] = new Infix_<|>(x)
 }
 
 

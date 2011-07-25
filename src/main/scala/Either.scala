@@ -9,7 +9,6 @@ package ken
 
 
 sealed abstract class Either[+a, +b] extends Up[Either[a, b]] {
-    @inline
     final def of[a_ >: a, b_ >: b]: Either[a_, b_] = this
 }
 

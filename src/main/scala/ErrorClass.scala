@@ -11,6 +11,8 @@ package ken
 trait ErrorClass[+a] extends Klass {
     type apply = a
 
+    final def asErrorClass: ErrorClass[a] = this
+
     def noMsg: a = strMsg("")
     def strMsg: String_ => a = { _ => noMsg }
 }

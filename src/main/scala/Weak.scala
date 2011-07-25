@@ -14,6 +14,8 @@ package ken
 trait Weak[p[+_], d[+_]] extends Klass {
     type apply[+a] = d[a]
 
+    final def asWeak: Weak[p, d] = this
+
     def wrap[a](d: => d[a]): p[a]
     def unwrap[a](p: p[a]): d[a]
 
