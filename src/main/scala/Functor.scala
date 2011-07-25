@@ -11,6 +11,9 @@ package ken
 trait Functor[f[+_]] extends Klass {
     type apply[+a] = f[a]
 
+    @inline
+    final def asFunctor: Functor[f] = this
+
 // Overridables
     def fmap[a, b](x: a => b)(y: f[a]): f[b]
 

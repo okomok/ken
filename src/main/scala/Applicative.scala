@@ -9,6 +9,9 @@ package ken
 
 
 trait Applicative[f[+_]] extends Functor[f] {
+    @inline
+    final def asApplicative: Applicative[f] = this
+
 // Overridables
     def pure[a](x: => a): f[a]
     def op_<*>[a, b](x: f[a => b])(y: f[a]): f[b]

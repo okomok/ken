@@ -19,5 +19,7 @@ class WeakTest extends org.scalatest.junit.JUnit3Suite {
         implicitly[Functor[({type m[+a] = a})#m]]
         implicitly[Applicative[({type m[+a] = a})#m]]
         implicitly[Monad[({type m[+a] = a})#m]]
+
+        implicitly[Monad[Identity.monad.apply]]
     }
 }

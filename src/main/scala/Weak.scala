@@ -12,6 +12,8 @@ package ken
  * Weakly-typed monads
  */
 trait Weak[p[+_], d[+_]] extends Klass {
+    type apply[+a] = d[a]
+
     def wrap[a](d: => d[a]): p[a]
     def unwrap[a](p: p[a]): d[a]
 

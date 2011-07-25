@@ -35,7 +35,7 @@ object Identity extends MonadFix[Identity] {
     override def `return`[a](a: => a): m[a] = Identity { a }
     override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = k(run(m))
     // MonadFix
-    override def mfix[a](f: (=> a) => m[a]): m[a] = Identity { Function.fix(run[a] _ compose f) }
+    override def mfix[a](f: (=> a) => m[a]): m[a] = Identity { Function.fix(run[a]_ compose f) }
 
 // Instances
     implicit val monad: MonadFix[Identity] = this
