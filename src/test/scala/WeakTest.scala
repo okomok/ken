@@ -12,14 +12,31 @@ import com.github.okomok.ken._
 
 class WeakTest extends org.scalatest.junit.JUnit3Suite {
 
-    val w = Identity.weak
-    import w._
-
     def testImplicit {
+        val w = Identity.weak
+        import w._
+
         implicitly[Functor[({type m[+a] = a})#m]]
         implicitly[Applicative[({type m[+a] = a})#m]]
         implicitly[Monad[({type m[+a] = a})#m]]
 
         implicitly[Monad[Identity.monad.apply]]
+    }
+
+    def testNoAmbiguity {
+        final class ParseError(val location: Int, val reason: String_)
+
+        object Err {
+            def apply(l: Int)(r: String_): ParseError = new ParseError(l, r)
+        }
+
+        implicit object ParseErrorClass extends ErrorClass[ParseError] {
+            override def noMsg = Err(0)("ParseError")
+            override def strMsg = s => Err(0)(s)
+        }
+
+        val w = Error.weak[ParseError]
+        import w._
+        implicitly[Monad[({type m[+a] = Either[ParseError, a]})#m]]
     }
 }

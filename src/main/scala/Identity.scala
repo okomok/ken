@@ -46,10 +46,10 @@ object Identity extends MonadFix[Identity] {
         override def wrap[a](d: => d[a]): p[a] = Identity(d)
         override def unwrap[a](p: p[a]): d[a] = run(p)
 
-        override implicit def functor(implicit i: Functor[p]): Functor[d] = WeakIdentity
-        override implicit def applicative(implicit i: Applicative[p]): Applicative[d] = WeakIdentity
-        override implicit def monad(implicit i: Monad[p]): Monad[d] = WeakIdentity
-        override implicit def monadFix(implicit i: MonadFix[p]): MonadFix[d] = WeakIdentity
+        override def functor(implicit i: Functor[p]): Functor[d] = WeakIdentity
+        override def applicative(implicit i: Applicative[p]): Applicative[d] = WeakIdentity
+        override def monad(implicit i: Monad[p]): Monad[d] = WeakIdentity
+        override def monadFix(implicit i: MonadFix[p]): MonadFix[d] = WeakIdentity
     }
 }
 

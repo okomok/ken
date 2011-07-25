@@ -11,10 +11,37 @@ package ken
 /**
  * Weakly-typed monads
  */
-trait Weak[p[+_], d[+_]] extends Klass {
-    type apply[+a] = d[a]
+trait Weak[p[+_], d[+_]] extends Weak7[p, d]
 
-    final def asWeak: Weak[p, d] = this
+
+trait WeakProxy[p[+_], d[+_]] extends Weak[p, d] with Proxy {
+    override def self: Weak[p, d]
+
+    override def wrap[a](d: => d[a]): p[a] = self.wrap(d)
+    override def unwrap[a](p: p[a]): d[a] = self.unwrap(p)
+
+    override def applicative(implicit i: Applicative[p]): Applicative[d] = self.applicative
+    override def monad(implicit i: Monad[p]): Monad[d] = self.monad
+    override def monadCont(implicit i: MonadCont[p]): MonadCont[d] = self.monadCont
+    override def monadError[e](implicit i: MonadError[e, p]): MonadError[e, d] = self.monadError[e]
+    override def monadFix(implicit i: MonadFix[p]): MonadFix[d] = self.monadFix
+    override def monadIO(implicit i: MonadIO[p]): MonadIO[d] = self.monadIO
+    override def monadPlus(implicit i: MonadPlus[p]): MonadPlus[d] = self.monadPlus
+    override def monadReader[r](implicit i: MonadReader[r, p]): MonadReader[r, d] = self.monadReader[r]
+    override def monadState[s](implicit i: MonadState[s, p]): MonadState[s, d] = self.monadState[s]
+    override def monadWriter[w](implicit i: MonadWriter[w, p]): MonadWriter[w, d] = self.monadWriter[w]
+}
+
+
+object Weak {
+    def apply[p[+_], d[+_]](implicit i: Weak[p, d]): Weak[p, d] = i
+}
+
+
+// Overloading weight control
+
+private[ken] trait Weak0[p[+_], d[+_]] extends Klass {
+    type apply[+a] = d[a]
 
     def wrap[a](d: => d[a]): p[a]
     def unwrap[a](p: p[a]): d[a]
@@ -51,7 +78,9 @@ trait Weak[p[+_], d[+_]] extends Klass {
             }
         }
     }
+}
 
+private[ken] trait Weak1[p[+_], d[+_]] extends Weak0[p, d] {
     implicit def monadError[e](implicit i: MonadError[e, p]): MonadError[e, d] = new MonadError[e, d] with MonadProxy[d] {
         private[this] type m[+a] = d[a]
         override val self = monad(i)
@@ -59,7 +88,9 @@ trait Weak[p[+_], d[+_]] extends Klass {
         override def throwError[a](e: e): m[a] = unwrap { i.throwError(e) }
         override def catchError[a](m: m[a])(h: e => m[a]): m[a] = unwrap { i.catchError(wrap(m))(e => wrap(h(e))) }
     }
+}
 
+private[ken] trait Weak2[p[+_], d[+_]] extends Weak1[p, d] {
     implicit def monadFix(implicit i: MonadFix[p]): MonadFix[d] = new MonadFix[d] with MonadProxy[d] {
         private[this] type m[+a] = d[a]
         override val self = monad(i)
@@ -68,34 +99,44 @@ trait Weak[p[+_], d[+_]] extends Klass {
             unwrap { i.mfix(k) }
         }
     }
+}
 
+private[ken] trait Weak3[p[+_], d[+_]] extends Weak2[p, d] {
     implicit def monadIO(implicit i: MonadIO[p]): MonadIO[d] = new MonadIO[d] with MonadProxy[d] {
         private[this] type m[+a] = d[a]
         override val self = monad(i)
         override def liftIO[a](io: IO[a]): m[a] = unwrap { i.liftIO(io) }
     }
+}
 
+private[ken] trait Weak4[p[+_], d[+_]] extends Weak3[p, d] {
     implicit def monadPlus(implicit i: MonadPlus[p]): MonadPlus[d] = new MonadPlus[d] with MonadProxy[d] {
         private[this] type m[+a] = d[a]
         override val self = monad(i)
         override def mzero: m[Nothing] = unwrap { i.mzero }
         override def mplus[a](x: m[a])(y: => m[a]): m[a] = unwrap { i.mplus(wrap(x))(wrap(y)) }
     }
+}
 
+private[ken] trait Weak5[p[+_], d[+_]] extends Weak4[p, d] {
     implicit def monadReader[r](implicit i: MonadReader[r, p]): MonadReader[r, d] = new MonadReader[r, d] with MonadProxy[d] {
         private[this] type m[+a] = d[a]
         override val self = monad(i)
         override def ask: m[r] = unwrap { i.ask }
         override def local[a](f: r => r)(m: m[a]): m[a] = unwrap { i.local(f)(wrap(m)) }
     }
+}
 
+private[ken] trait Weak6[p[+_], d[+_]] extends Weak5[p, d] {
     implicit def monadState[s](implicit i: MonadState[s, p]): MonadState[s, d] = new MonadState[s, d] with MonadProxy[d] {
         private[this] type m[+a] = d[a]
         override val self = monad(i)
         override def get: m[s] = unwrap { i.get }
         override def put(s: s): m[Unit] = unwrap { i.put(s) }
     }
+}
 
+private[ken] trait Weak7[p[+_], d[+_]] extends Weak6[p, d] {
     implicit def monadWriter[w](implicit i: MonadWriter[w, p]): MonadWriter[w, d] = new MonadWriter[w, d] with MonadProxy[d] {
         private[this] type m[+a] = d[a]
         override val self = monad(i)
@@ -104,28 +145,4 @@ trait Weak[p[+_], d[+_]] extends Klass {
         override def listen[a](x: m[a]): m[(a, w)] = unwrap { i.listen(wrap(x)) }
         override def pass[a](x: m[(a, w => w)]): m[a] = unwrap { i.pass(wrap(x)) }
     }
-}
-
-
-trait WeakProxy[p[+_], d[+_]] extends Weak[p, d] with Proxy {
-    override def self: Weak[p, d]
-
-    override def wrap[a](d: => d[a]): p[a] = self.wrap(d)
-    override def unwrap[a](p: p[a]): d[a] = self.unwrap(p)
-
-    override implicit def applicative(implicit i: Applicative[p]): Applicative[d] = self.applicative
-    override implicit def monad(implicit i: Monad[p]): Monad[d] = self.monad
-    override implicit def monadCont(implicit i: MonadCont[p]): MonadCont[d] = self.monadCont
-    override implicit def monadError[e](implicit i: MonadError[e, p]): MonadError[e, d] = self.monadError[e]
-    override implicit def monadFix(implicit i: MonadFix[p]): MonadFix[d] = self.monadFix
-    override implicit def monadIO(implicit i: MonadIO[p]): MonadIO[d] = self.monadIO
-    override implicit def monadPlus(implicit i: MonadPlus[p]): MonadPlus[d] = self.monadPlus
-    override implicit def monadReader[r](implicit i: MonadReader[r, p]): MonadReader[r, d] = self.monadReader[r]
-    override implicit def monadState[s](implicit i: MonadState[s, p]): MonadState[s, d] = self.monadState[s]
-    override implicit def monadWriter[w](implicit i: MonadWriter[w, p]): MonadWriter[w, d] = self.monadWriter[w]
-}
-
-
-object Weak {
-    def apply[p[+_], d[+_]](implicit i: Weak[p, d]): Weak[p, d] = i
 }

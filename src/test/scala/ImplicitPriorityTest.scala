@@ -20,11 +20,11 @@ class ImplicitPriorityTest extends org.scalatest.junit.JUnit3Suite {
     }
 
     trait _Implicit1 extends _Implicit0 {
-        implicit val b: B = new B{}
+        implicit def b: B = new B{}
     }
 
     object _Implicit2 extends _Implicit1 {
-        implicit val d: D = new D{}
+        implicit def d(implicit i: DummyImplicit): D = new D{}
     }
 
     def testTrivial {
