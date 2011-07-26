@@ -30,11 +30,13 @@ class IOTest extends org.scalatest.junit.JUnit3Suite {
         io.unIO()
     }
 
-    def testPrintLn {
+    def teztPrintLn {
         val io = IO.putStrLn("hello")
 
         //io.unIO()
         //io.unIO()
         //io.unIO()
     }
+
+    def test_ {}
 }

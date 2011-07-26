@@ -30,7 +30,15 @@ object IO extends MonadIO[IO] {
     // Monad
     override def `return`[a](x: => a): m[a] = IO { x }
     override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = IO {
-        y(x.unIO()).unIO()
+        // Probably broken patchwork...
+        val e = x.unIO()
+        val io = y(e)
+        if (io ne x) {
+            io.unIO()
+        } else {
+            e.asInstanceOf[b]
+        }
+        // y(x.unIO()).unIO()
     }
     // MonadIO
     def liftIO[a](io: IO[a]): m[a] = io

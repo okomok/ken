@@ -160,7 +160,7 @@ final class _ErrorTs[n[+_]](val inner: Monad[n]) {
         {
             private[this] type p[+a] = _ErrorT[e, a]
             private[this] type d[+a] = n[Either[e, a]]
-            override def wrap[a](d: => d[a]): p[a] = _ErrorT { d }
+            override def wrap[a](d: => d[a]): p[a] = _ErrorT(d)
             override def unwrap[a](p: p[a]): d[a] = run(p)
         }
     }

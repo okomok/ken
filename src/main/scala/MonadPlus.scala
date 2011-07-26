@@ -19,8 +19,8 @@ trait MonadPlus[m[+_]] extends Monad[m] with Alternative[m] {
 
 // Utilities
     final def guard(b: Bool): m[Unit] = b match {
-        case true => `return`()
-        case false => mzero
+        case true => `return`() // one-element
+        case false => mzero // empty
     }
 
     final def msum[a](xs: List[m[a]]): m[a] = List.foldr(mplus[a])(mzero)(xs)

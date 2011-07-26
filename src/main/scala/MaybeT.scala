@@ -103,5 +103,14 @@ final class _MaybeTs[n[+_]](val inner: Monad[n]) {
             override def get: m[s] = self.lift(i.get)
             override def put(s: s): m[Unit] = self.lift(i.put(s))
         }
+
+        implicit val weak: Weak[_MaybeT, ({type d[+a] = n[Maybe[a]]})#d] =
+            new Weak[_MaybeT, ({type d[+a] = n[Maybe[a]]})#d]
+        {
+            private[this] type p[+a] = _MaybeT[a]
+            private[this] type d[+a] = n[Maybe[a]]
+            override def wrap[a](d: => d[a]): p[a] = _MaybeT(d)
+            override def unwrap[a](p: p[a]): d[a] = run(p)
+        }
     }
 }
