@@ -8,6 +8,9 @@ package com.github.okomok
 package ken
 
 
+// Unused
+
+
 trait MonadTrans[t[m[+_], +_]] extends Klass {
     def lift[m[+_], a](x: m[a])(implicit i: Monad[m]): t[m, a]
 }

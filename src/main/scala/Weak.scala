@@ -11,7 +11,7 @@ package ken
 /**
  * Weakly-typed monads
  */
-trait Weak[p[+_], d[+_]] extends Weak7[p, d]
+trait Weak[p[+_], d[+_]] extends WeakInstances[p, d]
 
 
 trait WeakProxy[p[+_], d[+_]] extends Weak[p, d] with Proxy {
@@ -40,7 +40,7 @@ object Weak {
 
 // Overloading weight control
 
-private[ken] trait Weak0[p[+_], d[+_]] extends Klass {
+private[ken] trait WeakInstance0[p[+_], d[+_]] extends Klass {
     type apply[+a] = d[a]
 
     def wrap[a](d: => d[a]): p[a]
@@ -80,7 +80,7 @@ private[ken] trait Weak0[p[+_], d[+_]] extends Klass {
     }
 }
 
-private[ken] trait Weak1[p[+_], d[+_]] extends Weak0[p, d] {
+private[ken] trait WeakInstance1[p[+_], d[+_]] extends WeakInstance0[p, d] {
     implicit def monadError[e](implicit i: MonadError[e, p]): MonadError[e, d] = new MonadError[e, d] with MonadProxy[d] {
         private[this] type m[+a] = d[a]
         override val self = monad(i)
@@ -90,7 +90,7 @@ private[ken] trait Weak1[p[+_], d[+_]] extends Weak0[p, d] {
     }
 }
 
-private[ken] trait Weak2[p[+_], d[+_]] extends Weak1[p, d] {
+private[ken] trait WeakInstance2[p[+_], d[+_]] extends WeakInstance1[p, d] {
     implicit def monadFix(implicit i: MonadFix[p]): MonadFix[d] = new MonadFix[d] with MonadProxy[d] {
         private[this] type m[+a] = d[a]
         override val self = monad(i)
@@ -101,7 +101,7 @@ private[ken] trait Weak2[p[+_], d[+_]] extends Weak1[p, d] {
     }
 }
 
-private[ken] trait Weak3[p[+_], d[+_]] extends Weak2[p, d] {
+private[ken] trait WeakInstance3[p[+_], d[+_]] extends WeakInstance2[p, d] {
     implicit def monadIO(implicit i: MonadIO[p]): MonadIO[d] = new MonadIO[d] with MonadProxy[d] {
         private[this] type m[+a] = d[a]
         override val self = monad(i)
@@ -109,7 +109,7 @@ private[ken] trait Weak3[p[+_], d[+_]] extends Weak2[p, d] {
     }
 }
 
-private[ken] trait Weak4[p[+_], d[+_]] extends Weak3[p, d] {
+private[ken] trait WeakInstance4[p[+_], d[+_]] extends WeakInstance3[p, d] {
     implicit def monadPlus(implicit i: MonadPlus[p]): MonadPlus[d] = new MonadPlus[d] with MonadProxy[d] {
         private[this] type m[+a] = d[a]
         override val self = monad(i)
@@ -118,7 +118,7 @@ private[ken] trait Weak4[p[+_], d[+_]] extends Weak3[p, d] {
     }
 }
 
-private[ken] trait Weak5[p[+_], d[+_]] extends Weak4[p, d] {
+private[ken] trait WeakInstance5[p[+_], d[+_]] extends WeakInstance4[p, d] {
     implicit def monadReader[r](implicit i: MonadReader[r, p]): MonadReader[r, d] = new MonadReader[r, d] with MonadProxy[d] {
         private[this] type m[+a] = d[a]
         override val self = monad(i)
@@ -127,7 +127,7 @@ private[ken] trait Weak5[p[+_], d[+_]] extends Weak4[p, d] {
     }
 }
 
-private[ken] trait Weak6[p[+_], d[+_]] extends Weak5[p, d] {
+private[ken] trait WeakInstance6[p[+_], d[+_]] extends WeakInstance5[p, d] {
     implicit def monadState[s](implicit i: MonadState[s, p]): MonadState[s, d] = new MonadState[s, d] with MonadProxy[d] {
         private[this] type m[+a] = d[a]
         override val self = monad(i)
@@ -136,7 +136,7 @@ private[ken] trait Weak6[p[+_], d[+_]] extends Weak5[p, d] {
     }
 }
 
-private[ken] trait Weak7[p[+_], d[+_]] extends Weak6[p, d] {
+private[ken] trait WeakInstance7[p[+_], d[+_]] extends WeakInstance6[p, d] {
     implicit def monadWriter[w](implicit i: MonadWriter[w, p]): MonadWriter[w, d] = new MonadWriter[w, d] with MonadProxy[d] {
         private[this] type m[+a] = d[a]
         override val self = monad(i)
@@ -146,3 +146,5 @@ private[ken] trait Weak7[p[+_], d[+_]] extends Weak6[p, d] {
         override def pass[a](x: m[(a, w => w)]): m[a] = unwrap { i.pass(wrap(x)) }
     }
 }
+
+private[ken] trait WeakInstances[p[+_], d[+_]] extends WeakInstance7[p, d]
