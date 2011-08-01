@@ -54,6 +54,6 @@ Shunsuke Sogame <<okomok@gmail.com>>
 
 
 [MIT License]: http://www.opensource.org/licenses/mit-license.php "MIT License"
-[Browse Source]: http://github.com/okomok/ken/tree/master/src/main/scala/ "Browse Source"
-[Browse Test Source]: http://github.com/okomok/ken/tree/master/src/test/scala/ "Browse Test Source"
+[Browse Source]: https://github.com/okomok/ken/tree/master/src/main/scala/com/github/okomok/ken "Browse Source"
+[Browse Test Source]: https://github.com/okomok/ken/tree/master/src/test/scala/com/github/okomok/ken "Browse Test Source"
 [The Scala Programming Language]: http://www.scala-lang.org/ "The Scala Programming Language"
