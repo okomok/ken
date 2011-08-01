@@ -8,15 +8,20 @@ package com.github.okomok
 package ken
 
 
-trait Monoid[m] extends Klass {
+trait Monoid[m] extends Klass { outer =>
     type apply = m
-
     final def asMonoid: Monoid[m] = this
 
 // Overridables
     def mempty: m
     def mappend: m => (=> m) => m
     def mconcat: List[m] => m = { x => List.foldr(mappend)(mempty)(x) }
+
+// Utilities
+    final def dual: Monoid[m] = new Monoid[m] {
+        override val mempty: m = outer.mempty
+        override val mappend: m => (=> m) => m = x => y => outer.mappend(y)(x)
+    }
 
 // Infix Operators
     sealed class Infix_mappend(x: m) {
@@ -34,9 +39,25 @@ trait MonoidProxy[m] extends Monoid[m] with Proxy {
 }
 
 
-object Monoid {
+object Monoid extends MonoidInstance {
     def apply[m](implicit i: Monoid[m]): Monoid[m] = i
 
+/*
+    final case class Dual[+a](get: a) extends Identity[a] {
+        override def run: a = get
+    }
+
+    object Dual {
+        implicit def monoid[a](implicit i: Monoid[a]): Monoid[Dual[a]] = new Monoid[Dual[a]] {
+            override val mempty: m = Dual(i.mempty)
+            override val mappend: m => (=> m) => m = x => y => Dual(i.mappend(y.get)(x.get))
+        }
+    }
+*/
+}
+
+
+trait MonoidInstance {
     implicit val ofUnit: Monoid[Unit] = Unit.monoid
 
     implicit def ofFunction1[z, b](implicit mb: Monoid[b]): Monoid[z => b] = Function.monoid[z, b]

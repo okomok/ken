@@ -40,7 +40,7 @@ object Identity extends MonadFix[Identity] {
 // Instances
     implicit val monad: MonadFix[Identity] = this
 
-    implicit val weak: Weak[Identity, ({type d[+a] = a})#d] = new Weak[Identity, ({type d[+a] = a})#d] {
+    implicit val weak: Weak1[Identity, ({type d[+a] = a})#d] = new Weak1[Identity, ({type d[+a] = a})#d] {
         type p[+a] = Identity[a]
         type d[+a] = a
         override def wrap[a](d: => d[a]): p[a] = Identity(d)

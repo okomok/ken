@@ -26,8 +26,8 @@ final class _ErrorTs[n[+_]](val inner: Monad[n]) {
     }
 
     private[ken] trait Instance0 { this: _ErrorT.type =>
-        implicit def weak[e]: Weak[({type p[+a] = _ErrorT[e, a]})#p, ({type d[+a] = n[Either[e, a]]})#d] =
-            new Weak[({type p[+a] = _ErrorT[e, a]})#p, ({type d[+a] = n[Either[e, a]]})#d]
+        implicit def weak[e]: Weak1[({type p[+a] = _ErrorT[e, a]})#p, ({type d[+a] = n[Either[e, a]]})#d] =
+            new Weak1[({type p[+a] = _ErrorT[e, a]})#p, ({type d[+a] = n[Either[e, a]]})#d]
         {
             private[this] type p[+a] = _ErrorT[e, a]
             private[this] type d[+a] = n[Either[e, a]]
