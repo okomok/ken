@@ -19,7 +19,7 @@ class WorldTest extends org.scalatest.junit.JUnit3Suite {
         import ST.monad.{`for`, forM_}
         runST {
             for {
-                n <- newSTRef(fromInt(0))
+                n <- newSTRef(fromInteger(0))
                 _ <- forM_(xs) { x =>
                     for {
                         * <- modifySTRef(n)(x + _)

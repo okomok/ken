@@ -47,11 +47,21 @@ trait ShowProxy[a] extends Show[a] with Proxy {
 }
 
 
-object Show {
+object Show extends ShowInstance {
     def apply[a](implicit i: Show[a]): Show[a] = i
 
     type ShowS = Function1[String_, String_]
+    val showChar: Char => ShowS = List.op_!::
 
+    val showString: String_ => ShowS = List.op_!:::
+
+    val showParen: Bool => ShowS => ShowS = b => p => if (b) showChar('(') compose p compose showChar(')') else p
+
+    val showSpace: ShowS = { xs => ' ' :: xs }
+}
+
+
+trait ShowInstance { this: Show.type =>
     implicit def ofAny[a]: Show[a] = new Show[a] {
         override def showsPrec(n: Int)(x: a): ShowS = showString(x.toString)
     }
@@ -61,11 +71,5 @@ object Show {
         override def showsPrec(n: Int)(x: a): ShowS = i.showList(x)
     }
 
-    def showChar(x: Char): ShowS = List.op_!::(x)
-
-    def showString(xs: String_): ShowS = List.op_!:::(xs)
-
-    def showParen(b: Bool)(p: ShowS): ShowS = if (b) showChar('(') compose p compose showChar(')') else p
-
-    val showSpace: ShowS = { xs => ' ' :: xs }
+    // TODO
 }

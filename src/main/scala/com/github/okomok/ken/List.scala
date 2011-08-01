@@ -274,9 +274,9 @@ object List extends MonadPlus[List] {
 
     def all[a](p: a => Bool)(xs: List[a]): Bool = and(map(p)(xs))
 
-    def sum[a](xs: List[a])(implicit i: Num[a]): a = foldl(i.op_+)(i.fromInt(0))(xs)
+    def sum[a](xs: List[a])(implicit i: Num[a]): a = foldl(i.op_+)(i.fromInteger(0))(xs)
 
-    def product[a](xs: List[a])(implicit i: Num[a]): a = foldl(i.op_*)(i.fromInt(1))(xs)
+    def product[a](xs: List[a])(implicit i: Num[a]): a = foldl(i.op_*)(i.fromInteger(1))(xs)
 
     def maximum[a](xs: List[a])(implicit i: Ord[a]): a = xs match {
         case Nil => error("empty List")
@@ -614,12 +614,12 @@ object List extends MonadPlus[List] {
         }
     }
 
-    def range(n: Int, m: Int): List[Int] = {
-        Predef.require(n <= m)
-        if (n == m) Nil else n :: range(n + 1, m)
+    def range[a](n: a, m: a)(implicit i: Num[a]): List[a] = {
+        // Predef.require(n <= m)
+        if (n == m) Nil else n :: range(i.op_+(n)(i.fromInteger(1)), m)
     }
 
-    def rangeFrom(n: Int): List[Int] = n :: rangeFrom(n + 1)
+    def rangeFrom[a](n: a)(implicit i: Num[a]): List[a] = n :: rangeFrom(i.op_+(n)(i.fromInteger(1)))
 
     def slice[a](n: Int, m: Int)(xs: List[a]): List[a] = List.drop(n)(List.take(m)(xs))
 

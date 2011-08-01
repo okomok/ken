@@ -17,10 +17,10 @@ trait Num[a] extends Klass {
     def op_+ : a => a => a
     def op_- : a => a => a = { x => y => op_+(x)(negate(y)) }
     def op_* : a => a => a
-    def negate: a => a = { x => op_-(fromInt(0))(x) }
+    def negate: a => a = { x => op_-(fromInteger(0))(x) }
     def abs: a => a
     def signum: a => a
-    def fromInt: Int => a
+    def fromInteger: Integer => a
 
 // Utilities
     final def subtract: a => a => a = flip(op_-)
@@ -51,20 +51,23 @@ trait NumProxy[a] extends Num[a] with Proxy {
     override def negate: a => a = self.negate
     override def abs: a => a = self.abs
     override def signum: a => a = self.signum
-    override def fromInt: Int => a = self.fromInt
+    override def fromInteger: Integer => a = self.fromInteger
 }
 
 
-object Num {
+object Num extends NumInstance {
     def apply[a](implicit i: Num[a]): Num[a] = i
+}
 
+
+trait NumInstance { this: Num.type =>
     implicit def ofNumeric[a](implicit i: Numeric[a]): Num[a] = new Num[a] {
         override val op_+ : a => a => a = { x => y => i.plus(x, y) }
         override val op_- : a => a => a = { x => y => i.minus(x, y) }
         override val op_* : a => a => a = { x => y => i.times(x, y) }
         override val negate: a => a = { x => i.negate(x) }
         override val abs: a => a = { x => i.abs(x) }
-        override val signum: a => a = { x => fromInt(i.signum(x)) }
-        override val fromInt: Int => a = { n => i.fromInt(n) }
+        override val signum: a => a = { x => fromInteger(i.signum(x)) }
+        override val fromInteger: Integer => a = { n => i.fromInt(n.toInt) }
     }
 }

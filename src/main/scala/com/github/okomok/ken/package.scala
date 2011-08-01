@@ -87,6 +87,8 @@ package object ken {
 // Aliases
     type String_ = List[Char]
     type Bool = Boolean
+    final val True = true
+    final val False = false
     type Integer = BigInt
 
 // Misc
