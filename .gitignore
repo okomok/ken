@@ -4,3 +4,5 @@ src_managed/
 project/boot/
 test-output/
 .scala_dependencies
+.classpath
+.project
