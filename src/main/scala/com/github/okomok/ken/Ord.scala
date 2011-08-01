@@ -8,9 +8,7 @@ package com.github.okomok
 package ken
 
 
-trait Ord[a] extends Klass {
-    type apply = a
-
+trait Ord[a] extends Eq[a] {
     final def asOrd: Ord[a] = this
 
 // Overridables

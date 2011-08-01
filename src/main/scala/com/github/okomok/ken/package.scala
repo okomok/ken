@@ -10,6 +10,10 @@ package com.github.okomok
 package object ken {
 
 // Eq
+    type Eq[-a] = _Eq[a]
+    val Eq = _Eq
+
+    // will be removed.
     def op_==[a](x: a)(y: a): Bool = x == y
     def op_!=[a](x: a)(y: a): Bool = x != y
 
