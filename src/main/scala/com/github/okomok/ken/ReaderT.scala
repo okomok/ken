@@ -15,7 +15,7 @@ final class _ReaderTs[n[+_]](val inner: Monad[n]) {
 
     object _ReaderT extends Instances {
         def apply[r, a](rep: r => n[a]): _ReaderT[r, a] = new _ReaderT[r, a] {
-            override def run: r => n[a] = rep
+            override def get: r => n[a] = rep
         }
 
         implicit def from[r, a](n: Identity[r => n[a]]): _ReaderT[r, a] = _ReaderT { n.run }

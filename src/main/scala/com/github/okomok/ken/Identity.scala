@@ -18,7 +18,7 @@ trait IdentityProxy[+a] extends Identity[a] with StrongProxy[a] {
 
 object Identity extends MonadFix[Identity] {
     def apply[a](a: a): Identity[a] = new Identity[a] {
-        override def run: a = a
+        override def get: a = a
     }
 
     def run[a](m: Identity[a]): a = m.run

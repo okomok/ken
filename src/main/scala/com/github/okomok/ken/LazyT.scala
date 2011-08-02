@@ -15,7 +15,7 @@ final class _LazyTs[n[+_]](val inner: Monad[n]) {
 
     object _LazyT extends Instances {
         def apply[a](rep: n[Lazy[a]]): _LazyT[a] = new _LazyT[a] {
-            override def run: n[Lazy[a]] = rep
+            override def get: n[Lazy[a]] = rep
         }
 
         implicit def from[a](n: Identity[n[Lazy[a]]]): _LazyT[a] = _LazyT { n.run }

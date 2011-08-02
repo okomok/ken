@@ -15,7 +15,7 @@ final class _ErrorTs[n[+_]](val inner: Monad[n]) {
 
     object _ErrorT extends Instances {
         def apply[e, a](rep: n[Either[e, a]]): _ErrorT[e, a] = new _ErrorT[e, a] {
-            override def run: n[Either[e, a]] = rep
+            override def get: n[Either[e, a]] = rep
         }
 
         implicit def from[e, a](n: Identity[n[Either[e, a]]]): _ErrorT[e, a] = _ErrorT { n.run }

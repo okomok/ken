@@ -15,7 +15,7 @@ final class _StateTs[n[+_]](val inner: Monad[n]) {
 
     object _StateT extends Instances {
         def apply[s, a](rep: s => n[(a, s)]): _StateT[s, a] = new _StateT[s, a] {
-            override def run: s => n[(a, s)] = rep
+            override def get: s => n[(a, s)] = rep
         }
 
         implicit def from[s, a](n: Identity[s => n[(a, s)]]): _StateT[s, a] = _StateT { n.run }

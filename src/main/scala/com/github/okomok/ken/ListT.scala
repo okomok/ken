@@ -15,7 +15,7 @@ final class _ListTs[n[+_]](val inner: Monad[n]) {
 
     object _ListT extends Instances {
         def apply[a](rep: n[List[a]]): _ListT[a] = new _ListT[a] {
-            override def run: n[List[a]] = rep
+            override def get: n[List[a]] = rep
         }
 
         implicit def from[a](n: Identity[n[List[a]]]): _ListT[a] = _ListT { n.run }

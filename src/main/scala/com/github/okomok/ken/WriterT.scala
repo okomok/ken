@@ -15,7 +15,7 @@ final class _WriterTs[n[+_]](val inner: Monad[n]) {
 
     object _WriterT extends Instances {
         def apply[w, a](rep: n[(a, w)]): _WriterT[w, a] = new _WriterT[w, a] {
-            override def run: n[(a, w)] = rep
+            override def get: n[(a, w)] = rep
         }
 
         implicit def from[w, a](n: Identity[n[(a, w)]]): _WriterT[w, a] = _WriterT(n.run)

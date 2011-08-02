@@ -12,11 +12,13 @@ package ken
  * Same as Scalaz NewType.
  */
 trait Strong[+a] {
-    def run: a
+    def get: a
+    final def run: a = get
+    final def app: a = run
 }
 
 
 trait StrongProxy[+a] extends Strong[a] with Proxy {
     override def self: Strong[a]
-    override def run: a = self.run
+    override def get: a = self.run
 }

@@ -16,7 +16,7 @@ final class _MaybeTs[n[+_]](val inner: Monad[n]) {
 
     object _MaybeT extends Instances {
         def apply[a](rep: n[Maybe[a]]): _MaybeT[a] = new _MaybeT[a] {
-            override def run: n[Maybe[a]] = rep
+            override def get: n[Maybe[a]] = rep
         }
 
         implicit def from[a](n: Identity[n[Maybe[a]]]): _MaybeT[a] = _MaybeT { n.run }

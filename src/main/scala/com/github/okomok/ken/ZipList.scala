@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-final case class ZipList[+a](override val run: List[a]) extends Strong[List[a]]
+final case class ZipList[+a](override val get: List[a]) extends Strong[List[a]]
 
 
 object ZipList extends Applicative[ZipList] {
