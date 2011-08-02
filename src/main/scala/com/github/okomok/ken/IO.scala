@@ -24,7 +24,8 @@ object IO extends MonadIO[IO] {
         override def unIO = x
     }
 
-// Overrides
+    // Overrides
+    //
     private[this] type m[+a] = IO[a]
     // Monad
     override def `return`[a](x: => a): m[a] = IO { x }
@@ -42,10 +43,12 @@ object IO extends MonadIO[IO] {
     // MonadIO
     def liftIO[a](io: IO[a]): m[a] = io
 
-// Instances
+    // Instances
+    //
     implicit val monad: MonadIO[IO] = this
 
-// Output functions
+    // Output functions
+    //
     val putChar: Char => IO[Unit] = c => IO {
         Predef.print(c)
     }
@@ -60,7 +63,8 @@ object IO extends MonadIO[IO] {
 
     def print[a](x: a)(implicit i: Show[a]): IO[Unit] = putStrLn(i.show(x))
 
-// Input functions
+    // Input functions
+    //
     val getChar: IO[Char] = IO {
         Predef.readChar()
     }
@@ -82,7 +86,8 @@ object IO extends MonadIO[IO] {
         for { s <- getContents; * <- putStr(f(s)) } yield *
     }
 
-// Files
+    // Files
+    //
     type FilePath = String
 
     val readFile: FilePath => IO[String_] = f => IO {
@@ -99,7 +104,7 @@ object IO extends MonadIO[IO] {
     }
 
     val appendFile: FilePath => String_ => IO[Unit] = f => txt => IO {
-        val fw = new java.io.FileWriter(f, true)
+        val fw = new java.io.FileWriter(f, True)
         try {
             fw.write(List.stringize(txt))
         } finally {
@@ -107,7 +112,8 @@ object IO extends MonadIO[IO] {
         }
     }
 
-// Exception handling in the I/O monad
+    // Exception handling in the I/O monad
+    //
     type IOError = java.io.IOException
 
     val ioError: IOError => IO[Nothing] = err => IO { throw err }

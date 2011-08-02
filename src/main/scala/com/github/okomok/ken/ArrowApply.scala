@@ -8,6 +8,9 @@ package com.github.okomok
 package ken
 
 
+// TODO
+
+
 trait ArrowApply[a[_, _]] extends Arrow[a] {
     def app[b, c]: a[(a[b, c], b), c]
 }

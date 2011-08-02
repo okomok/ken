@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-final case class Const[a, +b](getConst: a)
+final case class Const[a, +b](override val get: a) extends Strong[a]
 
 
 object Const {

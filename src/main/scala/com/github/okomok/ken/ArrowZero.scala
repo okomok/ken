@@ -8,6 +8,9 @@ package com.github.okomok
 package ken
 
 
+// TODO
+
+
 trait ArrowZero[a[_, _]] extends Arrow[a] {
     def zeroArrow[b, c]: a[b, c]
 }

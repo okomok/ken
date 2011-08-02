@@ -9,12 +9,17 @@ package ken
 
 
 trait MonadIO[m[+_]] extends Monad[m] {
+    final def asMonadIO: MonadIO[m] = this
+
+    // Core
+    //
     def liftIO[a](io: IO[a]): m[a]
 }
 
 
 trait MonadIOProxy[m[+_]] extends MonadIO[m] with MonadProxy[m] {
     override def self: MonadIO[m]
+
     override def liftIO[a](io: IO[a]): m[a] = self.liftIO(io)
 }
 

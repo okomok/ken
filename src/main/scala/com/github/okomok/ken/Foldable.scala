@@ -12,7 +12,7 @@ trait Foldable[t[+_]] extends Klass1[t] {
     final def asFoldable: Foldable[t] = this
 
     // Core
-
+    //
     def fold[m](f: t[m])(implicit i: Monoid[m]): m = foldMap(id[m])(f)(i)
     def foldMap[a, m](f: a => m)(x: t[a])(implicit i: Monoid[m]): m = foldr[a, m](i.mappend compose f)(i.mempty)(x)
 
@@ -40,7 +40,7 @@ trait Foldable[t[+_]] extends Klass1[t] {
     }
 
     // Extra
-
+    //
     def foldr_[a, b](f: a => b => b)(z0: b)(xs: t[a]): b = {
         def f_(k: b => b)(x: a)(z: b): b = k { f(x)(z) }
         foldl[b => b, a](f_)(id)(xs)(z0)

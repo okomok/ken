@@ -8,6 +8,9 @@ package com.github.okomok
 package ken
 
 
+// TODO
+
+
 trait ArrowLoop[a[_, _]] extends Arrow[a] {
     def loop[b, c, d](f: a[(b, d), (c, d)]): a[b, c]
 }

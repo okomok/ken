@@ -11,7 +11,8 @@ package ken
 trait Ix[a] extends Ord[a] {
     final def asIx: Ix[a] = this
 
-// Overridables
+    // Core
+    //
     def range: Tuple2[a, a] => List[a]
     def index: Tuple2[a, a] => a => Int = b => i => {
         if (inRange(b)(i)) unsafeIndex(b)(i) else error("Error in array index")
@@ -26,7 +27,8 @@ trait Ix[a] extends Ord[a] {
         case b@(_l, h) => unsafeIndex(b)(h) + 1
     }
 
-// Utilities
+    // Extra
+    //
     final val indexError: Tuple2[a, a] => a => String_ => Nothing = rng => i => tp => {
         import Show._
         error( (showString("Ix{") compose showString(tp) compose showString("}.index: Index ") compose
@@ -40,6 +42,7 @@ trait Ix[a] extends Ord[a] {
 
 trait IxProxy[a] extends Ix[a] with OrdProxy[a] {
     override def self: Ix[a]
+
     override def range: Tuple2[a, a] => List[a] = self.range
     override def index: Tuple2[a, a] => a => Int = self.index
     override def unsafeIndex: Tuple2[a, a] => a => Int = self.unsafeIndex

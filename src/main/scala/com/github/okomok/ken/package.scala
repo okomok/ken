@@ -24,7 +24,7 @@ package object ken {
 
     val op_|| : Bool => (=> Bool) => Bool = { b => c => b || c }
 
-    final val otherwise = true
+    final val otherwise = True
 
 // Tuples
     def fst[a, b](p: (a, b)): a = p match {

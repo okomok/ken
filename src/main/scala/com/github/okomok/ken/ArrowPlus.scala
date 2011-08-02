@@ -8,6 +8,9 @@ package com.github.okomok
 package ken
 
 
+// TODO
+
+
 trait ArrowPlus[a[_, _]] extends ArrowZero[a] {
     def op_<+>[b, c](f: a[b, c])(g: => a[b, c]): a[b, c]
 

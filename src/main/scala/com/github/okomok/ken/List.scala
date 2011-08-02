@@ -59,7 +59,7 @@ case object Nil extends List[Nothing] {
 final case class ::[+a](head: a, tail: Lazy[List[a]]) extends List[a] {
     override def equals(that: Any): Bool = that match {
         case that: List[_] => List.equal(this)(that)
-        case _ => false
+        case _ => False
     }
 }
 
@@ -72,13 +72,13 @@ object !:: { // strict extractor
 }
 
 
-object List extends MonadPlus[List] with Foldable[List] {
+object List extends Foldable[List] with MonadPlus[List] {
     @tailrec
     def equal(xs: List[_])(ys: List[_]): Bool = (xs, ys) match {
-        case (Nil, Nil) => true
-        case (Nil, _) => false
-        case (_, Nil) => false
-        case (x :: xs, y :: ys) => if (x == y) equal(xs.!)(ys.!) else false
+        case (Nil, Nil) => True
+        case (Nil, _) => False
+        case (_, Nil) => False
+        case (x :: xs, y :: ys) => if (x == y) equal(xs.!)(ys.!) else False
     }
 
     def op_::[a](x: a)(xs: => List[a]): List[a] = ::(x, Lazy(xs))
@@ -90,7 +90,8 @@ object List extends MonadPlus[List] with Foldable[List] {
     }
     implicit def ofName[a](xs: => List[a]): OfName[a] = new OfName(xs)
 
-// Overrides
+    // Overrides
+    //
     private[this] type m[+a] = List[a]
     // Monad
     override def `return`[a](x: => a): m[a] = List(x)
@@ -102,7 +103,8 @@ object List extends MonadPlus[List] with Foldable[List] {
     private[this] type t[+a] = List[a]
     override def toList[a](xs: t[a]): List[a]  = xs
 
-// Instances
+    // Instances
+    //
     implicit val monad: MonadPlus[List] = this
     implicit val foldable: Foldable[List] = this
 
@@ -128,7 +130,8 @@ object List extends MonadPlus[List] with Foldable[List] {
         }
     }
 
-// Conversions
+    // Conversions
+    //
     def from[a](that: List[a]): List[a] = that
 
     def apply[a](xs: a*): List[a] = from(xs)
@@ -147,7 +150,8 @@ object List extends MonadPlus[List] with Foldable[List] {
     implicit def fromString(xs: String): String_ = fromIterable(xs)
     implicit def fromIterable[a](xs: scala.Iterable[a]): List[a] = fromIterator(xs.iterator)
 
-// Basic functions
+    // Basic functions
+    //
     def op_:::[a](xs: List[a])(ys: => List[a]): List[a] = xs match {
         case Nil => ys
         case x :: xs => x :: op_:::(xs.!)(ys)
@@ -179,8 +183,8 @@ object List extends MonadPlus[List] with Foldable[List] {
     }
 
     def `null`(xs: List[_]): Bool = xs match {
-        case Nil => true
-        case _ => false
+        case Nil => True
+        case _ => False
     }
 
     def length(xs: List[_]): Int = {
@@ -192,7 +196,8 @@ object List extends MonadPlus[List] with Foldable[List] {
         len(xs)(0)
     }
 
-// List transformations
+    // List transformations
+    //
     def map[a, b](f: a => b)(xs: List[a]): List[b] = xs match {
         case Nil => Nil
         case x :: xs => f(x) :: map(f)(xs.!)
@@ -242,7 +247,8 @@ object List extends MonadPlus[List] with Foldable[List] {
         xs0 :: perms(xs0)(Nil)
     }
 
-// Reducing lists (folds)
+    // Reducing lists (folds)
+    //
     override def foldl[a, b](f: a => b => a)(z: a)(xs: List[b]): a = {
         @tailrec
         def impl(f: a => b => a)(z: a)(xs: List[b]): a = xs match {
@@ -268,14 +274,15 @@ object List extends MonadPlus[List] with Foldable[List] {
         case x :: xs => f(x)(foldr1(f)(xs.!))
     }
 
-// Special folds
+    // Special folds
+    //
     override def concat[a](xs: List[List[a]]): List[a] = foldr(op_:::[a])(Nil)(xs)
 
     override def concatMap[a, b](f: a => List[b])(xs: List[a]): List[b] = foldr[a, List[b]](x => y => f(x) ::: y)(Nil)(xs)
 
-    override def and(xs: List[Bool]): Bool = foldr(op_&&)(true)(xs)
+    override def and(xs: List[Bool]): Bool = foldr(op_&&)(True)(xs)
 
-    override def or(xs: List[Bool]): Bool = foldr(op_||)(false)(xs)
+    override def or(xs: List[Bool]): Bool = foldr(op_||)(False)(xs)
 
     override def any[a](p: a => Bool)(xs: List[a]): Bool = or(map(p)(xs))
 
@@ -295,7 +302,8 @@ object List extends MonadPlus[List] with Foldable[List] {
         case xs => foldl1(i.min)(xs)
     }
 
-// Building lists
+    // Building lists
+    //
     def scanl[a, b](f: a => b => a)(q: => a)(ls: List[b]): List[a] = { // why `q` is by-name?
         q :: (ls match {
             case Nil => Nil
@@ -325,7 +333,8 @@ object List extends MonadPlus[List] with Foldable[List] {
         }
     }
 
-// Accumulating maps
+    // Accumulating maps
+    //
     def mapAccumL[acc, x, y](f: acc => x => (acc, y))(s: acc)(xs: List[x]): (acc, List[y]) = xs match {
         case Nil => (s, Nil)
         case x :: xs => {
@@ -344,7 +353,8 @@ object List extends MonadPlus[List] with Foldable[List] {
         }
     }
 
-// Infinite lists
+    // Infinite lists
+    //
     def iterate[a](f: a => a)(x: a): List[a] = x :: iterate(f)(f(x))
 
     def repeat[a](x: a): List[a] = {
@@ -364,13 +374,15 @@ object List extends MonadPlus[List] with Foldable[List] {
         }
     }
 
-// Unfolding
+    // Unfolding
+    //
     def unfoldr[a, b](f: b => Maybe[(a, b)])(b: b): List[a] = f(b) match {
         case Just((a, new_b)) => a :: unfoldr(f)(new_b)
         case Nothing => Nil
     }
 
-// Sublists
+    // Sublists
+    //
     def take[a](n: Int)(xs: List[a]): List[a] = (n, xs) match {
         case (n, _) if n <= 0 => Nil
         case (_, Nil) => Nil
@@ -430,10 +442,11 @@ object List extends MonadPlus[List] with Foldable[List] {
         case _ :: xs => xxs :: tails(xs.!)
     }
 
-// Predicates
+    // Predicates
+    //
     def isPrefixOf[a](xs: List[a])(ys: List[a]): Bool = (xs, ys) match {
-        case (Nil, _) => true
-        case (_, Nil) => false
+        case (Nil, _) => True
+        case (_, Nil) => False
         case (x :: xs, y :: ys) => (x == y) && isPrefixOf(xs.!)(ys.!)
     }
 
@@ -441,7 +454,8 @@ object List extends MonadPlus[List] with Foldable[List] {
 
     def isInfixOf[a](needle: List[a])(haystack: List[a]): Bool = any(isPrefixOf(needle))(tails(haystack))
 
-// Searching by equality
+    // Searching by equality
+    //
     override def elem[a](x: a)(xs: List[a]): Bool = any[a](x == _)(xs)
 
     override def notElem[a](x: a)(xs: List[a]): Bool = all[a](x != _)(xs)
@@ -452,7 +466,8 @@ object List extends MonadPlus[List] with Foldable[List] {
         case (x, y) :: xys => if (key == x) Just(y) else lookup(key)(xys.!)
     }
 
-// Searching with a predicate
+    // Searching with a predicate
+    //
     override def find[a](p: a => Bool)(xs: List[a]): Maybe[a] = Maybe.listToMaybe(filter(p)(xs))
 
     def filter[a](pred: a => Bool)(xs: List[a]): List[a] = xs match {
@@ -479,7 +494,8 @@ object List extends MonadPlus[List] with Foldable[List] {
         }
     }
 
-// Indexing lists
+    // Indexing lists
+    //
     @tailrec
     def op_!![a](xs: List[a])(n: Int): a = (xs, n) match {
         case (_, n) if n < 0 => error("negative index")
@@ -496,7 +512,8 @@ object List extends MonadPlus[List] with Foldable[List] {
 
     def findIndices[a](p: a => Bool)(xs: List[a]): List[Int] = for { (x, i) <- zip(xs)(iterate[Int](_ + 1)(0)) if p(x) } yield i
 
-// Zipping and unzipping lists
+    // Zipping and unzipping lists
+    //
     def zip[a, b](xs: List[a])(ys: List[b]): List[(a, b)] = (xs, ys) match {
         case (a :: as, b :: bs) => (a, b) :: zip(as.!)(bs.!)
         case _ => Nil
@@ -511,7 +528,8 @@ object List extends MonadPlus[List] with Foldable[List] {
         foldr[(a, b), (List[a], List[b])](ab => abs => { lazy val _abs = abs; (ab._1 :: _abs._1, ab._2 :: _abs._2) })((Nil, Nil))(xs)
     }
 
-// Functions on strings
+    // Functions on strings
+    //
     def stringize(cs: String_): String = foldl[StringBuilder, Char](sb => c => { sb += c; sb })(new StringBuilder)(cs).toString
 
     def lines(s: String_): List[String_] = map(fromString)(from(stringize(s).split("\\r?\\n")))
@@ -526,7 +544,8 @@ object List extends MonadPlus[List] with Foldable[List] {
         case w :: ws => w ::: (' ' :: unwords(ws.!))
     }
 
-// Set operations
+    // Set operations
+    //
     def nub[a](xs: List[a]): List[a] = nubBy(op_==[a])(xs)
 
     def delete[a](x: a)(xs: List[a]) = deleteBy(op_==[a])(x)(xs)
@@ -537,12 +556,14 @@ object List extends MonadPlus[List] with Foldable[List] {
 
     def intersect[a](xs: List[a])(ys: List[a]): List[a] = intersectBy(op_==[a])(xs)(ys)
 
-// Ordered lists
+    // Ordered lists
+    //
     def sort[a](xs: List[a])(implicit i: Ord[a]): List[a] = sortBy(i.compare)(xs)
 
     def insert[a](e: a)(ls: List[a])(implicit i: Ord[a]): List[a] = insertBy(i.compare)(e)(ls)
 
-// User-supplied equality
+    // User-supplied equality
+    //
     def nubBy[a](eq: a => a => Bool)(xs: List[a]): List[a] = xs match {
         case Nil => Nil
         case x :: xs => x :: nubBy(eq)(filter[a](y => not(eq(x)(y)))(xs.!))
@@ -573,7 +594,8 @@ object List extends MonadPlus[List] with Foldable[List] {
         }
     }
 
-// User-supplied comparison
+    // User-supplied comparison
+    //
     def sortBy[a](cmp: a => a => Ordering)(xs: List[a]): List[a] = {
         import ByName._
         foldr(insertBy(cmp))(Nil)(xs)
@@ -609,9 +631,11 @@ object List extends MonadPlus[List] with Foldable[List] {
         }
     }
 
-// The generic operations
+    // The generic operations
+    // TODO
 
-// Misc
+    // Misc
+    //
     @tailrec
     def foreach[a](f: a => Unit)(xs: List[a]): Unit = xs match {
         case Nil => ()

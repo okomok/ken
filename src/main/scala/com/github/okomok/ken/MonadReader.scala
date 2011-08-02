@@ -9,17 +9,26 @@ package ken
 
 
 trait MonadReader[r, m[+_]] extends Monad[m] {
+    final def asMonadReader: MonadReader[r, m] = this
+
+    // Core
+    //
     def ask: m[r]
     def local[a](f: r => r)(m: m[a]): m[a]
 
-    final def asks[a](f: r => a): m[a] = for { r <- ask } yield f(r)
+    // Extra
+    //
+    def asks[a](f: r => a): m[a] = for { r <- ask } yield f(r)
 }
 
 
 trait MonadReaderProxy[r, m[+_]] extends MonadReader[r, m] with MonadProxy[m] {
     override def self: MonadReader[r, m]
+
     override def ask: m[r] = self.ask
     override def local[a](f: r => r)(m: m[a]): m[a] = self.local(f)(m)
+
+    override def asks[a](f: r => a): m[a] = self.asks(f)
 }
 
 

@@ -8,6 +8,9 @@ package com.github.okomok
 package ken
 
 
+// TODO
+
+
 trait Arrow[a[_, _]] extends Category[a] {
     def arr[b, c](f: b => c): a[b, c]
     def first[b, c, d](f: a[b, c]): a[(b, d), (c, d)]

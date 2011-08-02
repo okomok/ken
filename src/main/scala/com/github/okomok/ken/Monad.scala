@@ -11,31 +11,34 @@ package ken
 trait Monad[m[+_]] extends Applicative[m] {
     final def asMonad: Monad[m] = this
 
-// Overridables
+    // Core
+    //
     def `return`[a](x: => a): m[a]
     def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b]
     def op_>>[b](x: m[_])(y: => m[b]): m[b] = { lazy val _y = y; x >>= (_ => _y) }
 
-// Overrides
+    // Overrides
+    //
     override def pure[a](x: => a): m[a] = `return`(x)
     override def op_<*>[a, b](x: m[a => b])(y: m[a]): m[b] = for { _x <- x; _y <- y } yield _x(_y)
 
-// Utilities
-    final def op_=<<[a, b](f: a => m[b])(x: m[a]): m[b] = x >>= f
+    // Extra
+    //
+    def op_=<<[a, b](f: a => m[b])(x: m[a]): m[b] = x >>= f
 
-    final def sequence[a](ms: List[m[a]]): m[List[a]] = {
+    def sequence[a](ms: List[m[a]]): m[List[a]] = {
         def k(m: m[a])(_m: => m[List[a]]): m[List[a]] = for { x <- m; xs <- _m } yield (x :: xs)
         List.foldr(k)(`return`(Nil))(ms)
     }
 
-    final def sequence_[a](ms: List[m[a]]): m[Unit] = {
+    def sequence_[a](ms: List[m[a]]): m[Unit] = {
         List.foldr(op_>>[Unit])(`return`(()))(ms)
     }
 
-    final def mapM[a, b](f: a => m[b])(as: List[a]): m[List[b]] = sequence(List.map(f)(as))
-    final def mapM_[a, b](f: a => m[b])(as: List[a]): m[Unit] = sequence_(List.map(f)(as))
+    def mapM[a, b](f: a => m[b])(as: List[a]): m[List[b]] = sequence(List.map(f)(as))
+    def mapM_[a, b](f: a => m[b])(as: List[a]): m[Unit] = sequence_(List.map(f)(as))
 
-    final def filterM[a](p: a => m[Bool])(xs: List[a]): m[List[a]] = xs match {
+    def filterM[a](p: a => m[Bool])(xs: List[a]): m[List[a]] = xs match {
         case Nil => `return`(Nil)
         case x :: xs => for {
             flg <- p(x)
@@ -43,47 +46,48 @@ trait Monad[m[+_]] extends Applicative[m] {
         } yield (if (flg) (x :: ys) else ys)
     }
 
-    final def forM[a, b](xs: List[a])(f: a => m[b]): m[List[b]] = mapM(f)(xs)
-    final def forM_[a, b](xs: List[a])(f: a => m[b]): m[Unit] = mapM_(f)(xs)
+    def forM[a, b](xs: List[a])(f: a => m[b]): m[List[b]] = mapM(f)(xs)
+    def forM_[a, b](xs: List[a])(f: a => m[b]): m[Unit] = mapM_(f)(xs)
 
-    final def op_>=>[a, b, c](f: a => m[b])(g: b => m[c]): a => m[c] = { x => f(x) >>= g }
-    final def op_<=<[a, b, c](g: b => m[c])(f: a => m[b]): a => m[c] = op_>=>(f)(g)
+    def op_>=>[a, b, c](f: a => m[b])(g: b => m[c]): a => m[c] = { x => f(x) >>= g }
+    def op_<=<[a, b, c](g: b => m[c])(f: a => m[b]): a => m[c] = op_>=>(f)(g)
 
-    final def forever[a](a: m[a]): m[a] = a >>= (_ => forever(a))
+    def forever[a](a: m[a]): m[a] = a >>= (_ => forever(a))
 
-    final def join[a](x: m[m[a]]): m[a] = x >>= id
+    def join[a](x: m[m[a]]): m[a] = x >>= id
 
-    final def mapAndUnzipM[a, b, c](f: a => m[(b, c)])(xs: List[a]): m[(List[b], List[c])] = {
+    def mapAndUnzipM[a, b, c](f: a => m[(b, c)])(xs: List[a]): m[(List[b], List[c])] = {
         mapM(f)(xs) >>= (ys => `return`(List.unzip(ys)))
     }
 
-    final def zipWithM[a, b, c](f: a => b => m[c])(xs: List[a])(ys: List[b]): m[List[c]] = sequence(List.zipWith(f)(xs)(ys))
-    final def zipWithM_[a, b, c](f: a => b => m[c])(xs: List[a])(ys: List[b]): m[Unit] = sequence_(List.zipWith(f)(xs)(ys))
+    def zipWithM[a, b, c](f: a => b => m[c])(xs: List[a])(ys: List[b]): m[List[c]] = sequence(List.zipWith(f)(xs)(ys))
+    def zipWithM_[a, b, c](f: a => b => m[c])(xs: List[a])(ys: List[b]): m[Unit] = sequence_(List.zipWith(f)(xs)(ys))
 
-    final def foldM[a, b](f: a => b => m[a])(a: a)(xs: List[b]): m[a] = xs match {
+    def foldM[a, b](f: a => b => m[a])(a: a)(xs: List[b]): m[a] = xs match {
         case Nil => `return`(a)
         case x :: xs => f(a)(x) >>= (fax => foldM(f)(fax)(xs.!))
     }
 
-    final def foldM_[a, b](f: a => b => m[a])(a: a)(xs: List[b]): m[Unit] = {
+    def foldM_[a, b](f: a => b => m[a])(a: a)(xs: List[b]): m[Unit] = {
         foldM(f)(a)(xs) >> `return`(())
     }
 
-    final def replicateM[a](n: Int)(x: m[a]): m[List[a]] = sequence(List.replicate(n)(x))
-    final def replicateM_[a](n: Int)(x: m[a]): m[Unit] = sequence_(List.replicate(n)(x))
+    def replicateM[a](n: Int)(x: m[a]): m[List[a]] = sequence(List.replicate(n)(x))
+    def replicateM_[a](n: Int)(x: m[a]): m[Unit] = sequence_(List.replicate(n)(x))
 
-    final def when(p: Bool)(s: => m[Unit]): m[Unit] = if (p) s else `return`()
-    final def unless(p: Bool)(s: => m[Unit]): m[Unit] = if (p) `return`() else s
+    def when(p: Bool)(s: => m[Unit]): m[Unit] = if (p) s else `return`()
+    def unless(p: Bool)(s: => m[Unit]): m[Unit] = if (p) `return`() else s
 
-    final def liftM[a1, r](f: a1 => r)(m1: m[a1]): m[r] = for { x1 <- m1 } yield f(x1)
-    final def liftM2[a1, a2, r](f: a1 => a2 => r)(m1: m[a1])(m2: m[a2]): m[r] = for { x1 <- m1; x2 <- m2 } yield f(x1)(x2)
-    final def liftM3[a1, a2, a3, r](f: a1 => a2 => a3 => r)(m1: m[a1])(m2: m[a2])(m3: m[a3]): m[r] = for { x1 <- m1; x2 <- m2; x3 <- m3 } yield f(x1)(x2)(x3)
-    final def liftM4[a1, a2, a3, a4, r](f: a1 => a2 => a3 => a4 => r)(m1: m[a1])(m2: m[a2])(m3: m[a3])(m4: m[a4]): m[r] = for { x1 <- m1; x2 <- m2; x3 <- m3; x4 <- m4 } yield f(x1)(x2)(x3)(x4)
-    final def liftM5[a1, a2, a3, a4, a5, r](f: a1 => a2 => a3 => a4 => a5 => r)(m1: m[a1])(m2: m[a2])(m3: m[a3])(m4: m[a4])(m5: m[a5]): m[r] = for { x1 <- m1; x2 <- m2; x3 <- m3; x4 <- m4; x5 <- m5 } yield f(x1)(x2)(x3)(x4)(x5)
+    def liftM[a1, r](f: a1 => r)(m1: m[a1]): m[r] = for { x1 <- m1 } yield f(x1)
+    def liftM2[a1, a2, r](f: a1 => a2 => r)(m1: m[a1])(m2: m[a2]): m[r] = for { x1 <- m1; x2 <- m2 } yield f(x1)(x2)
+    def liftM3[a1, a2, a3, r](f: a1 => a2 => a3 => r)(m1: m[a1])(m2: m[a2])(m3: m[a3]): m[r] = for { x1 <- m1; x2 <- m2; x3 <- m3 } yield f(x1)(x2)(x3)
+    def liftM4[a1, a2, a3, a4, r](f: a1 => a2 => a3 => a4 => r)(m1: m[a1])(m2: m[a2])(m3: m[a3])(m4: m[a4]): m[r] = for { x1 <- m1; x2 <- m2; x3 <- m3; x4 <- m4 } yield f(x1)(x2)(x3)(x4)
+    def liftM5[a1, a2, a3, a4, a5, r](f: a1 => a2 => a3 => a4 => a5 => r)(m1: m[a1])(m2: m[a2])(m3: m[a3])(m4: m[a4])(m5: m[a5]): m[r] = for { x1 <- m1; x2 <- m2; x3 <- m3; x4 <- m4; x5 <- m5 } yield f(x1)(x2)(x3)(x4)(x5)
 
-    final def ap[a, b](x: m[a => b])(y: m[a]): m[b] = liftM2(id[a => b])(x)(y) // op_<*>(x)(y)
+    def ap[a, b](x: m[a => b])(y: m[a]): m[b] = liftM2(id[a => b])(x)(y) // op_<*>(x)(y)
 
-// Infix Operators
+    // Infix
+    //
     sealed class Infix_>>=[a](x: m[a]) {
         def >>=[b](y: a => m[b]): m[b] = op_>>=(x)(y)
     }
@@ -117,7 +121,8 @@ trait Monad[m[+_]] extends Applicative[m] {
     }
     final implicit def <=<[b, c](g: b => m[c]): Infix_<=<[b, c] = new Infix_<=<[b, c](g)
 
-// Transformers
+    // Transformers
+    //
     trait Trans[n[+_]] {
         def lift[a](m: m[a]): n[a]
     }
@@ -162,9 +167,38 @@ trait Monad[m[+_]] extends Applicative[m] {
 
 trait MonadProxy[m[+_]] extends Monad[m] with ApplicativeProxy[m] {
     override def self: Monad[m]
+
     override def `return`[a](x: => a): m[a] = self.`return`(x)
     override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = self.op_>>=(x)(y)
     override def op_>>[b](x: m[_])(y: => m[b]): m[b] = self.op_>>(x)(y)
+
+    override def op_=<<[a, b](f: a => m[b])(x: m[a]): m[b] = self.op_=<<(f)(x)
+    override def sequence[a](ms: List[m[a]]): m[List[a]] = self.sequence(ms)
+    override def sequence_[a](ms: List[m[a]]): m[Unit] = self.sequence_(ms)
+    override def mapM[a, b](f: a => m[b])(as: List[a]): m[List[b]] = self.mapM(f)(as)
+    override def mapM_[a, b](f: a => m[b])(as: List[a]): m[Unit] = self.mapM_(f)(as)
+    override def filterM[a](p: a => m[Bool])(xs: List[a]): m[List[a]] = self.filterM(p)(xs)
+    override def forM[a, b](xs: List[a])(f: a => m[b]): m[List[b]] = self.forM(xs)(f)
+    override def forM_[a, b](xs: List[a])(f: a => m[b]): m[Unit] = self.forM_(xs)(f)
+    override def op_>=>[a, b, c](f: a => m[b])(g: b => m[c]): a => m[c] = self.op_>=>(f)(g)
+    override def op_<=<[a, b, c](g: b => m[c])(f: a => m[b]): a => m[c] = self.op_<=<(g)(f)
+    override def forever[a](a: m[a]): m[a] = self.forever(a)
+    override def join[a](x: m[m[a]]): m[a] = self.join(x)
+    override def mapAndUnzipM[a, b, c](f: a => m[(b, c)])(xs: List[a]): m[(List[b], List[c])] = self.mapAndUnzipM(f)(xs)
+    override def zipWithM[a, b, c](f: a => b => m[c])(xs: List[a])(ys: List[b]): m[List[c]] = self.zipWithM(f)(xs)(ys)
+    override def zipWithM_[a, b, c](f: a => b => m[c])(xs: List[a])(ys: List[b]): m[Unit] = self.zipWithM_(f)(xs)(ys)
+    override def foldM[a, b](f: a => b => m[a])(a: a)(xs: List[b]): m[a] = self.foldM(f)(a)(xs)
+    override def foldM_[a, b](f: a => b => m[a])(a: a)(xs: List[b]): m[Unit] = self.foldM_(f)(a)(xs)
+    override def replicateM[a](n: Int)(x: m[a]): m[List[a]] = self.replicateM(n)(x)
+    override def replicateM_[a](n: Int)(x: m[a]): m[Unit] = self.replicateM_(n)(x)
+    override def when(p: Bool)(s: => m[Unit]): m[Unit] = self.when(p)(s)
+    override def unless(p: Bool)(s: => m[Unit]): m[Unit] = self.unless(p)(s)
+    override def liftM[a1, r](f: a1 => r)(m1: m[a1]): m[r] = self.liftM(f)(m1)
+    override def liftM2[a1, a2, r](f: a1 => a2 => r)(m1: m[a1])(m2: m[a2]): m[r] = self.liftM2(f)(m1)(m2)
+    override def liftM3[a1, a2, a3, r](f: a1 => a2 => a3 => r)(m1: m[a1])(m2: m[a2])(m3: m[a3]): m[r] = self.liftM3(f)(m1)(m2)(m3)
+    override def liftM4[a1, a2, a3, a4, r](f: a1 => a2 => a3 => a4 => r)(m1: m[a1])(m2: m[a2])(m3: m[a3])(m4: m[a4]): m[r] = self.liftM4(f)(m1)(m2)(m3)(m4)
+    override def liftM5[a1, a2, a3, a4, a5, r](f: a1 => a2 => a3 => a4 => a5 => r)(m1: m[a1])(m2: m[a2])(m3: m[a3])(m4: m[a4])(m5: m[a5]): m[r] = self.liftM5(f)(m1)(m2)(m3)(m4)(m5)
+    override def ap[a, b](x: m[a => b])(y: m[a]): m[b] = self.ap(x)(y)
 }
 
 

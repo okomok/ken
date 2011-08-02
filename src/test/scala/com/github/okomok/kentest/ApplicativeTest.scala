@@ -43,8 +43,8 @@ class ApplicativeTest extends org.scalatest.junit.JUnit3Suite {
     def accumulate[t[_], o, a](f: a => o)(x: t[a])(implicit i: MyTraversable[t], j: Monoid[o]): o = {
         import i._
         import j._
-        // clealy, non-inference-able
-        traverse[({type g[+x] = Const[o, x]})#g, a, a]((p: a) => Const[o, a](f(p)))(x).getConst
+        // clearly, non-inference-able
+        traverse[({type g[+x] = Const[o, x]})#g, a, a]((p: a) => Const[o, a](f(p)))(x).get
     }
 
     def miffy[m[+_], a](mb: m[Boolean])(mt: m[a])(me: m[a])(implicit i: Monad[m]): m[a] = {

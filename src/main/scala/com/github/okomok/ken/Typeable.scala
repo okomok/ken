@@ -8,6 +8,9 @@ package com.github.okomok
 package ken
 
 
+// TODO
+
+
 trait Typeable[a] {
     def typeOf(x: => a): ClassManifest[a]
 }

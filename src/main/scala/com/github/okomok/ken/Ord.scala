@@ -11,16 +11,18 @@ package ken
 trait Ord[a] extends Eq[a] {
     final def asOrd: Ord[a] = this
 
-// Overridables
+    // Core
+    //
     def compare: a => a => Ordering = { x => y => if (x == y) EQ else if (op_<=(x)(y)) LT else GT }
-    def op_< : a => a => Bool = { x => y => compare(x)(y) match { case LT => true; case _ => false } }
-    def op_<= : a => a => Bool = { x => y => compare(x)(y) match { case GT => false; case _ => true } }
-    def op_> : a => a => Bool = { x => y => compare(x)(y) match { case GT => true; case _ => false } }
-    def op_>= : a => a => Bool = { x => y => compare(x)(y) match { case LT => false; case _ => true } }
+    def op_< : a => a => Bool = { x => y => compare(x)(y) match { case LT => True; case _ => False } }
+    def op_<= : a => a => Bool = { x => y => compare(x)(y) match { case GT => False; case _ => True } }
+    def op_> : a => a => Bool = { x => y => compare(x)(y) match { case GT => True; case _ => False } }
+    def op_>= : a => a => Bool = { x => y => compare(x)(y) match { case LT => False; case _ => True } }
     def max: a => a => a = { x => y => if (op_<=(x)(y)) y else x }
     def min: a => a => a = { x => y => if (op_<=(x)(y)) x else y }
 
-// Infix Operators
+    // Infix
+    //
     sealed class Infix_<(x: a) {
         def <(y: a): Bool = op_<(x)(y)
     }
@@ -45,6 +47,7 @@ trait Ord[a] extends Eq[a] {
 
 trait OrdProxy[a] extends Ord[a] with Proxy {
     override def self: Ord[a]
+
     override def compare: a => a => Ordering = self.compare
     override def op_< : a => a => Bool = self.op_<
     override def op_<= : a => a => Bool = self.op_<=

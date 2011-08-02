@@ -8,6 +8,9 @@ package com.github.okomok
 package ken
 
 
+// TODO
+
+
 trait ArrowChoice[a[_, _]] extends Arrow[a] {
     def left[b, c, d](f: a[b, c]): a[Either[b, d], Either[c, d]]
 

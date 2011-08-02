@@ -17,7 +17,8 @@ final case class Just[+a](x: a) extends Maybe[a]
 
 
 object Maybe extends MonadPlus[Maybe] with Foldable[Maybe] {
-// Overrides
+    // Overrides
+    //
     // Functor
     private[this] type f[+a] = Maybe[a]
     override def fmap[a, b](f: a => b)(x: f[a]): f[b] = x match {
@@ -52,11 +53,13 @@ object Maybe extends MonadPlus[Maybe] with Foldable[Maybe] {
         case Just(x) => f(z)(x)
     }
 
-// Instances
+    // Instances
+    //
     implicit val monad: MonadPlus[Maybe] = this
     implicit val foldable: Foldable[Maybe] = this
 
-// Operators
+    // Operators
+    //
     def just[a](x: a): Maybe[a] = Just(x)
 
     def maybe[a, b](n: b)(f: a => b)(m: Maybe[a]): b = m match {
@@ -65,13 +68,13 @@ object Maybe extends MonadPlus[Maybe] with Foldable[Maybe] {
     }
 
     def isJust[a](m: Maybe[a]): Bool = m match {
-        case Nothing => false
-        case _ => true
+        case Nothing => False
+        case _ => True
     }
 
     def isNothing[a](m: Maybe[a]): Bool = m match {
-        case Nothing => true
-        case _ => false
+        case Nothing => True
+        case _ => False
     }
 
     def fromJust[a](m: Maybe[a]): a = m match {

@@ -9,12 +9,17 @@ package ken
 
 
 trait MonadCont[m[+_]] extends Monad[m] {
+    final def asMonadCont: MonadCont[m] = this
+
+    // Core
+    //
     def callCC[a, b](f: (a => m[b]) => m[a]): m[a]
 }
 
 
 trait MonadContProxy[m[+_]] extends MonadCont[m] with MonadProxy[m] {
     override def self: MonadCont[m]
+
     override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = self.callCC(f)
 }
 

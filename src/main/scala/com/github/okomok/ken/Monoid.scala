@@ -11,18 +11,21 @@ package ken
 trait Monoid[m] extends Klass0[m] { outer =>
     final def asMonoid: Monoid[m] = this
 
-// Overridables
+    // Core
+    //
     def mempty: m
     def mappend: m => (=> m) => m
     def mconcat: List[m] => m = { x => List.foldr(mappend)(mempty)(x) }
 
-// Utilities
-    final def dual: Monoid[m] = new Monoid[m] {
+    // Extra
+    //
+    def dual: Monoid[m] = new Monoid[m] {
         override val mempty: m = outer.mempty
         override val mappend: m => (=> m) => m = x => y => outer.mappend(y)(x)
     }
 
-// Infix Operators
+    // Infix
+    //
     sealed class Infix_mappend(x: m) {
         def _mappend_(y: => m): m = mappend(x)(y)
     }
@@ -32,9 +35,12 @@ trait Monoid[m] extends Klass0[m] { outer =>
 
 trait MonoidProxy[m] extends Monoid[m] with Proxy {
     override def self: Monoid[m]
+
     override def mempty: m = self.mempty
     override def mappend: m => (=> m) => m = self.mappend
     override def mconcat: List[m] => m = self.mconcat
+
+    override def dual: Monoid[m] = self.dual
 }
 
 

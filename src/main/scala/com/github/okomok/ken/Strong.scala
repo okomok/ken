@@ -14,7 +14,7 @@ package ken
 trait Strong[+a] {
     def get: a
     final def run: a = get
-    final def app: a = run
+    final def app: a = get
 }
 
 

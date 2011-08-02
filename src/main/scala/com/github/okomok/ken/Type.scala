@@ -8,6 +8,9 @@ package com.github.okomok
 package ken
 
 
+/**
+ * Trival type envelope to help inference
+ */
 sealed abstract class Type[a] {
     type apply = a
 }

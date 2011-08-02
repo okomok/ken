@@ -9,23 +9,27 @@ package ken
 
 
 trait MonadPlus[m[+_]] extends Monad[m] with Alternative[m] {
-// Overridables
+    // Core
+    //
     def mzero: m[Nothing]
     def mplus[a](x: m[a])(y: => m[a]): m[a]
 
-// Overrides
+    // Overrides
+    //
     override def empty: m[Nothing] = mzero
     override def op_<|>[a](x: m[a])(y: => m[a]): m[a] = mplus(x)(y)
 
-// Utilities
-    final def guard(b: Bool): m[Unit] = b match {
-        case true => `return`() // one-element
-        case false => mzero // empty
+    // Extra
+    //
+    def guard(b: Bool): m[Unit] = b match {
+        case True => `return`() // one-element
+        case False => mzero // empty
     }
 
-    final def msum[a](xs: List[m[a]]): m[a] = List.foldr(mplus[a])(mzero)(xs)
+    def msum[a](xs: List[m[a]]): m[a] = List.foldr(mplus[a])(mzero)(xs)
 
-// Infix Operators
+    // Infix
+    //
     sealed class Infix_mplus[a](x: m[a]) {
         def _mplus_(y: => m[a]): m[a] = mplus(x)(y)
     }
@@ -35,8 +39,12 @@ trait MonadPlus[m[+_]] extends Monad[m] with Alternative[m] {
 
 trait MonadPlusProxy[m[+_]] extends MonadPlus[m] with MonadProxy[m] with AlternativeProxy[m] {
     override def self: MonadPlus[m]
+
     override def mzero: m[Nothing] = self.mzero
     override def mplus[a](x: m[a])(y: => m[a]): m[a] = self.mplus(x)(y)
+
+    override def guard(b: Bool): m[Unit] = self.guard(b)
+    override def msum[a](xs: List[m[a]]): m[a] = msum(xs)
 }
 
 

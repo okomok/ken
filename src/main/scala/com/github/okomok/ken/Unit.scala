@@ -9,11 +9,15 @@ package ken
 
 
 object Unit extends Monoid[Unit] {
-// Overrides
+    // Overrides
+    //
+    // Monoid
     private[this] type m = Unit
     override val mempty: m = ()
     override val mappend: m => (=> m) => m = { _ => _ => () }
     override val mconcat: List[m] => m = { _ => () }
 
+    // Instances
+    //
     implicit val monoid: Monoid[Unit] = this
 }

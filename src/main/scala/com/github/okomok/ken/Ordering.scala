@@ -16,7 +16,9 @@ case object GT extends Ordering
 
 
 object Ordering extends Monoid[Ordering] {
-// Overrides
+    // Overrides
+    //
+    // Ordering
     private[this] type m = Ordering
     override val mempty: m = EQ
     override val mappend: m => (=> m) => m = x => y => x match {
@@ -25,6 +27,7 @@ object Ordering extends Monoid[Ordering] {
         case GT => GT
     }
 
-// Instances
+    // Instances
+    //
     implicit val monoid: Monoid[Ordering] = this
 }

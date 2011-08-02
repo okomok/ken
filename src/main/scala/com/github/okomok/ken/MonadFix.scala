@@ -9,12 +9,17 @@ package ken
 
 
 trait MonadFix[m[+_]] extends Monad[m] {
+    final def asMonadFix: MonadFix[m] = this
+
+    // Core
+    //
     def mfix[a](f: (=> a) => m[a]): m[a]
 }
 
 
 trait MonadFixProxy[m[+_]] extends MonadFix[m] with MonadProxy[m] {
     override def self: MonadFix[m]
+
     override def mfix[a](f: (=> a) => m[a]): m[a] = self.mfix(f)
 }
 

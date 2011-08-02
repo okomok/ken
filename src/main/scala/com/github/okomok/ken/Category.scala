@@ -8,6 +8,9 @@ package com.github.okomok
 package ken
 
 
+// TODO
+
+
 trait Category[cat[_, _]] extends Klass {
     type apply[a, b] = cat[a, b]
 

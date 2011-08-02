@@ -23,7 +23,8 @@ object Identity extends MonadFix[Identity] {
 
     def run[a](m: Identity[a]): a = m.run
 
-// Overrides
+    // Overrides
+    //
     // Functor
     private[this] type f[+a] = Identity[a]
     override def fmap[a, b](f: a => b)(m: f[a]): f[b] = Identity { f(run(m)) }
@@ -34,7 +35,8 @@ object Identity extends MonadFix[Identity] {
     // MonadFix
     override def mfix[a](f: (=> a) => m[a]): m[a] = Identity { Function.fix(run[a]_ compose f) }
 
-// Instances
+    // Instances
+    //
     implicit val monad: MonadFix[Identity] = this
 
     implicit val weak: Weak1[Identity, ({type d[+a] = a})#d] = new Weak1[Identity, ({type d[+a] = a})#d] {
@@ -52,7 +54,8 @@ object Identity extends MonadFix[Identity] {
 
 
 object WeakIdentity extends MonadFix[({type m[+a] = a})#m] {
-// Overrides
+    // Overrides
+    //
     // Functor
     private[this] type f[+a] = a
     override def fmap[a, b](f: a => b)(m: f[a]): f[b] = f(m)
@@ -63,6 +66,7 @@ object WeakIdentity extends MonadFix[({type m[+a] = a})#m] {
     // MonadFix
     override def mfix[a](f: (=> a) => m[a]): m[a] = Function.fix(f)
 
-// Instances
+    // Instances
+    //
     implicit val monad: MonadFix[({type m[+a] = a})#m] = this
 }

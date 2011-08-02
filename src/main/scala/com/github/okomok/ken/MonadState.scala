@@ -9,18 +9,28 @@ package ken
 
 
 trait MonadState[s, m[+_]] extends Monad[m] {
+    final def asMonadState: MonadState[s, m] = this
+
+    // Core
+    //
     def get: m[s]
     def put(s: s): m[Unit]
 
-    final def modify(f: s => s): m[Unit] = for { s <- get; _ <- put(f(s)) } yield ()
-    final def gets[a](f: s => a): m[a] = for { s <- get } yield f(s)
+    // Extra
+    //
+    def modify(f: s => s): m[Unit] = for { s <- get; _ <- put(f(s)) } yield ()
+    def gets[a](f: s => a): m[a] = for { s <- get } yield f(s)
 }
 
 
 trait MonadStateProxy[s, m[+_]] extends MonadState[s, m] with MonadProxy[m] {
     override def self: MonadState[s, m]
+
     override def get: m[s] = self.get
     override def put(s: s): m[Unit] = self.put(s)
+
+    override def modify(f: s => s): m[Unit] = self.modify(f)
+    override def gets[a](f: s => a): m[a] = self.gets(f)
 }
 
 

@@ -8,6 +8,9 @@ package com.github.okomok
 package ken
 
 
+// REJECTED.
+
+
 trait Method {
     def klass: Klass
     def callee: Any

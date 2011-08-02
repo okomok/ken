@@ -14,12 +14,14 @@ import Show._
 trait Show[a] extends Klass0[a] {
     final def asShow: Show[a] = this
 
-// Overridables
+    // Core
+    //
     def showsPrec(n: Int)(x: a): ShowS
     def show(x: a): String_ = shows(x)("")
     def showList(ls: List[a]): ShowS = { s => showList__(shows)(ls)(s) }
 
-// Utilities
+    // Extra
+    //
     final def showList__(showx: a => ShowS)(xs: List[a]): ShowS = { s =>
         xs match {
             case Nil => "Nil" ::: s
@@ -33,15 +35,18 @@ trait Show[a] extends Klass0[a] {
         }
     }
 
-    final def shows(x: a): ShowS = showsPrec(0)(x)
+    def shows(x: a): ShowS = showsPrec(0)(x)
 }
 
 
 trait ShowProxy[a] extends Show[a] with Proxy {
     override def self: Show[a]
+
     override def showsPrec(n: Int)(x: a): ShowS = self.showsPrec(n)(x)
     override def show(x: a): String_ = self.show(x)
     override def showList(ls: List[a]): ShowS = self.showList(ls)
+
+    override def shows(x: a): ShowS = self.shows(x)
 }
 
 
@@ -49,6 +54,7 @@ object Show extends ShowInstance {
     def apply[a](implicit i: Show[a]): Show[a] = i
 
     type ShowS = Function1[String_, String_]
+
     val showChar: Char => ShowS = List.op_!::
 
     val showString: String_ => ShowS = List.op_!:::

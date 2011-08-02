@@ -790,7 +790,7 @@ object Parsec {
 
     def char[st](c: Char): CharParser[st, Char] = satisfy(_ == c) <#> _show(List(c))
 
-    def anyChar[st]: CharParser[st, Char] = satisfy(const(true))
+    def anyChar[st]: CharParser[st, Char] = satisfy(const(True))
 
     // Primitive character parsers
 

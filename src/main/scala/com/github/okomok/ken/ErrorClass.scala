@@ -11,6 +11,8 @@ package ken
 trait ErrorClass[+a] extends Klass0[a] {
     final def asErrorClass: ErrorClass[a] = this
 
+    // Core
+    //
     def noMsg: a = strMsg("")
     def strMsg: String_ => a = { _ => noMsg }
 }
@@ -18,12 +20,18 @@ trait ErrorClass[+a] extends Klass0[a] {
 
 trait ErrorClassProxy[+a] extends ErrorClass[a] with Proxy {
     override def self: ErrorClass[a]
+
     override def noMsg: a = self.noMsg
     override def strMsg: String_ => a = self.strMsg
 }
 
 
-object ErrorClass {
+object ErrorClass extends ErrorClassInstance {
+    def apply[a](implicit i: ErrorClass[a]): ErrorClass[a] = i
+}
+
+
+trait ErrorClassInstance { this: ErrorClass.type =>
     implicit val ofString: ErrorClass[String_] = new ErrorClass[String_] {
         override def noMsg = ""
         override val strMsg = id[String_]_

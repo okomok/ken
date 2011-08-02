@@ -15,7 +15,8 @@ object ZipList extends Applicative[ZipList] {
     def run[a](m: ZipList[a]): List[a] = m.run
     def getZipList[a](m: ZipList[a]): List[a] = m.run
 
-// Overrides
+    // Overrides
+    //
     // Functor
     private[this] type f[+a] = ZipList[a]
     override def fmap[a, b](f: a => b)(xs: f[a]): f[b] = ZipList { List.map(f)(run(xs)) }
@@ -24,7 +25,8 @@ object ZipList extends Applicative[ZipList] {
     override def pure[a](x: => a): f[a] = ZipList { List.repeat(x) }
     override def op_<*>[a, b](fs: f[a => b])(xs: f[a]): f[b] = ZipList { List.zipWith[a => b, a, b](id)(run(fs))(run(xs)) }
 
-// Instances
+    // Instances
+    //
     implicit val applicative: Applicative[ZipList] = this
 
     implicit val weak: Weak1[ZipList, List] = new Weak1[ZipList, List] {

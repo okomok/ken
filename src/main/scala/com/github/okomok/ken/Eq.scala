@@ -13,14 +13,15 @@ package ken
 
 trait _Eq[-a] extends Klass {
     type apply = a
-
     final def asEq: _Eq[a] = this
 
-// Overridables
+    // Core
+    //
     def op_=== : a => a => Bool = x => y => not(op_/==(x)(y))
     def op_/== : a => a => Bool = x => y => not(op_===(x)(y))
 
-// Infix Operators
+    // Infix
+    //
     sealed class Infix_===(x: a) {
         def ===(y: a): Bool = op_===(x)(y)
     }
@@ -35,6 +36,7 @@ trait _Eq[-a] extends Klass {
 
 trait EqProxy[-a] extends _Eq[a] with Proxy {
     override def self: _Eq[a]
+
     override def op_=== = self.op_===
     override def op_/== = self.op_/==
 }
@@ -45,7 +47,7 @@ object _Eq extends EqInstance {
 }
 
 
-trait EqInstance {
+trait EqInstance { this: Eq.type =>
     implicit def ofEquiv[a](implicit i: scala.math.Equiv[a]): _Eq[a] = new _Eq[a] {
         override val op_=== : a => a => Bool = x => y => i.equiv(x, y)
     }

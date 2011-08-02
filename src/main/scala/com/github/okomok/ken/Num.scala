@@ -11,7 +11,8 @@ package ken
 trait Num[a] extends Klass0[a] {
     final def asNum: Num[a] = this
 
-// Overridables
+    // Core
+    //
     def op_+ : a => a => a
     def op_- : a => a => a = { x => y => op_+(x)(negate(y)) }
     def op_* : a => a => a
@@ -20,10 +21,12 @@ trait Num[a] extends Klass0[a] {
     def signum: a => a
     def fromInteger: Integer => a
 
-// Utilities
-    final def subtract: a => a => a = flip(op_-)
+    // Extra
+    //
+    def subtract: a => a => a = flip(op_-)
 
-// Infix Operators
+    // Infix
+    //
     sealed class Infix_+(x: a) {
         def +(y: a): a = op_+(x)(y)
     }
@@ -43,6 +46,7 @@ trait Num[a] extends Klass0[a] {
 
 trait NumProxy[a] extends Num[a] with Proxy {
     override def self: Num[a]
+
     override def op_+ : a => a => a = self.op_+
     override def op_- : a => a => a = self.op_-
     override def op_* : a => a => a = self.op_*
@@ -50,6 +54,8 @@ trait NumProxy[a] extends Num[a] with Proxy {
     override def abs: a => a = self.abs
     override def signum: a => a = self.signum
     override def fromInteger: Integer => a = self.fromInteger
+
+    override def subtract: a => a => a = self.subtract
 }
 
 
