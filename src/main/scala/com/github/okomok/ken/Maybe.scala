@@ -68,7 +68,7 @@ object Maybe extends MonadPlus[Maybe] {
         case Just(x) => x
     }
 
-    def fromMaybe[a](d: a)(x: Maybe[a]): a = x match {
+    def fromMaybe[a](d: => a)(x: Maybe[a]): a = x match {
         case Nothing => d
         case Just(v) => v
     }

@@ -10,6 +10,7 @@ package ken
 
 object ByName {
 
-    implicit def fun2_2[a, b, c](f: a => b => c): a => (=> b) => c = { x => y => f(x)(y) }
+    implicit def fromStrict[a, b, c](f: a => b => c): a => (=> b) => c = { x => y => f(x)(y) }
+    implicit def toStrict[a, b, c](f: a => (=> b) => c): a => b => c = { x => y => f(x)(y) }
 
 }

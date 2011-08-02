@@ -16,10 +16,15 @@ trait Foldable[t[+_]] extends Klass {
     def fold[m](f: t[m])(implicit i: Monoid[m]): m = foldMap(id[m])(f)
     def foldMap[a, m](f: a => m)(x: t[a])(implicit i: Monoid[m]): m = foldr[a, m](i.mappend compose f)(i.mempty)(x)
 
-    def foldr[a, b](f: a => (=> b) => b)(z: b)(t: t[a]): b = foldMap((a: a) => (b: b) => f(a)(b))(t)(Endo.weak[b].monoid)(z)
+    def foldr[a, b](f: a => (=> b) => b)(z: b)(t: t[a]): b = {
+        import ByName._
+        foldMap[a, b => b](f)(t)(Endo.weak[b].monoid)(z)
+    }
+
     def foldl[a, b](f: a => b => a)(z: a)(t: t[b]): a = foldMap(flip(f))(t)(Endo.weak[a].monoid.dual)(z)
 
     def foldr1[a](f: a => (=> a) => a)(xs: t[a]): a = {
+        // BUGBUG: y is not lazy.
         def mf(x: a)(y: => Maybe[a]): Maybe[a] = y match {
             case Nothing => Just(x)
             case Just(y) => Just(f(x)(y))
@@ -28,9 +33,9 @@ trait Foldable[t[+_]] extends Klass {
     }
 
     def foldl1[a](f: a => a => a)(xs: t[a]):a = {
-        val mf: Maybe[a] => a => Maybe[a] = {
-            case Nothing => y => Just(y)
-            case Just(x) => y => Just(f(x)(y))
+        def mf(x: Maybe[a])(y: a): Maybe[a] = x match {
+            case Nothing => Just(y)
+            case Just(x) => Just(f(x)(y))
         }
         Maybe.fromMaybe(error("foldl1: empty structure"))(foldl(mf)(Nothing)(xs))
     }
