@@ -11,7 +11,7 @@ package ken
 final class _LazyTs[n[+_]](val inner: Monad[n]) {
     private[this] implicit def innerFor[a](x: n[a]): inner.For[a] = inner.`for`(x)
 
-    sealed abstract class _LazyT[+a] extends Identity[n[Lazy[a]]]
+    sealed abstract class _LazyT[+a] extends Strong[n[Lazy[a]]]
 
     object _LazyT extends Instances {
         def apply[a](rep: n[Lazy[a]]): _LazyT[a] = new _LazyT[a] {

@@ -11,7 +11,7 @@ package ken
 final class _ListTs[n[+_]](val inner: Monad[n]) {
     private[this] implicit def innerFor[a](x: n[a]): inner.For[a] = inner.`for`(x)
 
-    sealed abstract class _ListT[+a] extends Identity[n[List[a]]]
+    sealed abstract class _ListT[+a] extends Strong[n[List[a]]]
 
     object _ListT extends Instances {
         def apply[a](rep: n[List[a]]): _ListT[a] = new _ListT[a] {

@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-final case class Endo[a](app: a => a) extends Identity[a => a] {
+final case class Endo[a](app: a => a) extends Strong[a => a] {
     override def run: a => a = app
 }
 

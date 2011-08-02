@@ -8,14 +8,11 @@ package com.github.okomok
 package ken
 
 
-trait Identity[+a] {
-    def run: a
-}
+trait Identity[+a] extends Strong[a]
 
 
-trait IdentityProxy[+a] extends Identity[a] with Proxy {
+trait IdentityProxy[+a] extends Identity[a] with StrongProxy[a] {
     override def self: Identity[a]
-    override def run: a = self.run
 }
 
 

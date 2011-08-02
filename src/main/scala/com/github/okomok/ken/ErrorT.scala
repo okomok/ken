@@ -11,7 +11,7 @@ package ken
 final class _ErrorTs[n[+_]](val inner: Monad[n]) {
     private[this] implicit def innerFor[a](x: n[a]): inner.For[a] = inner.`for`(x)
 
-    sealed abstract class _ErrorT[e, +a] extends Identity[n[Either[e, a]]]
+    sealed abstract class _ErrorT[e, +a] extends Strong[n[Either[e, a]]]
 
     object _ErrorT extends Instances {
         def apply[e, a](rep: n[Either[e, a]]): _ErrorT[e, a] = new _ErrorT[e, a] {

@@ -11,7 +11,7 @@ package ken
 final class _ReaderTs[n[+_]](val inner: Monad[n]) {
     private[this] implicit def innerFor[a](x: n[a]): inner.For[a] = inner.`for`(x)
 
-    sealed abstract class _ReaderT[r, +a] extends Identity[r => n[a]]
+    sealed abstract class _ReaderT[r, +a] extends Strong[r => n[a]]
 
     object _ReaderT extends Instances {
         def apply[r, a](rep: r => n[a]): _ReaderT[r, a] = new _ReaderT[r, a] {

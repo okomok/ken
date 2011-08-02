@@ -11,7 +11,7 @@ package ken
 final class _WriterTs[n[+_]](val inner: Monad[n]) {
     private[this] implicit def innerFor[a](x: n[a]): inner.For[a] = inner.`for`(x)
 
-    sealed abstract class _WriterT[w, +a] extends Identity[n[(a, w)]]
+    sealed abstract class _WriterT[w, +a] extends Strong[n[(a, w)]]
 
     object _WriterT extends Instances {
         def apply[w, a](rep: n[(a, w)]): _WriterT[w, a] = new _WriterT[w, a] {

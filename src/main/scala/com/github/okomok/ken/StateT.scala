@@ -11,7 +11,7 @@ package ken
 final class _StateTs[n[+_]](val inner: Monad[n]) {
     private[this] implicit def innerFor[a](x: n[a]): inner.For[a] = inner.`for`(x)
 
-    sealed abstract class _StateT[s, +a] extends Identity[s => n[(a, s)]]
+    sealed abstract class _StateT[s, +a] extends Strong[s => n[(a, s)]]
 
     object _StateT extends Instances {
         def apply[s, a](rep: s => n[(a, s)]): _StateT[s, a] = new _StateT[s, a] {

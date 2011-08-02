@@ -12,7 +12,7 @@ final class _MaybeTs[n[+_]](val inner: Monad[n]) {
     private[this] implicit def innerFor[a](x: n[a]): inner.For[a] = inner.`for`(x)
     private[this] implicit def innerInfix_>>=[a](x: n[a]): inner.Infix_>>=[a] = inner.>>=(x)
 
-    sealed abstract class _MaybeT[+a] extends Identity[n[Maybe[a]]]
+    sealed abstract class _MaybeT[+a] extends Strong[n[Maybe[a]]]
 
     object _MaybeT extends Instances {
         def apply[a](rep: n[Maybe[a]]): _MaybeT[a] = new _MaybeT[a] {

@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-trait IO[+a] extends Identity[a] {
+trait IO[+a] extends Strong[a] {
     def unIO(): a
     final override def run: a = unIO()
 }

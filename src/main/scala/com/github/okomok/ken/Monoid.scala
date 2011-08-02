@@ -25,7 +25,7 @@ trait Monoid[m] extends Klass { outer =>
 
 // Infix Operators
     sealed class Infix_mappend(x: m) {
-        def _mappend(y: => m): m = mappend(x)(y)
+        def _mappend_(y: => m): m = mappend(x)(y)
     }
     final implicit def _mappend_(x: m): Infix_mappend = new Infix_mappend(x)
 }
@@ -43,7 +43,7 @@ object Monoid extends MonoidInstance {
     def apply[m](implicit i: Monoid[m]): Monoid[m] = i
 
 /*
-    final case class Dual[+a](get: a) extends Identity[a] {
+    final case class Dual[+a](get: a) extends Strong[a] {
         override def run: a = get
     }
 
