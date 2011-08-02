@@ -11,9 +11,7 @@ package ken
 import Show._
 
 
-trait Show[a] extends Klass {
-    type apply = a
-
+trait Show[a] extends Klass0[a] {
     final def asShow: Show[a] = this
 
 // Overridables

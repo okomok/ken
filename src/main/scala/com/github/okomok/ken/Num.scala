@@ -8,9 +8,7 @@ package com.github.okomok
 package ken
 
 
-trait Num[a] extends Klass {
-    type apply = a
-
+trait Num[a] extends Klass0[a] {
     final def asNum: Num[a] = this
 
 // Overridables

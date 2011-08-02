@@ -8,13 +8,12 @@ package com.github.okomok
 package ken
 
 
-trait Foldable[t[+_]] extends Klass {
-    type apply[+a] = t[a]
+trait Foldable[t[+_]] extends Klass1[t] {
     final def asFoldable: Foldable[t] = this
 
-    // Overridables
+    // Core
 
-    def fold[m](f: t[m])(implicit i: Monoid[m]): m = foldMap(id[m])(f)
+    def fold[m](f: t[m])(implicit i: Monoid[m]): m = foldMap(id[m])(f)(i)
     def foldMap[a, m](f: a => m)(x: t[a])(implicit i: Monoid[m]): m = foldr[a, m](i.mappend compose f)(i.mempty)(x)
 
     def foldr[a, b](f: a => (=> b) => b)(z: b)(t: t[a]): b = {
@@ -25,7 +24,6 @@ trait Foldable[t[+_]] extends Klass {
     def foldl[a, b](f: a => b => a)(z: a)(t: t[b]): a = foldMap(flip(f))(t)(Endo.weak[a].monoid.dual)(z)
 
     def foldr1[a](f: a => (=> a) => a)(xs: t[a]): a = {
-        // Caution: y is not lazy.
         def mf(x: a)(y: => Maybe[a]): Maybe[a] = y match {
             case Nothing => Just(x)
             case Just(y) => Just(f(x)(y))
@@ -41,14 +39,14 @@ trait Foldable[t[+_]] extends Klass {
         Maybe.fromMaybe(error("foldl1: empty structure"))(foldl(mf)(Nothing)(xs))
     }
 
-    // Utilities
+    // Extra
 
-    final def foldr_[a, b](f: a => b => b)(z0: b)(xs: t[a]): b = {
+    def foldr_[a, b](f: a => b => b)(z0: b)(xs: t[a]): b = {
         def f_(k: b => b)(x: a)(z: b): b = k { f(x)(z) }
         foldl[b => b, a](f_)(id)(xs)(z0)
     }
 
-    final def foldrM[m[+_], a, b](f: a => (=> b) => m[b])(z0: b)(xs: t[a])(implicit i: Monad[m]): m[b] = {
+    def foldrM[m[+_], a, b](f: a => (=> b) => m[b])(z0: b)(xs: t[a])(implicit i: Monad[m]): m[b] = {
         // not lazy
         import i.>>=
         import ByName._
@@ -56,7 +54,7 @@ trait Foldable[t[+_]] extends Klass {
         foldl(f_)(i.`return`)(xs)(z0)
     }
 
-    final def foldlM[m[+_], a, b](f: a => b => m[a])(z0: a)(xs: t[b])(implicit i: Monad[m]): m[a] = {
+    def foldlM[m[+_], a, b](f: a => b => m[a])(z0: a)(xs: t[b])(implicit i: Monad[m]): m[a] = {
         import i.>>=
         import ByName._
         def f_(x: b)(k: a => m[a])(z: a): m[a] = f(z)(x) >>= k
@@ -65,54 +63,53 @@ trait Foldable[t[+_]] extends Klass {
 
     // *> is equivalent to >> ?
 
-    final def traverse_[f[+_], a, b](f: a => f[b])(xs: t[a])(implicit i: Applicative[f]): f[Unit] = {
+    def traverse_[f[+_], a, b](f: a => f[b])(xs: t[a])(implicit i: Applicative[f]): f[Unit] = {
         foldr_(i.op_*>[b, Unit]_ compose f)(i.pure())(xs)
     }
 
-    final def for_[f[+_], a, b](xs: t[a])(f: a => f[b])(implicit i: Applicative[f]): f[Unit] = traverse_(f)(xs)
+    def for_[f[+_], a, b](xs: t[a])(f: a => f[b])(implicit i: Applicative[f]): f[Unit] = traverse_(f)(xs)
 
-    final def mapM_[m[+_], a, b](f: a => m[b])(xs: t[a])(implicit i: Monad[m]): m[Unit] = {
+    def mapM_[m[+_], a, b](f: a => m[b])(xs: t[a])(implicit i: Monad[m]): m[Unit] = {
         foldr(i.op_>>[Unit]_ compose f)(i.`return`())(xs)
     }
 
-    final def forM_[m[+_], a, b](xs: t[a])(f: a => m[b])(implicit i: Monad[m]): m[Unit] = mapM_(f)(xs)
+    def forM_[m[+_], a, b](xs: t[a])(f: a => m[b])(implicit i: Monad[m]): m[Unit] = mapM_(f)(xs)
 
-    final def sequenceA_[f[+_], a](xs: t[f[a]])(implicit i: Applicative[f]): f[Unit] = {
+    def sequenceA_[f[+_], a](xs: t[f[a]])(implicit i: Applicative[f]): f[Unit] = {
         foldr_(i.op_*>[a, Unit])(i.pure())(xs)
     }
 
-    final def sequence_[m[+_], a](xs: t[m[a]])(implicit i: Monad[m]): m[Unit] = {
+    def sequence_[m[+_], a](xs: t[m[a]])(implicit i: Monad[m]): m[Unit] = {
         foldr(i.op_>>[Unit])(i.`return`())(xs)
     }
 
-    final def asum[f[+_], a](xs: t[f[a]])(implicit i: Alternative[f]): f[a] = {
+    def asum[f[+_], a](xs: t[f[a]])(implicit i: Alternative[f]): f[a] = {
         foldr(i.op_<|>[a])(i.empty)(xs)
     }
 
-    final def msum[m[+_], a](xs: t[m[a]])(implicit i: MonadPlus[m]): m[a] = {
+    def msum[m[+_], a](xs: t[m[a]])(implicit i: MonadPlus[m]): m[a] = {
         foldr(i.mplus[a])(i.mzero)(xs)
     }
 
-    final def toList[a](xs: t[a]): List[a] = {
+    def toList[a](xs: t[a]): List[a] = {
         foldr(List.op_::[a])(Nil)(xs)
     }
 
-    final def concat[a](xs: t[List[a]]): List[a] = fold(xs)
+    def concat[a](xs: t[List[a]]): List[a] = fold(xs)
+    def concatMap[a, b](f: a => List[b])(xs: t[a]): List[b] = foldMap(f)(xs)
 
-    final def concatMap[a, b](f: a => List[b])(xs: t[a]): List[b] = foldMap(f)(xs)
+    def and(xs: t[Bool]): Bool = foldMap(id[Bool])(xs)(Monoid.All.weak.monoid)
+    def or(xs: t[Bool]): Bool = foldMap(id[Bool])(xs)(Monoid.Any_.weak.monoid)
 
-    final def and(xs: t[Bool]): Bool = foldMap(id[Bool])(xs)(Monoid.All.weak.monoid)
-    final def or(xs: t[Bool]): Bool = foldMap(id[Bool])(xs)(Monoid.Any_.weak.monoid)
+    def any[a](p: a => Bool)(xs: t[a]): Bool = foldMap(p)(xs)(Monoid.Any_.weak.monoid)
+    def all[a](p: a => Bool)(xs: t[a]): Bool = foldMap(p)(xs)(Monoid.All.weak.monoid)
 
-    final def any[a](p: a => Bool)(xs: t[a]): Bool = foldMap(p)(xs)(Monoid.Any_.weak.monoid)
-    final def all[a](p: a => Bool)(xs: t[a]): Bool = foldMap(p)(xs)(Monoid.All.weak.monoid)
+    def sum[a](xs: t[a])(implicit i: Num[a]): a = foldMap(id[a])(xs)(Monoid.Sum.weak.monoid)
+    def product[a](xs: t[a])(implicit i: Num[a]): a = foldMap(id[a])(xs)(Monoid.Product.weak.monoid)
 
-    final def sum[a](xs: t[a])(implicit i: Num[a]): a = foldMap(id[a])(xs)(Monoid.Sum.weak.monoid)
-    final def product[a](xs: t[a])(implicit i: Num[a]): a = foldMap(id[a])(xs)(Monoid.Product.weak.monoid)
+    def maximum[a](xs: t[a])(implicit i: Ord[a]): a = foldl1(i.max)(xs)
 
-    final def maximum[a](xs: t[a])(implicit i: Ord[a]): a = foldl1(i.max)(xs)
-
-    final def maximumBy[a](cmp: a => a => Ordering)(xs: t[a]): a = {
+    def maximumBy[a](cmp: a => a => Ordering)(xs: t[a]): a = {
         def max_(x: a)(y: a): a = cmp(x)(y) match {
             case GT => x
             case _ => y
@@ -120,9 +117,9 @@ trait Foldable[t[+_]] extends Klass {
         foldl1(max_)(xs)
     }
 
-    final def minimum[a](xs: t[a])(implicit i: Ord[a]): a = foldl1(i.min)(xs)
+    def minimum[a](xs: t[a])(implicit i: Ord[a]): a = foldl1(i.min)(xs)
 
-    final def minimumBy[a](cmp: a => a => Ordering)(xs: t[a]): a = {
+    def minimumBy[a](cmp: a => a => Ordering)(xs: t[a]): a = {
         def min_(x: a)(y: a): a = cmp(x)(y) match {
             case GT => y
             case _ => x
@@ -130,10 +127,10 @@ trait Foldable[t[+_]] extends Klass {
         foldl1(min_)(xs)
     }
 
-    final def elem[a](x: a)(xs: t[a]): Bool = any(Eq[a].op_===(x))(xs)
-    final def notElem[a](x: a)(xs: t[a]): Bool = not(elem(x)(xs))
+    def elem[a](x: a)(xs: t[a]): Bool = any(Eq[a].op_===(x))(xs)
+    def notElem[a](x: a)(xs: t[a]): Bool = not(elem(x)(xs))
 
-    final def find[a](p: a => Bool)(xs: t[a]): Maybe[a] = {
+    def find[a](p: a => Bool)(xs: t[a]): Maybe[a] = {
         Maybe.listToMaybe(concatMap((x: a) => if (p(x)) List(x) else Nil)(xs))
     }
 }
@@ -141,12 +138,41 @@ trait Foldable[t[+_]] extends Klass {
 
 trait FoldableProxy[t[+_]] extends Foldable[t] with Proxy {
     override def self: Foldable[t]
+
     override def fold[m](f: t[m])(implicit i: Monoid[m]): m = self.fold(f)(i)
     override def foldMap[a, m](f: a => m)(x: t[a])(implicit i: Monoid[m]): m = self.foldMap(f)(x)(i)
     override def foldr[a, b](f: a => (=> b) => b)(z: b)(t: t[a]): b = self.foldr(f)(z)(t)
     override def foldl[a, b](f: a => b => a)(z: a)(t: t[b]): a = self.foldl(f)(z)(t)
     override def foldr1[a](f: a => (=> a) => a)(xs: t[a]): a = self.foldr1(f)(xs)
     override def foldl1[a](f: a => a => a)(xs: t[a]):a = self.foldl1(f)(xs)
+
+    override def foldr_[a, b](f: a => b => b)(z0: b)(xs: t[a]): b = self.foldr_(f)(z0)(xs)
+    override def foldrM[m[+_], a, b](f: a => (=> b) => m[b])(z0: b)(xs: t[a])(implicit i: Monad[m]): m[b] = self.foldrM(f)(z0)(xs)(i)
+    override def foldlM[m[+_], a, b](f: a => b => m[a])(z0: a)(xs: t[b])(implicit i: Monad[m]): m[a] = self.foldlM(f)(z0)(xs)(i)
+    override def traverse_[f[+_], a, b](f: a => f[b])(xs: t[a])(implicit i: Applicative[f]): f[Unit] = self.traverse_(f)(xs)(i)
+    override def for_[f[+_], a, b](xs: t[a])(f: a => f[b])(implicit i: Applicative[f]): f[Unit] = self.for_(xs)(f)(i)
+    override def mapM_[m[+_], a, b](f: a => m[b])(xs: t[a])(implicit i: Monad[m]): m[Unit] = self.mapM_(f)(xs)(i)
+    override def forM_[m[+_], a, b](xs: t[a])(f: a => m[b])(implicit i: Monad[m]): m[Unit] = self.forM_(xs)(f)(i)
+    override def sequenceA_[f[+_], a](xs: t[f[a]])(implicit i: Applicative[f]): f[Unit] = self.sequenceA_(xs)(i)
+    override def sequence_[m[+_], a](xs: t[m[a]])(implicit i: Monad[m]): m[Unit] = self.sequence_(xs)(i)
+    override def asum[f[+_], a](xs: t[f[a]])(implicit i: Alternative[f]): f[a] = self.asum(xs)(i)
+    override def msum[m[+_], a](xs: t[m[a]])(implicit i: MonadPlus[m]): m[a] = self.msum(xs)(i)
+    override def toList[a](xs: t[a]): List[a] = self.toList(xs)
+    override def concat[a](xs: t[List[a]]): List[a] = self.concat(xs)
+    override def concatMap[a, b](f: a => List[b])(xs: t[a]): List[b] = self.concatMap(f)(xs)
+    override def and(xs: t[Bool]): Bool = self.and(xs)
+    override def or(xs: t[Bool]): Bool = self.or(xs)
+    override def any[a](p: a => Bool)(xs: t[a]): Bool = self.any(p)(xs)
+    override def all[a](p: a => Bool)(xs: t[a]): Bool = self.all(p)(xs)
+    override def sum[a](xs: t[a])(implicit i: Num[a]): a = self.sum(xs)(i)
+    override def product[a](xs: t[a])(implicit i: Num[a]): a = self.product(xs)(i)
+    override def maximum[a](xs: t[a])(implicit i: Ord[a]): a = self.maximum(xs)(i)
+    override def maximumBy[a](cmp: a => a => Ordering)(xs: t[a]): a = self.maximumBy(cmp)(xs)
+    override def minimum[a](xs: t[a])(implicit i: Ord[a]): a = self.minimum(xs)(i)
+    override def minimumBy[a](cmp: a => a => Ordering)(xs: t[a]): a = self.minimumBy(cmp)(xs)
+    override def elem[a](x: a)(xs: t[a]): Bool = self.elem(x)(xs)
+    override def notElem[a](x: a)(xs: t[a]): Bool = self.notElem(x)(xs)
+    override def find[a](p: a => Bool)(xs: t[a]): Maybe[a] = self.find(p)(xs)
 }
 
 

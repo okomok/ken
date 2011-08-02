@@ -8,9 +8,7 @@ package com.github.okomok
 package ken
 
 
-trait Functor[f[+_]] extends Klass {
-    type apply[+a] = f[a]
-
+trait Functor[f[+_]] extends Klass1[f] {
     final def asFunctor: Functor[f] = this
 
 // Overridables

@@ -8,9 +8,7 @@ package com.github.okomok
 package ken
 
 
-trait ErrorClass[+a] extends Klass {
-    type apply = a
-
+trait ErrorClass[+a] extends Klass0[a] {
     final def asErrorClass: ErrorClass[a] = this
 
     def noMsg: a = strMsg("")

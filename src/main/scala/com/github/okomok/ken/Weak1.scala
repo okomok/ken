@@ -11,7 +11,7 @@ package ken
 /**
  * Weakly-typed instances
  */
-trait Weak1[p[+_], d[+_]] extends Weak1Instances[p, d] {
+trait Weak1[p[+_], d[+_]] extends Klass with Weak1Instances[p, d] {
     type apply[+a] = d[a]
     final def asWeak1: Weak1[p, d] = this
 }
@@ -43,7 +43,7 @@ object Weak1 {
 
 // Overloading weight control
 
-private[ken] trait Weak1Instance0[p[+_], d[+_]] extends Klass {
+private[ken] trait Weak1Instance0[p[+_], d[+_]] {
     def wrap[a](d: => d[a]): p[a]
     def unwrap[a](p: p[a]): d[a]
 

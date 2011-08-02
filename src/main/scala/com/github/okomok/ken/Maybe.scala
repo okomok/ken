@@ -13,10 +13,10 @@ sealed abstract class Maybe[+a] extends Up[Maybe[a]] {
 }
 
 case object Nothing extends Maybe[Nothing]
-case class Just[+a](x: a) extends Maybe[a]
+final case class Just[+a](x: a) extends Maybe[a]
 
 
-object Maybe extends MonadPlus[Maybe] {
+object Maybe extends MonadPlus[Maybe] with Foldable[Maybe] {
 // Overrides
     // Functor
     private[this] type f[+a] = Maybe[a]
@@ -41,9 +41,20 @@ object Maybe extends MonadPlus[Maybe] {
         case Nothing => ys
         case _ => xs
     }
+    // Foldable
+    private[this] type t[+a] = Maybe[a]
+    override def foldr[a, b](f: a => (=> b) => b)(z: b)(t: t[a]): b = t match {
+        case Nothing => z
+        case Just(x) => f(x)(z)
+    }
+    override def foldl[a, b](f: a => b => a)(z: a)(t: t[b]): a = t match {
+        case Nothing => z
+        case Just(x) => f(z)(x)
+    }
 
 // Instances
     implicit val monad: MonadPlus[Maybe] = this
+    implicit val foldable: Foldable[Maybe] = this
 
 // Operators
     def just[a](x: a): Maybe[a] = Just(x)

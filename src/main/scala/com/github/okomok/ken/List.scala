@@ -72,7 +72,7 @@ object !:: { // strict extractor
 }
 
 
-object List extends MonadPlus[List] {
+object List extends MonadPlus[List] with Foldable[List] {
     @tailrec
     def equal(xs: List[_])(ys: List[_]): Bool = (xs, ys) match {
         case (Nil, Nil) => true
@@ -98,9 +98,13 @@ object List extends MonadPlus[List] {
     // MonadPlus
     override def mzero: m[Nothing] = Nil
     override def mplus[a](x: m[a])(y: => m[a]): m[a] = x ::: y
+    // Foldable
+    private[this] type t[+a] = List[a]
+    override def toList[a](xs: t[a]): List[a]  = xs
 
 // Instances
     implicit val monad: MonadPlus[List] = this
+    implicit val foldable: Foldable[List] = this
 
     implicit def monoid[a]: Monoid[List[a]] = new Monoid[List[a]] {
         private[this] type m = List[a]
@@ -239,51 +243,54 @@ object List extends MonadPlus[List] {
     }
 
 // Reducing lists (folds)
-    @tailrec
-    def foldl[a, b](f: a => b => a)(z: a)(xs: List[b]): a = xs match {
-        case Nil => z
-        case x :: xs => foldl(f)(f(z)(x))(xs.!)
+    override def foldl[a, b](f: a => b => a)(z: a)(xs: List[b]): a = {
+        @tailrec
+        def impl(f: a => b => a)(z: a)(xs: List[b]): a = xs match {
+            case Nil => z
+            case x :: xs => impl(f)(f(z)(x))(xs.!)
+        }
+        impl(f)(z)(xs)
     }
 
-    def foldl1[a](f: a => a => a)(xs: List[a]): a = xs match {
+    override def foldl1[a](f: a => a => a)(xs: List[a]): a = xs match {
         case Nil => error("empty List")
         case x :: xs => foldl(f)(x)(xs.!)
     }
 
-    def foldr[a, b](f: a => (=> b) => b)(z: b)(xs: List[a]): b = xs match {
+    override def foldr[a, b](f: a => (=> b) => b)(z: b)(xs: List[a]): b = xs match {
         case Nil => z
         case x :: xs => f(x)(foldr(f)(z)(xs.!))
     }
 
-    def foldr1[a](f: a => (=> a) => a)(xs: List[a]): a = xs match {
+    override def foldr1[a](f: a => (=> a) => a)(xs: List[a]): a = xs match {
         case Nil => error("empty List")
         case x !:: Nil => x
         case x :: xs => f(x)(foldr1(f)(xs.!))
     }
 
 // Special folds
-    def concat[a](xs: List[List[a]]): List[a] = foldr(op_:::[a])(Nil)(xs)
+    override def concat[a](xs: List[List[a]]): List[a] = foldr(op_:::[a])(Nil)(xs)
 
-    def concatMap[a, b](f: a => List[b])(xs: List[a]): List[b] = foldr[a, List[b]](x => y => f(x) ::: y)(Nil)(xs)
+    override def concatMap[a, b](f: a => List[b])(xs: List[a]): List[b] = foldr[a, List[b]](x => y => f(x) ::: y)(Nil)(xs)
 
-    def and(xs: List[Bool]): Bool = foldr(op_&&)(true)(xs)
+    override def and(xs: List[Bool]): Bool = foldr(op_&&)(true)(xs)
 
-    def or(xs: List[Bool]): Bool = foldr(op_||)(false)(xs)
+    override def or(xs: List[Bool]): Bool = foldr(op_||)(false)(xs)
 
-    def any[a](p: a => Bool)(xs: List[a]): Bool = or(map(p)(xs))
+    override def any[a](p: a => Bool)(xs: List[a]): Bool = or(map(p)(xs))
 
-    def all[a](p: a => Bool)(xs: List[a]): Bool = and(map(p)(xs))
+    override def all[a](p: a => Bool)(xs: List[a]): Bool = and(map(p)(xs))
 
-    def sum[a](xs: List[a])(implicit i: Num[a]): a = foldl(i.op_+)(i.fromInteger(0))(xs)
+    override def sum[a](xs: List[a])(implicit i: Num[a]): a = foldl(i.op_+)(i.fromInteger(0))(xs)
 
-    def product[a](xs: List[a])(implicit i: Num[a]): a = foldl(i.op_*)(i.fromInteger(1))(xs)
+    override def product[a](xs: List[a])(implicit i: Num[a]): a = foldl(i.op_*)(i.fromInteger(1))(xs)
 
-    def maximum[a](xs: List[a])(implicit i: Ord[a]): a = xs match {
+    override def maximum[a](xs: List[a])(implicit i: Ord[a]): a = xs match {
         case Nil => error("empty List")
         case xs => foldl1(i.max)(xs)
     }
 
-    def minimum[a](xs: List[a])(implicit i: Ord[a]): a = xs match {
+    override def minimum[a](xs: List[a])(implicit i: Ord[a]): a = xs match {
         case Nil => error("empty List")
         case xs => foldl1(i.min)(xs)
     }
@@ -435,9 +442,9 @@ object List extends MonadPlus[List] {
     def isInfixOf[a](needle: List[a])(haystack: List[a]): Bool = any(isPrefixOf(needle))(tails(haystack))
 
 // Searching by equality
-    def elem[a](x: a)(xs: List[a]): Bool = any[a](x == _)(xs)
+    override def elem[a](x: a)(xs: List[a]): Bool = any[a](x == _)(xs)
 
-    def notElem[a](x: a)(xs: List[a]): Bool = all[a](x != _)(xs)
+    override def notElem[a](x: a)(xs: List[a]): Bool = all[a](x != _)(xs)
 
     @tailrec
     def lookup[a, b](key: a)(xs: List[(a, b)]): Maybe[b] = xs match {
@@ -446,7 +453,7 @@ object List extends MonadPlus[List] {
     }
 
 // Searching with a predicate
-    def find[a](p: a => Bool)(xs: List[a]): Maybe[a] = Maybe.listToMaybe(filter(p)(xs))
+    override def find[a](p: a => Bool)(xs: List[a]): Maybe[a] = Maybe.listToMaybe(filter(p)(xs))
 
     def filter[a](pred: a => Bool)(xs: List[a]): List[a] = xs match {
         case Nil => Nil
@@ -580,7 +587,7 @@ object List extends MonadPlus[List] {
         }
     }
 
-    def maximumBy[a](cmp: a => a => Ordering)(xs: List[a]): a = xs match {
+    override def maximumBy[a](cmp: a => a => Ordering)(xs: List[a]): a = xs match {
         case Nil => error("empty List")
         case xs => {
             def maxBy(x: a)(y: a): a = cmp(x)(y) match {
@@ -591,7 +598,7 @@ object List extends MonadPlus[List] {
         }
     }
 
-    def minimumBy[a](cmp: a => a => Ordering)(xs: List[a]): a = xs match {
+    override def minimumBy[a](cmp: a => a => Ordering)(xs: List[a]): a = xs match {
         case Nil => error("empty List")
         case xs => {
             def minBy(x: a)(y: a): a = cmp(x)(y) match {
