@@ -9,7 +9,7 @@ package ken
 
 
 trait MonadFix[m[+_]] extends Monad[m] {
-    final def asMonadFix: MonadFix[m] = this
+    final def asMonadFix: MonadFix[apply] = this
 
     // Core
     //

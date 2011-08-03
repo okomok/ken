@@ -9,7 +9,7 @@ package ken
 
 
 trait ErrorClass[+a] extends Klass0[a] {
-    final def asErrorClass: ErrorClass[a] = this
+    final def asErrorClass: ErrorClass[apply] = this
 
     // Core
     //

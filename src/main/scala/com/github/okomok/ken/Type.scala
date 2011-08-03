@@ -9,7 +9,7 @@ package ken
 
 
 /**
- * Trival type envelope to help inference
+ * Trival type envelope for type-parameter inference
  */
 sealed abstract class Type[a] {
     type apply = a

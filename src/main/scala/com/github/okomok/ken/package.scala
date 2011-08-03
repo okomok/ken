@@ -13,10 +13,6 @@ package object ken {
     type Eq[-a] = _Eq[a]
     val Eq = _Eq
 
-    // will be removed.
-    def op_==[a](x: a)(y: a): Bool = x == y
-    def op_!=[a](x: a)(y: a): Bool = x != y
-
 // Bools
     val not: Bool => Bool = { b => !b }
 

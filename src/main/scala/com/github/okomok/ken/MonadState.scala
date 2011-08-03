@@ -9,7 +9,7 @@ package ken
 
 
 trait MonadState[s, m[+_]] extends Monad[m] {
-    final def asMonadState: MonadState[s, m] = this
+    final def asMonadState: MonadState[s, apply] = this
 
     // Core
     //

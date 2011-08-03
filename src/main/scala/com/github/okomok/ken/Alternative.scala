@@ -9,7 +9,7 @@ package ken
 
 
 trait Alternative[f[+_]] extends Applicative[f] {
-    final def asAlternative: Alternative[f] = this
+    final def asAlternative: Alternative[apply] = this
 
     // Core
     //

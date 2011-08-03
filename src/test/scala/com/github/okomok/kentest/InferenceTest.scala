@@ -15,7 +15,7 @@ class InferenceTest extends org.scalatest.junit.JUnit3Suite {
     def useFunctor[f[+_]](implicit i: Functor[f]) = ()
 
     def testWeak {
-        //useFunctor(WeakIdentity) // fails to infer
+        // useFunctor(WeakIdentity) // fails to infer
 
         useFunctor(WeakIdentity.monad)
         useFunctor(WeakIdentity.asFunctor)
@@ -26,18 +26,5 @@ class InferenceTest extends org.scalatest.junit.JUnit3Suite {
         useFunctor(constFunctor.asFunctor)
         useFunctor(Functor[constFunctor.apply])
         useFunctor[constFunctor.apply]
-    }
-
-
-    trait MyKlass1[f[+_]] {
-        type apply[+a] = f[a]
-    }
-
-    trait MyFunctor[f[+_]] extends MyKlass1[f] {
-        def __ : MyFunctor[apply] = this
-    }
-
-    trait MyMonad[m[+_]] extends MyFunctor[m] {
-        override def __ : MyMonad[apply] = this
     }
 }

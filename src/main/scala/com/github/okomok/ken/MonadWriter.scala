@@ -9,7 +9,7 @@ package ken
 
 
 trait MonadWriter[w, m[+_]] extends Monad[m] {
-    final def asMonadWriter: MonadWriter[w, m] = this
+    final def asMonadWriter: MonadWriter[w, apply] = this
 
     // Core
     //

@@ -9,7 +9,7 @@ package ken
 
 
 trait Num[a] extends Klass0[a] {
-    final def asNum: Num[a] = this
+    final def asNum: Num[apply] = this
 
     // Core
     //

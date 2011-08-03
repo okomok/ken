@@ -9,7 +9,7 @@ package ken
 
 
 trait Foldable[t[+_]] extends Klass1[t] {
-    final def asFoldable: Foldable[t] = this
+    final def asFoldable: Foldable[apply] = this
 
     // Core
     //
@@ -127,7 +127,7 @@ trait Foldable[t[+_]] extends Klass1[t] {
         foldl1(min_)(xs)
     }
 
-    def elem[a](x: a)(xs: t[a]): Bool = any(Eq[a].op_===(x))(xs)
+    def elem[a](x: a)(xs: t[a]): Bool = any(Eq[a].op_==(x))(xs)
     def notElem[a](x: a)(xs: t[a]): Bool = not(elem(x)(xs))
 
     def find[a](p: a => Bool)(xs: t[a]): Maybe[a] = {

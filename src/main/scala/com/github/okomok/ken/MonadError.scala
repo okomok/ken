@@ -9,7 +9,7 @@ package ken
 
 
 trait MonadError[e, m[+_]] extends Monad[m] {
-    final def asMonadError: MonadError[e, m] = this
+    final def asMonadError: MonadError[e, apply] = this
 
     // Core
     //

@@ -12,7 +12,7 @@ package ken
  * Weakly-typed instances
  */
 trait Weak1[p[+_], d[+_]] extends Klass1[d] with Weak1Instances[p, d] {
-    final def asWeak1: Weak1[p, d] = this
+    final def asWeak1: Weak1[p, apply] = this
 
     // Core
     //

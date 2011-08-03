@@ -9,19 +9,20 @@ package ken
 
 
 trait Functor[f[+_]] extends Klass1[f] {
+    // Prefer `apply` to `f` for type-parameter inference.
     final def asFunctor: Functor[apply] = this
 
     // Core
-
+    //
     def fmap[a, b](x: a => b)(y: f[a]): f[b]
 
     // Extra
-
+    //
     def op_<@>[a, b](x: a => b)(y: f[a]): f[b] = fmap(x)(y)
     def op_<@[a, b](x: => a)(y: f[b]): f[a] = fmap[b, a](_ => x)(y)
 
     // Infix
-
+    //
     sealed class Infix_<@>[a, b](x: a => b) {
         def <@>(y: f[a]): f[b] = op_<@>(x)(y)
     }

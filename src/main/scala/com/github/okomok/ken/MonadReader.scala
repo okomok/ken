@@ -9,7 +9,7 @@ package ken
 
 
 trait MonadReader[r, m[+_]] extends Monad[m] {
-    final def asMonadReader: MonadReader[r, m] = this
+    final def asMonadReader: MonadReader[r, apply] = this
 
     // Core
     //

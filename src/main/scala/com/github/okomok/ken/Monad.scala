@@ -9,7 +9,7 @@ package ken
 
 
 trait Monad[m[+_]] extends Applicative[m] {
-    final def asMonad: Monad[m] = this
+    final def asMonad: Monad[apply] = this
 
     // Core
     //
