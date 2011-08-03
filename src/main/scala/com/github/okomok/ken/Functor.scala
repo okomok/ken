@@ -9,7 +9,7 @@ package ken
 
 
 trait Functor[f[+_]] extends Klass1[f] {
-    final def asFunctor: Functor[f] = this
+    final def asFunctor: Functor[apply] = this
 
     // Core
 

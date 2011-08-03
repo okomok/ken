@@ -68,5 +68,5 @@ object WeakIdentity extends MonadFix[({type m[+a] = a})#m] {
 
     // Instances
     //
-    implicit val monad: MonadFix[({type m[+a] = a})#m] = this
+    implicit val monad: MonadFix[apply] = this
 }

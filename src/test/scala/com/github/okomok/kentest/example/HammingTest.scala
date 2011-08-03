@@ -4,7 +4,7 @@
 // Distributed under the terms of an MIT-style license.
 
 
-package com.github.okomok.kentest
+package com.github.okomok.kentest.example
 
 
 import com.github.okomok.ken._
