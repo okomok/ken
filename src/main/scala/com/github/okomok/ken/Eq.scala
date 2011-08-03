@@ -11,7 +11,7 @@ package ken
 // Work around name collision against Ord's EQ.
 // Toplevel identifier is case-insensitive under the influence of file-system.
 
-trait _Eq[-a] extends Klass {
+trait _Eq[-a] extends TypeClass {
     type apply = a
     final def asEq: _Eq[apply] = this
 

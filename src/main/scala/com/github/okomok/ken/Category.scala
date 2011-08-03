@@ -11,7 +11,7 @@ package ken
 // TODO
 
 
-trait Category[cat[_, _]] extends Klass {
+trait Category[cat[_, _]] extends TypeClass {
     type apply[a, b] = cat[a, b]
 
     def cid[a]: cat[a, a]

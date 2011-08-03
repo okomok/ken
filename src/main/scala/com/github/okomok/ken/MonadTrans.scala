@@ -11,7 +11,7 @@ package ken
 // Unused
 
 
-trait MonadTrans[t[m[+_], +_]] extends Klass {
+trait MonadTrans[t[m[+_], +_]] extends TypeClass {
     def lift[m[+_], a](x: m[a])(implicit i: Monad[m]): t[m, a]
 }
 

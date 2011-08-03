@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-trait Monoid[m] extends Klass0[m] { outer =>
+trait Monoid[m] extends TypeClass0[m] { outer =>
     final def asMonoid: Monoid[apply] = this
 
     // Core

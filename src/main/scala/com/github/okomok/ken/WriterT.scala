@@ -13,7 +13,7 @@ final class _WriterTs[n[+_]](val inner: Monad[n]) {
 
     sealed abstract class _WriterT[w, +a] extends Strong[n[(a, w)]]
 
-    object _WriterT extends Instances {
+    object _WriterT extends Instance {
         def apply[w, a](rep: n[(a, w)]): _WriterT[w, a] = new _WriterT[w, a] {
             override def get: n[(a, w)] = rep
         }
@@ -153,6 +153,6 @@ final class _WriterTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    private[ken] trait Instances extends Instance7 { this: _WriterT.type =>
+    private[ken] trait Instance extends Instance7 { this: _WriterT.type =>
     }
 }

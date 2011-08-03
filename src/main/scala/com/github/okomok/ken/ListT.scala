@@ -13,7 +13,7 @@ final class _ListTs[n[+_]](val inner: Monad[n]) {
 
     sealed abstract class _ListT[+a] extends Strong[n[List[a]]]
 
-    object _ListT extends Instances {
+    object _ListT extends Instance {
         def apply[a](rep: n[List[a]]): _ListT[a] = new _ListT[a] {
             override def get: n[List[a]] = rep
         }
@@ -119,6 +119,6 @@ final class _ListTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    private[ken] trait Instances extends Instance5 { this: _ListT.type =>
+    private[ken] trait Instance extends Instance5 { this: _ListT.type =>
     }
 }

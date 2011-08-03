@@ -11,7 +11,7 @@ package ken
 /**
  * Weakly-typed instances
  */
-trait Weak1[p[+_], d[+_]] extends Klass1[d] with Weak1Instances[p, d] {
+trait Weak1[p[+_], d[+_]] extends TypeClass1[d] with Weak1Instance[p, d] {
     final def asWeak1: Weak1[p, apply] = this
 
     // Core
@@ -150,5 +150,5 @@ private[ken] trait Weak1Instance7[p[+_], d[+_]] extends Weak1Instance6[p, d] { t
     }
 }
 
-private[ken] trait Weak1Instances[p[+_], d[+_]] extends Weak1Instance7[p, d] { this: Weak1[p, d] =>
+private[ken] trait Weak1Instance[p[+_], d[+_]] extends Weak1Instance7[p, d] { this: Weak1[p, d] =>
 }

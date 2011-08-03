@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-trait Foldable[t[+_]] extends Klass1[t] {
+trait Foldable[t[+_]] extends TypeClass1[t] {
     final def asFoldable: Foldable[apply] = this
 
     // Core

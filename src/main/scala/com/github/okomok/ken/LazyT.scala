@@ -13,7 +13,7 @@ final class _LazyTs[n[+_]](val inner: Monad[n]) {
 
     sealed abstract class _LazyT[+a] extends Strong[n[Lazy[a]]]
 
-    object _LazyT extends Instances {
+    object _LazyT extends Instance {
         def apply[a](rep: n[Lazy[a]]): _LazyT[a] = new _LazyT[a] {
             override def get: n[Lazy[a]] = rep
         }
@@ -114,6 +114,6 @@ final class _LazyTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    private[ken] trait Instances extends Instance5 { this: _LazyT.type =>
+    private[ken] trait Instance extends Instance5 { this: _LazyT.type =>
     }
 }

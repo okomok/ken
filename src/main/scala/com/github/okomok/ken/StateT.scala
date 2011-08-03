@@ -13,7 +13,7 @@ final class _StateTs[n[+_]](val inner: Monad[n]) {
 
     sealed abstract class _StateT[s, +a] extends Strong[s => n[(a, s)]]
 
-    object _StateT extends Instances {
+    object _StateT extends Instance {
         def apply[s, a](rep: s => n[(a, s)]): _StateT[s, a] = new _StateT[s, a] {
             override def get: s => n[(a, s)] = rep
         }
@@ -157,6 +157,6 @@ final class _StateTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    private[ken] trait Instances extends Instance7 { this: _StateT.type =>
+    private[ken] trait Instance extends Instance7 { this: _StateT.type =>
     }
 }

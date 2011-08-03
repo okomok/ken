@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-trait Functor[f[+_]] extends Klass1[f] {
+trait Functor[f[+_]] extends TypeClass1[f] {
     // Prefer `apply` to `f` for type-parameter inference.
     final def asFunctor: Functor[apply] = this
 

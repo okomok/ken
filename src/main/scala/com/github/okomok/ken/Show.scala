@@ -11,7 +11,7 @@ package ken
 import Show._
 
 
-trait Show[a] extends Klass0[a] {
+trait Show[a] extends TypeClass0[a] {
     final def asShow: Show[apply] = this
 
     // Core

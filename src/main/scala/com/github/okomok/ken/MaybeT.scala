@@ -14,7 +14,7 @@ final class _MaybeTs[n[+_]](val inner: Monad[n]) {
 
     sealed abstract class _MaybeT[+a] extends Strong[n[Maybe[a]]]
 
-    object _MaybeT extends Instances {
+    object _MaybeT extends Instance {
         def apply[a](rep: n[Maybe[a]]): _MaybeT[a] = new _MaybeT[a] {
             override def get: n[Maybe[a]] = rep
         }
@@ -122,6 +122,6 @@ final class _MaybeTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    private[ken] trait Instances extends Instance5 { this: _MaybeT.type =>
+    private[ken] trait Instance extends Instance5 { this: _MaybeT.type =>
     }
 }

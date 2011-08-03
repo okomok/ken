@@ -13,7 +13,7 @@ final class _ReaderTs[n[+_]](val inner: Monad[n]) {
 
     sealed abstract class _ReaderT[r, +a] extends Strong[r => n[a]]
 
-    object _ReaderT extends Instances {
+    object _ReaderT extends Instance {
         def apply[r, a](rep: r => n[a]): _ReaderT[r, a] = new _ReaderT[r, a] {
             override def get: r => n[a] = rep
         }
@@ -145,6 +145,6 @@ final class _ReaderTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    private[ken] trait Instances extends Instance7 { this: _ReaderT.type =>
+    private[ken] trait Instance extends Instance7 { this: _ReaderT.type =>
     }
 }

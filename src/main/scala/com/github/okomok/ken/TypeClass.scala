@@ -9,18 +9,18 @@ package ken
 
 
 
-trait Klass0[+a] {
+trait TypeClass0[+a] {
     type apply = a
 }
 
-trait Klass1[f[+_]] {
+trait TypeClass1[f[+_]] {
     type apply[+a] = f[a]
 }
 
-trait Klass2[f[+_, +_]] {
+trait TypeClass2[f[+_, +_]] {
     type apply[+a, +b] = f[a, b]
 }
 
-trait Klass {
+trait TypeClass {
     // implicit def instance: this.type = this
 }

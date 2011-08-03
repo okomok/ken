@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-trait Num[a] extends Klass0[a] {
+trait Num[a] extends TypeClass0[a] {
     final def asNum: Num[apply] = this
 
     // Core
