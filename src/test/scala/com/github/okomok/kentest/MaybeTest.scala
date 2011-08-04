@@ -79,7 +79,7 @@ class MaybeTest extends org.scalatest.junit.JUnit3Suite {
     def testImplicit {
         val m = Function.monad[Int]
         import m.StateT
-        val mp = m.StateT.monadReader[Int, Int]
+        val mp = m.StateT.asMonadReader[Int, Int]
         ()
     }
 

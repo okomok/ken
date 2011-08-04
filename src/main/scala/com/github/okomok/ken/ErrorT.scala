@@ -23,8 +23,19 @@ final class _ErrorTs[n[+_]](val inner: Monad[n]) {
         def run[e, a](n: _ErrorT[e, a]): n[Either[e, a]] = n.run
 
         def map[e, e_, m[+_], a, b](f: n[Either[e, a]] => m[Either[e_, b]])(n: _ErrorT[e, a]): Identity[m[Either[e_, b]]] = Identity { f(run(n)) }
+    }
 
-        def monad[e](implicit i: ErrorClass[e]): MonadPlus[({type m[+a] = _ErrorT[e, a]})#m] with MonadError[e, ({type m[+a] = _ErrorT[e, a]})#m] with inner.Trans[({type m[+a] = _ErrorT[e, a]})#m] =
+    private[ken] trait Instance0 { outer: _ErrorT.type =>
+        implicit def weak[e]: Weak1[({type p[+a] = _ErrorT[e, a]})#p, ({type d[+a] = n[Either[e, a]]})#d] =
+            new Weak1[({type p[+a] = _ErrorT[e, a]})#p, ({type d[+a] = n[Either[e, a]]})#d]
+        {
+            private[this] type p[+a] = _ErrorT[e, a]
+            private[this] type d[+a] = n[Either[e, a]]
+            override def wrap[a](d: => d[a]): p[a] = _ErrorT(d)
+            override def unwrap[a](p: p[a]): d[a] = run(p)
+        }
+
+        implicit def monad[e](implicit i: ErrorClass[e]): MonadPlus[({type m[+a] = _ErrorT[e, a]})#m] with MonadError[e, ({type m[+a] = _ErrorT[e, a]})#m] with inner.Trans[({type m[+a] = _ErrorT[e, a]})#m] =
             new MonadPlus[({type m[+a] = _ErrorT[e, a]})#m] with MonadError[e, ({type m[+a] = _ErrorT[e, a]})#m] with inner.Trans[({type m[+a] = _ErrorT[e, a]})#m]
         {
             // Functor
@@ -80,20 +91,6 @@ final class _ErrorTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    private[ken] trait Instance0 { outer: _ErrorT.type =>
-        implicit def weak[e]: Weak1[({type p[+a] = _ErrorT[e, a]})#p, ({type d[+a] = n[Either[e, a]]})#d] =
-            new Weak1[({type p[+a] = _ErrorT[e, a]})#p, ({type d[+a] = n[Either[e, a]]})#d]
-        {
-            private[this] type p[+a] = _ErrorT[e, a]
-            private[this] type d[+a] = n[Either[e, a]]
-            override def wrap[a](d: => d[a]): p[a] = _ErrorT(d)
-            override def unwrap[a](p: p[a]): d[a] = run(p)
-        }
-
-        implicit def asMonad[e](implicit i: ErrorClass[e]): Monad[({type m[+a] = _ErrorT[e, a]})#m] = outer.monad[e]
-        implicit def asTrans[e](implicit i: ErrorClass[e]): inner.Trans[({type m[+a] = _ErrorT[e, a]})#m] = outer.monad[e]
-    }
-
     private[ken] trait Instance1 extends Instance0 { outer: _ErrorT.type =>
         implicit def asMonadFix[e](implicit i: MonadFix[n], j: ErrorClass[e]): MonadFix[({type m[+a] = _ErrorT[e, a]})#m] =
             new MonadFix[({type m[+a] = _ErrorT[e, a]})#m] with MonadProxy[({type m[+a] = _ErrorT[e, a]})#m]
@@ -135,7 +132,7 @@ final class _ErrorTs[n[+_]](val inner: Monad[n]) {
     }
 
     private[ken] trait Instance4 extends Instance3 { outer: _ErrorT.type =>
-        implicit def monadReader[e, r](implicit i: MonadReader[r, n], j: ErrorClass[e]): MonadReader[r, ({type m[+a] = _ErrorT[e, a]})#m] =
+        implicit def asMonadReader[e, r](implicit i: MonadReader[r, n], j: ErrorClass[e]): MonadReader[r, ({type m[+a] = _ErrorT[e, a]})#m] =
             new MonadReader[r, ({type m[+a] = _ErrorT[e, a]})#m] with MonadProxy[({type m[+a] = _ErrorT[e, a]})#m]
         {
             private[this] type m[+a] = _ErrorT[e, a]
@@ -176,14 +173,6 @@ final class _ErrorTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    private[ken] trait Instance6 extends Instance5 { outer: _ErrorT.type =>
-        implicit def asMonadPlus[e](implicit i: ErrorClass[e]): MonadPlus[({type m[+a] = _ErrorT[e, a]})#m] = outer.monad[e]
-    }
-
-    private[ken] trait Instance7 extends Instance6 { outer: _ErrorT.type =>
-        implicit def asMonadError[e](implicit i: ErrorClass[e]): MonadError[e, ({type m[+a] = _ErrorT[e, a]})#m] = outer.monad[e]
-    }
-
-    private[ken] trait Instance extends Instance7 { outer: _ErrorT.type =>
+    private[ken] trait Instance extends Instance5 { outer: _ErrorT.type =>
     }
 }

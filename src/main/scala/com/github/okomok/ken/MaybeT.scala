@@ -24,8 +24,19 @@ final class _MaybeTs[n[+_]](val inner: Monad[n]) {
         def run[a](n: _MaybeT[a]): n[Maybe[a]] = n.run
 
         def map[m[+_], a, b](f: n[Maybe[a]] => m[Maybe[b]])(n: _MaybeT[a]): Identity[m[Maybe[b]]] = Identity { f(run(n)) }
+    }
 
-        val monad: MonadPlus[_MaybeT] with inner.Trans[_MaybeT] = new MonadPlus[_MaybeT] with inner.Trans[_MaybeT] {
+    private[ken] trait Instance0 { outer: _MaybeT.type =>
+        implicit val weak: Weak1[_MaybeT, ({type d[+a] = n[Maybe[a]]})#d] =
+            new Weak1[_MaybeT, ({type d[+a] = n[Maybe[a]]})#d]
+        {
+            private[this] type p[+a] = _MaybeT[a]
+            private[this] type d[+a] = n[Maybe[a]]
+            override def wrap[a](d: => d[a]): p[a] = _MaybeT(d)
+            override def unwrap[a](p: p[a]): d[a] = run(p)
+        }
+
+        implicit val monad: MonadPlus[_MaybeT] with inner.Trans[_MaybeT] = new MonadPlus[_MaybeT] with inner.Trans[_MaybeT] {
             // Monad
             private[this] type m[+a] = _MaybeT[a]
             override def `return`[a](a: => a): m[a] = _MaybeT { inner.`return`(Just(a).up) }
@@ -49,20 +60,6 @@ final class _MaybeTs[n[+_]](val inner: Monad[n]) {
                 for { a <- n } yield Just(a)
             }
         }
-    }
-
-    private[ken] trait Instance0 { outer: _MaybeT.type =>
-        implicit val weak: Weak1[_MaybeT, ({type d[+a] = n[Maybe[a]]})#d] =
-            new Weak1[_MaybeT, ({type d[+a] = n[Maybe[a]]})#d]
-        {
-            private[this] type p[+a] = _MaybeT[a]
-            private[this] type d[+a] = n[Maybe[a]]
-            override def wrap[a](d: => d[a]): p[a] = _MaybeT(d)
-            override def unwrap[a](p: p[a]): d[a] = run(p)
-        }
-
-        implicit val asMonad: Monad[_MaybeT] = outer.monad
-        implicit val asTrans: inner.Trans[_MaybeT] = outer.monad
     }
 
     private[ken] trait Instance1 extends Instance0 { outer: _MaybeT.type =>
@@ -104,7 +101,7 @@ final class _MaybeTs[n[+_]](val inner: Monad[n]) {
     }
 
     private[ken] trait Instance4 extends Instance3 { outer: _MaybeT.type =>
-        implicit def monadReader[r](implicit i: MonadReader[r, n]): MonadReader[r, _MaybeT] =
+        implicit def asMonadReader[r](implicit i: MonadReader[r, n]): MonadReader[r, _MaybeT] =
             new MonadReader[r, _MaybeT] with MonadProxy[_MaybeT]
         {
             private[this] type m[+a] = _MaybeT[a]
@@ -125,10 +122,6 @@ final class _MaybeTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    private[ken] trait Instance6 extends Instance5 { outer: _MaybeT.type =>
-       implicit val asMonadPlus: MonadPlus[_MaybeT] = outer.monad
-    }
-
-    private[ken] trait Instance extends Instance6 { outer: _MaybeT.type =>
+    private[ken] trait Instance extends Instance5 { outer: _MaybeT.type =>
     }
 }

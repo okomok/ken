@@ -34,7 +34,7 @@ trait Weak1Proxy[p[+_], d[+_]] extends Weak1[p, d] with Proxy {
     override def asMonadFix(implicit i: MonadFix[p]): MonadFix[d] = self.asMonadFix
     override def asMonadIO(implicit i: MonadIO[p]): MonadIO[d] = self.asMonadIO
     override def asMonadPlus(implicit i: MonadPlus[p]): MonadPlus[d] = self.asMonadPlus
-    override def monadReader[r](implicit i: MonadReader[r, p]): MonadReader[r, d] = self.monadReader[r]
+    override def asMonadReader[r](implicit i: MonadReader[r, p]): MonadReader[r, d] = self.asMonadReader[r]
     override def asMonadState[s](implicit i: MonadState[s, p]): MonadState[s, d] = self.asMonadState[s]
     override def asMonadWriter[w](implicit i: MonadWriter[w, p]): MonadWriter[w, d] = self.asMonadWriter[w]
 }
@@ -122,7 +122,7 @@ private[ken] trait Weak1Instance4[p[+_], d[+_]] extends Weak1Instance3[p, d] { o
 }
 
 private[ken] trait Weak1Instance5[p[+_], d[+_]] extends Weak1Instance4[p, d] { outer: Weak1[p, d] =>
-    implicit def monadReader[r](implicit i: MonadReader[r, p]): MonadReader[r, d] = new MonadReader[r, d] with MonadProxy[d] {
+    implicit def asMonadReader[r](implicit i: MonadReader[r, p]): MonadReader[r, d] = new MonadReader[r, d] with MonadProxy[d] {
         private[this] type m[+a] = d[a]
         override val self = outer.asMonad(i)
         override def ask: m[r] = unwrap { i.ask }

@@ -23,8 +23,19 @@ final class _LazyTs[n[+_]](val inner: Monad[n]) {
         def run[a](n: _LazyT[a]): n[Lazy[a]] = n.run
 
         def map[m[+_], a, b](f: n[Lazy[a]] => m[Lazy[b]])(n: _LazyT[a]): Identity[m[Lazy[b]]] = Identity { f(run(n)) }
+    }
 
-        val monad: Monad[_LazyT] with inner.Trans[_LazyT] = new Monad[_LazyT] with inner.Trans[_LazyT] {
+    private[ken] trait Instance0 { outer: _LazyT.type =>
+        implicit val weak: Weak1[_LazyT, ({type d[+a] = n[Lazy[a]]})#d] =
+            new Weak1[_LazyT, ({type d[+a] = n[Lazy[a]]})#d]
+        {
+            private[this] type p[+a] = _LazyT[a]
+            private[this] type d[+a] = n[Lazy[a]]
+            override def wrap[a](d: => d[a]): p[a] = _LazyT(d)
+            override def unwrap[a](p: p[a]): d[a] = run(p)
+        }
+
+        implicit val monad: Monad[_LazyT] with inner.Trans[_LazyT] = new Monad[_LazyT] with inner.Trans[_LazyT] {
             // Functor
             private[this] type f[+a] = _LazyT[a]
             override def fmap[a, b](f: a => b)(m: f[a]): f[b] = _LazyT {
@@ -41,20 +52,6 @@ final class _LazyTs[n[+_]](val inner: Monad[n]) {
                 for { a <- n } yield Lazy(a)
             }
         }
-    }
-
-    private[ken] trait Instance0 { outer: _LazyT.type =>
-        implicit val weak: Weak1[_LazyT, ({type d[+a] = n[Lazy[a]]})#d] =
-            new Weak1[_LazyT, ({type d[+a] = n[Lazy[a]]})#d]
-        {
-            private[this] type p[+a] = _LazyT[a]
-            private[this] type d[+a] = n[Lazy[a]]
-            override def wrap[a](d: => d[a]): p[a] = _LazyT(d)
-            override def unwrap[a](p: p[a]): d[a] = run(p)
-        }
-
-        implicit val asMonad: Monad[_LazyT] = outer.monad
-        implicit val asTrans: inner.Trans[_LazyT] = outer.monad
     }
 
     private[ken] trait Instance1 extends Instance0 { outer: _LazyT.type =>
@@ -96,7 +93,7 @@ final class _LazyTs[n[+_]](val inner: Monad[n]) {
     }
 
     private[ken] trait Instance4 extends Instance3 { outer: _LazyT.type =>
-        implicit def monadReader[r](implicit i: MonadReader[r, n]): MonadReader[r, _LazyT] =
+        implicit def asMonadReader[r](implicit i: MonadReader[r, n]): MonadReader[r, _LazyT] =
             new MonadReader[r, _LazyT] with MonadProxy[_LazyT]
         {
             private[this] type m[+a] = _LazyT[a]
