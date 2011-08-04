@@ -16,7 +16,7 @@ package com.github.okomok.kentest.example
         type GameState = (Boolean, Int)
 
         // Pull the Monad explicitly.
-        val i = State.asMonad[GameState]
+        val i = State.monad[GameState]
         import i._
 
         def playGame(xs: String_): State[GameState, GameValue] = xs match {

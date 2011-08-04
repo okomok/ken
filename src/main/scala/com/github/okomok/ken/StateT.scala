@@ -29,19 +29,8 @@ final class _StateTs[n[+_]](val inner: Monad[n]) {
         def map[s, m[+_], a, b](f: n[(a, s)] => m[(b, s)])(n: _StateT[s, a]): Identity[s => m[(b, s)]] = Identity { f compose run(n) }
 
         def `with`[s, a](f: s => s)(n: _StateT[s, a]): _StateT[s, a] = _StateT { run(n) compose f }
-    }
 
-    private[ken] trait Instance0 { outer: _StateT.type =>
-        implicit def asWeak[s]: Weak1[({type p[+a] = _StateT[s, a]})#p, ({type d[+a] = Function1[s, n[(a, s)]]})#d] =
-            new Weak1[({type p[+a] = _StateT[s, a]})#p, ({type d[+a] = Function1[s, n[(a, s)]]})#d]
-        {
-            private[this] type p[+a] = _StateT[s, a]
-            private[this] type d[+a] = Function1[s, n[(a, s)]]
-            override def wrap[a](d: => d[a]): p[a] = _StateT(d)
-            override def unwrap[a](p: p[a]): d[a] = run(p)
-        }
-
-        implicit def asMonad[s]: MonadState[s, ({type m[+a] = _StateT[s, a]})#m] with inner.Trans[({type m[+a] = _StateT[s, a]})#m] =
+        def monad[s]: MonadState[s, ({type m[+a] = _StateT[s, a]})#m] with inner.Trans[({type m[+a] = _StateT[s, a]})#m] =
             new MonadState[s, ({type m[+a] = _StateT[s, a]})#m] with inner.Trans[({type m[+a] = _StateT[s, a]})#m]
         {
             // Functor
@@ -63,12 +52,26 @@ final class _StateTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
+    private[ken] trait Instance0 { outer: _StateT.type =>
+        implicit def weak[s]: Weak1[({type p[+a] = _StateT[s, a]})#p, ({type d[+a] = Function1[s, n[(a, s)]]})#d] =
+            new Weak1[({type p[+a] = _StateT[s, a]})#p, ({type d[+a] = Function1[s, n[(a, s)]]})#d]
+        {
+            private[this] type p[+a] = _StateT[s, a]
+            private[this] type d[+a] = Function1[s, n[(a, s)]]
+            override def wrap[a](d: => d[a]): p[a] = _StateT(d)
+            override def unwrap[a](p: p[a]): d[a] = run(p)
+        }
+
+        implicit def asMonad[s]: Monad[({type m[+a] = _StateT[s, a]})#m] = outer.monad[s]
+        implicit def asTrans[s]: inner.Trans[({type m[+a] = _StateT[s, a]})#m] = outer.monad[s]
+    }
+
     private[ken] trait Instance1 extends Instance0 { outer: _StateT.type =>
         implicit def asMonadPlus[s](implicit i: MonadPlus[n]): MonadPlus[({type m[+a] = _StateT[s, a]})#m] =
             new MonadPlus[({type m[+a] = _StateT[s, a]})#m] with MonadProxy[({type m[+a] = _StateT[s, a]})#m]
         {
             private[this] type m[+a] = _StateT[s, a]
-            override val self = outer.asMonad[s]
+            override val self = outer.monad[s]
             override def mzero: m[Nothing] = _StateT { _ => i.mzero }
             override def mplus[a](m: m[a])(n: => m[a]): m[a] = _StateT { s => i.mplus(run(m)(s))(run(n)(s)) }
         }
@@ -79,7 +82,7 @@ final class _StateTs[n[+_]](val inner: Monad[n]) {
             new MonadFix[({type m[+a] = _StateT[s, a]})#m] with MonadProxy[({type m[+a] = _StateT[s, a]})#m]
         {
             private[this] type m[+a] = _StateT[s, a]
-            override val self = outer.asMonad[s]
+            override val self = outer.monad[s]
             override def mfix[a](f: (=> a) => m[a]): m[a] = _StateT { s =>
                 def k(aI_ : => (a, s)) = run(f(aI_._1))(s)
                 i.mfix(k)
@@ -94,7 +97,7 @@ final class _StateTs[n[+_]](val inner: Monad[n]) {
             new MonadIO[({type m[+a] = _StateT[s, a]})#m] with MonadProxy[({type m[+a] = _StateT[s, a]})#m]
         {
             private[this] type m[+a] = _StateT[s, a]
-            override val self = outer.asMonad[s]
+            override val self = outer.monad[s]
             override def liftIO[a](io: IO[a]): m[a] = self.lift(i.liftIO(io))
         }
     }
@@ -104,7 +107,7 @@ final class _StateTs[n[+_]](val inner: Monad[n]) {
             new MonadCont[({type m[+a] = _StateT[s, a]})#m] with MonadProxy[({type m[+a] = _StateT[s, a]})#m]
         {
             private[this] type m[+a] = _StateT[s, a]
-            override val self = outer.asMonad[s]
+            override val self = outer.monad[s]
             override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = _StateT { s =>
                 i.callCC { (c: ((a, s)) => n[(b, s)]) =>
                     run( f( a => _StateT { s_ => c((a, s_)) } ) )(s)
@@ -118,7 +121,7 @@ final class _StateTs[n[+_]](val inner: Monad[n]) {
             new MonadError[e, ({type m[+a] = _StateT[s, a]})#m] with MonadProxy[({type m[+a] = _StateT[s, a]})#m]
         {
             private[this] type m[+a] = _StateT[s, a]
-            override val self = outer.asMonad[s]
+            override val self = outer.monad[s]
             override def errorClass: ErrorClass[e] = i.errorClass
             override def throwError[a](e: e): m[a] = self.lift(i.throwError(e))
             override def catchError[a](m: m[a])(h: e => m[a]): m[a] = _StateT { s =>
@@ -132,7 +135,7 @@ final class _StateTs[n[+_]](val inner: Monad[n]) {
             new MonadReader[r, ({type m[+a] = _StateT[s, a]})#m] with MonadProxy[({type m[+a] = _StateT[s, a]})#m]
         {
             private[this] type m[+a] = _StateT[s, a]
-            override val self = outer.asMonad[s]
+            override val self = outer.monad[s]
             override def ask: m[r] = self.lift(i.ask)
             override def local[a](f: r => r)(m: m[a]): m[a] = _StateT { s => i.local(f)(run(m)(s)) }
         }
@@ -143,8 +146,8 @@ final class _StateTs[n[+_]](val inner: Monad[n]) {
             new MonadWriter[w, ({type m[+a] = _StateT[s, a]})#m] with MonadProxy[({type m[+a] = _StateT[s, a]})#m]
         {
             private[this] type m[+a] = _StateT[s, a]
-            override val self = outer.asMonad[s]
-            override def asMonoid: Monoid[w] = i.asMonoid
+            override val self = outer.monad[s]
+            override def monoid: Monoid[w] = i.monoid
             override def tell(x: w): m[Unit] = self.lift(i.tell(x))
             override def listen[a](m: m[a]): m[(a, w)] = _StateT { s =>
                 for { ((a, s_), w) <- i.listen(run(m)(s)) } yield ((a, w), s_)
@@ -157,6 +160,10 @@ final class _StateTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    private[ken] trait Instance extends Instance7 { outer: _StateT.type =>
+    private[ken] trait Instance8 extends Instance7 { outer: _StateT.type =>
+        implicit def asMonadState[s]: MonadState[s, ({type m[+a] = _StateT[s, a]})#m] = outer.monad[s]
+    }
+
+    private[ken] trait Instance extends Instance8 { outer: _StateT.type =>
     }
 }

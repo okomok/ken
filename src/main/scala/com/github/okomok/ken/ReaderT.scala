@@ -25,19 +25,8 @@ final class _ReaderTs[n[+_]](val inner: Monad[n]) {
         def map[r, m[+_], a, b](f: n[a] => m[b])(n: _ReaderT[r, a]): Identity[r => m[b]] = Identity { f compose run(n) }
 
         def `with`[r, r_, a](f: r_ => r)(n: _ReaderT[r, a]): _ReaderT[r_, a] = _ReaderT { run(n) compose f }
-    }
 
-    private[ken] trait Instance0 { outer: _ReaderT.type =>
-        implicit def asWeak[r]: Weak1[({type p[+a] = _ReaderT[r, a]})#p, ({type d[+a] = Function1[r, n[a]]})#d] =
-            new Weak1[({type p[+a] = _ReaderT[r, a]})#p, ({type d[+a] = Function1[r, n[a]]})#d]
-        {
-            private[this] type p[+a] = _ReaderT[r, a]
-            private[this] type d[+a] = Function1[r, n[a]]
-            override def wrap[a](d: => d[a]): p[a] = _ReaderT(d)
-            override def unwrap[a](p: p[a]): d[a] = run(p)
-        }
-
-        implicit def asMonad[r]: MonadReader[r, ({type m[+a] = _ReaderT[r, a]})#m] with inner.Trans[({type m[+a] = _ReaderT[r, a]})#m] =
+        def monad[r]: MonadReader[r, ({type m[+a] = _ReaderT[r, a]})#m] with inner.Trans[({type m[+a] = _ReaderT[r, a]})#m] =
             new MonadReader[r, ({type m[+a] = _ReaderT[r, a]})#m] with inner.Trans[({type m[+a] = _ReaderT[r, a]})#m]
         {
             // Functor
@@ -59,12 +48,26 @@ final class _ReaderTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
+    private[ken] trait Instance0 { outer: _ReaderT.type =>
+        implicit def weak[r]: Weak1[({type p[+a] = _ReaderT[r, a]})#p, ({type d[+a] = Function1[r, n[a]]})#d] =
+            new Weak1[({type p[+a] = _ReaderT[r, a]})#p, ({type d[+a] = Function1[r, n[a]]})#d]
+        {
+            private[this] type p[+a] = _ReaderT[r, a]
+            private[this] type d[+a] = Function1[r, n[a]]
+            override def wrap[a](d: => d[a]): p[a] = _ReaderT(d)
+            override def unwrap[a](p: p[a]): d[a] = run(p)
+        }
+
+        implicit def asMonad[r]: Monad[({type m[+a] = _ReaderT[r, a]})#m] = outer.monad[r]
+        implicit def asTrans[r]: inner.Trans[({type m[+a] = _ReaderT[r, a]})#m] = outer.monad[r]
+    }
+
     private[ken] trait Instance1 extends Instance0 { outer: _ReaderT.type =>
         implicit def asMonadPlus[r](implicit i: MonadPlus[n]): MonadPlus[({type m[+a] = _ReaderT[r, a]})#m] =
             new MonadPlus[({type m[+a] = _ReaderT[r, a]})#m] with MonadProxy[({type m[+a] = _ReaderT[r, a]})#m]
         {
             private[this] type m[+a] = _ReaderT[r, a]
-            override val self = outer.asMonad[r]
+            override val self = outer.monad[r]
             override def mzero: m[Nothing] = _ReaderT { _ => i.mzero }
             override def mplus[a](m: m[a])(n: => m[a]): m[a] = _ReaderT { r => i.mplus(run(m)(r))(run(n)(r)) }
         }
@@ -75,7 +78,7 @@ final class _ReaderTs[n[+_]](val inner: Monad[n]) {
             new MonadFix[({type m[+a] = _ReaderT[r, a]})#m] with MonadProxy[({type m[+a] = _ReaderT[r, a]})#m]
         {
             private[this] type m[+a] = _ReaderT[r, a]
-            override val self = outer.asMonad[r]
+            override val self = outer.monad[r]
             override def mfix[a](f: (=> a) => m[a]): m[a] = _ReaderT { r =>
                 def k(a: => a) = run(f(a))(r)
                 i.mfix(k)
@@ -88,7 +91,7 @@ final class _ReaderTs[n[+_]](val inner: Monad[n]) {
             new MonadIO[({type m[+a] = _ReaderT[r, a]})#m] with MonadProxy[({type m[+a] = _ReaderT[r, a]})#m]
         {
             private[this] type m[+a] = _ReaderT[r, a]
-            override val self = outer.asMonad[r]
+            override val self = outer.monad[r]
             override def liftIO[a](io: IO[a]): m[a] = self.lift(i.liftIO(io))
         }
     }
@@ -98,7 +101,7 @@ final class _ReaderTs[n[+_]](val inner: Monad[n]) {
             new MonadCont[({type m[+a] = _ReaderT[r, a]})#m] with MonadProxy[({type m[+a] = _ReaderT[r, a]})#m]
         {
             private[this] type m[+a] = _ReaderT[r, a]
-            override val self = outer.asMonad[r]
+            override val self = outer.monad[r]
             override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = _ReaderT { r =>
                 i.callCC { (c: a => n[b]) =>
                     run( f( a => _ReaderT { s_ => c(a) } ) )(r)
@@ -112,7 +115,7 @@ final class _ReaderTs[n[+_]](val inner: Monad[n]) {
             new MonadError[e, ({type m[+a] = _ReaderT[r, a]})#m] with MonadProxy[({type m[+a] = _ReaderT[r, a]})#m]
         {
             private[this] type m[+a] = _ReaderT[r, a]
-            override val self = outer.asMonad[r]
+            override val self = outer.monad[r]
             override def errorClass: ErrorClass[e] = i.errorClass
             override def throwError[a](e: e): m[a] = self.lift(i.throwError(e))
             override def catchError[a](m: m[a])(h: e => m[a]): m[a] = _ReaderT { r =>
@@ -126,7 +129,7 @@ final class _ReaderTs[n[+_]](val inner: Monad[n]) {
             new MonadState[s, ({type m[+a] = _ReaderT[r, a]})#m] with MonadProxy[({type m[+a] = _ReaderT[r, a]})#m]
         {
             private[this] type m[+a] = _ReaderT[r, a]
-            override val self = outer.asMonad[r]
+            override val self = outer.monad[r]
             override def get: m[s] = self.lift(i.get)
             override def put(s: s): m[Unit] = self.lift(i.put(s))
         }
@@ -137,14 +140,18 @@ final class _ReaderTs[n[+_]](val inner: Monad[n]) {
             new MonadWriter[w, ({type m[+a] = _ReaderT[r, a]})#m] with MonadProxy[({type m[+a] = _ReaderT[r, a]})#m]
         {
             private[this] type m[+a] = _ReaderT[r, a]
-            override val self = outer.asMonad[r]
-            override def asMonoid: Monoid[w] = i.asMonoid
+            override val self = outer.monad[r]
+            override def monoid: Monoid[w] = i.monoid
             override def tell(x: w): m[Unit] = self.lift(i.tell(x))
             override def listen[a](m: m[a]): m[(a, w)] = _ReaderT { w => i.listen(run(m)(w)) }
             override def pass[a](m: m[(a, w => w)]): m[a] = _ReaderT { w => i.pass(run(m)(w)) }
         }
     }
 
-    private[ken] trait Instance extends Instance7 { outer: _ReaderT.type =>
+    private[ken] trait Instance8 extends Instance7 { outer: _ReaderT.type =>
+        implicit def asMonadReader[r]: MonadReader[r, ({type m[+a] = _ReaderT[r, a]})#m] = outer.monad[r]
+    }
+
+    private[ken] trait Instance extends Instance8 { outer: _ReaderT.type =>
     }
 }

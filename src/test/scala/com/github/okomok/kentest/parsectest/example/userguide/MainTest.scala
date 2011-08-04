@@ -18,7 +18,7 @@ class MainTezt {
     // 2.1
 
     val simple: Parser[Char] = letter
-    import Parser.asMonad._
+    import Parser.monad._
     val char_ = char[Unit]_
 
     def run[a](p: Parser[a])(input: String_): IO[Unit] = {
@@ -51,7 +51,7 @@ class MainTezt {
     } yield c
 
     val parens: Parser[Unit] = {
-        val i = Parser.asMonad
+        val i = Parser.monad
 
         ( for {
             _ <- char_('(')
@@ -95,7 +95,7 @@ class MainTezt {
     // 2.4
 
     lazy val nesting: Parser[Int] = {
-        val i = Parser.asMonad
+        val i = Parser.monad
         val j = Ord[Int]
         ( for {
             _ <- char_('(')
@@ -116,7 +116,7 @@ class MainTezt {
 
     lazy val _word: Parser[String_] = for {
         c <- letter[Unit]
-        d <- ( for { cs <- _word } yield  c :: cs ) <|> Parser.asMonad.`return`(List(c))
+        d <- ( for { cs <- _word } yield  c :: cs ) <|> Parser.monad.`return`(List(c))
     } yield d
 
     val word: Parser[String_] = many1(letter[Unit] <#> "") <#> "word"

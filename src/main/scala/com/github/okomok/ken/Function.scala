@@ -18,7 +18,7 @@ object Function {
 
     def on[a, b, c](* : b => b => c)(f: a => b): a => a => c = { x => y => *(f(x))(f(y)) }
 
-    implicit def asMonad[r]: MonadReader[r, ({type m[+a] = r => a})#m] = new MonadReader[r, ({type m[+a] = r => a})#m] {
+    implicit def monad[r]: MonadReader[r, ({type m[+a] = r => a})#m] = new MonadReader[r, ({type m[+a] = r => a})#m] {
         // Functor
         private[this] type f[+a] = r => a
         override def fmap[a, b](x: a => b)(y: f[a]): f[b] = x compose y

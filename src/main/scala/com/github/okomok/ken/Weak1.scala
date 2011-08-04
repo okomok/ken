@@ -143,7 +143,7 @@ private[ken] trait Weak1Instance7[p[+_], d[+_]] extends Weak1Instance6[p, d] { o
     implicit def asMonadWriter[w](implicit i: MonadWriter[w, p]): MonadWriter[w, d] = new MonadWriter[w, d] with MonadProxy[d] {
         private[this] type m[+a] = d[a]
         override val self = outer.asMonad(i)
-        override def asMonoid: Monoid[w] = i.asMonoid
+        override def monoid: Monoid[w] = i.monoid
         override def tell(x: w): m[Unit] = unwrap { i.tell(x) }
         override def listen[a](x: m[a]): m[(a, w)] = unwrap { i.listen(wrap(x)) }
         override def pass[a](x: m[(a, w => w)]): m[a] = unwrap { i.pass(wrap(x)) }

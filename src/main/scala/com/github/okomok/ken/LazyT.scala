@@ -23,19 +23,8 @@ final class _LazyTs[n[+_]](val inner: Monad[n]) {
         def run[a](n: _LazyT[a]): n[Lazy[a]] = n.run
 
         def map[m[+_], a, b](f: n[Lazy[a]] => m[Lazy[b]])(n: _LazyT[a]): Identity[m[Lazy[b]]] = Identity { f(run(n)) }
-    }
 
-    private[ken] trait Instance0 { outer: _LazyT.type =>
-        implicit val asWeak: Weak1[_LazyT, ({type d[+a] = n[Lazy[a]]})#d] =
-            new Weak1[_LazyT, ({type d[+a] = n[Lazy[a]]})#d]
-        {
-            private[this] type p[+a] = _LazyT[a]
-            private[this] type d[+a] = n[Lazy[a]]
-            override def wrap[a](d: => d[a]): p[a] = _LazyT(d)
-            override def unwrap[a](p: p[a]): d[a] = run(p)
-        }
-
-        implicit val asMonad: Monad[_LazyT] with inner.Trans[_LazyT] = new Monad[_LazyT] with inner.Trans[_LazyT] {
+        val monad: Monad[_LazyT] with inner.Trans[_LazyT] = new Monad[_LazyT] with inner.Trans[_LazyT] {
             // Functor
             private[this] type f[+a] = _LazyT[a]
             override def fmap[a, b](f: a => b)(m: f[a]): f[b] = _LazyT {
@@ -54,12 +43,26 @@ final class _LazyTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
+    private[ken] trait Instance0 { outer: _LazyT.type =>
+        implicit val weak: Weak1[_LazyT, ({type d[+a] = n[Lazy[a]]})#d] =
+            new Weak1[_LazyT, ({type d[+a] = n[Lazy[a]]})#d]
+        {
+            private[this] type p[+a] = _LazyT[a]
+            private[this] type d[+a] = n[Lazy[a]]
+            override def wrap[a](d: => d[a]): p[a] = _LazyT(d)
+            override def unwrap[a](p: p[a]): d[a] = run(p)
+        }
+
+        implicit val asMonad: Monad[_LazyT] = outer.monad
+        implicit val asTrans: inner.Trans[_LazyT] = outer.monad
+    }
+
     private[ken] trait Instance1 extends Instance0 { outer: _LazyT.type =>
         implicit def asMonadIO(implicit i: MonadIO[n]): MonadIO[_LazyT] =
             new MonadIO[_LazyT] with MonadProxy[_LazyT]
         {
             private[this] type m[+a] = _LazyT[a]
-            override def self = outer.asMonad
+            override def self = outer.monad
             override def liftIO[a](io: IO[a]): m[a] = self.lift(i.liftIO(io))
         }
     }
@@ -69,7 +72,7 @@ final class _LazyTs[n[+_]](val inner: Monad[n]) {
             new MonadCont[_LazyT] with MonadProxy[_LazyT]
         {
             private[this] type m[+a] = _LazyT[a]
-            override val self = outer.asMonad
+            override val self = outer.monad
             override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = _LazyT {
                 i.callCC { (c: Lazy[a] => n[Lazy[b]]) =>
                     run( f( a => _LazyT { c(Lazy(a)) } ) )
@@ -83,7 +86,7 @@ final class _LazyTs[n[+_]](val inner: Monad[n]) {
             new MonadError[e, _LazyT] with MonadProxy[_LazyT]
         {
             private[this] type m[+a] = _LazyT[a]
-            override val self = outer.asMonad
+            override val self = outer.monad
             override def errorClass: ErrorClass[e] = i.errorClass
             override def throwError[a](e: e): m[a] = self.lift(i.throwError(e))
             override def catchError[a](m: m[a])(h: e => m[a]): m[a] = _LazyT {
@@ -97,7 +100,7 @@ final class _LazyTs[n[+_]](val inner: Monad[n]) {
             new MonadReader[r, _LazyT] with MonadProxy[_LazyT]
         {
             private[this] type m[+a] = _LazyT[a]
-            override val self = outer.asMonad
+            override val self = outer.monad
             override def ask: m[r] = self.lift(i.ask)
             override def local[a](f: r => r)(m: m[a]): m[a] = _LazyT { i.local(f)(run(m)) }
         }
@@ -108,7 +111,7 @@ final class _LazyTs[n[+_]](val inner: Monad[n]) {
             new MonadState[s, _LazyT] with MonadProxy[_LazyT]
         {
             private[this] type m[+a] = _LazyT[a]
-            override val self = outer.asMonad
+            override val self = outer.monad
             override def get: m[s] = self.lift(i.get)
             override def put(s: s): m[Unit] = self.lift(i.put(s))
         }

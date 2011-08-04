@@ -12,7 +12,7 @@ final case class Endo[a](override val get: a => a) extends Strong[a => a]
 
 
 object Endo {
-    implicit def asWeak[a]: Weak0[Endo[a], a => a] = new Weak0[Endo[a], a => a] {
+    implicit def weak[a]: Weak0[Endo[a], a => a] = new Weak0[Endo[a], a => a] {
         private[this] type p = Endo[a]
         private[this] type d = a => a
         override def wrap(d: => d): p = Endo(d)

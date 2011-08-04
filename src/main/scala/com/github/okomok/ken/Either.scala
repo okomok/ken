@@ -31,7 +31,7 @@ object Either {
         List.foldr[Either[a, b], (List[a], List[b])](either(left)(right))((Nil, Nil))(x)
     }
 
-    implicit def asMonad[e]: MonadFix[({type m[+a] = Either[e, a]})#m] = new MonadFix[({type m[+a] = Either[e, a]})#m] {
+    implicit def monad[e]: MonadFix[({type m[+a] = Either[e, a]})#m] = new MonadFix[({type m[+a] = Either[e, a]})#m] {
         // Functor
         private[this] type f[+a] = Either[e, a]
         override def fmap[a, b](f: a => b)(e: f[a]): f[b] = e match {

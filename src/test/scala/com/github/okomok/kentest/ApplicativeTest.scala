@@ -13,8 +13,7 @@ import com.github.okomok.ken._
 class ApplicativeTest extends org.scalatest.junit.JUnit3Suite {
 
     def testFunction1 {
-        //import Function.toMonad, or
-        val fm = Function.asMonad[Int]
+        val fm = Function.monad[Int]
         import fm._
         val r: Int => Int => Int = ((x: Int) => (y: Int) => x + y) <@> ((x: Int) => x)
     }
