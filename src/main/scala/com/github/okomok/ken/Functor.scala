@@ -10,7 +10,7 @@ package ken
 
 trait Functor[f[+_]] extends TypeClass1[f] {
     // Prefer `apply` to `f` for type-parameter inference.
-    final def asFunctor: Functor[apply] = this
+    final val asFunctor: Functor[apply] = this
 
     // Core
     //
@@ -50,6 +50,6 @@ object Functor extends FunctorInstance {
 
 
 trait FunctorInstance { outer: Functor.type =>
-    implicit val ofWeakIdentity: Functor[({type m[+a] = a})#m] = WeakIdentity.monad
-    implicit def ofFunction[r]: Functor[({type m[+a] = r => a})#m] = Function.monad[r]
+    implicit val ofWeakIdentity: Functor[({type m[+a] = a})#m] = WeakIdentity.asMonad
+    implicit def ofFunction[r]: Functor[({type m[+a] = r => a})#m] = Function.asMonad[r]
 }

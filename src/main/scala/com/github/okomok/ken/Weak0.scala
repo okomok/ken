@@ -12,7 +12,7 @@ package ken
  * Weakly-typed instances
  */
 trait Weak0[p, d] extends TypeClass0[d] {
-    final def asWeak0: Weak0[p, apply] = this
+    final val asWeak0: Weak0[p, apply] = this
 
     // Core
     //
@@ -21,7 +21,7 @@ trait Weak0[p, d] extends TypeClass0[d] {
 
     // Instances
     //
-    implicit def monoid(implicit i: Monoid[p]): Monoid[d] = new Monoid[d] {
+    implicit def asMonoid(implicit i: Monoid[p]): Monoid[d] = new Monoid[d] {
         private[this] type m = d
         override val mempty: m = unwrap(i.mempty)
         override val mappend: m => (=> m) => m = x => y => unwrap(i.mappend(wrap(x))(wrap(y)))
@@ -36,7 +36,7 @@ trait Weak0Proxy[p, d] extends Weak0[p, d] with Proxy {
     override def wrap(d: => d): p = self.wrap(d)
     override def unwrap(p: p): d = self.unwrap(p)
 
-    override def monoid(implicit i: Monoid[p]): Monoid[d] = self.monoid
+    override def asMonoid(implicit i: Monoid[p]): Monoid[d] = self.asMonoid
 }
 
 

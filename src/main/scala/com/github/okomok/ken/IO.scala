@@ -19,7 +19,7 @@ trait IOProxy[+a] extends IO[a] with Proxy {
 }
 
 
-object IO extends MonadIO[IO] {
+object IO extends MonadIO[IO] with ThisIsInstance {
     def apply[a](x: => a): IO[a] = new IO[a] {
         override def unIO = x
     }
@@ -42,10 +42,6 @@ object IO extends MonadIO[IO] {
     }
     // MonadIO
     def liftIO[a](io: IO[a]): m[a] = io
-
-    // Instances
-    //
-    implicit val monad: MonadIO[IO] = this
 
     // Output functions
     //
@@ -112,7 +108,7 @@ object IO extends MonadIO[IO] {
         }
     }
 
-    // Exception handling in the I/O monad
+    // Exception handling in the I/O asMonad
     //
     type IOError = java.io.IOException
 

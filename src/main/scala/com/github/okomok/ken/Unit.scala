@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-object Unit extends Monoid[Unit] {
+object Unit extends Monoid[Unit]  with ThisIsInstance {
     // Overrides
     //
     // Monoid
@@ -16,8 +16,4 @@ object Unit extends Monoid[Unit] {
     override val mempty: m = ()
     override val mappend: m => (=> m) => m = { _ => _ => () }
     override val mconcat: List[m] => m = { _ => () }
-
-    // Instances
-    //
-    implicit val monoid: Monoid[Unit] = this
 }

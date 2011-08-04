@@ -16,7 +16,7 @@ case object Nothing extends Maybe[Nothing]
 final case class Just[+a](x: a) extends Maybe[a]
 
 
-object Maybe extends MonadPlus[Maybe] with Foldable[Maybe] {
+object Maybe extends MonadPlus[Maybe] with Foldable[Maybe] with ThisIsInstance {
     // Overrides
     //
     // Functor
@@ -52,11 +52,6 @@ object Maybe extends MonadPlus[Maybe] with Foldable[Maybe] {
         case Nothing => z
         case Just(x) => f(z)(x)
     }
-
-    // Instances
-    //
-    implicit val monad: MonadPlus[Maybe] = this
-    implicit val foldable: Foldable[Maybe] = this
 
     // Operators
     //

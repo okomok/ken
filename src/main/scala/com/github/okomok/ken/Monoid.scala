@@ -9,7 +9,7 @@ package ken
 
 
 trait Monoid[m] extends TypeClass0[m] { outer =>
-    final def asMonoid: Monoid[apply] = this
+    final val asMonoid: Monoid[apply] = this
 
     // Core
     //
@@ -53,7 +53,7 @@ object Monoid extends MonoidInstance {
     }
 
     object Dual {
-        implicit def monoid[a](implicit i: Monoid[a]): Monoid[Dual[a]] = new Monoid[Dual[a]] {
+        implicit def asMonoid[a](implicit i: Monoid[a]): Monoid[Dual[a]] = new Monoid[Dual[a]] {
             override val mempty: m = Dual(i.mempty)
             override val mappend: m => (=> m) => m = x => y => Dual(i.mappend(y.get)(x.get))
         }
@@ -63,14 +63,14 @@ object Monoid extends MonoidInstance {
     final case class All(override val get: Bool) extends Strong[Bool]
 
     object All {
-        implicit val weak: Weak0[All, Bool] = new Weak0[All, Bool] {
+        implicit val asWeak: Weak0[All, Bool] = new Weak0[All, Bool] {
             private[this] type p = All
             private[this] type d = Bool
             override def wrap(d: => d): p = All(d)
             override def unwrap(p: p): d = p.get
         }
 
-        implicit val monoid: Monoid[All] = new Monoid[All] {
+        implicit val asMonoid: Monoid[All] = new Monoid[All] {
             private[this] type m = All
             override val mempty: m = All(True)
             override val mappend: m => (=> m) => m = x => y => All(x.get && y.get)
@@ -80,14 +80,14 @@ object Monoid extends MonoidInstance {
     final case class Any_(override val get: Bool) extends Strong[Bool]
 
     object Any_ {
-        implicit val weak: Weak0[Any_, Bool] = new Weak0[Any_, Bool] {
+        implicit val asWeak: Weak0[Any_, Bool] = new Weak0[Any_, Bool] {
             private[this] type p = Any_
             private[this] type d = Bool
             override def wrap(d: => d): p = Any_(d)
             override def unwrap(p: p): d = p.get
         }
 
-        implicit val monoid: Monoid[Any_] = new Monoid[Any_] {
+        implicit val asMonoid: Monoid[Any_] = new Monoid[Any_] {
             private[this] type m = Any_
             override val mempty: m = Any_(False)
             override val mappend: m => (=> m) => m = x => y => Any_(x.get || y.get)
@@ -97,14 +97,14 @@ object Monoid extends MonoidInstance {
     final case class Sum[a](override val get: a) extends Strong[a]
 
     object Sum {
-        implicit def weak[a]: Weak0[Sum[a], a] = new Weak0[Sum[a], a] {
+        implicit def asWeak[a]: Weak0[Sum[a], a] = new Weak0[Sum[a], a] {
             private[this] type p = Sum[a]
             private[this] type d = a
             override def wrap(d: => d): p = Sum(d)
             override def unwrap(p: p): d = p.get
         }
 
-        implicit def monoid[a](implicit i: Num[a]): Monoid[Sum[a]] = new Monoid[Sum[a]] {
+        implicit def asMonoid[a](implicit i: Num[a]): Monoid[Sum[a]] = new Monoid[Sum[a]] {
             import i.+
             private[this] type m = Sum[a]
             override val mempty: m = Sum(i.fromInteger(0))
@@ -115,14 +115,14 @@ object Monoid extends MonoidInstance {
     final case class Product[a](override val get: a) extends Strong[a]
 
     object Product {
-        implicit def weak[a]: Weak0[Product[a], a] = new Weak0[Product[a], a] {
+        implicit def asWeak[a]: Weak0[Product[a], a] = new Weak0[Product[a], a] {
             private[this] type p = Product[a]
             private[this] type d = a
             override def wrap(d: => d): p = Product(d)
             override def unwrap(p: p): d = p.get
         }
 
-        implicit def monoid[a](implicit i: Num[a]): Monoid[Product[a]] = new Monoid[Product[a]] {
+        implicit def asMonoid[a](implicit i: Num[a]): Monoid[Product[a]] = new Monoid[Product[a]] {
             import i.*
             private[this] type m = Product[a]
             override val mempty: m = Product(i.fromInteger(1))
@@ -133,9 +133,9 @@ object Monoid extends MonoidInstance {
 
 
 trait MonoidInstance {
-    implicit val ofUnit: Monoid[Unit] = Unit.monoid
+    implicit val ofUnit: Monoid[Unit] = Unit.asMonoid
 
-    implicit def ofFunction1[z, b](implicit mb: Monoid[b]): Monoid[z => b] = Function.monoid[z, b]
+    implicit def ofFunction1[z, b](implicit mb: Monoid[b]): Monoid[z => b] = Function.asMonoid[z, b]
 
     implicit def ofPair[a, b](implicit ma: Monoid[a], mb: Monoid[b]): Monoid[(a, b)] = new Monoid[(a, b)] {
         private[this] type m = (a, b)

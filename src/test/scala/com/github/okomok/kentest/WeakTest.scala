@@ -13,14 +13,14 @@ import com.github.okomok.ken._
 class WeakTest extends org.scalatest.junit.JUnit3Suite {
 
     def testImplicit {
-        val w = Identity.weak
+        val w = Identity.asWeak
         import w._
 
         implicitly[Functor[({type m[+a] = a})#m]]
         implicitly[Applicative[({type m[+a] = a})#m]]
         implicitly[Monad[({type m[+a] = a})#m]]
 
-        implicitly[Monad[Identity.monad.apply]]
+        implicitly[Monad[Identity.asMonad.apply]]
     }
 
     def testNoAmbiguity {
@@ -35,7 +35,7 @@ class WeakTest extends org.scalatest.junit.JUnit3Suite {
             override def strMsg = s => Err(0)(s)
         }
 
-        val w = Error.weak[ParseError]
+        val w = Error.asWeak[ParseError]
         import w._
         implicitly[Monad[({type m[+a] = Either[ParseError, a]})#m]]
     }

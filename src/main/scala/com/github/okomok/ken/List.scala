@@ -72,7 +72,7 @@ object !:: { // strict extractor
 }
 
 
-object List extends Foldable[List] with MonadPlus[List] {
+object List extends Foldable[List] with MonadPlus[List] with ThisIsInstance {
     @tailrec
     def equal(xs: List[_])(ys: List[_]): Bool = (xs, ys) match {
         case (Nil, Nil) => True
@@ -105,16 +105,13 @@ object List extends Foldable[List] with MonadPlus[List] {
 
     // Instances
     //
-    implicit val monad: MonadPlus[List] = this
-    implicit val foldable: Foldable[List] = this
-
-    implicit def monoid[a]: Monoid[List[a]] = new Monoid[List[a]] {
+    implicit def asMonoid[a]: Monoid[List[a]] = new Monoid[List[a]] {
         private[this] type m = List[a]
         override val mempty: m = Nil
         override val mappend: m => (=> m) => m = op_:::[a]
     }
 
-    implicit def ord[a](implicit i: Ord[a]): Ord[List[a]] = new Ord[List[a]] {
+    implicit def asOrd[a](implicit i: Ord[a]): Ord[List[a]] = new Ord[List[a]] {
         override val compare: List[a] => List[a] => Ordering = {
             @tailrec
             def impl(x: List[a])(y: List[a]): Ordering = (x, y) match {

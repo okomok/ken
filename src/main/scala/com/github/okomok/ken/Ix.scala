@@ -9,7 +9,7 @@ package ken
 
 
 trait Ix[a] extends Ord[a] {
-    final def asIx: Ix[apply] = this
+    final val asIx: Ix[apply] = this
 
     // Core
     //

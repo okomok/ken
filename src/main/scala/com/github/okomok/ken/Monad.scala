@@ -9,7 +9,7 @@ package ken
 
 
 trait Monad[m[+_]] extends Applicative[m] {
-    final def asMonad: Monad[apply] = this
+    final val asMonad: Monad[apply] = this
 
     // Core
     //
@@ -205,6 +205,6 @@ trait MonadProxy[m[+_]] extends Monad[m] with ApplicativeProxy[m] {
 object Monad {
     def apply[m[+_]](implicit i: Monad[m]): Monad[m] = i
 
-    implicit val ofWeakIdentity: Monad[({type m[+a] = a})#m] = WeakIdentity.monad
-    implicit def ofFunction[r]: Monad[({type m[+a] = r => a})#m] = Function.monad[r]
+    implicit val ofWeakIdentity: Monad[({type m[+a] = a})#m] = WeakIdentity.asMonad
+    implicit def ofFunction[r]: Monad[({type m[+a] = r => a})#m] = Function.asMonad[r]
 }

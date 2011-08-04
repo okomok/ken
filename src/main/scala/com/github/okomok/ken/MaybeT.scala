@@ -27,7 +27,7 @@ final class _MaybeTs[n[+_]](val inner: Monad[n]) {
     }
 
     private[ken] trait Instance0 { outer: _MaybeT.type =>
-        implicit val weak: Weak1[_MaybeT, ({type d[+a] = n[Maybe[a]]})#d] =
+        implicit val asWeak: Weak1[_MaybeT, ({type d[+a] = n[Maybe[a]]})#d] =
             new Weak1[_MaybeT, ({type d[+a] = n[Maybe[a]]})#d]
         {
             private[this] type p[+a] = _MaybeT[a]
@@ -36,7 +36,7 @@ final class _MaybeTs[n[+_]](val inner: Monad[n]) {
             override def unwrap[a](p: p[a]): d[a] = run(p)
         }
 
-        implicit val monad: MonadPlus[_MaybeT] with inner.Trans[_MaybeT] = new MonadPlus[_MaybeT] with inner.Trans[_MaybeT] {
+        implicit val asMonad: MonadPlus[_MaybeT] with inner.Trans[_MaybeT] = new MonadPlus[_MaybeT] with inner.Trans[_MaybeT] {
             // Monad
             private[this] type m[+a] = _MaybeT[a]
             override def `return`[a](a: => a): m[a] = _MaybeT { inner.`return`(Just(a).up) }
@@ -63,21 +63,21 @@ final class _MaybeTs[n[+_]](val inner: Monad[n]) {
     }
 
     private[ken] trait Instance1 extends Instance0 { outer: _MaybeT.type =>
-        implicit def monadIO(implicit i: MonadIO[n]): MonadIO[_MaybeT] =
+        implicit def asMonadIO(implicit i: MonadIO[n]): MonadIO[_MaybeT] =
             new MonadIO[_MaybeT] with MonadProxy[_MaybeT]
         {
             private[this] type m[+a] = _MaybeT[a]
-            override def self = outer.monad
+            override def self = outer.asMonad
             override def liftIO[a](io: IO[a]): m[a] = self.lift(i.liftIO(io))
         }
     }
 
     private[ken] trait Instance2 extends Instance1 { outer: _MaybeT.type =>
-        implicit def monadCont(implicit i: MonadCont[n]): MonadCont[_MaybeT] =
+        implicit def asMonadCont(implicit i: MonadCont[n]): MonadCont[_MaybeT] =
             new MonadCont[_MaybeT] with MonadProxy[_MaybeT]
         {
             private[this] type m[+a] = _MaybeT[a]
-            override val self = outer.monad
+            override val self = outer.asMonad
             override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = _MaybeT {
                 i.callCC { (c: Maybe[a] => n[Maybe[b]]) =>
                     run( f( a => _MaybeT { c(Just(a)) } ) )
@@ -87,11 +87,11 @@ final class _MaybeTs[n[+_]](val inner: Monad[n]) {
     }
 
     private[ken] trait Instance3 extends Instance2 { outer: _MaybeT.type =>
-        implicit def monadError[e](implicit i: MonadError[e, n]): MonadError[e, _MaybeT] =
+        implicit def asMonadError[e](implicit i: MonadError[e, n]): MonadError[e, _MaybeT] =
             new MonadError[e, _MaybeT] with MonadProxy[_MaybeT]
         {
             private[this] type m[+a] = _MaybeT[a]
-            override val self = outer.monad
+            override val self = outer.asMonad
             override def errorClass: ErrorClass[e] = i.errorClass
             override def throwError[a](e: e): m[a] = self.lift(i.throwError(e))
             override def catchError[a](m: m[a])(h: e => m[a]): m[a] = _MaybeT {
@@ -105,18 +105,18 @@ final class _MaybeTs[n[+_]](val inner: Monad[n]) {
             new MonadReader[r, _MaybeT] with MonadProxy[_MaybeT]
         {
             private[this] type m[+a] = _MaybeT[a]
-            override val self = outer.monad
+            override val self = outer.asMonad
             override def ask: m[r] = self.lift(i.ask)
             override def local[a](f: r => r)(m: m[a]): m[a] = _MaybeT { i.local(f)(run(m)) }
         }
     }
 
     private[ken] trait Instance5 extends Instance4 { outer: _MaybeT.type =>
-        implicit def monadState[s](implicit i: MonadState[s, n]): MonadState[s, _MaybeT] =
+        implicit def asMonadState[s](implicit i: MonadState[s, n]): MonadState[s, _MaybeT] =
             new MonadState[s, _MaybeT] with MonadProxy[_MaybeT]
         {
             private[this] type m[+a] = _MaybeT[a]
-            override val self = outer.monad
+            override val self = outer.asMonad
             override def get: m[s] = self.lift(i.get)
             override def put(s: s): m[Unit] = self.lift(i.put(s))
         }

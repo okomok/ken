@@ -16,7 +16,7 @@ trait IdentityProxy[+a] extends Identity[a] with StrongProxy[a] {
 }
 
 
-object Identity extends MonadFix[Identity] {
+object Identity extends MonadFix[Identity] with ThisIsInstance {
     def apply[a](a: a): Identity[a] = new Identity[a] {
         override def get: a = a
     }
@@ -37,23 +37,21 @@ object Identity extends MonadFix[Identity] {
 
     // Instances
     //
-    implicit val monad: MonadFix[Identity] = this
-
-    implicit val weak: Weak1[Identity, ({type d[+a] = a})#d] = new Weak1[Identity, ({type d[+a] = a})#d] {
+    implicit val asWeak: Weak1[Identity, ({type d[+a] = a})#d] = new Weak1[Identity, ({type d[+a] = a})#d] {
         type p[+a] = Identity[a]
         type d[+a] = a
         override def wrap[a](d: => d[a]): p[a] = Identity(d)
         override def unwrap[a](p: p[a]): d[a] = run(p)
 
-        override def functor(implicit i: Functor[p]): Functor[d] = WeakIdentity
-        override def applicative(implicit i: Applicative[p]): Applicative[d] = WeakIdentity
-        override def monad(implicit i: Monad[p]): Monad[d] = WeakIdentity
-        override def monadFix(implicit i: MonadFix[p]): MonadFix[d] = WeakIdentity
+        override def asFunctor(implicit i: Functor[p]): Functor[d] = WeakIdentity
+        override def asApplicative(implicit i: Applicative[p]): Applicative[d] = WeakIdentity
+        override def asMonad(implicit i: Monad[p]): Monad[d] = WeakIdentity
+        override def asMonadFix(implicit i: MonadFix[p]): MonadFix[d] = WeakIdentity
     }
 }
 
 
-object WeakIdentity extends MonadFix[({type m[+a] = a})#m] {
+object WeakIdentity extends MonadFix[({type m[+a] = a})#m] with ThisIsInstance {
     // Overrides
     //
     // Functor
@@ -65,8 +63,4 @@ object WeakIdentity extends MonadFix[({type m[+a] = a})#m] {
     override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = k(m)
     // MonadFix
     override def mfix[a](f: (=> a) => m[a]): m[a] = Function.fix(f)
-
-    // Instances
-    //
-    implicit val monad: MonadFix[apply] = this
 }

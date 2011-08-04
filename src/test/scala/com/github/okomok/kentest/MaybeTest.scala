@@ -31,7 +31,7 @@ object StackTraceString {
 class MaybeTest extends org.scalatest.junit.JUnit3Suite {
     def testStrongMonadT {
         import IO.MaybeT // MaybeT[a] <:< Identity[IO[Maybe[a]]]
-        import MaybeT.monad._
+        import MaybeT.asMonad._
 
         var valid = false
         def isValid(s: String_): Boolean = Eq[String_].op_==(s)("valid")
@@ -55,7 +55,7 @@ class MaybeTest extends org.scalatest.junit.JUnit3Suite {
     }
 
     def testWeakMonadT2 {
-        val wm = IO.MaybeT.weak.monadPlus
+        val wm = IO.MaybeT.asWeak.asMonadPlus
         import wm._
 
         def isValid(s: String_): Boolean = Eq[String_].op_==(s)("valid")
@@ -77,14 +77,14 @@ class MaybeTest extends org.scalatest.junit.JUnit3Suite {
     }
 
     def testImplicit {
-        val m = Function.monad[Int]
+        val m = Function.asMonad[Int]
         import m.StateT
         val mp = m.StateT.monadReader[Int, Int]
         ()
     }
 
     def testImplicit2 {
-        val m = Function.monad[Int]
+        val m = Function.asMonad[Int]
         val m_ = implicitly[Monad[m.apply]]
         import m.StateT
         val sm = implicitly[Monad[({type m[+a] = StateT[Int, a]})#m]]

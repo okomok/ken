@@ -13,7 +13,7 @@ package ken
 
 trait _Eq[-a] extends TypeClass {
     type apply = a
-    final def asEq: _Eq[apply] = this
+    final val asEq: _Eq[apply] = this
 
     // Core
     //

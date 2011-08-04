@@ -9,11 +9,11 @@ package ken
 
 
 trait MonadWriter[w, m[+_]] extends Monad[m] {
-    final def asMonadWriter: MonadWriter[w, apply] = this
+    final val asMonadWriter: MonadWriter[w, apply] = this
 
     // Core
     //
-    def monoid: Monoid[w]
+    def asMonoid: Monoid[w]
     def tell(x: w): m[Unit]
     def listen[a](x: m[a]): m[(a, w)]
     def pass[a](x: m[(a, w => w)]): m[a]
@@ -28,7 +28,7 @@ trait MonadWriter[w, m[+_]] extends Monad[m] {
 trait MonadWriterProxy[w, m[+_]] extends MonadWriter[w, m] with MonadProxy[m] {
     override def self: MonadWriter[w, m]
 
-    override def monoid: Monoid[w] = self.monoid
+    override def asMonoid: Monoid[w] = self.asMonoid
     override def tell(x: w): m[Unit] = self.tell(x)
     override def listen[a](x: m[a]): m[(a, w)] = self.listen(x)
     override def pass[a](x: m[(a, w => w)]): m[a] = self.pass(x)

@@ -9,7 +9,7 @@ package ken
 
 
 trait MonadReader[r, m[+_]] extends Monad[m] {
-    final def asMonadReader: MonadReader[r, apply] = this
+    final val asMonadReader: MonadReader[r, apply] = this
 
     // Core
     //
@@ -35,5 +35,5 @@ trait MonadReaderProxy[r, m[+_]] extends MonadReader[r, m] with MonadProxy[m] {
 object MonadReader {
     def apply[r, m[+_]](implicit i: MonadReader[r, m]) = i
 
-    implicit def ofFunction1[r]: MonadReader[r, ({type m[+a] = r => a})#m] = Function.monad[r]
+    implicit def ofFunction1[r]: MonadReader[r, ({type m[+a] = r => a})#m] = Function.asMonad[r]
 }

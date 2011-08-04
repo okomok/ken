@@ -9,7 +9,7 @@ package ken
 
 
 trait Ord[a] extends Eq[a] {
-    final def asOrd: Ord[apply] = this
+    final val asOrd: Ord[apply] = this
 
     // Core
     //

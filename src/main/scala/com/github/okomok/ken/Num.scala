@@ -9,7 +9,7 @@ package ken
 
 
 trait Num[a] extends TypeClass0[a] {
-    final def asNum: Num[apply] = this
+    final val asNum: Num[apply] = this
 
     // Core
     //

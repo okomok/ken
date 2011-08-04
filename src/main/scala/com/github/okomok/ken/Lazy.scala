@@ -13,7 +13,7 @@ sealed abstract class Lazy[+a] {
 }
 
 
-object Lazy extends Monad[Lazy] {
+object Lazy extends Monad[Lazy] with ThisIsInstance {
     def apply[a](x: => a): Lazy[a] = new Lazy[a] {
         override lazy val ! : a = x
     }
@@ -24,10 +24,6 @@ object Lazy extends Monad[Lazy] {
     // Monad
     override def `return`[a](x: => a): m[a] = Lazy { x }
     override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = Lazy { y(x.!).! }
-
-    // Instances
-    //
-    implicit val monad: Monad[Lazy] = this
 }
 
 

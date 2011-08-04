@@ -9,7 +9,7 @@ package ken
 
 
 trait MonadIO[m[+_]] extends Monad[m] {
-    final def asMonadIO: MonadIO[apply] = this
+    final val asMonadIO: MonadIO[apply] = this
 
     // Core
     //

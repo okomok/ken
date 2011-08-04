@@ -15,7 +15,7 @@ case object EQ extends Ordering
 case object GT extends Ordering
 
 
-object Ordering extends Monoid[Ordering] {
+object Ordering extends Monoid[Ordering] with ThisIsInstance {
     // Overrides
     //
     // Ordering
@@ -26,8 +26,4 @@ object Ordering extends Monoid[Ordering] {
         case EQ => y
         case GT => GT
     }
-
-    // Instances
-    //
-    implicit val monoid: Monoid[Ordering] = this
 }

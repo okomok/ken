@@ -9,7 +9,7 @@ package ken
 
 
 trait Applicative[f[+_]] extends Functor[f] {
-    final def asApplicative: Applicative[apply] = this
+    final val asApplicative: Applicative[apply] = this
 
     // Core
     //
@@ -69,8 +69,8 @@ object Applicative extends ApplicativeInstance {
 
 
 trait ApplicativeInstance { outer: Applicative.type =>
-    implicit val ofWeakIdentity: Applicative[({type m[+a] = a})#m] = WeakIdentity.monad
-    implicit def ofFunction[r]: Applicative[({type m[+a] = r => a})#m] = Function.monad[r]
+    implicit val ofWeakIdentity: Applicative[({type m[+a] = a})#m] = WeakIdentity.asMonad
+    implicit def ofFunction[r]: Applicative[({type m[+a] = r => a})#m] = Function.asMonad[r]
 
     implicit def ofPair[z](implicit ma: Monoid[z]): Applicative[({type f[+a] = (z, a)})#f] = new Applicative[({type f[+a] = (z, a)})#f] {
         private[this] type f[a] = (z, a)

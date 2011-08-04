@@ -9,7 +9,7 @@ package ken
 
 
 trait MonadPlus[m[+_]] extends Monad[m] with Alternative[m] {
-    final def asMonadPlus: MonadPlus[apply] = this
+    final val asMonadPlus: MonadPlus[apply] = this
 
     // Core
     //

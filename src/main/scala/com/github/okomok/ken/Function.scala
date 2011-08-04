@@ -18,7 +18,7 @@ object Function {
 
     def on[a, b, c](* : b => b => c)(f: a => b): a => a => c = { x => y => *(f(x))(f(y)) }
 
-    implicit def monad[r]: MonadReader[r, ({type m[+a] = r => a})#m] = new MonadReader[r, ({type m[+a] = r => a})#m] {
+    implicit def asMonad[r]: MonadReader[r, ({type m[+a] = r => a})#m] = new MonadReader[r, ({type m[+a] = r => a})#m] {
         // Functor
         private[this] type f[+a] = r => a
         override def fmap[a, b](x: a => b)(y: f[a]): f[b] = x compose y
@@ -34,7 +34,7 @@ object Function {
         override def local[a](f: r => r)(m: m[a]): m[a] = m compose f
     }
 
-    implicit def monoid[z, b](implicit mb: Monoid[b]): Monoid[z => b] = new Monoid[z => b] {
+    implicit def asMonoid[z, b](implicit mb: Monoid[b]): Monoid[z => b] = new Monoid[z => b] {
         private[this] type m = z => b
         override val mempty: m = _ => mb.mempty
         override val mappend: m => (=> m) => m = { x => y =>
