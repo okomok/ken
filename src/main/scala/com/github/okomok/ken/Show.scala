@@ -65,7 +65,7 @@ object Show extends ShowInstance {
 }
 
 
-trait ShowInstance { this: Show.type =>
+trait ShowInstance { outer: Show.type =>
     implicit def ofAny[a]: Show[a] = new Show[a] {
         override def showsPrec(n: Int)(x: a): ShowS = showString(x.toString)
     }

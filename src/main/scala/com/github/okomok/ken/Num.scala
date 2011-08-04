@@ -64,7 +64,7 @@ object Num extends NumInstance {
 }
 
 
-trait NumInstance { this: Num.type =>
+trait NumInstance { outer: Num.type =>
     implicit def ofNumeric[a](implicit i: Numeric[a]): Num[a] = new Num[a] {
         override val op_+ : a => a => a = { x => y => i.plus(x, y) }
         override val op_- : a => a => a = { x => y => i.minus(x, y) }

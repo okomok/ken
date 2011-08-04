@@ -68,7 +68,7 @@ object Applicative extends ApplicativeInstance {
 }
 
 
-trait ApplicativeInstance { this: Applicative.type =>
+trait ApplicativeInstance { outer: Applicative.type =>
     implicit val ofWeakIdentity: Applicative[({type m[+a] = a})#m] = WeakIdentity.monad
     implicit def ofFunction[r]: Applicative[({type m[+a] = r => a})#m] = Function.monad[r]
 

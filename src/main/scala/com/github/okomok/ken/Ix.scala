@@ -57,7 +57,7 @@ object Ix extends IxInstance {
 }
 
 
-trait IxInstance { this: Ix.type =>
+trait IxInstance { outer: Ix.type =>
     implicit val ofInt: Ix[Int] = new Ix[Int] {
         private[this] type a = Int
         override val range: Tuple2[a, a] => List[a] = { case (m, n) => List.range(m, n) }

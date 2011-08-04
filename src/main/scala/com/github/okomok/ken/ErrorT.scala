@@ -25,7 +25,7 @@ final class _ErrorTs[n[+_]](val inner: Monad[n]) {
         def map[e, e_, m[+_], a, b](f: n[Either[e, a]] => m[Either[e_, b]])(n: _ErrorT[e, a]): Identity[m[Either[e_, b]]] = Identity { f(run(n)) }
     }
 
-    private[ken] trait Instance0 { this: _ErrorT.type =>
+    private[ken] trait Instance0 { outer: _ErrorT.type =>
         implicit def weak[e]: Weak1[({type p[+a] = _ErrorT[e, a]})#p, ({type d[+a] = n[Either[e, a]]})#d] =
             new Weak1[({type p[+a] = _ErrorT[e, a]})#p, ({type d[+a] = n[Either[e, a]]})#d]
         {
@@ -91,12 +91,12 @@ final class _ErrorTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    private[ken] trait Instance1 extends Instance0 { this: _ErrorT.type =>
+    private[ken] trait Instance1 extends Instance0 { outer: _ErrorT.type =>
         implicit def monadFix[e](implicit i: MonadFix[n], j: ErrorClass[e]): MonadFix[({type m[+a] = _ErrorT[e, a]})#m] =
             new MonadFix[({type m[+a] = _ErrorT[e, a]})#m] with MonadProxy[({type m[+a] = _ErrorT[e, a]})#m]
         {
             private[this] type m[+a] = _ErrorT[e, a]
-            override val self = monad[e]
+            override val self = outer.monad[e]
             override def mfix[a](f: (=> a) => m[a]): m[a] = _ErrorT {
                 def k(a: => Either[e, a]) = run { f { a match {
                     case Right(r) => r
@@ -107,22 +107,22 @@ final class _ErrorTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    private[ken] trait Instance2 extends Instance1 { this: _ErrorT.type =>
+    private[ken] trait Instance2 extends Instance1 { outer: _ErrorT.type =>
         implicit def monadIO[e](implicit i: MonadIO[n], j: ErrorClass[e]): MonadIO[({type m[+a] = _ErrorT[e, a]})#m] =
             new MonadIO[({type m[+a] = _ErrorT[e, a]})#m] with MonadProxy[({type m[+a] = _ErrorT[e, a]})#m]
         {
             private[this] type m[+a] = _ErrorT[e, a]
-            override val self = monad[e]
+            override val self = outer.monad[e]
             override def liftIO[a](io: IO[a]): m[a] = self.lift(i.liftIO(io))
         }
     }
 
-    private[ken] trait Instance3 extends Instance2 { this: _ErrorT.type =>
+    private[ken] trait Instance3 extends Instance2 { outer: _ErrorT.type =>
         implicit def monadCont[e](implicit i: MonadCont[n], j: ErrorClass[e]): MonadCont[({type m[+a] = _ErrorT[e, a]})#m] =
             new MonadCont[({type m[+a] = _ErrorT[e, a]})#m] with MonadProxy[({type m[+a] = _ErrorT[e, a]})#m]
         {
             private[this] type m[+a] = _ErrorT[e, a]
-            override val self = monad[e]
+            override val self = outer.monad[e]
             override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = _ErrorT {
                 i.callCC { (c: Either[e, a] => n[Either[e, b]]) =>
                     run { f(a => _ErrorT { c(Right(a)) }) }
@@ -131,23 +131,23 @@ final class _ErrorTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    private[ken] trait Instance4 extends Instance3 { this: _ErrorT.type =>
+    private[ken] trait Instance4 extends Instance3 { outer: _ErrorT.type =>
         implicit def monadReader[e, r](implicit i: MonadReader[r, n], j: ErrorClass[e]): MonadReader[r, ({type m[+a] = _ErrorT[e, a]})#m] =
             new MonadReader[r, ({type m[+a] = _ErrorT[e, a]})#m] with MonadProxy[({type m[+a] = _ErrorT[e, a]})#m]
         {
             private[this] type m[+a] = _ErrorT[e, a]
-            override val self = monad[e]
+            override val self = outer.monad[e]
             override def ask: m[r] = self.lift(i.ask)
             override def local[a](f: r => r)(m: m[a]): m[a] = _ErrorT { i.local(f)(run(m)) }
         }
     }
 
-    private[ken] trait Instance5 extends Instance4 { this: _ErrorT.type =>
+    private[ken] trait Instance5 extends Instance4 { outer: _ErrorT.type =>
         implicit def monadWriter[e, w](implicit i: MonadWriter[w, n], j: ErrorClass[e]): MonadWriter[w, ({type m[+a] = _ErrorT[e, a]})#m] =
             new MonadWriter[w, ({type m[+a] = _ErrorT[e, a]})#m] with MonadProxy[({type m[+a] = _ErrorT[e, a]})#m]
         {
             private[this] type m[+a] = _ErrorT[e, a]
-            override val self = monad[e]
+            override val self = outer.monad[e]
             override def monoid: Monoid[w] = i.monoid
             override def tell(x: w): m[Unit] = self.lift(i.tell(x))
             override def listen[a](m: m[a]): m[(a, w)] = _ErrorT {
@@ -173,6 +173,6 @@ final class _ErrorTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    private[ken] trait Instance extends Instance5 { this: _ErrorT.type =>
+    private[ken] trait Instance extends Instance5 { outer: _ErrorT.type =>
     }
 }
