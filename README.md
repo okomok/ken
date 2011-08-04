@@ -11,8 +11,8 @@
         type GameValue = Int
         type GameState = (Boolean, Int)
 
-        // Pulls the monad explicitly.
-        val i = State.monad[GameState]
+        // Pull the Monad explicitly.
+        val i = State.asMonad[GameState]
         import i._
 
         def playGame(xs: String_): State[GameState, GameValue] = xs match {
@@ -27,14 +27,13 @@
                     case 'c' => put(not(on), score)
                     case _ => put(on, score)
                 }
-                r <- playGame(xs.!)
-            } yield r
+                * <- playGame(xs.!)
+            } yield *
         }
 
         val startState = (false, 0)
 
         val main_ = IO.print { State.eval(playGame("abcaaacbbcabbab"))(startState) }
-    }
 
 The current status is pre-alpha.
 
