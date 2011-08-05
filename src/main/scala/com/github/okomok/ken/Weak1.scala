@@ -41,8 +41,7 @@ trait Weak1Proxy[p[+_], d[+_]] extends Weak1[p, d] with Proxy {
 
 
 object Weak1 {
-    def apply[p <: Kind.Newtype](implicit i: Weak1[p#apply, p#oldtype]): Weak1[p#apply, p#oldtype] = i
-//    def apply[p[+_], d[+_]](implicit i: Weak1[p, d]): Weak1[p, d] = i
+    def apply[p <: Kind.Strong1](implicit i: Weak1[p#apply, p#weak]): Weak1[p#apply, p#weak] = i
 }
 
 

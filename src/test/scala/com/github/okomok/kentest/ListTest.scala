@@ -13,7 +13,7 @@ import com.github.okomok.ken._
 class ListTest extends org.scalatest.junit.JUnit3Suite {
 
     def testZipList {
-        val m = ZipList.weak.asApplicative
+        val m = ZipList.asWeak.asApplicative
         import m._
 
         val xs = ((x: Int) => (y: Int) => (z: Int) => x + y + z) <@>

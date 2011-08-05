@@ -27,7 +27,7 @@ object ZipList extends Applicative[ZipList] with ThisIsInstance {
 
     // Instances
     //
-    implicit val weak: Weak1[ZipList, List] = new Weak1[ZipList, List] {
+    implicit val asWeak: Weak1[ZipList, List] = new Weak1[ZipList, List] {
         private[this] type p[+a] = ZipList[a]
         private[this] type d[+a] = List[a]
         override def wrap[a](d: => d[a]): p[a] = ZipList { d }

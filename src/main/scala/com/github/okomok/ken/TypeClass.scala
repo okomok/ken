@@ -16,8 +16,8 @@ trait TypeClass1[f[+_]] extends Kind.Function1 {
     override type apply[+a] = f[a]
 }
 
-trait TypeClass2[f[+_, +_]] {
-    type apply[+a, +b] = f[a, b]
+trait TypeClass2[f[+_, +_]] extends Kind.Function2 {
+    override type apply[+a, +b] = f[a, b]
 }
 
 trait TypeClass {

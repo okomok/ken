@@ -21,11 +21,15 @@ object Kind {
         type apply[+a, +b]
     }
 
-    trait Newtype extends Function1 {
-        type oldtype[+a]
+    trait Strong0 extends Function0 {
+        type weak
     }
 
-    trait MonadTrans extends Function1 {
+    trait Strong1 extends Function1 {
+        type weak[+a]
+    }
+
+    trait MonadTrans extends Strong1 {
         type inner[+a]
     }
 }

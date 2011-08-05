@@ -16,6 +16,7 @@ final class _ListTs[n[+_]](val inner: Monad[n]) {
     object _ListT extends Kind.MonadTrans with Instance {
         override type apply[+a] = _ListT[a]
         override type inner[+a] = n[a]
+        override type weak[+a] = n[List[a]]
 
         def apply[a](rep: n[List[a]]): _ListT[a] = new _ListT[a] {
             override def get: n[List[a]] = rep
@@ -29,7 +30,7 @@ final class _ListTs[n[+_]](val inner: Monad[n]) {
     }
 
     private[ken] trait Instance0 { outer: _ListT.type =>
-        implicit val weak: Weak1[_ListT, ({type d[+a] = n[List[a]]})#d] =
+        implicit val asWeak: Weak1[_ListT, ({type d[+a] = n[List[a]]})#d] =
             new Weak1[_ListT, ({type d[+a] = n[List[a]]})#d]
         {
             private[this] type p[+a] = _ListT[a]

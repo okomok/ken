@@ -17,6 +17,7 @@ final class _MaybeTs[n[+_]](val inner: Monad[n]) {
     object _MaybeT extends Kind.MonadTrans with Instance {
         override type apply[+a] = _MaybeT[a]
         override type inner[+a] = n[a]
+        override type weak[+a] = n[Maybe[a]]
 
         def apply[a](rep: n[Maybe[a]]): _MaybeT[a] = new _MaybeT[a] {
             override def get: n[Maybe[a]] = rep
@@ -30,7 +31,7 @@ final class _MaybeTs[n[+_]](val inner: Monad[n]) {
     }
 
     private[ken] trait Instance0 { outer: _MaybeT.type =>
-        implicit val weak: Weak1[_MaybeT, ({type d[+a] = n[Maybe[a]]})#d] =
+        implicit val asWeak: Weak1[_MaybeT, ({type d[+a] = n[Maybe[a]]})#d] =
             new Weak1[_MaybeT, ({type d[+a] = n[Maybe[a]]})#d]
         {
             private[this] type p[+a] = _MaybeT[a]

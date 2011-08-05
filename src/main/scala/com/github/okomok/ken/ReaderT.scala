@@ -17,6 +17,7 @@ final class _ReaderTs[n[+_]](val inner: Monad[n]) {
         type apply[r] = Kind.MonadTrans {
             type apply[+a] = _ReaderT[r, a]
             type inner[+a] = n[a]
+            type weak[+a] = Function1[r, n[a]]
         }
 
         def apply[r, a](rep: r => n[a]): _ReaderT[r, a] = new _ReaderT[r, a] {
@@ -33,7 +34,7 @@ final class _ReaderTs[n[+_]](val inner: Monad[n]) {
     }
 
     private[ken] trait Instance0 { outer: _ReaderT.type =>
-        implicit def weak[r]: Weak1[({type p[+a] = _ReaderT[r, a]})#p, ({type d[+a] = Function1[r, n[a]]})#d] =
+        implicit def asWeak[r]: Weak1[({type p[+a] = _ReaderT[r, a]})#p, ({type d[+a] = Function1[r, n[a]]})#d] =
             new Weak1[({type p[+a] = _ReaderT[r, a]})#p, ({type d[+a] = Function1[r, n[a]]})#d]
         {
             private[this] type p[+a] = _ReaderT[r, a]

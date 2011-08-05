@@ -13,10 +13,10 @@ final class _LazyTs[n[+_]](val inner: Monad[n]) {
 
     sealed abstract class _LazyT[+a] extends Strong[n[Lazy[a]]]
 
-    object _LazyT extends Kind.MonadTrans with Kind.Newtype with Instance {
+    object _LazyT extends Kind.MonadTrans with Instance {
         override type apply[+a] = _LazyT[a]
         override type inner[+a] = n[a]
-        override type oldtype[+a] = n[Lazy[a]]
+        override type weak[+a] = n[Lazy[a]]
 
         def apply[a](rep: n[Lazy[a]]): _LazyT[a] = new _LazyT[a] {
             override def get: n[Lazy[a]] = rep
@@ -30,7 +30,7 @@ final class _LazyTs[n[+_]](val inner: Monad[n]) {
     }
 
     private[ken] trait Instance0 { outer: _LazyT.type =>
-        implicit val weak: Weak1[_LazyT, ({type d[+a] = n[Lazy[a]]})#d] =
+        implicit val asWeak: Weak1[_LazyT, ({type d[+a] = n[Lazy[a]]})#d] =
             new Weak1[_LazyT, ({type d[+a] = n[Lazy[a]]})#d]
         {
             private[this] type p[+a] = _LazyT[a]

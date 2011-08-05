@@ -17,6 +17,7 @@ final class _ErrorTs[n[+_]](val inner: Monad[n]) {
         type apply[e] = Kind.MonadTrans {
             type apply[+a] = _ErrorT[e, a]
             type inner[+a] = n[a]
+            type weak[+a] = n[Either[e, a]]
         }
 
         def apply[e, a](rep: n[Either[e, a]]): _ErrorT[e, a] = new _ErrorT[e, a] {
@@ -31,7 +32,7 @@ final class _ErrorTs[n[+_]](val inner: Monad[n]) {
     }
 
     private[ken] trait Instance0 { outer: _ErrorT.type =>
-        implicit def weak[e]: Weak1[({type p[+a] = _ErrorT[e, a]})#p, ({type d[+a] = n[Either[e, a]]})#d] =
+        implicit def asWeak[e]: Weak1[({type p[+a] = _ErrorT[e, a]})#p, ({type d[+a] = n[Either[e, a]]})#d] =
             new Weak1[({type p[+a] = _ErrorT[e, a]})#p, ({type d[+a] = n[Either[e, a]]})#d]
         {
             private[this] type p[+a] = _ErrorT[e, a]

@@ -63,7 +63,7 @@ object Monoid extends MonoidInstance {
     final case class All(override val get: Bool) extends Strong[Bool]
 
     object All {
-        implicit val weak: Weak0[All, Bool] = new Weak0[All, Bool] {
+        implicit val asWeak: Weak0[All, Bool] = new Weak0[All, Bool] {
             private[this] type p = All
             private[this] type d = Bool
             override def wrap(d: => d): p = All(d)
@@ -80,7 +80,7 @@ object Monoid extends MonoidInstance {
     final case class Any_(override val get: Bool) extends Strong[Bool]
 
     object Any_ {
-        implicit val weak: Weak0[Any_, Bool] = new Weak0[Any_, Bool] {
+        implicit val asWeak: Weak0[Any_, Bool] = new Weak0[Any_, Bool] {
             private[this] type p = Any_
             private[this] type d = Bool
             override def wrap(d: => d): p = Any_(d)
@@ -97,7 +97,7 @@ object Monoid extends MonoidInstance {
     final case class Sum[a](override val get: a) extends Strong[a]
 
     object Sum {
-        implicit def weak[a]: Weak0[Sum[a], a] = new Weak0[Sum[a], a] {
+        implicit def asWeak[a]: Weak0[Sum[a], a] = new Weak0[Sum[a], a] {
             private[this] type p = Sum[a]
             private[this] type d = a
             override def wrap(d: => d): p = Sum(d)
@@ -115,7 +115,7 @@ object Monoid extends MonoidInstance {
     final case class Product[a](override val get: a) extends Strong[a]
 
     object Product {
-        implicit def weak[a]: Weak0[Product[a], a] = new Weak0[Product[a], a] {
+        implicit def asWeak[a]: Weak0[Product[a], a] = new Weak0[Product[a], a] {
             private[this] type p = Product[a]
             private[this] type d = a
             override def wrap(d: => d): p = Product(d)
