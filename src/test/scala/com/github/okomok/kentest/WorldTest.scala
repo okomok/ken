@@ -15,14 +15,14 @@ class WorldTest extends org.scalatest.junit.JUnit3Suite {
     def sumST[a](xs: List[a])(implicit i: Num[a]): a = {
         val w = new World
         import w._
-        import i._
-        import ST.monad.{`for`, forM_}
+        val sm = Monad[ST.type]
+        import sm.{`for`, forM_}
         runST {
             for {
-                n <- newSTRef(fromInteger(0))
+                n <- newSTRef(i.fromInteger(0))
                 _ <- forM_(xs) { x =>
                     for {
-                        * <- modifySTRef(n)(x + _)
+                        * <- modifySTRef(n)(i.op_+(x))
                     } yield *
                 }
                 * <- readSTRef(n)

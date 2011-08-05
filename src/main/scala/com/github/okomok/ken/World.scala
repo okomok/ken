@@ -21,7 +21,9 @@ final class World {
 
     type ST[+a] = State[Tag, a]
 
-    object ST {
+    object ST extends Metafunction1 {
+        override type apply[+a] = ST[a]
+
         def apply[a](r: => a): ST[a] = State { s => (r, s) }
         implicit val monad = State.monad[Tag]
     }

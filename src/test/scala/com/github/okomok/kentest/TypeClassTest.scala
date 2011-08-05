@@ -28,7 +28,18 @@ class TypeClassTest extends org.scalatest.junit.JUnit3Suite {
     }
 
     def testImplicit {
-        val m = Monad[Function.apply[Int]]
-        ()
+        val fm = Monad[Function.apply[Int]]
+        val im = Monad[Identity.type]
+        val lm = Monad[List.type]
+        val wim = Monad[WeakIdentity.type]
+        val mit = Monad[Identity.ListT.type]
+
+        def infer[m[+_]](m: Monad[m]) = ()
+
+        infer(fm)
+        infer(im)
+        infer(lm)
+        infer(wim)
+        infer(mit)
     }
 }
