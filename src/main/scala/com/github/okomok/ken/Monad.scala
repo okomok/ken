@@ -123,6 +123,8 @@ trait Monad[m[+_]] extends Applicative[m] {
 
     // Transformers
     //
+
+    // Failed. Will be removed.
     trait Trans[n[+_]] {
         def lift[a](m: m[a]): n[a]
     }

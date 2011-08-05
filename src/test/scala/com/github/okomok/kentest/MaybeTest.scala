@@ -79,4 +79,34 @@ class MaybeTest extends org.scalatest.junit.JUnit3Suite {
             askPassword.unIO()
         }
     }
+
+    def testStrongMonadT2 {
+        import IO.MaybeT
+
+        val m = MonadPlus[MaybeT.type]
+        import m._
+
+        val mt = MonadTrans[IO.type, MaybeT.type]
+        import mt.lift
+
+        var valid = false
+        def isValid(s: String_): Boolean = Eq[String_].op_==(s)("valid")
+
+        def getValidPassword: MaybeT[String_] = {
+            for {
+                s <- lift(IO.getLine)
+                _ <- guard(isValid(s))
+            } yield s
+        }
+
+        def askPassword: MaybeT[Unit] = for {
+            _ <- lift(IO.putStrLn("Insert your new password"))
+            value <- msum { List.repeat(getValidPassword) }
+            _ <- lift(IO.putStrLn("Storing in database..."))
+        } yield ()
+
+        ignore {
+            askPassword.run.unIO()
+        }
+    }
 }

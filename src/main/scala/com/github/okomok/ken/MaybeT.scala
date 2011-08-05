@@ -62,6 +62,13 @@ final class _MaybeTs[n[+_]](val inner: Monad[n]) {
                 for { a <- n } yield Just(a)
             }
         }
+
+        implicit val asMonadTrans: MonadTrans[n, _MaybeT] = new MonadTrans[n, _MaybeT] {
+            private[this] type m[+a] = _MaybeT[a]
+            override def lift[a](n: n[a]): m[a] = _MaybeT {
+                for { a <- n } yield Just(a)
+            }
+        }
     }
 
     private[ken] trait Instance1 extends Instance0 { outer: _MaybeT.type =>

@@ -93,6 +93,13 @@ final class _ErrorTs[n[+_]](val inner: Monad[n]) {
                 for { a <- n } yield Right(a)
             }
         }
+
+        implicit def asMonadTrans[e]: MonadTrans[n, ({type m[+a] = _ErrorT[e, a]})#m] = new MonadTrans[n, ({type m[+a] = _ErrorT[e, a]})#m] {
+            private[this] type m[+a] = _ErrorT[e, a]
+            override def lift[a](n: n[a]): m[a] = _ErrorT {
+                for { a <- n } yield Right(a)
+            }
+        }
     }
 
     private[ken] trait Instance1 extends Instance0 { outer: _ErrorT.type =>

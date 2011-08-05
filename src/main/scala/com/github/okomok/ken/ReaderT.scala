@@ -61,6 +61,11 @@ final class _ReaderTs[n[+_]](val inner: Monad[n]) {
             // Trans
             override def lift[a](n: n[a]): m[a] = _ReaderT { _ => n }
         }
+
+        implicit def asMonadTrans[r]: MonadTrans[n, ({type m[+a] = _ReaderT[r, a]})#m] = new MonadTrans[n, ({type m[+a] = _ReaderT[r, a]})#m] {
+            private[this] type m[+a] = _ReaderT[r, a]
+            override def lift[a](n: n[a]): m[a] = _ReaderT { _ => n }
+        }
     }
 
     private[ken] trait Instance1 extends Instance0 { outer: _ReaderT.type =>

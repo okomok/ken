@@ -54,6 +54,13 @@ final class _LazyTs[n[+_]](val inner: Monad[n]) {
                 for { a <- n } yield Lazy(a)
             }
         }
+
+        implicit val asMonadTrans: MonadTrans[n, _LazyT] = new MonadTrans[n, _LazyT] {
+            private[this] type m[+a] = _LazyT[a]
+            override def lift[a](n: n[a]): m[a] = _LazyT {
+                for { a <- n } yield Lazy(a)
+            }
+        }
     }
 
     private[ken] trait Instance1 extends Instance0 { outer: _LazyT.type =>

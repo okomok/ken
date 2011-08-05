@@ -42,4 +42,9 @@ class TypeClassTest extends org.scalatest.junit.JUnit3Suite {
         infer(wim)
         infer(mit)
     }
+
+    def testMonadTrans {
+        val mt1 = MonadTrans[IO.type, IO.StateT.apply[Int]]
+        val mt2 = MonadTrans[IO.type, IO.LazyT.type]
+    }
 }
