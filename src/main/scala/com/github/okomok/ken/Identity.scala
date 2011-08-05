@@ -16,7 +16,9 @@ trait IdentityProxy[+a] extends Identity[a] with StrongProxy[a] {
 }
 
 
-object Identity extends MonadFix[Identity] with ThisIsInstance {
+object Identity extends Kind.Strong1 with MonadFix[Identity] with ThisIsInstance {
+    override type weak[+a] = a
+
     def apply[a](a: a): Identity[a] = new Identity[a] {
         override def get: a = a
     }
@@ -37,7 +39,7 @@ object Identity extends MonadFix[Identity] with ThisIsInstance {
 
     // Instances
     //
-    implicit val asWeak: Weak1[Identity, ({type d[+a] = a})#d] = new Weak1[Identity, ({type d[+a] = a})#d] {
+    implicit val weak: Weak1[Identity, ({type d[+a] = a})#d] = new Weak1[Identity, ({type d[+a] = a})#d] {
         type p[+a] = Identity[a]
         type d[+a] = a
         override def wrap[a](d: => d[a]): p[a] = Identity(d)

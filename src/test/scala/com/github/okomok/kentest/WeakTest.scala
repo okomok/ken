@@ -13,7 +13,7 @@ import com.github.okomok.ken._
 class WeakTest extends org.scalatest.junit.JUnit3Suite {
 
     def testImplicit {
-        val w = Identity.asWeak
+        val w = Identity.weak
         import w._
 
         implicitly[Functor[({type m[+a] = a})#m]]
@@ -35,8 +35,13 @@ class WeakTest extends org.scalatest.junit.JUnit3Suite {
             override def strMsg = s => Err(0)(s)
         }
 
-        val w = Error.asWeak[ParseError]
+        val w = Error.weak[ParseError]
         import w._
         implicitly[Monad[({type m[+a] = Either[ParseError, a]})#m]]
+    }
+
+    def testCreateInstance {
+        val wi = Weak1[Identity.type]
+        val ei = Weak0[Endo.apply[Int]]
     }
 }

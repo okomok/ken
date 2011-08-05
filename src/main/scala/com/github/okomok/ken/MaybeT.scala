@@ -31,7 +31,7 @@ final class _MaybeTs[n[+_]](val inner: Monad[n]) {
     }
 
     private[ken] trait Instance0 { outer: _MaybeT.type =>
-        implicit val asWeak: Weak1[_MaybeT, ({type d[+a] = n[Maybe[a]]})#d] =
+        implicit val weak: Weak1[_MaybeT, ({type d[+a] = n[Maybe[a]]})#d] =
             new Weak1[_MaybeT, ({type d[+a] = n[Maybe[a]]})#d]
         {
             private[this] type p[+a] = _MaybeT[a]

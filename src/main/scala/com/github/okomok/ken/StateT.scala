@@ -38,7 +38,7 @@ final class _StateTs[n[+_]](val inner: Monad[n]) {
     }
 
     private[ken] trait Instance0 { outer: _StateT.type =>
-        implicit def asWeak[s]: Weak1[({type p[+a] = _StateT[s, a]})#p, ({type d[+a] = Function1[s, n[(a, s)]]})#d] =
+        implicit def weak[s]: Weak1[({type p[+a] = _StateT[s, a]})#p, ({type d[+a] = Function1[s, n[(a, s)]]})#d] =
             new Weak1[({type p[+a] = _StateT[s, a]})#p, ({type d[+a] = Function1[s, n[(a, s)]]})#d]
         {
             private[this] type p[+a] = _StateT[s, a]

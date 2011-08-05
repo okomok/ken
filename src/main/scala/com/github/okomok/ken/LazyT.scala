@@ -30,7 +30,7 @@ final class _LazyTs[n[+_]](val inner: Monad[n]) {
     }
 
     private[ken] trait Instance0 { outer: _LazyT.type =>
-        implicit val asWeak: Weak1[_LazyT, ({type d[+a] = n[Lazy[a]]})#d] =
+        implicit val weak: Weak1[_LazyT, ({type d[+a] = n[Lazy[a]]})#d] =
             new Weak1[_LazyT, ({type d[+a] = n[Lazy[a]]})#d]
         {
             private[this] type p[+a] = _LazyT[a]

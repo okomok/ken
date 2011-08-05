@@ -11,7 +11,9 @@ package ken
 final case class ZipList[+a](override val get: List[a]) extends Strong[List[a]]
 
 
-object ZipList extends Applicative[ZipList] with ThisIsInstance {
+object ZipList extends Kind.Strong1 with Applicative[ZipList] with ThisIsInstance {
+    override type weak[+a] = List[a]
+
     def run[a](m: ZipList[a]): List[a] = m.run
     def getZipList[a](m: ZipList[a]): List[a] = m.run
 
@@ -27,7 +29,7 @@ object ZipList extends Applicative[ZipList] with ThisIsInstance {
 
     // Instances
     //
-    implicit val asWeak: Weak1[ZipList, List] = new Weak1[ZipList, List] {
+    implicit val weak: Weak1[ZipList, List] = new Weak1[ZipList, List] {
         private[this] type p[+a] = ZipList[a]
         private[this] type d[+a] = List[a]
         override def wrap[a](d: => d[a]): p[a] = ZipList { d }

@@ -30,7 +30,7 @@ final class _ListTs[n[+_]](val inner: Monad[n]) {
     }
 
     private[ken] trait Instance0 { outer: _ListT.type =>
-        implicit val asWeak: Weak1[_ListT, ({type d[+a] = n[List[a]]})#d] =
+        implicit val weak: Weak1[_ListT, ({type d[+a] = n[List[a]]})#d] =
             new Weak1[_ListT, ({type d[+a] = n[List[a]]})#d]
         {
             private[this] type p[+a] = _ListT[a]
