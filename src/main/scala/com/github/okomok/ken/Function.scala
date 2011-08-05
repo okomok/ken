@@ -9,6 +9,10 @@ package ken
 
 
 object Function {
+    type apply[z] = Metafunction1 {
+        type apply[+a] = Function1[z, a]
+    }
+
     def fix[a](f: (=> a) => a): a = {
         lazy val x: a = f(x)
         x
@@ -18,20 +22,20 @@ object Function {
 
     def on[a, b, c](* : b => b => c)(f: a => b): a => a => c = { x => y => *(f(x))(f(y)) }
 
-    implicit def monad[r]: MonadReader[r, ({type m[+a] = r => a})#m] = new MonadReader[r, ({type m[+a] = r => a})#m] {
+    implicit def monad[z]: MonadReader[z, ({type m[+a] = z => a})#m] = new MonadReader[z, ({type m[+a] = z => a})#m] {
         // Functor
-        private[this] type f[+a] = r => a
+        private[this] type f[+a] = z => a
         override def fmap[a, b](x: a => b)(y: f[a]): f[b] = x compose y
         // Applicative
         override def pure[a](x: => a): f[a] = const(x)
-        override def op_<*>[a, b](x: f[a => b])(y: f[a]): f[b] = { r => x(r)(y(r)) }
+        override def op_<*>[a, b](x: f[a => b])(y: f[a]): f[b] = { z => x(z)(y(z)) }
         // Monad
         private[this] type m[+a] = f[a]
         override def `return`[a](x: => a): m[a] = const(x)
-        override def op_>>=[a, b](f: m[a])(k: a => m[b]): m[b] = { r => k(f(r))(r) }
+        override def op_>>=[a, b](f: m[a])(k: a => m[b]): m[b] = { z => k(f(z))(z) }
         // MonadReader
-        override def ask: m[r] = ken.id
-        override def local[a](f: r => r)(m: m[a]): m[a] = m compose f
+        override def ask: m[z] = ken.id
+        override def local[a](f: z => z)(m: m[a]): m[a] = m compose f
     }
 
     implicit def asMonoid[z, b](implicit mb: Monoid[b]): Monoid[z => b] = new Monoid[z => b] {

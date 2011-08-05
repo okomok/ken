@@ -13,7 +13,9 @@ final class _LazyTs[n[+_]](val inner: Monad[n]) {
 
     sealed abstract class _LazyT[+a] extends Strong[n[Lazy[a]]]
 
-    object _LazyT extends Instance {
+    object _LazyT extends Metafunction1 with Instance {
+        override type apply[+a] = _LazyT[a]
+
         def apply[a](rep: n[Lazy[a]]): _LazyT[a] = new _LazyT[a] {
             override def get: n[Lazy[a]] = rep
         }

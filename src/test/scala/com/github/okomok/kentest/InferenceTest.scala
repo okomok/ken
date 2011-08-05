@@ -19,12 +19,13 @@ class InferenceTest extends org.scalatest.junit.JUnit3Suite {
 
         useFunctor(WeakIdentity.asMonad)
         useFunctor(WeakIdentity.asFunctor)
-        useFunctor(Monad[WeakIdentity.apply])
+        useFunctor(Monad[WeakIdentity.type])
         useFunctor[WeakIdentity.apply]
 
         val constFunctor = Const.asFunctor[Int]
         useFunctor(constFunctor.asFunctor)
-        useFunctor(Functor[constFunctor.apply])
+//        useFunctor(Functor[constFunctor.apply])
         useFunctor[constFunctor.apply]
     }
+
 }

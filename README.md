@@ -12,7 +12,7 @@
         type GameState = (Boolean, Int)
 
         // Pull the Monad explicitly.
-        val i = State.monad[GameState]
+        val i = MonadState[GameState, State.apply[GameState]]
         import i._
 
         def playGame(xs: String_): State[GameState, GameValue] = xs match {

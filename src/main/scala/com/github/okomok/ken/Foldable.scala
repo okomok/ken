@@ -177,5 +177,5 @@ trait FoldableProxy[t[+_]] extends Foldable[t] with Proxy {
 
 
 object Foldable {
-    def apply[t[+_]](implicit i: Foldable[t]): Foldable[t] = i
+    def apply[t <: Metafunction1](implicit i: Foldable[t#apply]): Foldable[t#apply] = i
 }

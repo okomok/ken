@@ -75,19 +75,4 @@ class MaybeTest extends org.scalatest.junit.JUnit3Suite {
             askPassword.unIO()
         }
     }
-
-    def testImplicit {
-        val m = Function.monad[Int]
-        import m.StateT
-        val mp = m.StateT.asMonadReader[Int, Int]
-        ()
-    }
-
-    def testImplicit2 {
-        val m = Function.monad[Int]
-        val m_ = implicitly[Monad[m.apply]]
-        import m.StateT
-        val sm = implicitly[Monad[({type m[+a] = StateT[Int, a]})#m]]
-        ()
-    }
 }

@@ -13,7 +13,9 @@ final class _ListTs[n[+_]](val inner: Monad[n]) {
 
     sealed abstract class _ListT[+a] extends Strong[n[List[a]]]
 
-    object _ListT extends Instance {
+    object _ListT extends Metafunction1 with Instance {
+        override type apply[+a] = _ListT[a]
+
         def apply[a](rep: n[List[a]]): _ListT[a] = new _ListT[a] {
             override def get: n[List[a]] = rep
         }

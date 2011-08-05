@@ -45,7 +45,7 @@ trait FunctorProxy[f[+_]] extends Functor[f] with Proxy {
 
 
 object Functor extends FunctorInstance {
-    def apply[f[+_]](implicit i: Functor[f]): Functor[f] = i
+    def apply[f <: Metafunction1](implicit i: Functor[f#apply]): Functor[f#apply] = i
 }
 
 

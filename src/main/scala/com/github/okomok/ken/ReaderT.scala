@@ -14,6 +14,10 @@ final class _ReaderTs[n[+_]](val inner: Monad[n]) {
     sealed abstract class _ReaderT[r, +a] extends Strong[r => n[a]]
 
     object _ReaderT extends Instance {
+        type apply[r] = Metafunction1 {
+            type apply[+a] = _ReaderT[r, a]
+        }
+
         def apply[r, a](rep: r => n[a]): _ReaderT[r, a] = new _ReaderT[r, a] {
             override def get: r => n[a] = rep
         }

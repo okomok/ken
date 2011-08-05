@@ -25,5 +25,5 @@ trait MonadIOProxy[m[+_]] extends MonadIO[m] with MonadProxy[m] {
 
 
 object MonadIO {
-    def apply[m[+_]](implicit i: MonadIO[m]) = i
+    def apply[m <: Metafunction1](implicit i: MonadIO[m#apply]): MonadIO[m#apply] = i
 }

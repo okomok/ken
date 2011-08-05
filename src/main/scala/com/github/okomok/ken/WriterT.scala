@@ -14,6 +14,10 @@ final class _WriterTs[n[+_]](val inner: Monad[n]) {
     sealed abstract class _WriterT[w, +a] extends Strong[n[(a, w)]]
 
     object _WriterT extends Instance {
+        type apply[w] = Metafunction1 {
+            type apply[+a] = _WriterT[w, a]
+        }
+
         def apply[w, a](rep: n[(a, w)]): _WriterT[w, a] = new _WriterT[w, a] {
             override def get: n[(a, w)] = rep
         }

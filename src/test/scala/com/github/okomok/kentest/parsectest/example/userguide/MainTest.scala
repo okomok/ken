@@ -18,7 +18,8 @@ class MainTezt {
     // 2.1
 
     val simple: Parser[Char] = letter
-    import Parser.monad._
+    val pm = MonadPlus[Parser.type]
+    import pm._
     val char_ = char[Unit]_
 
     def run[a](p: Parser[a])(input: String_): IO[Unit] = {

@@ -64,7 +64,7 @@ trait ApplicativeProxy[f[+_]] extends Applicative[f] with FunctorProxy[f] {
 
 
 object Applicative extends ApplicativeInstance {
-    def apply[f[+_]](implicit i: Applicative[f]): Applicative[f] = i
+    def apply[f <: Metafunction1](implicit i: Applicative[f#apply]): Applicative[f#apply] = i
 }
 
 

@@ -25,5 +25,5 @@ trait MonadContProxy[m[+_]] extends MonadCont[m] with MonadProxy[m] {
 
 
 object MonadCont {
-    def apply[m[+_]](implicit i: MonadCont[m]) = i
+    def apply[m <: Metafunction1](implicit i: MonadCont[m#apply]): MonadCont[m#apply] = i
 }
