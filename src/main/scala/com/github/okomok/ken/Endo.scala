@@ -12,9 +12,9 @@ final case class Endo[a](override val get: a => a) extends Strong[a => a]
 
 
 object Endo {
-    type apply[a] = Kind.Strong0 {
-        type apply = Endo[a]
-        type weak = Function1[a, a]
+    sealed trait apply[a] extends Kind.Strong0 {
+        override type apply = Endo[a]
+        override type weak = Function1[a, a]
     }
 
     implicit def weak[a]: Weak0[Endo[a], a => a] = new Weak0[Endo[a], a => a] {

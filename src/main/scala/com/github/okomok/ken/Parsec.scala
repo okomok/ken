@@ -157,8 +157,8 @@ object Parsec {
     def stateUser[tok, st](state: State[tok,st]): st = state.user
 
     object GenParser {
-        type apply[tok, st] = Kind.Function1 {
-            type apply[+a] = GenParser[tok, st, a]
+        sealed trait apply[tok, st] extends Kind.Function1 {
+            override type apply[+a] = GenParser[tok, st, a]
         }
 
         implicit def monad[tok, st]: MonadPlus[({type m[+x] = GenParser[tok, st, x]})#m] = new MonadPlus[({type m[+x] = GenParser[tok, st, x]})#m] {

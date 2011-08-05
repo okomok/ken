@@ -9,8 +9,8 @@ package ken
 
 
 object Function {
-    type apply[z] = Kind.Function1 {
-        type apply[+a] = Function1[z, a]
+    sealed trait apply[z] extends Kind.Function1 {
+        override type apply[+a] = Function1[z, a]
     }
 
     def fix[a](f: (=> a) => a): a = {

@@ -14,10 +14,10 @@ final class _ReaderTs[n[+_]](val inner: Monad[n]) {
     sealed abstract class _ReaderT[r, +a] extends Strong[r => n[a]]
 
     object _ReaderT extends Instance {
-        type apply[r] = Kind.MonadTrans {
-            type apply[+a] = _ReaderT[r, a]
-            type inner[+a] = n[a]
-            type weak[+a] = Function1[r, n[a]]
+        sealed trait apply[r] extends Kind.MonadTrans {
+            override type apply[+a] = _ReaderT[r, a]
+            override type inner[+a] = n[a]
+            override type weak[+a] = Function1[r, n[a]]
         }
 
         def apply[r, a](rep: r => n[a]): _ReaderT[r, a] = new _ReaderT[r, a] {
