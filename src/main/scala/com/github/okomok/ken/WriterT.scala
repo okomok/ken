@@ -28,7 +28,7 @@ final class _WriterTs[n[+_]](val inner: Monad[n]) {
 
         def exec[w, a](n: _WriterT[w, a]): n[w] = for { (_, w) <- run(n) } yield w
 
-        def map[w, w_, m[+_], a, b](f: n[(a, w)] => m[(b, w_)])(n: _WriterT[w, a]): m[(b, w_)] = f(run(n))
+        def map[w, w_, m[+_], a, b](f: n[(a, w)] => m[(b, w_)])(n: _WriterT[w, a]): Strong[m[(b, w_)]] = Strong { f(run(n)) }
     }
 
     private[ken] trait Instance0 { outer: _WriterT.type =>
