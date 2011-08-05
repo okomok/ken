@@ -20,11 +20,11 @@ final class _ListTs[n[+_]](val inner: Monad[n]) {
             override def get: n[List[a]] = rep
         }
 
-        implicit def from[a](n: Identity[n[List[a]]]): _ListT[a] = _ListT { n.run }
+        implicit def from[a](n: Strong[n[List[a]]]): _ListT[a] = _ListT { n.run }
 
         def run[a](n: _ListT[a]): n[List[a]] = n.run
 
-        def map[m[+_], a, b](f: n[List[a]] => m[List[b]])(n: _ListT[a]): Identity[m[List[b]]] = Identity { f(run(n)) }
+        def map[m[+_], a, b](f: n[List[a]] => m[List[b]])(n: _ListT[a]): Strong[m[List[b]]] = Strong { f(run(n)) }
     }
 
     private[ken] trait Instance0 { outer: _ListT.type =>

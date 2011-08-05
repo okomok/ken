@@ -20,11 +20,11 @@ final class _LazyTs[n[+_]](val inner: Monad[n]) {
             override def get: n[Lazy[a]] = rep
         }
 
-        implicit def from[a](n: Identity[n[Lazy[a]]]): _LazyT[a] = _LazyT { n.run }
+        implicit def from[a](n: Strong[n[Lazy[a]]]): _LazyT[a] = _LazyT { n.run }
 
         def run[a](n: _LazyT[a]): n[Lazy[a]] = n.run
 
-        def map[m[+_], a, b](f: n[Lazy[a]] => m[Lazy[b]])(n: _LazyT[a]): Identity[m[Lazy[b]]] = Identity { f(run(n)) }
+        def map[m[+_], a, b](f: n[Lazy[a]] => m[Lazy[b]])(n: _LazyT[a]): Strong[m[Lazy[b]]] = Strong { f(run(n)) }
     }
 
     private[ken] trait Instance0 { outer: _LazyT.type =>

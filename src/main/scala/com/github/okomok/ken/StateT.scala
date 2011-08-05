@@ -22,7 +22,7 @@ final class _StateTs[n[+_]](val inner: Monad[n]) {
             override def get: s => n[(a, s)] = rep
         }
 
-        implicit def from[s, a](n: Identity[s => n[(a, s)]]): _StateT[s, a] = _StateT { n.run }
+        implicit def from[s, a](n: Strong[s => n[(a, s)]]): _StateT[s, a] = _StateT { n.run }
 
         def run[s, a](n: _StateT[s, a]): s => n[(a, s)] = n.run
 
@@ -30,7 +30,7 @@ final class _StateTs[n[+_]](val inner: Monad[n]) {
 
         def exec[s, a](n: _StateT[s, a]): s => n[s] = s => for { (_, s) <- run(n)(s) } yield s
 
-        def map[s, m[+_], a, b](f: n[(a, s)] => m[(b, s)])(n: _StateT[s, a]): Identity[s => m[(b, s)]] = Identity { f compose run(n) }
+        def map[s, m[+_], a, b](f: n[(a, s)] => m[(b, s)])(n: _StateT[s, a]): Strong[s => m[(b, s)]] = Strong { f compose run(n) }
 
         def `with`[s, a](f: s => s)(n: _StateT[s, a]): _StateT[s, a] = _StateT { run(n) compose f }
     }

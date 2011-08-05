@@ -22,3 +22,10 @@ trait StrongProxy[+a] extends Strong[a] with Proxy {
     override def self: Strong[a]
     override def get: a = self.run
 }
+
+
+object Strong {
+    def apply[a](a: a): Strong[a] = new Strong[a] {
+        override def get: a = a
+    }
+}

@@ -21,11 +21,11 @@ final class _MaybeTs[n[+_]](val inner: Monad[n]) {
             override def get: n[Maybe[a]] = rep
         }
 
-        implicit def from[a](n: Identity[n[Maybe[a]]]): _MaybeT[a] = _MaybeT { n.run }
+        implicit def from[a](n: Strong[n[Maybe[a]]]): _MaybeT[a] = _MaybeT { n.run }
 
         def run[a](n: _MaybeT[a]): n[Maybe[a]] = n.run
 
-        def map[m[+_], a, b](f: n[Maybe[a]] => m[Maybe[b]])(n: _MaybeT[a]): Identity[m[Maybe[b]]] = Identity { f(run(n)) }
+        def map[m[+_], a, b](f: n[Maybe[a]] => m[Maybe[b]])(n: _MaybeT[a]): Strong[m[Maybe[b]]] = Strong { f(run(n)) }
     }
 
     private[ken] trait Instance0 { outer: _MaybeT.type =>

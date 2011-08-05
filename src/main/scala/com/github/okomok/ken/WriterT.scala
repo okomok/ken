@@ -22,7 +22,7 @@ final class _WriterTs[n[+_]](val inner: Monad[n]) {
             override def get: n[(a, w)] = rep
         }
 
-        implicit def from[w, a](n: Identity[n[(a, w)]]): _WriterT[w, a] = _WriterT(n.run)
+        implicit def from[w, a](n: Strong[n[(a, w)]]): _WriterT[w, a] = _WriterT(n.run)
 
         def run[w, a](n: _WriterT[w, a]): n[(a, w)] = n.run
 

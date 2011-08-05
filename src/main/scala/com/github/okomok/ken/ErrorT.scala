@@ -22,11 +22,11 @@ final class _ErrorTs[n[+_]](val inner: Monad[n]) {
             override def get: n[Either[e, a]] = rep
         }
 
-        implicit def from[e, a](n: Identity[n[Either[e, a]]]): _ErrorT[e, a] = _ErrorT { n.run }
+        implicit def from[e, a](n: Strong[n[Either[e, a]]]): _ErrorT[e, a] = _ErrorT { n.run }
 
         def run[e, a](n: _ErrorT[e, a]): n[Either[e, a]] = n.run
 
-        def map[e, e_, m[+_], a, b](f: n[Either[e, a]] => m[Either[e_, b]])(n: _ErrorT[e, a]): Identity[m[Either[e_, b]]] = Identity { f(run(n)) }
+        def map[e, e_, m[+_], a, b](f: n[Either[e, a]] => m[Either[e_, b]])(n: _ErrorT[e, a]): Strong[m[Either[e_, b]]] = Strong { f(run(n)) }
     }
 
     private[ken] trait Instance0 { outer: _ErrorT.type =>
