@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-trait ErrorClass[+a] extends TypeClass0[a] {
+trait ErrorClass[a] extends TypeClass0[a] {
     final val asErrorClass: ErrorClass[apply] = this
 
     // Core
@@ -18,7 +18,7 @@ trait ErrorClass[+a] extends TypeClass0[a] {
 }
 
 
-trait ErrorClassProxy[+a] extends ErrorClass[a] with Proxy {
+trait ErrorClassProxy[a] extends ErrorClass[a] with Proxy {
     override def self: ErrorClass[a]
 
     override def noMsg: a = self.noMsg
