@@ -54,5 +54,5 @@ trait AlternativeProxy[f[+_]] extends Alternative[f] with ApplicativeProxy[f] {
 
 
 object Alternative {
-    def apply[f <: Metafunction1](implicit i: Alternative[f#apply]): Alternative[f#apply] = i
+    def apply[f <: Kind.Function1](implicit i: Alternative[f#apply]): Alternative[f#apply] = i
 }

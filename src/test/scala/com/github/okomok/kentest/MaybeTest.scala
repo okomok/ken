@@ -29,7 +29,7 @@ object StackTraceString {
 
 
 class MaybeTest extends org.scalatest.junit.JUnit3Suite {
-    def testStrongMonadT {
+    def testStrongMonadTObsolete {
         import IO.MaybeT // MaybeT[a] <:< Identity[IO[Maybe[a]]]
         import MaybeT.monad._
 
@@ -86,7 +86,7 @@ class MaybeTest extends org.scalatest.junit.JUnit3Suite {
         val m = MonadPlus[MaybeT.type]
         import m._
 
-        val mt = MonadTrans[IO.type, MaybeT.type]
+        val mt = MonadTrans[MaybeT.type]
         import mt.lift
 
         var valid = false

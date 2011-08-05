@@ -9,7 +9,7 @@ package ken
 
 
 object Function {
-    type apply[z] = Metafunction1 {
+    type apply[z] = Kind.Function1 {
         type apply[+a] = Function1[z, a]
     }
 

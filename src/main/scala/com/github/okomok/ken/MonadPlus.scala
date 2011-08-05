@@ -51,5 +51,5 @@ trait MonadPlusProxy[m[+_]] extends MonadPlus[m] with MonadProxy[m] with Alterna
 
 
 object MonadPlus {
-    def apply[m <: Metafunction1](implicit i: MonadPlus[m#apply]): MonadPlus[m#apply] = i
+    def apply[m <: Kind.Function1](implicit i: MonadPlus[m#apply]): MonadPlus[m#apply] = i
 }

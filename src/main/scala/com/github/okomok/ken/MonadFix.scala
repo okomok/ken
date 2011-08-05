@@ -25,5 +25,5 @@ trait MonadFixProxy[m[+_]] extends MonadFix[m] with MonadProxy[m] {
 
 
 object MonadFix {
-    def apply[m <: Metafunction1](implicit i: MonadFix[m#apply]): MonadFix[m#apply] = i
+    def apply[m <: Kind.Function1](implicit i: MonadFix[m#apply]): MonadFix[m#apply] = i
 }

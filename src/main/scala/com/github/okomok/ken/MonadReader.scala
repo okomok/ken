@@ -33,7 +33,7 @@ trait MonadReaderProxy[r, m[+_]] extends MonadReader[r, m] with MonadProxy[m] {
 
 
 object MonadReader extends MonadReaderInstance {
-    def apply[r, m <: Metafunction1](implicit i: MonadReader[r, m#apply]): MonadReader[r, m#apply] = i
+    def apply[r, m <: Kind.Function1](implicit i: MonadReader[r, m#apply]): MonadReader[r, m#apply] = i
 }
 
 

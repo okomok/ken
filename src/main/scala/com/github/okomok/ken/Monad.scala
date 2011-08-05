@@ -130,7 +130,7 @@ trait Monad[m[+_]] extends Applicative[m] {
     }
 
     object Trans {
-        def apply[n <: Metafunction1](implicit i: Trans[n#apply]): Trans[n#apply] = i
+        def apply[n <: Kind.Function1](implicit i: Trans[n#apply]): Trans[n#apply] = i
 
         implicit val trivial: Trans[m] = new Trans[m] {
             override def lift[a](m: m[a]): m[a] = m
@@ -205,7 +205,7 @@ trait MonadProxy[m[+_]] extends Monad[m] with ApplicativeProxy[m] {
 
 
 object Monad {
-    def apply[m <: Metafunction1](implicit i: Monad[m#apply]): Monad[m#apply] = i
+    def apply[m <: Kind.Function1](implicit i: Monad[m#apply]): Monad[m#apply] = i
 
     implicit val ofWeakIdentity: Monad[({type m[+a] = a})#m] = WeakIdentity
     implicit def ofFunction[r]: Monad[({type m[+a] = r => a})#m] = Function.monad[r]

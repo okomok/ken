@@ -21,7 +21,7 @@ final class World {
 
     type ST[+a] = State[Tag, a]
 
-    object ST extends Metafunction1 {
+    object ST extends Kind.Function1 {
         override type apply[+a] = ST[a]
 
         def apply[a](r: => a): ST[a] = State { s => (r, s) }

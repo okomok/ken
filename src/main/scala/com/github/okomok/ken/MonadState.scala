@@ -35,5 +35,5 @@ trait MonadStateProxy[s, m[+_]] extends MonadState[s, m] with MonadProxy[m] {
 
 
 object MonadState {
-    def apply[s, m <: Metafunction1](implicit i: MonadState[s, m#apply]): MonadState[s, m#apply] = i
+    def apply[s, m <: Kind.Function1](implicit i: MonadState[s, m#apply]): MonadState[s, m#apply] = i
 }

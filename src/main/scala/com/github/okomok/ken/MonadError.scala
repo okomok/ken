@@ -29,5 +29,5 @@ trait MonadErrorProxy[e, m[+_]] extends MonadError[e, m] with MonadProxy[m] {
 
 
 object MonadError {
-    def apply[e, m <: Metafunction1](implicit i: MonadError[e, m#apply]): MonadError[e, m#apply] = i
+    def apply[e, m <: Kind.Function1](implicit i: MonadError[e, m#apply]): MonadError[e, m#apply] = i
 }

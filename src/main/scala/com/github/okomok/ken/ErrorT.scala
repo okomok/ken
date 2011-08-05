@@ -14,8 +14,9 @@ final class _ErrorTs[n[+_]](val inner: Monad[n]) {
     sealed abstract class _ErrorT[e, +a] extends Strong[n[Either[e, a]]]
 
     object _ErrorT extends Instance {
-        type apply[e] = Metafunction1 {
+        type apply[e] = Kind.MonadTrans {
             type apply[+a] = _ErrorT[e, a]
+            type inner[+a] = n[a]
         }
 
         def apply[e, a](rep: n[Either[e, a]]): _ErrorT[e, a] = new _ErrorT[e, a] {

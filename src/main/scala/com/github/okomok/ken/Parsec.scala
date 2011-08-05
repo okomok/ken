@@ -120,7 +120,7 @@ object Parsec {
         final def <#>(msg: String): GenParser[tok, st, a] = label(this)(msg)
     }
 
-    object Parser extends Metafunction1 {
+    object Parser extends Kind.Function1 {
         override type apply[+a] = Parser[a]
 
         def apply[tok, st, a](p: State[tok, st] => ConsumedT[Reply[tok, st, a]]) = new GenParser[tok, st, a] {
@@ -157,7 +157,7 @@ object Parsec {
     def stateUser[tok, st](state: State[tok,st]): st = state.user
 
     object GenParser {
-        type apply[tok, st] = Metafunction1 {
+        type apply[tok, st] = Kind.Function1 {
             type apply[+a] = GenParser[tok, st, a]
         }
 

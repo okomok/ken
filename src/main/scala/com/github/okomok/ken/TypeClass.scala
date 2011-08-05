@@ -8,11 +8,11 @@ package com.github.okomok
 package ken
 
 
-trait TypeClass0[+a] { // extends Metafunction0 {
+trait TypeClass0[+a] { // extends Kind.Function0 {
     type apply = a
 }
 
-trait TypeClass1[f[+_]] extends Metafunction1 {
+trait TypeClass1[f[+_]] extends Kind.Function1 {
     override type apply[+a] = f[a]
 }
 

@@ -14,8 +14,9 @@ final class _MaybeTs[n[+_]](val inner: Monad[n]) {
 
     sealed abstract class _MaybeT[+a] extends Strong[n[Maybe[a]]]
 
-    object _MaybeT extends Metafunction1 with Instance {
+    object _MaybeT extends Kind.MonadTrans with Instance {
         override type apply[+a] = _MaybeT[a]
+        override type inner[+a] = n[a]
 
         def apply[a](rep: n[Maybe[a]]): _MaybeT[a] = new _MaybeT[a] {
             override def get: n[Maybe[a]] = rep
