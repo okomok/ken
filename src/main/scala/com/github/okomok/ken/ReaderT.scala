@@ -17,7 +17,7 @@ final class _ReaderTs[n[+_]](val inner: Monad[n]) {
         sealed trait apply[r] extends Kind.MonadTrans {
             override type apply[+a] = _ReaderT[r, a]
             override type inner[+a] = n[a]
-            override type weak[+a] = Function1[r, n[a]]
+            override type weak[+a] = r => n[a]
         }
 
         def apply[r, a](rep: r => n[a]): _ReaderT[r, a] = new _ReaderT[r, a] {
@@ -34,11 +34,11 @@ final class _ReaderTs[n[+_]](val inner: Monad[n]) {
     }
 
     private[ken] trait Instance0 { outer: _ReaderT.type =>
-        implicit def weak[r]: Weak1[({type p[+a] = _ReaderT[r, a]})#p, ({type d[+a] = Function1[r, n[a]]})#d] =
-            new Weak1[({type p[+a] = _ReaderT[r, a]})#p, ({type d[+a] = Function1[r, n[a]]})#d]
+        implicit def weak[r]: Weak1[({type p[+a] = _ReaderT[r, a]})#p, ({type d[+a] = r => n[a]})#d] =
+            new Weak1[({type p[+a] = _ReaderT[r, a]})#p, ({type d[+a] = r => n[a]})#d]
         {
             private[this] type p[+a] = _ReaderT[r, a]
-            private[this] type d[+a] = Function1[r, n[a]]
+            private[this] type d[+a] = r => n[a]
             override def wrap[a](d: => d[a]): p[a] = _ReaderT(d)
             override def unwrap[a](p: p[a]): d[a] = run(p)
         }

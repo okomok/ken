@@ -53,7 +53,7 @@ trait ShowProxy[a] extends Show[a] with Proxy {
 object Show extends ShowInstance {
     def apply[a](implicit i: Show[a]): Show[a] = i
 
-    type ShowS = Function1[String_, String_]
+    type ShowS = String_ => String_
 
     val showChar: Char => ShowS = List.op_!::
 

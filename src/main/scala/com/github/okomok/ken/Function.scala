@@ -10,7 +10,7 @@ package ken
 
 object Function {
     sealed trait apply[z] extends Kind.Function1 {
-        override type apply[+a] = Function1[z, a]
+        override type apply[+a] = z => a
     }
 
     def fix[a](f: (=> a) => a): a = {
