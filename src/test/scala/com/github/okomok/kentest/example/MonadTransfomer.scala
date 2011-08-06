@@ -25,8 +25,6 @@ class MonadTransformerTezt { // extends org.scalatest.junit.JUnit3Suite {
 
         def isValid(s: String_): Boolean = Eq[String_].op_==(s)("valid")
 
-        isValid("hello")
-
         def getValidPassword: MaybeT[String_] = {
             for {
                 s <- lift(IO.getLine)
