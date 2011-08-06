@@ -11,6 +11,7 @@
     def testStrongMonadT {
         import IO.MaybeT
 
+        // Pull the monad explicitly
         val m = MonadPlus[MaybeT.type]
         import m._
 
@@ -35,7 +36,7 @@
         askPassword.run.unIO()
     }
 
-    // Weakly-typed monad; No wrappers, No lifts.
+    // Weakly-typed monad; No wrappers, no lifts.
     def testWeakMonadT {
         import IO.MaybeT
 
