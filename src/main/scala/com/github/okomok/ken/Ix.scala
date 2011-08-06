@@ -58,8 +58,9 @@ object Ix extends IxInstance {
 
 
 trait IxInstance { outer: Ix.type =>
-    implicit val ofInt: Ix[Int] = new Ix[Int] {
+    implicit val ofInt: Ix[Int] = new Ix[Int] with OrdProxy[Int] {
         private[this] type a = Int
+        override val self = Ord.ofOrdering[Int]
         override val range: Tuple2[a, a] => List[a] = { case (m, n) => List.range(m, n) }
         override val unsafeIndex: Tuple2[a, a] => a => Int = { case (m, _) => i => i - m }
         override val index: Tuple2[a, a] => a => Int = b => i => {
@@ -68,8 +69,9 @@ trait IxInstance { outer: Ix.type =>
         override val inRange: Tuple2[a, a] => a => Bool = { case (m, n) => i => m <= i && i <= n }
     }
 
-    implicit val ofInteger: Ix[Integer] = new Ix[Integer] {
+    implicit val ofInteger: Ix[Integer] = new Ix[Integer] with OrdProxy[Integer] {
         private[this] type a = Integer
+        override val self = Ord.ofOrdering[Integer]
         override val range: Tuple2[a, a] => List[a] = { case (m, n) => List.range(m, n) }
         override val unsafeIndex: Tuple2[a, a] => a => Int = { case (m, _) => i => Num[Int].fromInteger(i - m) }
         override val index: Tuple2[a, a] => a => Int = b => i => {

@@ -111,7 +111,8 @@ object List extends Foldable[List] with MonadPlus[List] with ThisIsInstance {
         override val mappend: m => (=> m) => m = op_:::[a]
     }
 
-    implicit def asOrd[a](implicit i: Ord[a]): Ord[List[a]] = new Ord[List[a]] {
+    implicit def asOrd[a](implicit i: Ord[a]): Ord[List[a]] = new Ord[List[a]] with EqProxy[List[a]] {
+        override val self = Eq.ofEquiv[List[a]]
         override val compare: List[a] => List[a] => Ordering = {
             @tailrec
             def impl(x: List[a])(y: List[a]): Ordering = (x, y) match {
