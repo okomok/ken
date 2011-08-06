@@ -11,7 +11,7 @@
     def testStrongMonadT {
         import IO.MaybeT
 
-        // Pull the monad explicitly
+        // Pull the monad explicitly.
         val m = MonadPlus[MaybeT.type]
         import m._
 
@@ -28,15 +28,15 @@
         }
 
         def askPassword: MaybeT[Unit] = for {
-            _ <- lift(IO.putStrLn("Insert your new password"))
+            _ <- lift { IO.putStrLn("Insert your new password") }
             value <- msum { List.repeat(getValidPassword) }
-            _ <- lift(IO.putStrLn("Storing in database..."))
+            _ <- lift { IO.putStrLn("Storing in database...") }
         } yield ()
 
         askPassword.run.unIO()
     }
 
-    // Weakly-typed monad; No wrappers, no lifts.
+    // Weakly-typed monad; Power of Scala
     def testWeakMonadT {
         import IO.MaybeT
 
@@ -45,6 +45,7 @@
 
         def isValid(s: String_): Boolean = Eq[String_].op_==(s)("valid")
 
+        // No wrappers, no lifts.
         def getValidPassword: IO[Maybe[String_]] = for {
             s <- IO.getLine
             _ <- guard(isValid(s))
@@ -56,6 +57,7 @@
             _ <- IO.putStrLn("Storing in database...")
         } yield Just()
 
+        // No runs
         askPassword.unIO()
     }
 
