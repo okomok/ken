@@ -49,7 +49,7 @@ object Functor extends FunctorInstance {
 }
 
 
-trait FunctorInstance { outer: Functor.type =>
+trait FunctorInstance { this: Functor.type =>
     implicit val _ofWeakIdentity: Functor[({type m[+a] = a})#m] = WeakIdentity
     implicit def _ofFunction[z]: Functor[({type m[+a] = z => a})#m] = Function._monad[z]
 }

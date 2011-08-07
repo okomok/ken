@@ -42,6 +42,6 @@ class ImplyTest extends org.scalatest.junit.JUnit3Suite {
 
     def testCreateInstance {
         val wi = Weak1[Identity.type]
-        //val ei = Weak0[Endo.apply[Int]]
+        val ei = Weak0[Endo[Int]]
     }
 }

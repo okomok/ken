@@ -57,7 +57,7 @@ object Ix extends IxInstance {
 }
 
 
-trait IxInstance { outer: Ix.type =>
+trait IxInstance { this: Ix.type =>
     implicit val _ofInt: Ix[Int] = new Ix[Int] with OrdProxy[Int] {
         private[this] type a = Int
         override val self = Ord._ofOrdering[Int]

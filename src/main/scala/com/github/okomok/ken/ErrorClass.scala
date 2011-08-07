@@ -31,7 +31,7 @@ object ErrorClass extends ErrorClassInstance {
 }
 
 
-trait ErrorClassInstance { outer: ErrorClass.type =>
+trait ErrorClassInstance { this: ErrorClass.type =>
     implicit val _ofString: ErrorClass[String_] = new ErrorClass[String_] {
         override def noMsg = ""
         override val strMsg = id[String_]_
