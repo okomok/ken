@@ -38,5 +38,5 @@ object MonadReader extends MonadReaderInstance {
 
 
 trait MonadReaderInstance {
-    implicit def _ofFunction1[r]: MonadReader[r, ({type m[+a] = r => a})#m] = Function._monad[r]
+    implicit def _ofFunction1[z]: MonadReader[z, ({type m[+a] = z => a})#m] = Function._monad[z]
 }

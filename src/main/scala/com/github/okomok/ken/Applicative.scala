@@ -70,7 +70,7 @@ object Applicative extends ApplicativeInstance {
 
 trait ApplicativeInstance { outer: Applicative.type =>
     implicit val _ofWeakIdentity: Applicative[({type m[+a] = a})#m] = WeakIdentity
-    implicit def _ofFunction[r]: Applicative[({type m[+a] = r => a})#m] = Function._monad[r]
+    implicit def _ofFunction[z]: Applicative[({type m[+a] = z => a})#m] = Function._monad[z]
 
     implicit def _ofPair[z](implicit ma: Monoid[z]): Applicative[({type f[+a] = (z, a)})#f] = new Applicative[({type f[+a] = (z, a)})#f] {
         private[this] type f[a] = (z, a)

@@ -55,7 +55,7 @@ class MaybeTest extends org.scalatest.junit.JUnit3Suite {
         }
     }
     */
-    def testWeakMonadT2 {
+    def testImplyMonadT2 {
         val wm = IO.MaybeT.weak.asMonadPlus
         import wm._
 

@@ -14,7 +14,7 @@ class InferenceTest extends org.scalatest.junit.JUnit3Suite {
 
     def useFunctor[f[+_]](implicit i: Functor[f]) = ()
 
-    def testWeak {
+    def testImply {
         // useFunctor(WeakIdentity) // fails to infer
 
         useFunctor(WeakIdentity.asMonad)

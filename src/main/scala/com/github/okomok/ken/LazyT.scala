@@ -30,13 +30,13 @@ private[ken] final class _LazyTs[n[+_]](val inner: Monad[n]) {
     }
 
     private[ken] trait Instance0 { this: _LazyT.type =>
-        implicit val weak: Weak1[_LazyT, ({type d[+a] = n[Lazy[a]]})#d] =
-            new Weak1[_LazyT, ({type d[+a] = n[Lazy[a]]})#d]
+        implicit val weak: Imply1[_LazyT, ({type d[+a] = n[Lazy[a]]})#d] =
+            new Imply1[_LazyT, ({type d[+a] = n[Lazy[a]]})#d]
         {
             private[this] type p[+a] = _LazyT[a]
             private[this] type d[+a] = n[Lazy[a]]
-            override def wrap[a](d: => d[a]): p[a] = _LazyT(d)
-            override def unwrap[a](p: p[a]): d[a] = run(p)
+            override def imply[a](p: p[a]): d[a] = run(p)
+            override def unimply[a](d: => d[a]): p[a] = _LazyT(d)
         }
 
         implicit val _monad: Monad[_LazyT] = new Monad[_LazyT] {

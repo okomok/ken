@@ -34,13 +34,13 @@ private[ken] final class _ReaderTs[n[+_]](val inner: Monad[n]) {
     }
 
     private[ken] trait Instance0 { this: _ReaderT.type =>
-        implicit def weak[r]: Weak1[({type p[+a] = _ReaderT[r, a]})#p, ({type d[+a] = r => n[a]})#d] =
-            new Weak1[({type p[+a] = _ReaderT[r, a]})#p, ({type d[+a] = r => n[a]})#d]
+        implicit def weak[r]: Imply1[({type p[+a] = _ReaderT[r, a]})#p, ({type d[+a] = r => n[a]})#d] =
+            new Imply1[({type p[+a] = _ReaderT[r, a]})#p, ({type d[+a] = r => n[a]})#d]
         {
             private[this] type p[+a] = _ReaderT[r, a]
             private[this] type d[+a] = r => n[a]
-            override def wrap[a](d: => d[a]): p[a] = _ReaderT(d)
-            override def unwrap[a](p: p[a]): d[a] = run(p)
+            override def imply[a](p: p[a]): d[a] = run(p)
+            override def unimply[a](d: => d[a]): p[a] = _ReaderT(d)
         }
 
         implicit def _monad[r]: MonadReader[r, ({type m[+a] = _ReaderT[r, a]})#m] = new MonadReader[r, ({type m[+a] = _ReaderT[r, a]})#m] {

@@ -38,13 +38,13 @@ private[ken] final class _StateTs[n[+_]](val inner: Monad[n]) {
     }
 
     private[ken] trait Instance0 { this: _StateT.type =>
-        implicit def weak[s]: Weak1[({type p[+a] = _StateT[s, a]})#p, ({type d[+a] = s => n[(a, s)]})#d] =
-            new Weak1[({type p[+a] = _StateT[s, a]})#p, ({type d[+a] = s => n[(a, s)]})#d]
+        implicit def weak[s]: Imply1[({type p[+a] = _StateT[s, a]})#p, ({type d[+a] = s => n[(a, s)]})#d] =
+            new Imply1[({type p[+a] = _StateT[s, a]})#p, ({type d[+a] = s => n[(a, s)]})#d]
         {
             private[this] type p[+a] = _StateT[s, a]
             private[this] type d[+a] = s => n[(a, s)]
-            override def wrap[a](d: => d[a]): p[a] = _StateT(d)
-            override def unwrap[a](p: p[a]): d[a] = run(p)
+            override def imply[a](p: p[a]): d[a] = run(p)
+            override def unimply[a](d: => d[a]): p[a] = _StateT(d)
         }
 
         implicit def _monad[s]: MonadState[s, ({type m[+a] = _StateT[s, a]})#m] = new MonadState[s, ({type m[+a] = _StateT[s, a]})#m]

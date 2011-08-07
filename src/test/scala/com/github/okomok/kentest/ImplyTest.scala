@@ -10,7 +10,7 @@ package com.github.okomok.kentest
 import com.github.okomok.ken._
 
 
-class WeakTest extends org.scalatest.junit.JUnit3Suite {
+class ImplyTest extends org.scalatest.junit.JUnit3Suite {
 
     def testImplicit {
         val w = Identity.weak

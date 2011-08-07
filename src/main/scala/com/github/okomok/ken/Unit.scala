@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-object Unit extends Monoid[Unit]  with ThisIsInstance {
+object Unit extends Monoid[Unit] with ThisIsInstance {
     // Overrides
     //
     // Monoid

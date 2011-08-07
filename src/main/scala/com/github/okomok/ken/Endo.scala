@@ -17,11 +17,11 @@ object Endo extends Kind.Function1nv {
         override type weak = a => a
     }
 
-    implicit def weak[a]: Weak0[Endo[a], a => a] = new Weak0[Endo[a], a => a] {
+    implicit def weak[a]: Imply0[Endo[a], a => a] = new Imply0[Endo[a], a => a] {
         private[this] type p = Endo[a]
         private[this] type d = a => a
-        override def wrap(d: => d): p = Endo(d)
-        override def unwrap(p: p): d = p.run
+        override def imply(p: p): d = p.run
+        override def unimply(d: => d): p = Endo(d)
 
     }
 

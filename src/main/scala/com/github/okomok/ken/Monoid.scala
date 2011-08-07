@@ -63,11 +63,11 @@ object Monoid extends MonoidInstance {
     final case class All(override val get: Bool) extends Strong[Bool]
 
     object All {
-        implicit val weak: Weak0[All, Bool] = new Weak0[All, Bool] {
+        implicit val weak: Imply0[All, Bool] = new Imply0[All, Bool] {
             private[this] type p = All
             private[this] type d = Bool
-            override def wrap(d: => d): p = All(d)
-            override def unwrap(p: p): d = p.get
+            override def imply(p: p): d = p.get
+            override def unimply(d: => d): p = All(d)
         }
 
         implicit val _asMonoid: Monoid[All] = new Monoid[All] {
@@ -80,11 +80,11 @@ object Monoid extends MonoidInstance {
     final case class Any_(override val get: Bool) extends Strong[Bool]
 
     object Any_ {
-        implicit val weak: Weak0[Any_, Bool] = new Weak0[Any_, Bool] {
+        implicit val weak: Imply0[Any_, Bool] = new Imply0[Any_, Bool] {
             private[this] type p = Any_
             private[this] type d = Bool
-            override def wrap(d: => d): p = Any_(d)
-            override def unwrap(p: p): d = p.get
+            override def imply(p: p): d = p.get
+            override def unimply(d: => d): p = Any_(d)
         }
 
         implicit val _asMonoid: Monoid[Any_] = new Monoid[Any_] {
@@ -97,11 +97,11 @@ object Monoid extends MonoidInstance {
     final case class Sum[a](override val get: a) extends Strong[a]
 
     object Sum {
-        implicit def weak[a]: Weak0[Sum[a], a] = new Weak0[Sum[a], a] {
+        implicit def weak[a]: Imply0[Sum[a], a] = new Imply0[Sum[a], a] {
             private[this] type p = Sum[a]
             private[this] type d = a
-            override def wrap(d: => d): p = Sum(d)
-            override def unwrap(p: p): d = p.get
+            override def imply(p: p): d = p.get
+            override def unimply(d: => d): p = Sum(d)
         }
 
         implicit def _asMonoid[a](implicit i: Num[a]): Monoid[Sum[a]] = new Monoid[Sum[a]] {
@@ -115,11 +115,11 @@ object Monoid extends MonoidInstance {
     final case class Product[a](override val get: a) extends Strong[a]
 
     object Product {
-        implicit def weak[a]: Weak0[Product[a], a] = new Weak0[Product[a], a] {
+        implicit def weak[a]: Imply0[Product[a], a] = new Imply0[Product[a], a] {
             private[this] type p = Product[a]
             private[this] type d = a
-            override def wrap(d: => d): p = Product(d)
-            override def unwrap(p: p): d = p.get
+            override def imply(p: p): d = p.get
+            override def unimply(d: => d): p = Product(d)
         }
 
         implicit def _asMonoid[a](implicit i: Num[a]): Monoid[Product[a]] = new Monoid[Product[a]] {

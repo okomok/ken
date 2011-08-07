@@ -29,23 +29,10 @@ object ZipList extends Kind.Strong1 with Applicative[ZipList] with ThisIsInstanc
 
     // Instances
     //
-    implicit val weak: Weak1[ZipList, List] = new Weak1[ZipList, List] {
+    implicit val weak: Imply1[ZipList, List] = new Imply1[ZipList, List] {
         private[this] type p[+a] = ZipList[a]
         private[this] type d[+a] = List[a]
-        override def wrap[a](d: => d[a]): p[a] = ZipList { d }
-        override def unwrap[a](p: p[a]): d[a] = run(p)
+        override def imply[a](p: p[a]): d[a] = run(p)
+        override def unimply[a](d: => d[a]): p[a] = ZipList { d }
     }
 }
-
-
-/*
-object WeakZipList extends Applicative[List] {
-// Overrides
-    private[this] type f[+a] = List[a]
-    override def pure[a](x: => a): f[a] = List.repeat(x)
-    override def op_<*>[a, b](x: f[a => b])(y: f[a]): f[b] = List.zipWith[a => b, a, b](op_@)(x)(y)
-
-// Instances
-    implicit val _asApplicative: Applicative[List] = this
-}
-*/

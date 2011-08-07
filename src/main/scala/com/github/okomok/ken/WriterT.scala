@@ -34,13 +34,13 @@ private[ken] final class _WriterTs[n[+_]](val inner: Monad[n]) {
     }
 
     private[ken] trait Instance0 { this: _WriterT.type =>
-        implicit def weak[w]: Weak1[({type p[+a] = _WriterT[w, a]})#p, ({type d[+a] = n[(a, w)]})#d] =
-            new Weak1[({type p[+a] = _WriterT[w, a]})#p, ({type d[+a] = n[(a, w)]})#d]
+        implicit def weak[w]: Imply1[({type p[+a] = _WriterT[w, a]})#p, ({type d[+a] = n[(a, w)]})#d] =
+            new Imply1[({type p[+a] = _WriterT[w, a]})#p, ({type d[+a] = n[(a, w)]})#d]
         {
             private[this] type p[+a] = _WriterT[w, a]
             private[this] type d[+a] = n[(a, w)]
-            override def wrap[a](d: => d[a]): p[a] = _WriterT(d)
-            override def unwrap[a](p: p[a]): d[a] = run(p)
+            override def imply[a](p: p[a]): d[a] = run(p)
+            override def unimply[a](d: => d[a]): p[a] = _WriterT(d)
         }
 
         implicit def _monad[w](implicit i: Monoid[w]): MonadWriter[w, ({type m[+a] = _WriterT[w, a]})#m] =

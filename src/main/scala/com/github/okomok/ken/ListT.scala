@@ -30,13 +30,13 @@ private[ken] final class _ListTs[n[+_]](val inner: Monad[n]) {
     }
 
     private[ken] trait Instance0 { this: _ListT.type =>
-        implicit val weak: Weak1[_ListT, ({type d[+a] = n[List[a]]})#d] =
-            new Weak1[_ListT, ({type d[+a] = n[List[a]]})#d]
+        implicit val weak: Imply1[_ListT, ({type d[+a] = n[List[a]]})#d] =
+            new Imply1[_ListT, ({type d[+a] = n[List[a]]})#d]
         {
             private[this] type p[+a] = _ListT[a]
             private[this] type d[+a] = n[List[a]]
-            override def wrap[a](d: => d[a]): p[a] = _ListT(d)
-            override def unwrap[a](p: p[a]): d[a] = run(p)
+            override def imply[a](p: p[a]): d[a] = run(p)
+            override def unimply[a](d: => d[a]): p[a] = _ListT(d)
         }
 
         implicit val _monad: MonadPlus[_ListT] = new MonadPlus[_ListT] {

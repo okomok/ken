@@ -32,13 +32,13 @@ private[ken] final class _ErrorTs[n[+_]](val inner: Monad[n]) {
     }
 
     private[ken] trait Instance0 { this: _ErrorT.type =>
-        implicit def weak[e]: Weak1[({type p[+a] = _ErrorT[e, a]})#p, ({type d[+a] = n[Either[e, a]]})#d] =
-            new Weak1[({type p[+a] = _ErrorT[e, a]})#p, ({type d[+a] = n[Either[e, a]]})#d]
+        implicit def weak[e]: Imply1[({type p[+a] = _ErrorT[e, a]})#p, ({type d[+a] = n[Either[e, a]]})#d] =
+            new Imply1[({type p[+a] = _ErrorT[e, a]})#p, ({type d[+a] = n[Either[e, a]]})#d]
         {
             private[this] type p[+a] = _ErrorT[e, a]
             private[this] type d[+a] = n[Either[e, a]]
-            override def wrap[a](d: => d[a]): p[a] = _ErrorT(d)
-            override def unwrap[a](p: p[a]): d[a] = run(p)
+            override def imply[a](p: p[a]): d[a] = run(p)
+            override def unimply[a](d: => d[a]): p[a] = _ErrorT(d)
         }
 
         implicit def _monad[e](implicit i: ErrorClass[e]): MonadPlus[({type m[+a] = _ErrorT[e, a]})#m] with MonadError[e, ({type m[+a] = _ErrorT[e, a]})#m] =
