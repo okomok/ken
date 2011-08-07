@@ -11,7 +11,7 @@ package ken
 /**
  * Weakly-typed instances
  */
-trait Weak1[p[+_], d[+_]] extends TypeClass1[d] with Weak1Instance[p, d] {
+trait Weak1[p[+_], d[+_]] extends Typeclass1[d] with Weak1Instance[p, d] {
     final val asWeak1: Weak1[p, apply] = this
 
     // Core

@@ -10,7 +10,7 @@ package com.github.okomok.kentest
 import com.github.okomok.ken._
 
 
-class TypeClassTest extends org.scalatest.junit.JUnit3Suite {
+class TypeclassTest extends org.scalatest.junit.JUnit3Suite {
 
     def testImplicitObsolete {
         val m = Function.monad[Int]

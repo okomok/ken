@@ -11,7 +11,7 @@ package ken
 /**
  * Lifts an inner monad.
  */
-trait MonadTrans[n[+_], m[+_]] extends TypeClass {
+trait MonadTrans[n[+_], m[+_]] extends Typeclass {
     def lift[a](n: n[a]): m[a]
 }
 
@@ -22,7 +22,7 @@ object MonadTrans {
 
 
 /*
-trait MonadTrans[t[m[+_], +_]] extends TypeClass {
+trait MonadTrans[t[m[+_], +_]] extends Typeclass {
     def lift[m[+_], a](x: m[a])(implicit i: Monad[m]): t[m, a]
 }
 

@@ -12,6 +12,6 @@ package ken
 
 
 trait Method {
-    def klass: TypeClass
+    def klass: Typeclass
     def callee: Any
 }

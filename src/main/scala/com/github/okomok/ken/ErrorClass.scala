@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-trait ErrorClass[a] extends TypeClass0[a] {
+trait ErrorClass[a] extends Typeclass0[a] {
     final val asErrorClass: ErrorClass[apply] = this
 
     // Core
