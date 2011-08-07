@@ -13,7 +13,7 @@ private[ken] final class _StateTs[n[+_]](val inner: Monad[n]) {
 
     sealed abstract class _StateT[s, +a] extends Strong[s => n[(a, s)]]
 
-    object _StateT extends Instance {
+    object _StateT extends Kind.Function1nv with Instance {
         sealed trait apply[s] extends Kind.MonadTrans {
             override type apply[+a] = _StateT[s, a]
             override type inner[+a] = n[a]
