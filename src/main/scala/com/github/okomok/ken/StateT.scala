@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-final class _StateTs[n[+_]](val inner: Monad[n]) {
+private[ken] final class _StateTs[n[+_]](val inner: Monad[n]) {
     private[this] implicit def innerFor[a](x: n[a]): inner.For[a] = inner.`for`(x)
 
     sealed abstract class _StateT[s, +a] extends Strong[s => n[(a, s)]]
@@ -47,8 +47,7 @@ final class _StateTs[n[+_]](val inner: Monad[n]) {
             override def unwrap[a](p: p[a]): d[a] = run(p)
         }
 
-        implicit def monad[s]: MonadState[s, ({type m[+a] = _StateT[s, a]})#m] with inner.Trans[({type m[+a] = _StateT[s, a]})#m] =
-            new MonadState[s, ({type m[+a] = _StateT[s, a]})#m] with inner.Trans[({type m[+a] = _StateT[s, a]})#m]
+        implicit def monad[s]: MonadState[s, ({type m[+a] = _StateT[s, a]})#m] = new MonadState[s, ({type m[+a] = _StateT[s, a]})#m]
         {
             // Functor
             private[this] type f[+a] = _StateT[s, a]
@@ -64,8 +63,6 @@ final class _StateTs[n[+_]](val inner: Monad[n]) {
             // MonadState
             override def get: m[s] = _StateT { s => inner.`return`(s, s) }
             override def put(s: s): m[Unit] = _StateT { _ => inner.`return`((), s) }
-            // Trans
-            override def lift[a](n: n[a]): m[a] = _StateT { s => for { a <- n } yield (a, s) }
         }
 
         implicit def asMonadTrans[s]: MonadTrans[n, ({type m[+a] = _StateT[s, a]})#m] = new MonadTrans[n, ({type m[+a] = _StateT[s, a]})#m] {
@@ -106,7 +103,7 @@ final class _StateTs[n[+_]](val inner: Monad[n]) {
         {
             private[this] type m[+a] = _StateT[s, a]
             override val self = outer.monad[s]
-            override def liftIO[a](io: IO[a]): m[a] = self.lift(i.liftIO(io))
+            override def liftIO[a](io: IO[a]): m[a] = asMonadTrans.lift(i.liftIO(io))
         }
     }
 
@@ -131,7 +128,7 @@ final class _StateTs[n[+_]](val inner: Monad[n]) {
             private[this] type m[+a] = _StateT[s, a]
             override val self = outer.monad[s]
             override def errorClass: ErrorClass[e] = i.errorClass
-            override def throwError[a](e: e): m[a] = self.lift(i.throwError(e))
+            override def throwError[a](e: e): m[a] = asMonadTrans.lift(i.throwError(e))
             override def catchError[a](m: m[a])(h: e => m[a]): m[a] = _StateT { s =>
                 i.catchError(run(m)(s)) { e => run(h(e))(s) }
             }
@@ -144,7 +141,7 @@ final class _StateTs[n[+_]](val inner: Monad[n]) {
         {
             private[this] type m[+a] = _StateT[s, a]
             override val self = outer.monad[s]
-            override def ask: m[r] = self.lift(i.ask)
+            override def ask: m[r] = asMonadTrans.lift(i.ask)
             override def local[a](f: r => r)(m: m[a]): m[a] = _StateT { s => i.local(f)(run(m)(s)) }
         }
     }
@@ -156,7 +153,7 @@ final class _StateTs[n[+_]](val inner: Monad[n]) {
             private[this] type m[+a] = _StateT[s, a]
             override val self = outer.monad[s]
             override def monoid: Monoid[w] = i.monoid
-            override def tell(x: w): m[Unit] = self.lift(i.tell(x))
+            override def tell(x: w): m[Unit] = asMonadTrans.lift(i.tell(x))
             override def listen[a](m: m[a]): m[(a, w)] = _StateT { s =>
                 for { ((a, s_), w) <- i.listen(run(m)(s)) } yield ((a, w), s_)
             }

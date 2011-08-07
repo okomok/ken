@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-final class _ReaderTs[n[+_]](val inner: Monad[n]) {
+private[ken] final class _ReaderTs[n[+_]](val inner: Monad[n]) {
     private[this] implicit def innerFor[a](x: n[a]): inner.For[a] = inner.`for`(x)
 
     sealed abstract class _ReaderT[r, +a] extends Strong[r => n[a]]
@@ -43,9 +43,7 @@ final class _ReaderTs[n[+_]](val inner: Monad[n]) {
             override def unwrap[a](p: p[a]): d[a] = run(p)
         }
 
-        implicit def monad[r]: MonadReader[r, ({type m[+a] = _ReaderT[r, a]})#m] with inner.Trans[({type m[+a] = _ReaderT[r, a]})#m] =
-            new MonadReader[r, ({type m[+a] = _ReaderT[r, a]})#m] with inner.Trans[({type m[+a] = _ReaderT[r, a]})#m]
-        {
+        implicit def monad[r]: MonadReader[r, ({type m[+a] = _ReaderT[r, a]})#m] = new MonadReader[r, ({type m[+a] = _ReaderT[r, a]})#m] {
             // Functor
             private[this] type f[+a] = _ReaderT[r, a]
             override def fmap[a, b](f: a => b)(m: f[a]): f[b] = _ReaderT { r =>
@@ -60,8 +58,6 @@ final class _ReaderTs[n[+_]](val inner: Monad[n]) {
             // MonadReader
             override def ask: m[r] = _ReaderT { r => inner.`return`(r) }
             override def local[a](f: r => r)(m: m[a]): m[a] = _ReaderT { r => run(m)(f(r)) }
-            // Trans
-            override def lift[a](n: n[a]): m[a] = _ReaderT { _ => n }
         }
 
         implicit def asMonadTrans[r]: MonadTrans[n, ({type m[+a] = _ReaderT[r, a]})#m] = new MonadTrans[n, ({type m[+a] = _ReaderT[r, a]})#m] {
@@ -100,7 +96,7 @@ final class _ReaderTs[n[+_]](val inner: Monad[n]) {
         {
             private[this] type m[+a] = _ReaderT[r, a]
             override val self = outer.monad[r]
-            override def liftIO[a](io: IO[a]): m[a] = self.lift(i.liftIO(io))
+            override def liftIO[a](io: IO[a]): m[a] = asMonadTrans.lift(i.liftIO(io))
         }
     }
 
@@ -125,7 +121,7 @@ final class _ReaderTs[n[+_]](val inner: Monad[n]) {
             private[this] type m[+a] = _ReaderT[r, a]
             override val self = outer.monad[r]
             override def errorClass: ErrorClass[e] = i.errorClass
-            override def throwError[a](e: e): m[a] = self.lift(i.throwError(e))
+            override def throwError[a](e: e): m[a] = asMonadTrans.lift(i.throwError(e))
             override def catchError[a](m: m[a])(h: e => m[a]): m[a] = _ReaderT { r =>
                 i.catchError(run(m)(r)) { e => run(h(e))(r) }
             }
@@ -138,8 +134,8 @@ final class _ReaderTs[n[+_]](val inner: Monad[n]) {
         {
             private[this] type m[+a] = _ReaderT[r, a]
             override val self = outer.monad[r]
-            override def get: m[s] = self.lift(i.get)
-            override def put(s: s): m[Unit] = self.lift(i.put(s))
+            override def get: m[s] = asMonadTrans.lift(i.get)
+            override def put(s: s): m[Unit] = asMonadTrans.lift(i.put(s))
         }
     }
 
@@ -150,7 +146,7 @@ final class _ReaderTs[n[+_]](val inner: Monad[n]) {
             private[this] type m[+a] = _ReaderT[r, a]
             override val self = outer.monad[r]
             override def monoid: Monoid[w] = i.monoid
-            override def tell(x: w): m[Unit] = self.lift(i.tell(x))
+            override def tell(x: w): m[Unit] = asMonadTrans.lift(i.tell(x))
             override def listen[a](m: m[a]): m[(a, w)] = _ReaderT { w => i.listen(run(m)(w)) }
             override def pass[a](m: m[(a, w => w)]): m[a] = _ReaderT { w => i.pass(run(m)(w)) }
         }

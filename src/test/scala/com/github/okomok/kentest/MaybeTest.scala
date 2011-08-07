@@ -29,6 +29,7 @@ object StackTraceString {
 
 
 class MaybeTest extends org.scalatest.junit.JUnit3Suite {
+    /*
     def testStrongMonadTObsolete {
         import IO.MaybeT // MaybeT[a] <:< Identity[IO[Maybe[a]]]
         import MaybeT.monad._
@@ -53,11 +54,7 @@ class MaybeTest extends org.scalatest.junit.JUnit3Suite {
             askPassword.run.unIO()
         }
     }
-/*
-    def testImplicit {
-        val t = IO.MaybeT.inner.Trans[IO.MaybeT.type]
-    }
-*/
+    */
     def testWeakMonadT2 {
         val wm = IO.MaybeT.weak.asMonadPlus
         import wm._

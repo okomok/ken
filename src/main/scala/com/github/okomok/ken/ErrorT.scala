@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-final class _ErrorTs[n[+_]](val inner: Monad[n]) {
+private[ken] final class _ErrorTs[n[+_]](val inner: Monad[n]) {
     private[this] implicit def innerFor[a](x: n[a]): inner.For[a] = inner.`for`(x)
 
     sealed abstract class _ErrorT[e, +a] extends Strong[n[Either[e, a]]]
@@ -41,8 +41,8 @@ final class _ErrorTs[n[+_]](val inner: Monad[n]) {
             override def unwrap[a](p: p[a]): d[a] = run(p)
         }
 
-        implicit def monad[e](implicit i: ErrorClass[e]): MonadPlus[({type m[+a] = _ErrorT[e, a]})#m] with MonadError[e, ({type m[+a] = _ErrorT[e, a]})#m] with inner.Trans[({type m[+a] = _ErrorT[e, a]})#m] =
-            new MonadPlus[({type m[+a] = _ErrorT[e, a]})#m] with MonadError[e, ({type m[+a] = _ErrorT[e, a]})#m] with inner.Trans[({type m[+a] = _ErrorT[e, a]})#m]
+        implicit def monad[e](implicit i: ErrorClass[e]): MonadPlus[({type m[+a] = _ErrorT[e, a]})#m] with MonadError[e, ({type m[+a] = _ErrorT[e, a]})#m] =
+            new MonadPlus[({type m[+a] = _ErrorT[e, a]})#m] with MonadError[e, ({type m[+a] = _ErrorT[e, a]})#m]
         {
             // Functor
             private[this] type f[+a] = _ErrorT[e, a]
@@ -90,10 +90,6 @@ final class _ErrorTs[n[+_]](val inner: Monad[n]) {
                     }
                 } yield *
             }
-            // Trans
-            override def lift[a](n: n[a]): m[a] = _ErrorT {
-                for { a <- n } yield Right(a)
-            }
         }
 
         implicit def asMonadTrans[e]: MonadTrans[n, ({type m[+a] = _ErrorT[e, a]})#m] = new MonadTrans[n, ({type m[+a] = _ErrorT[e, a]})#m] {
@@ -126,7 +122,7 @@ final class _ErrorTs[n[+_]](val inner: Monad[n]) {
         {
             private[this] type m[+a] = _ErrorT[e, a]
             override val self = outer.monad[e]
-            override def liftIO[a](io: IO[a]): m[a] = self.lift(i.liftIO(io))
+            override def liftIO[a](io: IO[a]): m[a] = asMonadTrans.lift(i.liftIO(io))
         }
     }
 
@@ -150,7 +146,7 @@ final class _ErrorTs[n[+_]](val inner: Monad[n]) {
         {
             private[this] type m[+a] = _ErrorT[e, a]
             override val self = outer.monad[e]
-            override def ask: m[r] = self.lift(i.ask)
+            override def ask: m[r] = asMonadTrans.lift(i.ask)
             override def local[a](f: r => r)(m: m[a]): m[a] = _ErrorT { i.local(f)(run(m)) }
         }
     }
@@ -162,7 +158,7 @@ final class _ErrorTs[n[+_]](val inner: Monad[n]) {
             private[this] type m[+a] = _ErrorT[e, a]
             override val self = outer.monad[e]
             override def monoid: Monoid[w] = i.monoid
-            override def tell(x: w): m[Unit] = self.lift(i.tell(x))
+            override def tell(x: w): m[Unit] = asMonadTrans.lift(i.tell(x))
             override def listen[a](m: m[a]): m[(a, w)] = _ErrorT {
                 for {
                     (a, w) <- i.listen(run(m))

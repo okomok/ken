@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-final class _MaybeTs[n[+_]](val inner: Monad[n]) {
+private[ken] final class _MaybeTs[n[+_]](val inner: Monad[n]) {
     private[this] implicit def innerFor[a](x: n[a]): inner.For[a] = inner.`for`(x)
     private[this] implicit def innerInfix_>>=[a](x: n[a]): inner.Infix_>>=[a] = inner.>>=(x)
 
@@ -40,7 +40,7 @@ final class _MaybeTs[n[+_]](val inner: Monad[n]) {
             override def unwrap[a](p: p[a]): d[a] = run(p)
         }
 
-        implicit val monad: MonadPlus[_MaybeT] with inner.Trans[_MaybeT] = new MonadPlus[_MaybeT] with inner.Trans[_MaybeT] {
+        implicit val monad: MonadPlus[_MaybeT] = new MonadPlus[_MaybeT] {
             // Monad
             private[this] type m[+a] = _MaybeT[a]
             override def `return`[a](a: => a): m[a] = _MaybeT { inner.`return`(Just(a).up) }
@@ -59,10 +59,6 @@ final class _MaybeTs[n[+_]](val inner: Monad[n]) {
                     case Just(_) => runx
                 }
             }
-            // Trans
-            override def lift[a](n: n[a]): m[a] = _MaybeT {
-                for { a <- n } yield Just(a)
-            }
         }
 
         implicit val asMonadTrans: MonadTrans[n, _MaybeT] = new MonadTrans[n, _MaybeT] {
@@ -79,7 +75,7 @@ final class _MaybeTs[n[+_]](val inner: Monad[n]) {
         {
             private[this] type m[+a] = _MaybeT[a]
             override def self = outer.monad
-            override def liftIO[a](io: IO[a]): m[a] = self.lift(i.liftIO(io))
+            override def liftIO[a](io: IO[a]): m[a] = asMonadTrans.lift(i.liftIO(io))
         }
     }
 
@@ -104,7 +100,7 @@ final class _MaybeTs[n[+_]](val inner: Monad[n]) {
             private[this] type m[+a] = _MaybeT[a]
             override val self = outer.monad
             override def errorClass: ErrorClass[e] = i.errorClass
-            override def throwError[a](e: e): m[a] = self.lift(i.throwError(e))
+            override def throwError[a](e: e): m[a] = asMonadTrans.lift(i.throwError(e))
             override def catchError[a](m: m[a])(h: e => m[a]): m[a] = _MaybeT {
                 i.catchError(run(m)) { e => run(h(e)) }
             }
@@ -117,7 +113,7 @@ final class _MaybeTs[n[+_]](val inner: Monad[n]) {
         {
             private[this] type m[+a] = _MaybeT[a]
             override val self = outer.monad
-            override def ask: m[r] = self.lift(i.ask)
+            override def ask: m[r] = asMonadTrans.lift(i.ask)
             override def local[a](f: r => r)(m: m[a]): m[a] = _MaybeT { i.local(f)(run(m)) }
         }
     }
@@ -128,8 +124,8 @@ final class _MaybeTs[n[+_]](val inner: Monad[n]) {
         {
             private[this] type m[+a] = _MaybeT[a]
             override val self = outer.monad
-            override def get: m[s] = self.lift(i.get)
-            override def put(s: s): m[Unit] = self.lift(i.put(s))
+            override def get: m[s] = asMonadTrans.lift(i.get)
+            override def put(s: s): m[Unit] = asMonadTrans.lift(i.put(s))
         }
     }
 

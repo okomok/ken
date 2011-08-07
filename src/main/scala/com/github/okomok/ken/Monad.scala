@@ -123,20 +123,6 @@ trait Monad[m[+_]] extends Applicative[m] {
 
     // Transformers
     //
-
-    // Failed. Will be removed.
-    trait Trans[n[+_]] {
-        def lift[a](m: m[a]): n[a]
-    }
-
-    object Trans {
-        def apply[n <: Kind.Function1](implicit i: Trans[n#apply]): Trans[n#apply] = i
-
-        implicit val trivial: Trans[m] = new Trans[m] {
-            override def lift[a](m: m[a]): m[a] = m
-        }
-    }
-
     final lazy val _maybeTs = new _MaybeTs[m](this)
     type MaybeT[+a] = _maybeTs._MaybeT[a]
     lazy val MaybeT = _maybeTs._MaybeT

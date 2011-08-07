@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-final class _WriterTs[n[+_]](val inner: Monad[n]) {
+private[ken] final class _WriterTs[n[+_]](val inner: Monad[n]) {
     private[this] implicit def innerFor[a](x: n[a]): inner.For[a] = inner.`for`(x)
 
     sealed abstract class _WriterT[w, +a] extends Strong[n[(a, w)]]
@@ -43,8 +43,8 @@ final class _WriterTs[n[+_]](val inner: Monad[n]) {
             override def unwrap[a](p: p[a]): d[a] = run(p)
         }
 
-        implicit def monad[w](implicit i: Monoid[w]): MonadWriter[w, ({type m[+a] = _WriterT[w, a]})#m] with inner.Trans[({type m[+a] = _WriterT[w, a]})#m] =
-            new MonadWriter[w, ({type m[+a] = _WriterT[w, a]})#m] with inner.Trans[({type m[+a] = _WriterT[w, a]})#m]
+        implicit def monad[w](implicit i: Monoid[w]): MonadWriter[w, ({type m[+a] = _WriterT[w, a]})#m] =
+            new MonadWriter[w, ({type m[+a] = _WriterT[w, a]})#m]
         {
             // Functor
             private[this] type f[+a] = _WriterT[w, a]
@@ -66,13 +66,11 @@ final class _WriterTs[n[+_]](val inner: Monad[n]) {
             override def pass[a](m: m[(a, w => w)]): m[a] = _WriterT {
                 for { ((a, f), w) <- run(m) } yield (a, f(w))
             }
-            // Trans
-            override def lift[a](n: n[a]): m[a] = _WriterT {
-                for { a <- n } yield (a, i.mempty)
-            }
         }
 
-        implicit def asMonadTrans[w](implicit i: Monoid[w]): MonadTrans[n, ({type m[+a] = _WriterT[w, a]})#m] = new MonadTrans[n, ({type m[+a] = _WriterT[w, a]})#m] {
+        implicit def asMonadTrans[w](implicit i: Monoid[w]): MonadTrans[n, ({type m[+a] = _WriterT[w, a]})#m] =
+            new MonadTrans[n, ({type m[+a] = _WriterT[w, a]})#m]
+        {
             private[this] type m[+a] = _WriterT[w, a]
             override def lift[a](n: n[a]): m[a] = _WriterT {
                 for { a <- n } yield (a, i.mempty)
@@ -110,7 +108,7 @@ final class _WriterTs[n[+_]](val inner: Monad[n]) {
         {
             private[this] type m[+a] = _WriterT[w, a]
             override val self = outer.monad[w]
-            override def liftIO[a](io: IO[a]): m[a] = self.lift(i.liftIO(io))
+            override def liftIO[a](io: IO[a]): m[a] = asMonadTrans.lift(i.liftIO(io))
         }
     }
 
@@ -135,7 +133,7 @@ final class _WriterTs[n[+_]](val inner: Monad[n]) {
             private[this] type m[+a] = _WriterT[w, a]
             override val self = outer.monad[w]
             override def errorClass: ErrorClass[e] = i.errorClass
-            override def throwError[a](e: e): m[a] = self.lift(i.throwError(e))
+            override def throwError[a](e: e): m[a] = asMonadTrans.lift(i.throwError(e))
             override def catchError[a](m: m[a])(h: e => m[a]): m[a] = _WriterT {
                 i.catchError(run(m)) { e =>
                     run(h(e))
@@ -150,7 +148,7 @@ final class _WriterTs[n[+_]](val inner: Monad[n]) {
         {
             private[this] type m[+a] = _WriterT[w, a]
             override val self = outer.monad[w]
-            override def ask: m[r] = self.lift(i.ask)
+            override def ask: m[r] = asMonadTrans.lift(i.ask)
             override def local[a](f: r => r)(m: m[a]): m[a] = _WriterT { i.local(f)(run(m)) }
         }
     }
@@ -161,8 +159,8 @@ final class _WriterTs[n[+_]](val inner: Monad[n]) {
         {
             private[this] type m[+a] = _WriterT[w, a]
             override val self = outer.monad[w]
-            override def get: m[s] = self.lift(i.get)
-            override def put(s: s): m[Unit] = self.lift(i.put(s))
+            override def get: m[s] = asMonadTrans.lift(i.get)
+            override def put(s: s): m[Unit] = asMonadTrans.lift(i.put(s))
         }
     }
 

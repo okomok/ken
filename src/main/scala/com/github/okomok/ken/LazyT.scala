@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-final class _LazyTs[n[+_]](val inner: Monad[n]) {
+private[ken] final class _LazyTs[n[+_]](val inner: Monad[n]) {
     private[this] implicit def innerFor[a](x: n[a]): inner.For[a] = inner.`for`(x)
 
     sealed abstract class _LazyT[+a] extends Strong[n[Lazy[a]]]
@@ -39,7 +39,7 @@ final class _LazyTs[n[+_]](val inner: Monad[n]) {
             override def unwrap[a](p: p[a]): d[a] = run(p)
         }
 
-        implicit val monad: Monad[_LazyT] with inner.Trans[_LazyT] = new Monad[_LazyT] with inner.Trans[_LazyT] {
+        implicit val monad: Monad[_LazyT] = new Monad[_LazyT] {
             // Functor
             private[this] type f[+a] = _LazyT[a]
             override def fmap[a, b](f: a => b)(m: f[a]): f[b] = _LazyT {
@@ -50,10 +50,6 @@ final class _LazyTs[n[+_]](val inner: Monad[n]) {
             override def `return`[a](a: => a): m[a] = _LazyT { inner.`return`(Lazy(a)) }
             override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = _LazyT {
                 for { a <- run(m); * <- run(k(a.!)) } yield *
-            }
-            // Trans
-            override def lift[a](n: n[a]): m[a] = _LazyT {
-                for { a <- n } yield Lazy(a)
             }
         }
 
@@ -71,7 +67,7 @@ final class _LazyTs[n[+_]](val inner: Monad[n]) {
         {
             private[this] type m[+a] = _LazyT[a]
             override def self = outer.monad
-            override def liftIO[a](io: IO[a]): m[a] = self.lift(i.liftIO(io))
+            override def liftIO[a](io: IO[a]): m[a] = asMonadTrans.lift(i.liftIO(io))
         }
     }
 
@@ -96,7 +92,7 @@ final class _LazyTs[n[+_]](val inner: Monad[n]) {
             private[this] type m[+a] = _LazyT[a]
             override val self = outer.monad
             override def errorClass: ErrorClass[e] = i.errorClass
-            override def throwError[a](e: e): m[a] = self.lift(i.throwError(e))
+            override def throwError[a](e: e): m[a] = asMonadTrans.lift(i.throwError(e))
             override def catchError[a](m: m[a])(h: e => m[a]): m[a] = _LazyT {
                 i.catchError(run(m)) { e => run(h(e)) }
             }
@@ -109,7 +105,7 @@ final class _LazyTs[n[+_]](val inner: Monad[n]) {
         {
             private[this] type m[+a] = _LazyT[a]
             override val self = outer.monad
-            override def ask: m[r] = self.lift(i.ask)
+            override def ask: m[r] = asMonadTrans.lift(i.ask)
             override def local[a](f: r => r)(m: m[a]): m[a] = _LazyT { i.local(f)(run(m)) }
         }
     }
@@ -120,8 +116,8 @@ final class _LazyTs[n[+_]](val inner: Monad[n]) {
         {
             private[this] type m[+a] = _LazyT[a]
             override val self = outer.monad
-            override def get: m[s] = self.lift(i.get)
-            override def put(s: s): m[Unit] = self.lift(i.put(s))
+            override def get: m[s] = asMonadTrans.lift(i.get)
+            override def put(s: s): m[Unit] = asMonadTrans.lift(i.put(s))
         }
     }
 
