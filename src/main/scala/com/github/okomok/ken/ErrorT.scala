@@ -41,7 +41,7 @@ private[ken] final class _ErrorTs[n[+_]](val inner: Monad[n]) {
             override def unwrap[a](p: p[a]): d[a] = run(p)
         }
 
-        implicit def monad[e](implicit i: ErrorClass[e]): MonadPlus[({type m[+a] = _ErrorT[e, a]})#m] with MonadError[e, ({type m[+a] = _ErrorT[e, a]})#m] =
+        implicit def _monad[e](implicit i: ErrorClass[e]): MonadPlus[({type m[+a] = _ErrorT[e, a]})#m] with MonadError[e, ({type m[+a] = _ErrorT[e, a]})#m] =
             new MonadPlus[({type m[+a] = _ErrorT[e, a]})#m] with MonadError[e, ({type m[+a] = _ErrorT[e, a]})#m]
         {
             // Functor
@@ -105,7 +105,7 @@ private[ken] final class _ErrorTs[n[+_]](val inner: Monad[n]) {
             new MonadFix[({type m[+a] = _ErrorT[e, a]})#m] with MonadProxy[({type m[+a] = _ErrorT[e, a]})#m]
         {
             private[this] type m[+a] = _ErrorT[e, a]
-            override val self = outer.monad[e]
+            override val self = outer._monad[e]
             override def mfix[a](f: (=> a) => m[a]): m[a] = _ErrorT {
                 def k(a: => Either[e, a]) = run { f { a match {
                     case Right(r) => r
@@ -121,7 +121,7 @@ private[ken] final class _ErrorTs[n[+_]](val inner: Monad[n]) {
             new MonadIO[({type m[+a] = _ErrorT[e, a]})#m] with MonadProxy[({type m[+a] = _ErrorT[e, a]})#m]
         {
             private[this] type m[+a] = _ErrorT[e, a]
-            override val self = outer.monad[e]
+            override val self = outer._monad[e]
             override def liftIO[a](io: IO[a]): m[a] = asMonadTrans.lift(i.liftIO(io))
         }
     }
@@ -131,7 +131,7 @@ private[ken] final class _ErrorTs[n[+_]](val inner: Monad[n]) {
             new MonadCont[({type m[+a] = _ErrorT[e, a]})#m] with MonadProxy[({type m[+a] = _ErrorT[e, a]})#m]
         {
             private[this] type m[+a] = _ErrorT[e, a]
-            override val self = outer.monad[e]
+            override val self = outer._monad[e]
             override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = _ErrorT {
                 i.callCC { (c: Either[e, a] => n[Either[e, b]]) =>
                     run { f(a => _ErrorT { c(Right(a)) }) }
@@ -145,7 +145,7 @@ private[ken] final class _ErrorTs[n[+_]](val inner: Monad[n]) {
             new MonadReader[r, ({type m[+a] = _ErrorT[e, a]})#m] with MonadProxy[({type m[+a] = _ErrorT[e, a]})#m]
         {
             private[this] type m[+a] = _ErrorT[e, a]
-            override val self = outer.monad[e]
+            override val self = outer._monad[e]
             override def ask: m[r] = asMonadTrans.lift(i.ask)
             override def local[a](f: r => r)(m: m[a]): m[a] = _ErrorT { i.local(f)(run(m)) }
         }
@@ -156,7 +156,7 @@ private[ken] final class _ErrorTs[n[+_]](val inner: Monad[n]) {
             new MonadWriter[w, ({type m[+a] = _ErrorT[e, a]})#m] with MonadProxy[({type m[+a] = _ErrorT[e, a]})#m]
         {
             private[this] type m[+a] = _ErrorT[e, a]
-            override val self = outer.monad[e]
+            override val self = outer._monad[e]
             override def monoid: Monoid[w] = i.monoid
             override def tell(x: w): m[Unit] = asMonadTrans.lift(i.tell(x))
             override def listen[a](m: m[a]): m[(a, w)] = _ErrorT {

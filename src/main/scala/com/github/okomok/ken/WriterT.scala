@@ -43,7 +43,7 @@ private[ken] final class _WriterTs[n[+_]](val inner: Monad[n]) {
             override def unwrap[a](p: p[a]): d[a] = run(p)
         }
 
-        implicit def monad[w](implicit i: Monoid[w]): MonadWriter[w, ({type m[+a] = _WriterT[w, a]})#m] =
+        implicit def _monad[w](implicit i: Monoid[w]): MonadWriter[w, ({type m[+a] = _WriterT[w, a]})#m] =
             new MonadWriter[w, ({type m[+a] = _WriterT[w, a]})#m]
         {
             // Functor
@@ -83,7 +83,7 @@ private[ken] final class _WriterTs[n[+_]](val inner: Monad[n]) {
             new MonadPlus[({type m[+a] = _WriterT[w, a]})#m] with MonadProxy[({type m[+a] = _WriterT[w, a]})#m]
         {
             private[this] type m[+a] = _WriterT[w, a]
-            override val self = outer.monad[w]
+            override val self = outer._monad[w]
             override def mzero: m[Nothing] = _WriterT { i.mzero }
             override def mplus[a](m: m[a])(n: => m[a]): m[a] = _WriterT { i.mplus(run(m))(run(n)) }
         }
@@ -94,7 +94,7 @@ private[ken] final class _WriterTs[n[+_]](val inner: Monad[n]) {
             new MonadFix[({type m[+a] = _WriterT[w, a]})#m] with MonadProxy[({type m[+a] = _WriterT[w, a]})#m]
         {
             private[this] type m[+a] = _WriterT[w, a]
-            override val self = outer.monad[w]
+            override val self = outer._monad[w]
             override def mfix[a](m: (=> a) => m[a]): m[a] = _WriterT {
                 def k(aI_ : => (a, w)) = run(m(aI_._1))
                 i.mfix(k)
@@ -107,7 +107,7 @@ private[ken] final class _WriterTs[n[+_]](val inner: Monad[n]) {
             new MonadIO[({type m[+a] = _WriterT[w, a]})#m] with MonadProxy[({type m[+a] = _WriterT[w, a]})#m]
         {
             private[this] type m[+a] = _WriterT[w, a]
-            override val self = outer.monad[w]
+            override val self = outer._monad[w]
             override def liftIO[a](io: IO[a]): m[a] = asMonadTrans.lift(i.liftIO(io))
         }
     }
@@ -117,7 +117,7 @@ private[ken] final class _WriterTs[n[+_]](val inner: Monad[n]) {
             new MonadCont[({type m[+a] = _WriterT[w, a]})#m] with MonadProxy[({type m[+a] = _WriterT[w, a]})#m]
         {
             private[this] type m[+a] = _WriterT[w, a]
-            override val self = outer.monad[w]
+            override val self = outer._monad[w]
             override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = _WriterT {
                 i.callCC { (c: ((a, w)) => n[(b, w)]) =>
                     run( f(a => _WriterT { c((a, j.mempty)) }) )
@@ -131,7 +131,7 @@ private[ken] final class _WriterTs[n[+_]](val inner: Monad[n]) {
             new MonadError[e, ({type m[+a] = _WriterT[w, a]})#m] with MonadProxy[({type m[+a] = _WriterT[w, a]})#m]
         {
             private[this] type m[+a] = _WriterT[w, a]
-            override val self = outer.monad[w]
+            override val self = outer._monad[w]
             override def errorClass: ErrorClass[e] = i.errorClass
             override def throwError[a](e: e): m[a] = asMonadTrans.lift(i.throwError(e))
             override def catchError[a](m: m[a])(h: e => m[a]): m[a] = _WriterT {
@@ -147,7 +147,7 @@ private[ken] final class _WriterTs[n[+_]](val inner: Monad[n]) {
             new MonadReader[r, ({type m[+a] = _WriterT[w, a]})#m] with MonadProxy[({type m[+a] = _WriterT[w, a]})#m]
         {
             private[this] type m[+a] = _WriterT[w, a]
-            override val self = outer.monad[w]
+            override val self = outer._monad[w]
             override def ask: m[r] = asMonadTrans.lift(i.ask)
             override def local[a](f: r => r)(m: m[a]): m[a] = _WriterT { i.local(f)(run(m)) }
         }
@@ -158,7 +158,7 @@ private[ken] final class _WriterTs[n[+_]](val inner: Monad[n]) {
             new MonadState[s, ({type m[+a] = _WriterT[w, a]})#m] with MonadProxy[({type m[+a] = _WriterT[w, a]})#m]
         {
             private[this] type m[+a] = _WriterT[w, a]
-            override val self = outer.monad[w]
+            override val self = outer._monad[w]
             override def get: m[s] = asMonadTrans.lift(i.get)
             override def put(s: s): m[Unit] = asMonadTrans.lift(i.put(s))
         }

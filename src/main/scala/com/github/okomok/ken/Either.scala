@@ -17,6 +17,10 @@ final case class Right[+b](y: b) extends Either[Nothing, b]
 
 
 object Either {
+    sealed trait apply[e] extends Kind.Function1 {
+        override type apply[+a] = Either[e, a]
+    }
+
     def either[a, b, c](f: a => c)(g: b => c)(e: Either[a, b]): c = e match {
         case Left(x) => f(x)
         case Right(y) => g(y)
@@ -31,7 +35,7 @@ object Either {
         List.foldr[Either[a, b], (List[a], List[b])](either(left)(right))((Nil, Nil))(x)
     }
 
-    implicit def monad[e]: MonadFix[({type m[+a] = Either[e, a]})#m] = new MonadFix[({type m[+a] = Either[e, a]})#m] {
+    implicit def _monad[e]: MonadFix[({type m[+a] = Either[e, a]})#m] = new MonadFix[({type m[+a] = Either[e, a]})#m] {
         // Functor
         private[this] type f[+a] = Either[e, a]
         override def fmap[a, b](f: a => b)(e: f[a]): f[b] = e match {

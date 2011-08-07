@@ -194,5 +194,5 @@ object Monad {
     def apply[m <: Kind.Function1](implicit i: Monad[m#apply]): Monad[m#apply] = i
 
     implicit val ofWeakIdentity: Monad[({type m[+a] = a})#m] = WeakIdentity
-    implicit def ofFunction[r]: Monad[({type m[+a] = r => a})#m] = Function.monad[r]
+    implicit def ofFunction[r]: Monad[({type m[+a] = r => a})#m] = Function._monad[r]
 }

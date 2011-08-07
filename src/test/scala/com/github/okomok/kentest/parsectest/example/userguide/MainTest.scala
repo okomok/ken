@@ -52,14 +52,12 @@ class MainTezt {
     } yield c
 
     val parens: Parser[Unit] = {
-        val i = Parser.monad
-
         ( for {
             _ <- char_('(')
             _ <- parens
             _ <- char_(')')
             _ <- parens
-        } yield () ) <|> i.`return`(())
+        } yield () ) <|> `return`()
     }
 
     def testParens {
@@ -96,14 +94,13 @@ class MainTezt {
     // 2.4
 
     lazy val nesting: Parser[Int] = {
-        val i = Parser.monad
         val j = Ord[Int]
         ( for {
             _ <- char_('(')
             n <- nesting
             _ <- char_(')')
             m <- nesting
-        } yield (j.max(n+1)(m)) ) <|> i.`return`(0)
+        } yield (j.max(n+1)(m)) ) <|> `return`(0)
     }
 
     def testNesting {
@@ -117,7 +114,7 @@ class MainTezt {
 
     lazy val _word: Parser[String_] = for {
         c <- letter[Unit]
-        d <- ( for { cs <- _word } yield  c :: cs ) <|> Parser.monad.`return`(List(c))
+        d <- ( for { cs <- _word } yield  c :: cs ) <|> `return`(List(c))
     } yield d
 
     val word: Parser[String_] = many1(letter[Unit] <#> "") <#> "word"

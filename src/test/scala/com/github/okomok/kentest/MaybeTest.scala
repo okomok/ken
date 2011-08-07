@@ -32,7 +32,7 @@ class MaybeTest extends org.scalatest.junit.JUnit3Suite {
     /*
     def testStrongMonadTObsolete {
         import IO.MaybeT // MaybeT[a] <:< Identity[IO[Maybe[a]]]
-        import MaybeT.monad._
+        import MaybeT._monad._
 
         var valid = false
         def isValid(s: String_): Boolean = Eq[String_].op_==(s)("valid")

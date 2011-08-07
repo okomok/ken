@@ -16,7 +16,7 @@ final class World {
 
     object Tag {
         // ST[a] definition is enough to lookup StateT.asMonad.
-        // implicit val STmonad = ST.monad
+        // implicit val STmonad = ST._monad
     }
 
     type ST[+a] = State[Tag, a]
@@ -25,7 +25,7 @@ final class World {
         override type apply[+a] = ST[a]
 
         def apply[a](r: => a): ST[a] = State { s => (r, s) }
-        implicit val monad = State.monad[Tag]
+        implicit val _monad = State._monad[Tag]
     }
 
     def runST[a](st: ST[a]): a = State.eval(st)(new Tag)
@@ -39,7 +39,7 @@ final class World {
     def writeSTRef[a](ref: STRef[a])(v: a): ST[Unit] = ST { ref.mutvar = v; () }
 
     def modifySTRef[a](ref: STRef[a])(f: a => a): ST[Unit] = {
-        import ST.monad.=<<
+        import ST._monad.=<<
         (writeSTRef(ref)_ compose f) =<< readSTRef(ref)
     }
 }

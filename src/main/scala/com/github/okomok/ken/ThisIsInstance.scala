@@ -9,5 +9,5 @@ package ken
 
 
 trait ThisIsInstance {
-    final implicit val instance: this.type = this
+    final implicit val _instance: this.type = this
 }
