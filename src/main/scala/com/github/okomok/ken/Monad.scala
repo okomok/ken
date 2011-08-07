@@ -190,9 +190,12 @@ trait MonadProxy[m[+_]] extends Monad[m] with ApplicativeProxy[m] {
 }
 
 
-object Monad {
+object Monad extends MonadInstance {
     def apply[m <: Kind.Function1](implicit i: Monad[m#apply]): Monad[m#apply] = i
+}
 
-    implicit val ofWeakIdentity: Monad[({type m[+a] = a})#m] = WeakIdentity
-    implicit def ofFunction[r]: Monad[({type m[+a] = r => a})#m] = Function._monad[r]
+
+trait MonadInstance { this: Monad.type =>
+    implicit val _ofWeakIdentity: Monad[({type m[+a] = a})#m] = WeakIdentity
+    implicit def _ofFunction[r]: Monad[({type m[+a] = r => a})#m] = Function._monad[r]
 }

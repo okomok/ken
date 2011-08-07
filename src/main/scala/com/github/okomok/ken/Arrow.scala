@@ -106,14 +106,14 @@ trait ArrowInstance {
             f(b) >>= (c => `return`(d, c))
         }
     }
-    implicit def ofKleisliArrow[m[_]](implicit i: Monad[m]): Arrow[({type a[a, b] = a => m[b]})#a] = new OfKleisliArrow[m]
+    implicit def _ofKleisliArrow[m[_]](implicit i: Monad[m]): Arrow[({type a[a, b] = a => m[b]})#a] = new OfKleisliArrow[m]
 
     private[this] class OfKleisliArrowZero[m[_]](implicit i: MonadPlus[m]) extends OfKleisliArrow[m] with ArrowZero[({type a[a, b] = a => m[b]})#a] {
         override def zeroArrow[b, c]: a[b, c] = _ => mzero
     }
-    implicit def ofKleisliArrowZero[m[_]](implicit i: MonadPlus[m]): ArrowZero[({type a[a, b] = a => m[b]})#a] = new OfKleisliArrowZero[m]
+    implicit def _ofKleisliArrowZero[m[_]](implicit i: MonadPlus[m]): ArrowZero[({type a[a, b] = a => m[b]})#a] = new OfKleisliArrowZero[m]
 
-    implicit def ofKleisliArrowPlus[m[_]](implicit i: MonadPlus[m]): ArrowPlus[({type a[a, b] = a => m[b]})#a] = new OfKleisliArrowZero[m] with ArrowPlus[({type a[a, b] = a => m[b]})#a] {
+    implicit def _ofKleisliArrowPlus[m[_]](implicit i: MonadPlus[m]): ArrowPlus[({type a[a, b] = a => m[b]})#a] = new OfKleisliArrowZero[m] with ArrowPlus[({type a[a, b] = a => m[b]})#a] {
         override def op_<+>[b, c](f: a[b, c])(g: => a[b, c]): a[b, c] = { x => f(x) _mplus_ g(x) }
     }
 */

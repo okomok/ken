@@ -53,7 +53,7 @@ object Monoid extends MonoidInstance {
     }
 
     object Dual {
-        implicit def asMonoid[a](implicit i: Monoid[a]): Monoid[Dual[a]] = new Monoid[Dual[a]] {
+        implicit def _asMonoid[a](implicit i: Monoid[a]): Monoid[Dual[a]] = new Monoid[Dual[a]] {
             override val mempty: m = Dual(i.mempty)
             override val mappend: m => (=> m) => m = x => y => Dual(i.mappend(y.get)(x.get))
         }
@@ -70,7 +70,7 @@ object Monoid extends MonoidInstance {
             override def unwrap(p: p): d = p.get
         }
 
-        implicit val asMonoid: Monoid[All] = new Monoid[All] {
+        implicit val _asMonoid: Monoid[All] = new Monoid[All] {
             private[this] type m = All
             override val mempty: m = All(True)
             override val mappend: m => (=> m) => m = x => y => All(x.get && y.get)
@@ -87,7 +87,7 @@ object Monoid extends MonoidInstance {
             override def unwrap(p: p): d = p.get
         }
 
-        implicit val asMonoid: Monoid[Any_] = new Monoid[Any_] {
+        implicit val _asMonoid: Monoid[Any_] = new Monoid[Any_] {
             private[this] type m = Any_
             override val mempty: m = Any_(False)
             override val mappend: m => (=> m) => m = x => y => Any_(x.get || y.get)
@@ -104,7 +104,7 @@ object Monoid extends MonoidInstance {
             override def unwrap(p: p): d = p.get
         }
 
-        implicit def asMonoid[a](implicit i: Num[a]): Monoid[Sum[a]] = new Monoid[Sum[a]] {
+        implicit def _asMonoid[a](implicit i: Num[a]): Monoid[Sum[a]] = new Monoid[Sum[a]] {
             import i.+
             private[this] type m = Sum[a]
             override val mempty: m = Sum(i.fromInteger(0))
@@ -122,7 +122,7 @@ object Monoid extends MonoidInstance {
             override def unwrap(p: p): d = p.get
         }
 
-        implicit def asMonoid[a](implicit i: Num[a]): Monoid[Product[a]] = new Monoid[Product[a]] {
+        implicit def _asMonoid[a](implicit i: Num[a]): Monoid[Product[a]] = new Monoid[Product[a]] {
             import i.*
             private[this] type m = Product[a]
             override val mempty: m = Product(i.fromInteger(1))
@@ -133,11 +133,11 @@ object Monoid extends MonoidInstance {
 
 
 trait MonoidInstance {
-    implicit val ofUnit: Monoid[Unit] = Unit.asMonoid
+    implicit val _ofUnit: Monoid[Unit] = Unit
 
-    implicit def ofFunction1[z, b](implicit mb: Monoid[b]): Monoid[z => b] = Function.asMonoid[z, b]
+    implicit def _ofFunction1[z, b](implicit mb: Monoid[b]): Monoid[z => b] = Function._asMonoid[z, b]
 
-    implicit def ofPair[a, b](implicit ma: Monoid[a], mb: Monoid[b]): Monoid[(a, b)] = new Monoid[(a, b)] {
+    implicit def _ofPair[a, b](implicit ma: Monoid[a], mb: Monoid[b]): Monoid[(a, b)] = new Monoid[(a, b)] {
         private[this] type m = (a, b)
         override val mempty: m = (ma.mempty, mb.mempty)
         override val mappend: m => (=> m) => m = { x1 => x2 => (x1, x2) match {

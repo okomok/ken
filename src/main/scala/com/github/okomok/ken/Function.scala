@@ -38,7 +38,7 @@ object Function {
         override def local[a](f: z => z)(m: m[a]): m[a] = m compose f
     }
 
-    implicit def asMonoid[z, b](implicit mb: Monoid[b]): Monoid[z => b] = new Monoid[z => b] {
+    implicit def _asMonoid[z, b](implicit mb: Monoid[b]): Monoid[z => b] = new Monoid[z => b] {
         private[this] type m = z => b
         override val mempty: m = _ => mb.mempty
         override val mappend: m => (=> m) => m = { x => y =>

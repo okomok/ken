@@ -66,11 +66,11 @@ object Show extends ShowInstance {
 
 
 trait ShowInstance { outer: Show.type =>
-    implicit def ofAny[a]: Show[a] = new Show[a] {
+    implicit def _ofAny[a]: Show[a] = new Show[a] {
         override def showsPrec(n: Int)(x: a): ShowS = showString(x.toString)
     }
 
-    implicit def ofList[z](implicit i: Show[z]): Show[List[z]] = new Show[List[z]] {
+    implicit def _ofList[z](implicit i: Show[z]): Show[List[z]] = new Show[List[z]] {
         private[this] type a = List[z]
         override def showsPrec(n: Int)(x: a): ShowS = i.showList(x)
     }

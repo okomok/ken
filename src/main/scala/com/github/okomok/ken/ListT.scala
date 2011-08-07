@@ -29,7 +29,7 @@ private[ken] final class _ListTs[n[+_]](val inner: Monad[n]) {
         def map[m[+_], a, b](f: n[List[a]] => m[List[b]])(n: _ListT[a]): Strong[m[List[b]]] = Strong { f(run(n)) }
     }
 
-    private[ken] trait Instance0 { outer: _ListT.type =>
+    private[ken] trait Instance0 { this: _ListT.type =>
         implicit val weak: Weak1[_ListT, ({type d[+a] = n[List[a]]})#d] =
             new Weak1[_ListT, ({type d[+a] = n[List[a]]})#d]
         {
@@ -58,7 +58,7 @@ private[ken] final class _ListTs[n[+_]](val inner: Monad[n]) {
             }
         }
 
-        implicit val asMonadTrans: MonadTrans[n, _ListT] = new MonadTrans[n, _ListT] {
+        implicit val _asMonadTrans: MonadTrans[n, _ListT] = new MonadTrans[n, _ListT] {
             private[this] type m[+a] = _ListT[a]
             override def lift[a](n: n[a]): m[a] = _ListT {
                 for { a <- n } yield List(a)
@@ -66,22 +66,22 @@ private[ken] final class _ListTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    private[ken] trait Instance1 extends Instance0 { outer: _ListT.type =>
-        implicit def asMonadIO(implicit i: MonadIO[n]): MonadIO[_ListT] =
+    private[ken] trait Instance1 extends Instance0 { this: _ListT.type =>
+        implicit def _asMonadIO(implicit i: MonadIO[n]): MonadIO[_ListT] =
             new MonadIO[_ListT] with MonadProxy[_ListT]
         {
             private[this] type m[+a] = _ListT[a]
-            override def self = outer._monad
-            override def liftIO[a](io: IO[a]): m[a] = asMonadTrans.lift(i.liftIO(io))
+            override def self = _monad
+            override def liftIO[a](io: IO[a]): m[a] = _asMonadTrans.lift(i.liftIO(io))
         }
     }
 
-    private[ken] trait Instance2 extends Instance1 { outer: _ListT.type =>
-        implicit def asMonadCont(implicit i: MonadCont[n]): MonadCont[_ListT] =
+    private[ken] trait Instance2 extends Instance1 { this: _ListT.type =>
+        implicit def _asMonadCont(implicit i: MonadCont[n]): MonadCont[_ListT] =
             new MonadCont[_ListT] with MonadProxy[_ListT]
         {
             private[this] type m[+a] = _ListT[a]
-            override val self = outer._monad
+            override val self = _monad
             override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = _ListT {
                 i.callCC { (c: List[a] => n[List[b]]) =>
                     run( f( a => _ListT { c(List(a)) } ) )
@@ -90,42 +90,42 @@ private[ken] final class _ListTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    private[ken] trait Instance3 extends Instance2 { outer: _ListT.type =>
-        implicit def asMonadError[e](implicit i: MonadError[e, n]): MonadError[e, _ListT] =
+    private[ken] trait Instance3 extends Instance2 { this: _ListT.type =>
+        implicit def _asMonadError[e](implicit i: MonadError[e, n]): MonadError[e, _ListT] =
             new MonadError[e, _ListT] with MonadProxy[_ListT]
         {
             private[this] type m[+a] = _ListT[a]
-            override val self = outer._monad
+            override val self = _monad
             override def errorClass: ErrorClass[e] = i.errorClass
-            override def throwError[a](e: e): m[a] = asMonadTrans.lift(i.throwError(e))
+            override def throwError[a](e: e): m[a] = _asMonadTrans.lift(i.throwError(e))
             override def catchError[a](m: m[a])(h: e => m[a]): m[a] = _ListT {
                 i.catchError(run(m)) { e => run(h(e)) }
             }
         }
     }
 
-    private[ken] trait Instance4 extends Instance3 { outer: _ListT.type =>
-        implicit def asMonadReader[r](implicit i: MonadReader[r, n]): MonadReader[r, _ListT] =
+    private[ken] trait Instance4 extends Instance3 { this: _ListT.type =>
+        implicit def _asMonadReader[r](implicit i: MonadReader[r, n]): MonadReader[r, _ListT] =
             new MonadReader[r, _ListT] with MonadProxy[_ListT]
         {
             private[this] type m[+a] = _ListT[a]
-            override val self = outer._monad
-            override def ask: m[r] = asMonadTrans.lift(i.ask)
+            override val self = _monad
+            override def ask: m[r] = _asMonadTrans.lift(i.ask)
             override def local[a](f: r => r)(m: m[a]): m[a] = _ListT { i.local(f)(run(m)) }
         }
     }
 
-    private[ken] trait Instance5 extends Instance4 { outer: _ListT.type =>
-        implicit def asMonadState[s](implicit i: MonadState[s, n]): MonadState[s, _ListT] =
+    private[ken] trait Instance5 extends Instance4 { this: _ListT.type =>
+        implicit def _asMonadState[s](implicit i: MonadState[s, n]): MonadState[s, _ListT] =
             new MonadState[s, _ListT] with MonadProxy[_ListT]
         {
             private[this] type m[+a] = _ListT[a]
-            override val self = outer._monad
-            override def get: m[s] = asMonadTrans.lift(i.get)
-            override def put(s: s): m[Unit] = asMonadTrans.lift(i.put(s))
+            override val self = _monad
+            override def get: m[s] = _asMonadTrans.lift(i.get)
+            override def put(s: s): m[Unit] = _asMonadTrans.lift(i.put(s))
         }
     }
 
-    private[ken] trait Instance extends Instance5 { outer: _ListT.type =>
+    private[ken] trait Instance extends Instance5 { this: _ListT.type =>
     }
 }

@@ -69,10 +69,10 @@ object Applicative extends ApplicativeInstance {
 
 
 trait ApplicativeInstance { outer: Applicative.type =>
-    implicit val ofWeakIdentity: Applicative[({type m[+a] = a})#m] = WeakIdentity
-    implicit def ofFunction[r]: Applicative[({type m[+a] = r => a})#m] = Function._monad[r]
+    implicit val _ofWeakIdentity: Applicative[({type m[+a] = a})#m] = WeakIdentity
+    implicit def _ofFunction[r]: Applicative[({type m[+a] = r => a})#m] = Function._monad[r]
 
-    implicit def ofPair[z](implicit ma: Monoid[z]): Applicative[({type f[+a] = (z, a)})#f] = new Applicative[({type f[+a] = (z, a)})#f] {
+    implicit def _ofPair[z](implicit ma: Monoid[z]): Applicative[({type f[+a] = (z, a)})#f] = new Applicative[({type f[+a] = (z, a)})#f] {
         private[this] type f[a] = (z, a)
         override def pure[a](x: => a): f[a] = (ma.mempty, x)
         override def op_<*>[a, b](a1: f[a => b])(a2: f[a]): f[b] = (a1, a2) match {

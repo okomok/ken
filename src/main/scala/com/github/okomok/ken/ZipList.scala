@@ -46,6 +46,6 @@ object WeakZipList extends Applicative[List] {
     override def op_<*>[a, b](x: f[a => b])(y: f[a]): f[b] = List.zipWith[a => b, a, b](op_@)(x)(y)
 
 // Instances
-    implicit val asApplicative: Applicative[List] = this
+    implicit val _asApplicative: Applicative[List] = this
 }
 */

@@ -32,12 +32,12 @@ object ErrorClass extends ErrorClassInstance {
 
 
 trait ErrorClassInstance { outer: ErrorClass.type =>
-    implicit val ofString: ErrorClass[String_] = new ErrorClass[String_] {
+    implicit val _ofString: ErrorClass[String_] = new ErrorClass[String_] {
         override def noMsg = ""
         override val strMsg = id[String_]_
     }
 
-    implicit val ofIOError: ErrorClass[IO.IOError] = new ErrorClass[IO.IOError] {
+    implicit val _ofIOError: ErrorClass[IO.IOError] = new ErrorClass[IO.IOError] {
         override val strMsg = IO.userError
     }
 }

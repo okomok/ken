@@ -15,7 +15,7 @@ class TypeclassTest extends org.scalatest.junit.JUnit3Suite {
     def testImplicitObsolete {
         val m = Function._monad[Int]
         import m.StateT
-        val mp = m.StateT.asMonadReader[Int, Int]
+        val mp = m.StateT._asMonadReader[Int, Int]
         ()
     }
 

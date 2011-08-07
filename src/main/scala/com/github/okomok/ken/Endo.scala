@@ -25,7 +25,7 @@ object Endo {
 
     }
 
-    implicit def asMonoid[a]: Monoid[Endo[a]] = new Monoid[Endo[a]] {
+    implicit def _asMonoid[a]: Monoid[Endo[a]] = new Monoid[Endo[a]] {
         private[this] type m = Endo[a]
         override val mempty: m = Endo(id[a])
         override val mappend: m => (=> m) => m = x => y => Endo(x.run compose y.run)
