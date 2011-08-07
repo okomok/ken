@@ -8,8 +8,4 @@ package com.github.okomok
 package ken
 
 
-object Pair {
-    sealed trait apply[a] extends Kind.Function1 {
-        override type apply[+b] = Pair[a, b]
-    }
-}
+object Pair extends Kind.curry2[Pair]

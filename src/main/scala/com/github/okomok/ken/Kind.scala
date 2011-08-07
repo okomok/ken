@@ -17,6 +17,10 @@ object Kind {
         type apply[+a]
     }
 
+    trait Function1nv {
+        type apply[a]
+    }
+
     trait Function2 {
         type apply[+a, +b]
     }
@@ -31,5 +35,15 @@ object Kind {
 
     trait MonadTrans extends Strong1 {
         type inner[+a]
+    }
+
+    trait quote1[f[+_]] extends Function1 {
+        override type apply[+a] = f[a]
+    }
+
+    trait curry2[f[_, +_]] extends Function1nv {
+        sealed trait apply[a] extends Function1 {
+            override type apply[+b] = f[a, b]
+        }
     }
 }

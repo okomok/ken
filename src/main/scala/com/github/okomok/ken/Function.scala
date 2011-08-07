@@ -8,11 +8,7 @@ package com.github.okomok
 package ken
 
 
-object Function {
-    sealed trait apply[z] extends Kind.Function1 {
-        override type apply[+a] = z => a
-    }
-
+object Function extends Kind.curry2[Function1] {
     def fix[a](f: (=> a) => a): a = {
         lazy val x: a = f(x)
         x

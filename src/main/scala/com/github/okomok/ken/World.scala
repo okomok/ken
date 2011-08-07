@@ -21,9 +21,7 @@ final class World {
 
     type ST[+a] = State[Tag, a]
 
-    object ST extends Kind.Function1 {
-        override type apply[+a] = ST[a]
-
+    object ST extends Kind.quote1[ST] {
         def apply[a](r: => a): ST[a] = State { s => (r, s) }
         implicit val _monad = State._monad[Tag]
     }

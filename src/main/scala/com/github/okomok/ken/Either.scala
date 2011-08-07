@@ -16,11 +16,7 @@ final case class Left[+a](x: a) extends Either[a, Nothing]
 final case class Right[+b](y: b) extends Either[Nothing, b]
 
 
-object Either {
-    sealed trait apply[e] extends Kind.Function1 {
-        override type apply[+a] = Either[e, a]
-    }
-
+object Either extends Kind.curry2[Either] {
     def either[a, b, c](f: a => c)(g: b => c)(e: Either[a, b]): c = e match {
         case Left(x) => f(x)
         case Right(y) => g(y)
