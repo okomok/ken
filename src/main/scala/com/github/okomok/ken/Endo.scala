@@ -11,11 +11,9 @@ package ken
 final case class Endo[a](override val get: a => a) extends Strong[a => a]
 
 
-object Endo extends Kind.Function1nv {
-    sealed trait apply[a] extends Kind.Strong0 {
-        override type apply = Endo[a]
-        override type weak = a => a
-    }
+object Endo extends Kind.Strong1 {
+    //override type apply[a] = Endo[a]
+    //override type weak[a] = a => a
 
     implicit def weak[a]: Imply0[Endo[a], a => a] = new Imply0[Endo[a], a => a] {
         private[this] type p = Endo[a]
