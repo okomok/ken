@@ -480,8 +480,7 @@ object List extends Foldable[List] with MonadPlus[List] with ThisIsInstance {
     }
 
     def partition[a](p: a => Bool)(xs: List[a]): (List[a], List[a]) = {
-        import ByName._
-        foldr(select(p))((Nil, Nil))(xs)
+        foldr(Function.~(select(p)_))((Nil, Nil))(xs)
     }
 
     def select[a](p: a => Bool)(x: a)(tfs: (List[a], List[a])): (List[a], List[a]) = {
@@ -595,8 +594,7 @@ object List extends Foldable[List] with MonadPlus[List] with ThisIsInstance {
     // User-supplied comparison
     //
     def sortBy[a](cmp: a => a => Ordering)(xs: List[a]): List[a] = {
-        import ByName._
-        foldr(insertBy(cmp))(Nil)(xs)
+        foldr(Function.~(insertBy(cmp)_))(Nil)(xs)
     }
 
     def insertBy[a](cmp: a => a => Ordering)(x: a)(ys: List[a]): List[a] = ys match {

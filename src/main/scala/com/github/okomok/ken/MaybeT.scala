@@ -36,8 +36,8 @@ private[ken] final class _MaybeTs[n[+_]](val inner: Monad[n]) {
         {
             private[this] type p[+a] = _MaybeT[a]
             private[this] type d[+a] = n[Maybe[a]]
-            override def imply[a](p: p[a]): d[a] = run(p)
-            override def unimply[a](d: => d[a]): p[a] = _MaybeT(d)
+            override def imply1[a](p: p[a]): d[a] = run(p)
+            override def unimply1[a](d: => d[a]): p[a] = _MaybeT(d)
         }
 
         implicit val _monad: MonadPlus[_MaybeT] = new MonadPlus[_MaybeT] {

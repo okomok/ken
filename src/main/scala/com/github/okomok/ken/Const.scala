@@ -20,8 +20,8 @@ object Const extends Kind.Function1nv {
     implicit def weak[z]: Imply1[({type p[+a] = Const[z, a]})#p, ({type d[+a] = z})#d] = new Imply1[({type p[+a] = Const[z, a]})#p, ({type d[+a] = z})#d] {
         private[this] type p[+a] = Const[z, a]
         private[this] type d[+a] = z
-        override def imply[a](p: p[a]): d[a] = p.get
-        override def unimply[a](d: => d[a]): p[a] = Const(d)
+        override def imply1[a](p: p[a]): d[a] = p.get
+        override def unimply1[a](d: => d[a]): p[a] = Const(d)
     }
 
     implicit def _asFunctor[z]: Functor[({type f[+a] = Const[z, a]})#f] = new Functor[({type f[+a] = Const[z, a]})#f] {

@@ -9,11 +9,13 @@ package com.github.okomok
 
 package object ken {
 
-// Eq
+    // Eq
+    //
     type Eq[-a] = _Eq[a]
     val Eq = _Eq
 
-// Bools
+    // Bools
+    //
     val not: Bool => Bool = { b => !b }
 
     val op_&& : Bool => (=> Bool) => Bool = { b => c => b && c }
@@ -22,7 +24,8 @@ package object ken {
 
     final val otherwise = True
 
-// Tuples
+    // Tuples
+    //
     def fst[a, b](p: (a, b)): a = p match {
         case (x, _) => x
     }
@@ -43,7 +46,8 @@ package object ken {
         case (x, y) => (y, x)
     }
 
-// Miscellaneous functions
+    // Miscellaneous functions
+    //
     def id[a](x: a): a = x
 
     def const[a](x: a): Any => a = { _ => x }
@@ -66,12 +70,14 @@ package object ken {
 
     def seq[b](x: Any)(y: b): b = y // no special effects
 
-// Converting to String
+    // Converting to String
+    //
     def show[a](x: a)(implicit i: Show[a]): String_ = i.show(x)
 
     val _show: Any => String = _.toString // will be removed.
 
-// Trivial transformers
+    // Trivial transformers
+    //
     type Error[e, +a] = WeakIdentity.ErrorT[e, a]
     val Error = WeakIdentity.ErrorT
 
@@ -84,13 +90,15 @@ package object ken {
     type Writer[w, +a] = WeakIdentity.WriterT[w, a]
     val Writer = WeakIdentity.WriterT
 
-// Aliases
+    // Aliases
+    //
     type String_ = List[Char]
     type Bool = Boolean
     final val True = true
     final val False = false
     type Integer = BigInt
 
-// Misc
+    // Scala specific utilities
+    //
     val ignore: (=> Any) => Unit = { _ => () }
 }

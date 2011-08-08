@@ -37,8 +37,8 @@ private[ken] final class _ErrorTs[n[+_]](val inner: Monad[n]) {
         {
             private[this] type p[+a] = _ErrorT[e, a]
             private[this] type d[+a] = n[Either[e, a]]
-            override def imply[a](p: p[a]): d[a] = run(p)
-            override def unimply[a](d: => d[a]): p[a] = _ErrorT(d)
+            override def imply1[a](p: p[a]): d[a] = run(p)
+            override def unimply1[a](d: => d[a]): p[a] = _ErrorT(d)
         }
 
         implicit def _monad[e](implicit i: ErrorClass[e]): MonadPlus[({type m[+a] = _ErrorT[e, a]})#m] with MonadError[e, ({type m[+a] = _ErrorT[e, a]})#m] =

@@ -8,6 +8,8 @@ package com.github.okomok
 package ken
 
 
+// Rejected. Will be removed.
+
 object ByName {
 
     implicit def fromStrict1[b, c](f: b => c): (=> b) => c = { y => f(y) }

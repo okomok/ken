@@ -11,32 +11,26 @@ package ken
 /**
  * Implements `d` instances from `p` instances.
  */
-trait Imply0[p, d] extends Typeclass {
+trait Imply0[p, d] extends Imply1[({type p_[+a] = p})#p_, ({type d_[+a] = d})#d_] {
     final val asImply0: Imply0[p, d] = this
 
     // Core
     //
-    def imply(p: p): d
-    def unimply(d: => d): p
+    def imply0(p: p): d
+    def unimply0(d: => d): p
 
-    // Instances
+    // Overrides
     //
-    implicit def asMonoid(implicit i: Monoid[p]): Monoid[d] = new Monoid[d] {
-        private[this] type m = d
-        override val mempty: m = imply(i.mempty)
-        override val mappend: m => (=> m) => m = x => y => imply(i.mappend(unimply(x))(unimply(y)))
-        override val mconcat: List[m] => m = { xs => imply(i.mconcat(List.map[m, p](x => unimply(x))(xs))) }
-    }
+    override def imply1[a](p: p): d = imply0(p)
+    override def unimply1[a](d: => d): p = unimply0(d)
 }
 
 
 trait Imply0Proxy[p, d] extends Imply0[p, d] with Proxy {
     override def self: Imply0[p, d]
 
-    override def imply(p: p): d = self.imply(p)
-    override def unimply(d: => d): p = self.unimply(d)
-
-    override def asMonoid(implicit i: Monoid[p]): Monoid[d] = self.asMonoid
+    override def imply0(p: p): d = self.imply0(p)
+    override def unimply0(d: => d): p = self.unimply0(d)
 }
 
 

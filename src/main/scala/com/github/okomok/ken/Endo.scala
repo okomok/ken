@@ -18,8 +18,8 @@ object Endo {
     implicit def weak[a]: Imply0[Endo[a], a => a] = new Imply0[Endo[a], a => a] {
         private[this] type p = Endo[a]
         private[this] type d = a => a
-        override def imply(p: p): d = p.run
-        override def unimply(d: => d): p = Endo(d)
+        override def imply0(p: p): d = p.run
+        override def unimply0(d: => d): p = Endo(d)
 
     }
 

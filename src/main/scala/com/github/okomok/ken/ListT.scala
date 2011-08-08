@@ -35,8 +35,8 @@ private[ken] final class _ListTs[n[+_]](val inner: Monad[n]) {
         {
             private[this] type p[+a] = _ListT[a]
             private[this] type d[+a] = n[List[a]]
-            override def imply[a](p: p[a]): d[a] = run(p)
-            override def unimply[a](d: => d[a]): p[a] = _ListT(d)
+            override def imply1[a](p: p[a]): d[a] = run(p)
+            override def unimply1[a](d: => d[a]): p[a] = _ListT(d)
         }
 
         implicit val _monad: MonadPlus[_ListT] = new MonadPlus[_ListT] {

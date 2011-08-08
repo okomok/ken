@@ -17,8 +17,7 @@ trait Foldable[t[+_]] extends Typeclass1[t] {
     def foldMap[a, m](f: a => m)(x: t[a])(implicit i: Monoid[m]): m = foldr[a, m](i.mappend compose f)(i.mempty)(x)
 
     def foldr[a, b](f: a => (=> b) => b)(z: b)(t: t[a]): b = {
-        import ByName._
-        foldMap[a, b => b](f)(t)(Endo.weak[b].asMonoid)(z)
+        foldMap[a, b => b](Function.!(f))(t)(Endo.weak[b].asMonoid)(z)
     }
 
     def foldl[a, b](f: a => b => a)(z: a)(t: t[b]): a = foldMap(flip(f))(t)(Endo.weak[a].asMonoid.dual)(z)
@@ -49,16 +48,14 @@ trait Foldable[t[+_]] extends Typeclass1[t] {
     def foldrM[m[+_], a, b](f: a => (=> b) => m[b])(z0: b)(xs: t[a])(implicit i: Monad[m]): m[b] = {
         // not lazy
         import i.>>=
-        import ByName._
-        def f_(k: (=> b) => m[b])(x: a)(z: => b): m[b] = f(x)(z) >>= k
+        def f_(k: (=> b) => m[b])(x: a)(z: => b): m[b] = f(x)(z) >>= Function.!(k)
         foldl(f_)(i.`return`)(xs)(z0)
     }
 
     def foldlM[m[+_], a, b](f: a => b => m[a])(z0: a)(xs: t[b])(implicit i: Monad[m]): m[a] = {
         import i.>>=
-        import ByName._
         def f_(x: b)(k: a => m[a])(z: a): m[a] = f(z)(x) >>= k
-        foldr_(f_)(i.`return`[a])(xs)(z0)
+        foldr_(f_)(Function.!(i.`return`[a]))(xs)(z0)
     }
 
     // *> is equivalent to >> ?

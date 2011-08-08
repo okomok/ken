@@ -39,8 +39,8 @@ private[ken] final class _ReaderTs[n[+_]](val inner: Monad[n]) {
         {
             private[this] type p[+a] = _ReaderT[r, a]
             private[this] type d[+a] = r => n[a]
-            override def imply[a](p: p[a]): d[a] = run(p)
-            override def unimply[a](d: => d[a]): p[a] = _ReaderT(d)
+            override def imply1[a](p: p[a]): d[a] = run(p)
+            override def unimply1[a](d: => d[a]): p[a] = _ReaderT(d)
         }
 
         implicit def _monad[r]: MonadReader[r, ({type m[+a] = _ReaderT[r, a]})#m] = new MonadReader[r, ({type m[+a] = _ReaderT[r, a]})#m] {

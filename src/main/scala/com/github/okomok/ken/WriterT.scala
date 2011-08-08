@@ -39,8 +39,8 @@ private[ken] final class _WriterTs[n[+_]](val inner: Monad[n]) {
         {
             private[this] type p[+a] = _WriterT[w, a]
             private[this] type d[+a] = n[(a, w)]
-            override def imply[a](p: p[a]): d[a] = run(p)
-            override def unimply[a](d: => d[a]): p[a] = _WriterT(d)
+            override def imply1[a](p: p[a]): d[a] = run(p)
+            override def unimply1[a](d: => d[a]): p[a] = _WriterT(d)
         }
 
         implicit def _monad[w](implicit i: Monoid[w]): MonadWriter[w, ({type m[+a] = _WriterT[w, a]})#m] =

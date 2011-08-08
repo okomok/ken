@@ -66,8 +66,8 @@ object Monoid extends MonoidInstance {
         implicit val weak: Imply0[All, Bool] = new Imply0[All, Bool] {
             private[this] type p = All
             private[this] type d = Bool
-            override def imply(p: p): d = p.get
-            override def unimply(d: => d): p = All(d)
+            override def imply0(p: p): d = p.get
+            override def unimply0(d: => d): p = All(d)
         }
 
         implicit val _asMonoid: Monoid[All] = new Monoid[All] {
@@ -83,8 +83,8 @@ object Monoid extends MonoidInstance {
         implicit val weak: Imply0[Any_, Bool] = new Imply0[Any_, Bool] {
             private[this] type p = Any_
             private[this] type d = Bool
-            override def imply(p: p): d = p.get
-            override def unimply(d: => d): p = Any_(d)
+            override def imply0(p: p): d = p.get
+            override def unimply0(d: => d): p = Any_(d)
         }
 
         implicit val _asMonoid: Monoid[Any_] = new Monoid[Any_] {
@@ -100,8 +100,8 @@ object Monoid extends MonoidInstance {
         implicit def weak[a]: Imply0[Sum[a], a] = new Imply0[Sum[a], a] {
             private[this] type p = Sum[a]
             private[this] type d = a
-            override def imply(p: p): d = p.get
-            override def unimply(d: => d): p = Sum(d)
+            override def imply0(p: p): d = p.get
+            override def unimply0(d: => d): p = Sum(d)
         }
 
         implicit def _asMonoid[a](implicit i: Num[a]): Monoid[Sum[a]] = new Monoid[Sum[a]] {
@@ -118,8 +118,8 @@ object Monoid extends MonoidInstance {
         implicit def weak[a]: Imply0[Product[a], a] = new Imply0[Product[a], a] {
             private[this] type p = Product[a]
             private[this] type d = a
-            override def imply(p: p): d = p.get
-            override def unimply(d: => d): p = Product(d)
+            override def imply0(p: p): d = p.get
+            override def unimply0(d: => d): p = Product(d)
         }
 
         implicit def _asMonoid[a](implicit i: Num[a]): Monoid[Product[a]] = new Monoid[Product[a]] {

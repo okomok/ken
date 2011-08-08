@@ -43,8 +43,8 @@ private[ken] final class _StateTs[n[+_]](val inner: Monad[n]) {
         {
             private[this] type p[+a] = _StateT[s, a]
             private[this] type d[+a] = s => n[(a, s)]
-            override def imply[a](p: p[a]): d[a] = run(p)
-            override def unimply[a](d: => d[a]): p[a] = _StateT(d)
+            override def imply1[a](p: p[a]): d[a] = run(p)
+            override def unimply1[a](d: => d[a]): p[a] = _StateT(d)
         }
 
         implicit def _monad[s]: MonadState[s, ({type m[+a] = _StateT[s, a]})#m] = new MonadState[s, ({type m[+a] = _StateT[s, a]})#m]
