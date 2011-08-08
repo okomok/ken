@@ -156,7 +156,7 @@ object Parsec {
     def statePos[tok, st](state: State[tok, st]): SourcePos = state.pos
     def stateUser[tok, st](state: State[tok,st]): st = state.user
 
-    object GenParser extends Kind.Function2nv {
+    object GenParser extends Kind.Function {
         sealed trait apply[tok, st] extends Kind.Function1 {
             override type apply[+a] = GenParser[tok, st, a]
         }

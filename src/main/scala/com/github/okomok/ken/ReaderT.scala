@@ -13,7 +13,7 @@ private[ken] final class _ReaderTs[n[+_]](val inner: Monad[n]) {
 
     sealed abstract class _ReaderT[r, +a] extends Strong[r => n[a]]
 
-    object _ReaderT extends Kind.Function1nv with Instance {
+    object _ReaderT extends Kind.Function with Instance {
         sealed trait apply[r] extends Kind.MonadTrans {
             override type apply[+a] = _ReaderT[r, a]
             override type inner[+a] = n[a]

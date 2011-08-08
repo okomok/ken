@@ -47,19 +47,27 @@ trait MonoidProxy[m] extends Monoid[m] with Proxy {
 object Monoid extends MonoidInstance {
     def apply[m](implicit i: Monoid[m]): Monoid[m] = i
 
-/*
-    final case class Dual[+a](get: a) extends Strong[a] {
-        override def get: a = get
-    }
+    // Dual
+    //
+    final case class Dual[+a](override val get: a) extends Strong[a]
 
     object Dual {
+        implicit def weak[a]: Imply0[Dual[a], a] = new Imply0[Dual[a], a] {
+            private[this] type p = Dual[a]
+            private[this] type d = a
+            override def imply0(p: p): d = p.get
+            override def unimply0(d: => d): p = Dual(d)
+        }
+
         implicit def _asMonoid[a](implicit i: Monoid[a]): Monoid[Dual[a]] = new Monoid[Dual[a]] {
+            private[this] type m = Dual[a]
             override val mempty: m = Dual(i.mempty)
             override val mappend: m => (=> m) => m = x => y => Dual(i.mappend(y.get)(x.get))
         }
     }
-*/
 
+    // All
+    //
     final case class All(override val get: Bool) extends Strong[Bool]
 
     object All {
@@ -77,6 +85,8 @@ object Monoid extends MonoidInstance {
         }
     }
 
+    // Any_
+    //
     final case class Any_(override val get: Bool) extends Strong[Bool]
 
     object Any_ {
@@ -94,6 +104,8 @@ object Monoid extends MonoidInstance {
         }
     }
 
+    // Sum
+    //
     final case class Sum[a](override val get: a) extends Strong[a]
 
     object Sum {
@@ -112,6 +124,8 @@ object Monoid extends MonoidInstance {
         }
     }
 
+    // Product
+    //
     final case class Product[a](override val get: a) extends Strong[a]
 
     object Product {
@@ -134,14 +148,6 @@ object Monoid extends MonoidInstance {
 
 trait MonoidInstance {
     implicit val _ofUnit: Monoid[Unit] = Unit
-
     implicit def _ofFunction1[z, b](implicit mb: Monoid[b]): Monoid[z => b] = Function._asMonoid[z, b]
-
-    implicit def _ofPair[a, b](implicit ma: Monoid[a], mb: Monoid[b]): Monoid[(a, b)] = new Monoid[(a, b)] {
-        private[this] type m = (a, b)
-        override val mempty: m = (ma.mempty, mb.mempty)
-        override val mappend: m => (=> m) => m = { x1 => x2 => (x1, x2) match {
-            case ((a1, b1), (a2, b2)) => (ma.mappend(a1)(a2), mb.mappend(b1)(b2))
-        } }
-    }
+    implicit def _ofPair[a, b](implicit ma: Monoid[a], mb: Monoid[b]): Monoid[(a, b)] = Pair._asMonoid[a, b]
 }

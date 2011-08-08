@@ -13,7 +13,7 @@ private[ken] final class _WriterTs[n[+_]](val inner: Monad[n]) {
 
     sealed abstract class _WriterT[w, +a] extends Strong[n[(a, w)]]
 
-    object _WriterT extends Kind.Function1nv with Instance {
+    object _WriterT extends Kind.Function with Instance {
         sealed trait apply[w] extends Kind.MonadTrans {
             override type apply[+a] = _WriterT[w, a]
             override type inner[+a] = n[a]

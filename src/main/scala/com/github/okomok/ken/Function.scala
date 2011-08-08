@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-object Function extends Kind.curry2[Function1] {
+object Function extends Kind.qcurry2[Function1] {
     def fix[a](f: (=> a) => a): a = {
         lazy val x: a = f(x)
         x

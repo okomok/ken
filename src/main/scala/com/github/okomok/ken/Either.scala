@@ -16,7 +16,7 @@ final case class Left[+a](x: a) extends Either[a, Nothing]
 final case class Right[+b](y: b) extends Either[Nothing, b]
 
 
-object Either extends Kind.curry2[Either] {
+object Either extends Kind.qcurry2[Either] {
     def either[a, b, c](f: a => c)(g: b => c)(e: Either[a, b]): c = e match {
         case Left(x) => f(x)
         case Right(y) => g(y)
