@@ -18,6 +18,10 @@ trait Imply1[p[+_], d[+_]] extends Typeclass with Imply1Instance[p, d] {
     //
     def imply[a](p: p[a]): d[a]
     def unimply[a](d: => d[a]): p[a]
+
+    // Extra
+    //
+    final def unimply_![a](d: d[a]): p[a] = unimply(d)
 }
 
 
@@ -48,6 +52,42 @@ object Imply1 {
 // Overloading weight control
 
 private[ken] trait Imply1Instance0[p[+_], d[+_]] { outer: Imply1[p, d] =>
+    implicit def asEq[z](implicit i: Eq[p[z]]): Eq[d[z]] = new Eq[d[z]] {
+        private[this] type a = d[z]
+        override val op_== : a => a => Bool = x => y => i.op_==(unimply(x))(unimply(y))
+        override val op_/= : a => a => Bool = x => y => i.op_/=(unimply(x))(unimply(y))
+    }
+
+    implicit def asOrd[z](implicit i: Ord[p[z]]): Ord[d[z]] = new Ord[d[z]] with EqProxy[d[z]] {
+        private[this] type a = d[z]
+        override val self = outer.asEq(i)
+        override val compare: a => a => Ordering = x => y => i.compare(unimply(x))(unimply(y))
+        override val op_< : a => a => Bool = x => y => i.op_<(unimply(x))(unimply(y))
+        override val op_<= : a => a => Bool = x => y => i.op_<=(unimply(x))(unimply(y))
+        override val op_> : a => a => Bool = x => y => i.op_>(unimply(x))(unimply(y))
+        override val op_>= : a => a => Bool = x => y => i.op_>=(unimply(x))(unimply(y))
+        override val max: a => a => a = x => y => imply(i.max(unimply(x))(unimply(y)))
+        override val min: a => a => a = x => y => imply(i.min(unimply(x))(unimply(y)))
+    }
+
+    implicit def asIx[z](implicit i: Ix[p[z]]): Ix[d[z]] = new Ix[d[z]] with OrdProxy[d[z]] {
+        private[this] type a = d[z]
+        override val self = outer.asOrd(i)
+        override val range: Tuple2[a, a] => List[a] = t => List.map[p[z], a](imply)(i.range(unimply(t._1), unimply(t._2)))
+        override val index: Tuple2[a, a] => a => Int = t => x => i.index(unimply(t._1), unimply(t._2))(unimply(x))
+        override val unsafeIndex: Tuple2[a, a] => a => Int = t => x => i.unsafeIndex(unimply(t._1), unimply(t._2))(unimply(x))
+        override val inRange: Tuple2[a, a] => a => Bool = t => x => i.inRange(unimply(t._1), unimply(t._2))(unimply(x))
+        override val rangeSize: Tuple2[a, a] => Int = t => i.rangeSize(unimply(t._1), unimply(t._2))
+        override val unsafeRangeSize: Tuple2[a, a] => Int = t => i.unsafeRangeSize(unimply(t._1), unimply(t._2))
+    }
+
+    implicit def asMonoid[z](implicit i: Monoid[p[z]]): Monoid[d[z]] = new Monoid[d[z]] {
+        private[this] type m = d[z]
+        override val mempty: m = imply(i.mempty)
+        override val mappend: m => (=> m) => m = x => y => imply(i.mappend(unimply(x))(unimply(y)))
+        override val mconcat: List[m] => m = xs => imply(i.mconcat(List.map[m, p[z]](unimply_!)(xs)))
+    }
+
     implicit def asFunctor(implicit i: Functor[p]): Functor[d] = new Functor[d] {
         private[this] type f[+a] = d[a]
         override def fmap[a, b](f: a => b)(m: f[a]): f[b] = imply { i.fmap(f)(unimply(m)) }
