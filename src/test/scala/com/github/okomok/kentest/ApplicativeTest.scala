@@ -16,6 +16,7 @@ class ApplicativeTest extends org.scalatest.junit.JUnit3Suite {
         val fm = Applicative[Function.apply[Int]]
         import fm._
         val r: Int => Int => Int = ((x: Int) => (y: Int) => x + y) <@> ((x: Int) => x)
+        val s = fm.infer(x => (y: Int) => x + y) <@> (x => x)
     }
 
     def distList[f[+_], a](xs: List[f[a]])(implicit i: Applicative[f]): f[List[a]] = {
