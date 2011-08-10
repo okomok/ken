@@ -11,8 +11,8 @@ package ken
 /**
  * Trival type envelope for type-parameter inference
  */
-sealed abstract class Type[a] {
-    type apply = a
+sealed abstract class Type[a] extends Kind.Function0 {
+    override type apply = a
 }
 
 object Type {
@@ -20,10 +20,18 @@ object Type {
 }
 
 
-sealed abstract class Type1[a[_]] {
-    type apply[x] = a[x]
-}
+/*
+better name needed
+
+sealed abstract class Type1[f[+_]] extends Kind.quote1[f]
 
 object Type1 {
-    def apply[a[_]]: Type1[a] = new Type1[a]{}
+    def apply[f[+_]]: Type1[f] = new Type1[f]{}
 }
+
+sealed abstract class Type2[f[+_, +_]] extends Kind.quote2[f]
+
+object Type2 {
+    def apply[f[+_, +_]]: Type2[f] = new Type2[f]{}
+}
+*/
