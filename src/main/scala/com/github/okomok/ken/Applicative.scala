@@ -63,10 +63,6 @@ trait ApplicativeProxy[f[+_]] extends Applicative[f] with FunctorProxy[f] {
 }
 
 
-object Applicative extends ApplicativeInstance {
+object Applicative {
     def apply[f <: Kind.Function1](implicit i: Applicative[f#apply]): Applicative[f#apply] = i
-}
-
-
-trait ApplicativeInstance { this: Applicative.type =>
 }

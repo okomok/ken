@@ -43,7 +43,35 @@ object _Eq extends EqInstance {
 
 
 trait EqInstance { this: Eq.type =>
-    implicit def _ofEquiv[a](implicit i: scala.math.Equiv[a]): _Eq[a] = new _Eq[a] {
+    implicit def _ofScalaEquiv[a](implicit i: scala.Equiv[a]): _Eq[a] = new _Eq[a] {
         override val op_== : a => a => Bool = x => y => i.equiv(x, y)
+    }
+
+    implicit def _ofScalaOrdering[a](implicit i: scala.Ordering[a]): Ord[a] = new Ord[a] with EqProxy[a] {
+        override val self = _ofScalaEquiv(i)
+        override val compare: a => a => Ordering = { x => y => i.compare(x, y) match {
+            case 0 => EQ
+            case s if s < 0 => LT
+            case s if s > 0 => GT
+        } }
+        override val op_< : a => a => Bool = { x => y => i.lt(x, y) }
+        override val op_<= : a => a => Bool = { x => y => i.lteq(x, y) }
+        override val op_> : a => a => Bool = { x => y => i.gt(x, y) }
+        override val op_>= : a => a => Bool = { x => y => i.gteq(x, y) }
+        override val max: a => a => a = { x => y => i.max(x, y) }
+        override val min: a => a => a = { x => y => i.min(x, y) }
+    }
+
+    implicit def _ofScalaNumeric[a](implicit i: scala.Numeric[a]): Ix[a] = new Ix[a] with OrdProxy[a] {
+        override val self = _ofScalaOrdering(i)
+        override val range: Tuple2[a, a] => List[a] = { case (n, m) =>
+            Predef.require(i.lteq(n, m))
+            if (i.equiv(n, m)) Nil else n :: range(i.plus(n, i.one), m)
+        }
+        override val unsafeIndex: Tuple2[a, a] => a => Int = { case (n, _) => k => i.toInt(i.minus(k, n)) }
+        override val index: Tuple2[a, a] => a => Int = b => i => {
+            if (inRange(b)(i)) unsafeIndex(b)(i) else indexError(b)(i)("Integer")
+        }
+        override val inRange: Tuple2[a, a] => a => Bool = { case (n, m) => k => i.lteq(n, k) && i.lteq(k, m) }
     }
 }

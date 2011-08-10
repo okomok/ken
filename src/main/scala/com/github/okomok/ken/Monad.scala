@@ -190,10 +190,6 @@ trait MonadProxy[m[+_]] extends Monad[m] with ApplicativeProxy[m] {
 }
 
 
-object Monad extends MonadInstance {
+object Monad {
     def apply[m <: Kind.Function1](implicit i: Monad[m#apply]): Monad[m#apply] = i
-}
-
-
-trait MonadInstance { this: Monad.type =>
 }

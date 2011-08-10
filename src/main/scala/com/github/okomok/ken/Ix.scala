@@ -52,32 +52,6 @@ trait IxProxy[a] extends Ix[a] with OrdProxy[a] {
 }
 
 
-object Ix extends IxInstance {
+object Ix {
     def apply[a](implicit i: Ix[a]): Ix[a] = i
-}
-
-
-trait IxInstance { this: Ix.type =>
-    implicit val _ofInt: Ix[Int] = new Ix[Int] with OrdProxy[Int] {
-        private[this] type a = Int
-        override val self = Ord._ofOrdering[Int]
-        override val range: Tuple2[a, a] => List[a] = { case (m, n) => List.range(m, n) }
-        override val unsafeIndex: Tuple2[a, a] => a => Int = { case (m, _) => i => i - m }
-        override val index: Tuple2[a, a] => a => Int = b => i => {
-            if (inRange(b)(i)) unsafeIndex(b)(i) else indexError(b)(i)("Int")
-        }
-        override val inRange: Tuple2[a, a] => a => Bool = { case (m, n) => i => m <= i && i <= n }
-    }
-
-    implicit val _ofInteger: Ix[Integer] = new Ix[Integer] with OrdProxy[Integer] {
-        private[this] type a = Integer
-        override val self = Ord._ofOrdering[Integer]
-        override val range: Tuple2[a, a] => List[a] = { case (m, n) => List.range(m, n) }
-        override val unsafeIndex: Tuple2[a, a] => a => Int = { case (m, _) => i => Num[Int].fromInteger(i - m) }
-        override val index: Tuple2[a, a] => a => Int = b => i => {
-            if (inRange(b)(i)) unsafeIndex(b)(i) else indexError(b)(i)("Integer")
-        }
-        override val inRange: Tuple2[a, a] => a => Bool = { case (m, n) => i => m <= i && i <= n }
-    }
-    // TODO
 }

@@ -112,7 +112,7 @@ object List extends Foldable[List] with MonadPlus[List] with ThisIsInstance {
     }
 
     implicit def _asOrd[a](implicit i: Ord[a]): Ord[List[a]] = new Ord[List[a]] with EqProxy[List[a]] {
-        override val self = Eq._ofEquiv[List[a]]
+        override val self = Eq._ofScalaEquiv[List[a]]
         override val compare: List[a] => List[a] => Ordering = {
             @tailrec
             def impl(x: List[a])(y: List[a]): Ordering = (x, y) match {
@@ -641,10 +641,7 @@ object List extends Foldable[List] with MonadPlus[List] with ThisIsInstance {
         }
     }
 
-    def range[a](n: a, m: a)(implicit i: Num[a]): List[a] = {
-        // Predef.require(n <= m)
-        if (n == m) Nil else n :: range(i.op_+(n)(i.fromInteger(1)), m)
-    }
+    def range[a](n: a, m: a)(implicit i: Ix[a]): List[a] = i.range(n, m)
 
     def rangeFrom[a](n: a)(implicit i: Num[a]): List[a] = n :: rangeFrom(i.op_+(n)(i.fromInteger(1)))
 

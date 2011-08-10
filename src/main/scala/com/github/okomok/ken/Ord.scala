@@ -60,19 +60,4 @@ trait OrdProxy[a] extends Ord[a] with Proxy {
 
 object Ord {
     def apply[a](implicit i: Ord[a]): Ord[a] = i
-
-    implicit def _ofOrdering[a](implicit i: scala.Ordering[a]): Ord[a] = new Ord[a] with EqProxy[a] {
-        override val self = Eq._ofEquiv[a]
-        override val compare: a => a => Ordering = { x => y => i.compare(x, y) match {
-            case 0 => EQ
-            case s if s < 0 => LT
-            case s if s > 0 => GT
-        } }
-        override val op_< : a => a => Bool = { x => y => i.lt(x, y) }
-        override val op_<= : a => a => Bool = { x => y => i.lteq(x, y) }
-        override val op_> : a => a => Bool = { x => y => i.gt(x, y) }
-        override val op_>= : a => a => Bool = { x => y => i.gteq(x, y) }
-        override val max: a => a => a = { x => y => i.max(x, y) }
-        override val min: a => a => a = { x => y => i.min(x, y) }
-    }
 }
