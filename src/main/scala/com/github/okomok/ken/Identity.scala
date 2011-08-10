@@ -8,20 +8,11 @@ package com.github.okomok
 package ken
 
 
-trait Identity[+a] extends Strong[a]
-
-
-trait IdentityProxy[+a] extends Identity[a] with StrongProxy[a] {
-    override def self: Identity[a]
-}
+final case class Identity[+a](override val get: a) extends Strong[a]
 
 
 object Identity extends Kind.Strong1 with MonadFix[Identity] with ThisIsInstance {
     override type weak[+a] = a
-
-    def apply[a](a: a): Identity[a] = new Identity[a] {
-        override def get: a = a
-    }
 
     def run[a](m: Identity[a]): a = m.run
 
@@ -50,19 +41,4 @@ object Identity extends Kind.Strong1 with MonadFix[Identity] with ThisIsInstance
         override def asMonad(implicit i: Monad[p]): Monad[d] = WeakIdentity
         override def asMonadFix(implicit i: MonadFix[p]): MonadFix[d] = WeakIdentity
     }
-}
-
-
-object WeakIdentity extends MonadFix[({type m[+a] = a})#m] with ThisIsInstance {
-    // Overrides
-    //
-    // Functor
-    private[this] type f[+a] = a
-    override def fmap[a, b](f: a => b)(m: f[a]): f[b] = f(m)
-    // Monad
-    private[this] type m[+a] = f[a]
-    override def `return`[a](a: => a): m[a] = a
-    override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = k(m)
-    // MonadFix
-    override def mfix[a](f: (=> a) => m[a]): m[a] = Function.fix(f)
 }
