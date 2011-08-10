@@ -196,6 +196,4 @@ object Monad extends MonadInstance {
 
 
 trait MonadInstance { this: Monad.type =>
-    implicit val _ofWeakIdentity: Monad[({type m[+a] = a})#m] = WeakIdentity
-    implicit def _ofFunction[z]: Monad[({type m[+a] = z => a})#m] = Function._monad[z]
 }

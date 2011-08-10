@@ -41,6 +41,18 @@ object Kind {
         type inner[+a]
     }
 
+    trait const0[z] extends Function0 {
+        override type apply = z
+    }
+
+    trait const1[z] extends Function1 {
+        override type apply[+a] = z
+    }
+
+    trait const2[z] extends Function2 {
+        override type apply[+a, +b] = z
+    }
+
     trait quote1[f[+_]] extends Function1 {
         override type apply[+a] = f[a]
     }
