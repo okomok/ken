@@ -34,13 +34,9 @@ package object ken {
         case (_, y) => y
     }
 
-    def curry[a, b, c](f: (a, b) => c): a => b => c = { x => y => f(x, y) }
+    def curry[a, b, c](f: Tuple2[a, b] => c): a => b => c = { x => y => f((x, y)) }
 
-    def uncurry[a, b, c](f: a => b => c): (a, b) => c = { (x, y) => f(x)(y) }
-
-    def curry2[a, b, c](f: Tuple2[a, b] => c): a => b => c = { x => y => f((x, y)) }
-
-    def uncurry2[a, b, c](f: a => b => c): Tuple2[a, b] => c = { case (x, y) => f(x)(y) }
+    def uncurry[a, b, c](f: a => b => c): Tuple2[a, b] => c = { case (x, y) => f(x)(y) }
 
     def swap[a, b](p: (a, b)): (b, a) = p match {
         case (x, y) => (y, x)
@@ -48,7 +44,7 @@ package object ken {
 
     // Miscellaneous functions
     //
-    def id[a](x: a): a = x
+    def id[a]: a => a = x => x
 
     def const[a](x: a): Any => a = { _ => x }
 

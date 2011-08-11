@@ -30,6 +30,8 @@ object Scala {
         implicit def _toCanBuildFrom[CC[+_], A, B](mf: CanMapFrom[CC]): CanBuildFrom[CC[A], B, CC[B]] = mf.canBuild[A, B]
     }
 
+    sealed trait Traversable[CC[+X] <: GenTraversableLike[X, CC[X]]] extends Kind.quote1[CC]
+
     object Traversable {
         def _monad[CC[+X] <: GenTraversableLike[X, CC[X]]](implicit mf: CanMapFrom[CC]): MonadPlus[CC] = new MonadPlus[CC] {
             private[this] type m[+a] = CC[a]
@@ -52,7 +54,7 @@ object Scala {
         }
     }
 
-    object Option {
+    object Option extends Kind.quote1[Option] {
         val _monad: MonadPlus[Option] = new MonadPlus[Option] {
             // Functor
             private[this] type f[+a] = Option[a]

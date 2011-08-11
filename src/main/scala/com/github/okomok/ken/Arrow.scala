@@ -78,11 +78,11 @@ trait ArrowInstance {
         private[this] type a[a, b] = Function1[a, b]
         override def arr[b, c](f: b => c): a[b, c] = f
         override def first[b, c, d](f: a[b, c]): a[(b, d), (c, d)] = f *** ken.id[d]
-        override def second[b, c, d](f: a[b, c]): a[(d, b), (d, c)] = ken.id[d]_ *** f
+        override def second[b, c, d](f: a[b, c]): a[(d, b), (d, c)] = ken.id[d] *** f
         override def op_***[b, c, b_, c_](f: a[b, c])(g: a[b_, c_]): a[(b, b_), (c, c_)] = { case (x, y) => (f(x), g(y)) }
         // ArrowChoice
         override def left[b, c, d](f: a[b, c]): a[Either[b, d], Either[c, d]] = f +++ ken.id[d]
-        override def right[b, c, d](f: a[b, c]): a[Either[d, b], Either[d, c]] = ken.id[d]_ +++ f
+        override def right[b, c, d](f: a[b, c]): a[Either[d, b], Either[d, c]] = ken.id[d] +++ f
         override def op_+++[b, c, b_, c_](f: a[b, c])(g: a[b_, c_]): a[Either[b, b_], Either[c, c_]] = ((x: b) => Left(f(x)).of[c, c_]) ||| ((x: b_) => Right(g(x)).of[c, c_])
         override def op_|||[b, c, d](f: a[b, d])(g: a[c, d]): a[Either[b, c], d] = Either.either(f)(g)
         // ArrowApply

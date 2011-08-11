@@ -173,7 +173,7 @@ private[ken] final class _ErrorTs[n[+_]](val inner: Monad[n]) {
                     for {
                         a <- run(m)
                         * <- a match {
-                            case Left(l) => inner.`return`(Left(l), id[w]_)
+                            case Left(l) => inner.`return`(Left(l), id[w])
                             case Right((r, f)) => inner.`return`(Right(r), f)
                         }
                     } yield *
