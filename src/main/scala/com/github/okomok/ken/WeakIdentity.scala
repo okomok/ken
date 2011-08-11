@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-object WeakIdentity extends MonadFix[({type m[+a] = a})#m] with ThisIsInstance {
+object WeakIdentity extends MonadFix[({type m[+a] = a})#m] {
     // Overrides
     //
     // Functor

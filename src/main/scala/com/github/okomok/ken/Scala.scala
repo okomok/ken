@@ -44,5 +44,51 @@ object Scala {
             override def mzero: m[Nothing] = mf.apply[Nothing].result
             override def mplus[a](x: m[a])(y: => m[a]): m[a] = x.++(y)(mf)
         }
+
+        def _foldable[CC[+X] <: GenTraversableLike[X, CC[X]]]: Foldable[CC] = new Foldable[CC] {
+            private[this] type t[+a] = CC[a]
+            override def foldr[a, b](f: a => (=> b) => b)(z: b)(t: t[a]): b = t.foldRight(z)((a, b) => f(a)(b))
+            override def foldl[a, b](f: a => b => a)(z: a)(t: t[b]): a = t.foldLeft(z)((a, b) => f(a)(b))
+        }
+    }
+
+    object Option {
+        val _monad: MonadPlus[Option] = new MonadPlus[Option] {
+            // Functor
+            private[this] type f[+a] = Option[a]
+            override def fmap[a, b](f: a => b)(x: f[a]): f[b] = x match {
+                case None => None
+                case Some(a) => Some(f(a))
+            }
+            // Monad
+            private[this] type m[+a] = f[a]
+            override def `return`[a](x: => a): m[a] = Some(x)
+            override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = m match {
+                case Some(x) => k(x)
+                case None => None
+            }
+            override def op_>>[b](m: m[_])(k: => m[b]): m[b] = m match {
+                case Some(_) => k
+                case None => None
+            }
+            // MonadPlus
+            override def mzero: m[Nothing] = None
+            override def mplus[a](xs: m[a])(ys: => m[a]): m[a] = xs match {
+                case None => ys
+                case _ => xs
+            }
+        }
+
+        val _foldable: Foldable[Option] = new Foldable[Option] {
+            private[this] type t[+a] = Option[a]
+            override def foldr[a, b](f: a => (=> b) => b)(z: b)(t: t[a]): b = t match {
+                case None => z
+                case Some(x) => f(x)(z)
+            }
+            override def foldl[a, b](f: a => b => a)(z: a)(t: t[b]): a = t match {
+                case None => z
+                case Some(x) => f(z)(x)
+            }
+        }
     }
 }
