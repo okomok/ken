@@ -735,7 +735,7 @@ object Parsec {
     // Tricky combinators
 
     def anyToken[tok, st]: GenParser[tok, st, tok] = {
-        tokenPrim[tok, st, tok](_show)(pos => tok => toks => pos)(Maybe.just)
+        tokenPrim[tok, st, tok](_show)(pos => tok => toks => pos)(Just(_))
     }
 
     def eof[tok, st]: GenParser[tok, st, Unit] = {

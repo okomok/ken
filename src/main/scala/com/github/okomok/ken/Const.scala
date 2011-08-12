@@ -17,8 +17,6 @@ object Const extends Kind.Function {
         override type weak[+a] = z
     }
 
-    def of[a]: a => Const[a, Nothing] = x => Const[a, Nothing](x)
-
     implicit def weak[z]: Imply1[({type p[+a] = Const[z, a]})#p, ({type d[+a] = z})#d] = new Imply1[({type p[+a] = Const[z, a]})#p, ({type d[+a] = z})#d] {
         private[this] type p[+a] = Const[z, a]
         private[this] type d[+a] = z

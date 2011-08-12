@@ -30,7 +30,7 @@ trait Alternative[f[+_]] extends Applicative[f] {
 
     // Extra
     //
-    def optional[a](x: f[a]): f[Maybe[a]] = Just.of[a] <@> x <|> pure(Nothing.of[a])
+    def optional[a](x: f[a]): f[Maybe[a]] = (Just(_: a).up) <@> x <|> pure(Nothing.of[a])
 
     // Infix
     //

@@ -15,10 +15,6 @@ sealed abstract class Maybe[+a] extends Up[Maybe[a]] {
 case object Nothing extends Maybe[Nothing]
 final case class Just[+a](x: a) extends Maybe[a]
 
-object Just {
-    def of[a]: a => Maybe[a] = x => Just(x)
-}
-
 
 object Maybe extends MonadPlus[Maybe] with Traversable[Maybe] with ThisIsInstance {
     // Overrides
@@ -59,13 +55,14 @@ object Maybe extends MonadPlus[Maybe] with Traversable[Maybe] with ThisIsInstanc
     // Traversable
     override def traverse[f[+_], a, b](f: a => f[b])(t: t[a])(implicit i: Applicative[f]): f[t[b]] = t match {
         case Nothing => i.pure(Nothing)
-        case Just(x) => i.op_<@>(Just.of[b])(f(x))
+        case Just(x) => {
+            import i.{<@>}
+            (Just(_: b).up) <@> f(x)
+        }
     }
 
     // Operators
     //
-    def just[a](x: a): Maybe[a] = Just(x)
-
     def maybe[a, b](n: b)(f: a => b)(m: Maybe[a]): b = m match {
         case Nothing => n
         case Just(x) => f(x)
