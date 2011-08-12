@@ -45,6 +45,8 @@ trait Traversable[t[+_]] extends Functor[t] with Foldable[t] {
 
     def foldMapDefault[m, a](f: a => m)(t: t[a])(implicit i: Monoid[m]): m = {
         implicit val j = Applicative[Const.apply[m]]
+        // which is readable?
+        // traverse[j.apply, a, Nothing]( (x: a) => Const(f(x)) )(t).get
         traverse( (x: a) => j.infer( Const(f(x)) ) )(t).get
     }
 }
