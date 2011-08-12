@@ -55,5 +55,5 @@ trait FunctorInstance { this: Functor.type =>
     implicit def _ofPair[z](implicit ma: Monoid[z]): Applicative[({type f[+a] = (z, a)})#f] = Pair._asApplicative[z](ma)
 
     implicit def _ofScalaTraversable[CC[+X] <: scala.collection.GenTraversableLike[X, CC[X]]](implicit mf: Scala.CanMapFrom[CC]): MonadPlus[CC] = Scala.Traversable._monad[CC](mf)
-    implicit val _ofScalaOption: MonadPlus[Option] = Scala.Option._monad
+    implicit val _ofScalaOption: MonadPlus[Option] = Scala.Option
 }

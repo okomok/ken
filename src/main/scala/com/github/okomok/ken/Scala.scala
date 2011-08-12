@@ -52,45 +52,52 @@ object Scala {
             override def foldr[a, b](f: a => (=> b) => b)(z: b)(t: t[a]): b = t.foldRight(z)((a, b) => f(a)(b))
             override def foldl[a, b](f: a => b => a)(z: a)(t: t[b]): a = t.foldLeft(z)((a, b) => f(a)(b))
         }
+        /*
+        private[ken] def _asTraversable[CC[+X] <: GenTraversableLike[X, CC[X]]](implicit mf: CanMapFrom[CC]): Traversable[CC] = new Traversable[CC] {
+            private[this] type t[+a] = CC[a]
+            override def foldr[a, b](f: a => (=> b) => b)(z: b)(t: t[a]): b = t.foldRight(z)((a, b) => f(a)(b))
+            override def foldl[a, b](f: a => b => a)(z: a)(t: t[b]): a = t.foldLeft(z)((a, b) => f(a)(b))
+        }*/
     }
 
-    object Option extends Kind.quote1[Option] {
-        private[ken] val _monad: MonadPlus[Option] = new MonadPlus[Option] {
-            // Functor
-            private[this] type f[+a] = Option[a]
-            override def fmap[a, b](f: a => b)(x: f[a]): f[b] = x match {
-                case None => None
-                case Some(a) => Some(f(a))
-            }
-            // Monad
-            private[this] type m[+a] = f[a]
-            override def `return`[a](x: => a): m[a] = Some(x)
-            override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = m match {
-                case Some(x) => k(x)
-                case None => None
-            }
-            override def op_>>[b](m: m[_])(k: => m[b]): m[b] = m match {
-                case Some(_) => k
-                case None => None
-            }
-            // MonadPlus
-            override def mzero: m[Nothing] = None
-            override def mplus[a](xs: m[a])(ys: => m[a]): m[a] = xs match {
-                case None => ys
-                case _ => xs
-            }
+    object Option extends MonadPlus[Option] with ken.Traversable[Option] {
+        // Functor
+        private[this] type f[+a] = Option[a]
+        override def fmap[a, b](f: a => b)(x: f[a]): f[b] = x match {
+            case None => None
+            case Some(a) => Some(f(a))
         }
-
-        private[ken] val _asFoldable: Foldable[Option] = new Foldable[Option] {
-            private[this] type t[+a] = Option[a]
-            override def foldr[a, b](f: a => (=> b) => b)(z: b)(t: t[a]): b = t match {
-                case None => z
-                case Some(x) => f(x)(z)
-            }
-            override def foldl[a, b](f: a => b => a)(z: a)(t: t[b]): a = t match {
-                case None => z
-                case Some(x) => f(z)(x)
-            }
+        // Monad
+        private[this] type m[+a] = f[a]
+        override def `return`[a](x: => a): m[a] = Some(x)
+        override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = m match {
+            case Some(x) => k(x)
+            case None => None
+        }
+        override def op_>>[b](m: m[_])(k: => m[b]): m[b] = m match {
+            case Some(_) => k
+            case None => None
+        }
+        // MonadPlus
+        override def mzero: m[Nothing] = None
+        override def mplus[a](xs: m[a])(ys: => m[a]): m[a] = xs match {
+            case None => ys
+            case _ => xs
+        }
+        // Foldable
+        private[this] type t[+a] = Option[a]
+        override def foldr[a, b](f: a => (=> b) => b)(z: b)(t: t[a]): b = t match {
+            case None => z
+            case Some(x) => f(x)(z)
+        }
+        override def foldl[a, b](f: a => b => a)(z: a)(t: t[b]): a = t match {
+            case None => z
+            case Some(x) => f(z)(x)
+        }
+        // Traversable
+        override def traverse[f[+_], a, b](f: a => f[b])(t: t[a])(implicit i: Applicative[f]): f[t[b]] = t match {
+            case None => i.pure(None)
+            case Some(x) => i.op_<@>(id[b => Option[b]](Some(_)))(f(x))
         }
     }
 }

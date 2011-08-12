@@ -59,7 +59,7 @@ object Maybe extends MonadPlus[Maybe] with Traversable[Maybe] with ThisIsInstanc
     // Traversable
     override def traverse[f[+_], a, b](f: a => f[b])(t: t[a])(implicit i: Applicative[f]): f[t[b]] = t match {
         case Nothing => i.pure(Nothing)
-        case Just(x) => i.op_<@>(Just(_: b).up)(f(x))
+        case Just(x) => i.op_<@>(Just.of[b])(f(x))
     }
 
     // Operators
