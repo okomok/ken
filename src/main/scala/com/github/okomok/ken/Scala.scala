@@ -33,7 +33,7 @@ object Scala {
     sealed trait Traversable[CC[+X] <: GenTraversableLike[X, CC[X]]] extends Kind.quote1[CC]
 
     object Traversable {
-        def _monad[CC[+X] <: GenTraversableLike[X, CC[X]]](implicit mf: CanMapFrom[CC]): MonadPlus[CC] = new MonadPlus[CC] {
+        private[ken] def _monad[CC[+X] <: GenTraversableLike[X, CC[X]]](implicit mf: CanMapFrom[CC]): MonadPlus[CC] = new MonadPlus[CC] {
             private[this] type m[+a] = CC[a]
             // Monad
             override def `return`[a](x: => a): m[a] = {
@@ -47,7 +47,7 @@ object Scala {
             override def mplus[a](x: m[a])(y: => m[a]): m[a] = x.++(y)(mf)
         }
 
-        def _foldable[CC[+X] <: GenTraversableLike[X, CC[X]]]: Foldable[CC] = new Foldable[CC] {
+        private[ken] def _foldable[CC[+X] <: GenTraversableLike[X, CC[X]]]: Foldable[CC] = new Foldable[CC] {
             private[this] type t[+a] = CC[a]
             override def foldr[a, b](f: a => (=> b) => b)(z: b)(t: t[a]): b = t.foldRight(z)((a, b) => f(a)(b))
             override def foldl[a, b](f: a => b => a)(z: a)(t: t[b]): a = t.foldLeft(z)((a, b) => f(a)(b))
@@ -55,7 +55,7 @@ object Scala {
     }
 
     object Option extends Kind.quote1[Option] {
-        val _monad: MonadPlus[Option] = new MonadPlus[Option] {
+        private[ken] val _monad: MonadPlus[Option] = new MonadPlus[Option] {
             // Functor
             private[this] type f[+a] = Option[a]
             override def fmap[a, b](f: a => b)(x: f[a]): f[b] = x match {
@@ -81,7 +81,7 @@ object Scala {
             }
         }
 
-        val _foldable: Foldable[Option] = new Foldable[Option] {
+        private[ken] val _foldable: Foldable[Option] = new Foldable[Option] {
             private[this] type t[+a] = Option[a]
             override def foldr[a, b](f: a => (=> b) => b)(z: b)(t: t[a]): b = t match {
                 case None => z

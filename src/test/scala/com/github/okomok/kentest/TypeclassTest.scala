@@ -11,7 +11,7 @@ import com.github.okomok.ken._
 
 
 class TypeclassTest extends org.scalatest.junit.JUnit3Suite {
-
+/*
     def testImplicitObsolete {
         val m = Function._monad[Int]
         import m.StateT
@@ -26,7 +26,7 @@ class TypeclassTest extends org.scalatest.junit.JUnit3Suite {
         val sm = implicitly[Monad[({type m[+a] = StateT[Int, a]})#m]]
         ()
     }
-
+*/
     def testMakeAndInfer {
         val fm = Monad[Function.apply[Int]]
         val im = Monad[Identity.type]
