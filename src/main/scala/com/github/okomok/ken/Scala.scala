@@ -47,7 +47,7 @@ object Scala {
             override def mplus[a](x: m[a])(y: => m[a]): m[a] = x.++(y)(mf)
         }
 
-        private[ken] def _foldable[CC[+X] <: GenTraversableLike[X, CC[X]]]: Foldable[CC] = new Foldable[CC] {
+        private[ken] def _asFoldable[CC[+X] <: GenTraversableLike[X, CC[X]]]: Foldable[CC] = new Foldable[CC] {
             private[this] type t[+a] = CC[a]
             override def foldr[a, b](f: a => (=> b) => b)(z: b)(t: t[a]): b = t.foldRight(z)((a, b) => f(a)(b))
             override def foldl[a, b](f: a => b => a)(z: a)(t: t[b]): a = t.foldLeft(z)((a, b) => f(a)(b))
@@ -81,7 +81,7 @@ object Scala {
             }
         }
 
-        private[ken] val _foldable: Foldable[Option] = new Foldable[Option] {
+        private[ken] val _asFoldable: Foldable[Option] = new Foldable[Option] {
             private[this] type t[+a] = Option[a]
             override def foldr[a, b](f: a => (=> b) => b)(z: b)(t: t[a]): b = t match {
                 case None => z

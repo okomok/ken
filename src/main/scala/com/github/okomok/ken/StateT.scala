@@ -9,7 +9,7 @@ package ken
 
 
 private[ken] final class _StateTs[n[+_]](val inner: Monad[n]) {
-    private[this] implicit def innerFor[a](x: n[a]): inner.For[a] = inner.`for`(x)
+    private[this] implicit def innerForComp[a](x: n[a]): inner.ForComp[a] = inner.forComp(x)
 
     sealed abstract class _StateT[s, +a] extends Strong[s => n[(a, s)]]
 

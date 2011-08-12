@@ -9,7 +9,7 @@ package ken
 
 
 private[ken] final class _MaybeTs[n[+_]](val inner: Monad[n]) {
-    private[this] implicit def innerFor[a](x: n[a]): inner.For[a] = inner.`for`(x)
+    private[this] implicit def innerForComp[a](x: n[a]): inner.ForComp[a] = inner.forComp(x)
     private[this] implicit def innerInfix_>>=[a](x: n[a]): inner.Infix_>>=[a] = inner.>>=(x)
 
     sealed abstract class _MaybeT[+a] extends Strong[n[Maybe[a]]]

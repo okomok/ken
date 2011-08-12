@@ -16,7 +16,7 @@ class WorldTest extends org.scalatest.junit.JUnit3Suite {
         val w = new World
         import w._
         val sm = Monad[ST.type]
-        import sm.{`for`, forM_}
+        import sm.{forComp, forM_}
         runST {
             for {
                 n <- newSTRef(i.fromInteger(0))

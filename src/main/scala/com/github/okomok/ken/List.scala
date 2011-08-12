@@ -63,8 +63,14 @@ final case class ::[+a](head: a, tail: Lazy[List[a]]) extends List[a] {
     }
 }
 
+object :: {
+    def of[a]: a => (=> List[a]) => List[a] = x => xs => x :: xs
+}
+
 
 object !:: { // strict extractor
+    def of[a]: a => List[a] => List[a] = x => xs => x :: xs
+
     def unapply[a](xs: List[a]): Option[(a, List[a])] = xs match {
         case Nil => None
         case x :: xs => Some(x, xs.!)
@@ -72,7 +78,7 @@ object !:: { // strict extractor
 }
 
 
-object List extends Foldable[List] with MonadPlus[List] with ThisIsInstance {
+object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
     @tailrec
     def equal(xs: List[_])(ys: List[_]): Bool = (xs, ys) match {
         case (Nil, Nil) => True
@@ -102,6 +108,13 @@ object List extends Foldable[List] with MonadPlus[List] with ThisIsInstance {
     // Foldable
     private[this] type t[+a] = List[a]
     override def toList[a](xs: t[a]): List[a]  = xs
+    // Traversable
+    override def traverse[f[+_], a, b](f: a => f[b])(t: t[a])(implicit i: Applicative[f]): f[t[b]] = {
+        import i.{<@>, <*>}
+        def cons_f(x: a)(ys: => f[t[b]]): f[t[b]] = op_!::[b]_ <@> f(x) <*> ys
+        foldr(cons_f)(i.pure(Nil))(t)
+    }
+    override def mapM[m_[+_], a, b](f: a => m_[b])(t: t[a])(implicit i: Monad[m_]): m_[t[b]] = i.mapM(f)(t)
 
     // Instances
     //
@@ -333,7 +346,7 @@ object List extends Foldable[List] with MonadPlus[List] with ThisIsInstance {
 
     // Accumulating maps
     //
-    def mapAccumL[acc, x, y](f: acc => x => (acc, y))(s: acc)(xs: List[x]): (acc, List[y]) = xs match {
+    override def mapAccumL[acc, x, y](f: acc => x => (acc, y))(s: acc)(xs: List[x]): (acc, List[y]) = xs match {
         case Nil => (s, Nil)
         case x :: xs => {
             val (s_, y) = f(s)(x)
@@ -342,7 +355,7 @@ object List extends Foldable[List] with MonadPlus[List] with ThisIsInstance {
         }
     }
 
-    def mapAccumR[acc, x, y](f: (=> acc) => x => (acc, y))(s: acc)(xs: List[x]): (acc, List[y]) = xs match {
+    override def mapAccumR[acc, x, y](f: (=> acc) => x => (acc, y))(s: => acc)(xs: List[x]): (acc, List[y]) = xs match {
         case Nil => (s, Nil)
         case x :: xs => {
             lazy val s_ys = mapAccumR(f)(s)(xs.!)
