@@ -13,7 +13,7 @@ import com.github.okomok.ken._
 class ScalaTest extends org.scalatest.junit.JUnit3Suite {
 
     def testList {
-        val m = Monad[Scala.Traversable[scala.List]]
+        val m = implicitly[Monad[scala.List]]
         import m._
         val ret =  scala.List(1,2,3) >>= { x => scala.List(x, x+10) }
         expect(scala.List(1,11,2,12,3,13))(ret)
@@ -35,5 +35,10 @@ class ScalaTest extends org.scalatest.junit.JUnit3Suite {
         val m = MonadPlus[Scala.Option.type]
         val ret: scala.Option[Nothing] = m.mzero
         expect(scala.None)(ret)
+    }
+
+    def testNoAmbiguity {
+        val f = implicitly[Functor[scala.List]]
+        val g = implicitly[Foldable[scala.List]]
     }
 }

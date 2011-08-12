@@ -18,22 +18,30 @@ trait Traversable[t[+_]] extends Functor[t] with Foldable[t] {
     def mapM[m[+_], a, b](f: a => m[b])(t: t[a])(implicit i: Monad[m]): m[t[b]] = traverse(f)(t)
     def sequence[m[+_], a](t: t[m[a]])(implicit i: Monad[m]): m[t[a]] = mapM(id[m[a]])(t)(i)
 
+    // Overrides
+    //
+    // Functor
+    private[this] type f[+a] = t[a]
+    override def fmap[a, b](x: a => b)(y: f[a]): f[b] = {
+        traverse( (a: a) => Identity(x(a)) )(y).get
+    }
+
     // Extra
     //
     def `for`[f[+_], a, b](t: t[a])(f: a => f[b])(implicit i: Applicative[f]): f[t[b]] = traverse(f)(t)
     def forM[m[+_], a, b](t: t[a])(f: a => m[b])(implicit i: Monad[m]): m[t[b]] = mapM(f)(t)
 
     def mapAccumL[a, b, c](f: a => b => (a, c))(s: a)(t: t[b]): (a, t[c]) = {
-        implicit  val j = Applicative[StateL.apply[a]]
+        implicit val j = Applicative[StateL.apply[a]]
         traverse( (x: b) => j.infer( StateL(flip(f)(x)) ) )(t).get.apply(s)
     }
 
     def mapAccumR[a, b, c](f: (=> a) => b => (a, c))(s: a)(t: t[b]): (a, t[c]) = {
-        implicit  val j = Applicative[StateR.apply[a]]
+        implicit val j = Applicative[StateR.apply[a]]
         traverse( (x: b) => j.infer( StateR(flip(f)(x)) ) )(t).get.apply(s)
     }
 
-    def fmapDefault[a, b](f: a => b)(t: t[a]): t[b] = traverse(f andThen Identity.apply)(t).get
+    def fmapDefault[a, b](f: a => b)(t: t[a]): t[b] = traverse(Identity.of[b] compose f)(t).get
 
     def foldMapDefault[m, a](f: a => m)(t: t[a])(implicit i: Monoid[m]): m = {
         implicit val j = Applicative[Const.apply[m]]

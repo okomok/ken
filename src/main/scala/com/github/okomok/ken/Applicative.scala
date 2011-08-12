@@ -20,6 +20,7 @@ trait Applicative[f[+_]] extends Functor[f] {
 
     // Overrides
     //
+    // Functor
     override def fmap[a, b](x: a => b)(y: f[a]): f[b] = pure(x) <*> y
 
     // Extra

@@ -19,6 +19,7 @@ trait Monad[m[+_]] extends Applicative[m] {
 
     // Overrides
     //
+    // Applicative
     override def pure[a](x: => a): m[a] = `return`(x)
     override def op_<*>[a, b](x: m[a => b])(y: m[a]): m[b] = for { _x <- x; _y <- y } yield _x(_y)
 

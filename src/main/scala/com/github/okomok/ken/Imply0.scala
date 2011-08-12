@@ -21,6 +21,7 @@ trait Imply0[p, d] extends Imply1[({type p_[+a] = p})#p_, ({type d_[+a] = d})#d_
 
     // Overrides
     //
+    // Imply1
     override def imply1[a](p: p): d = imply0(p)
     override def unimply1[a](d: => d): p = unimply0(d)
 }

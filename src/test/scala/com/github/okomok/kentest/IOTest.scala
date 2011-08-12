@@ -14,7 +14,7 @@ class IOTest extends org.scalatest.junit.JUnit3Suite {
 
     def teztIteract {
         val io = IO.interact { line =>
-            List.foreach((ch: Char) => print(ch.toUpper))(line)
+            line.foreach((ch: Char) => print(ch.toUpper))
             line
         }
 

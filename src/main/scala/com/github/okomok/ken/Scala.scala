@@ -30,7 +30,7 @@ object Scala {
         implicit def _toCanBuildFrom[CC[+_], A, B](mf: CanMapFrom[CC]): CanBuildFrom[CC[A], B, CC[B]] = mf.canBuild[A, B]
     }
 
-    sealed trait Traversable[CC[+X] <: GenTraversableLike[X, CC[X]]] extends Kind.quote1[CC]
+    //sealed trait Traversable[CC[+X] <: GenTraversableLike[X, CC[X]]] extends Kind.quote1[CC]
 
     object Traversable {
         private[ken] def _monad[CC[+X] <: GenTraversableLike[X, CC[X]]](implicit mf: CanMapFrom[CC]): MonadPlus[CC] = new MonadPlus[CC] {
@@ -47,20 +47,27 @@ object Scala {
             override def mplus[a](x: m[a])(y: => m[a]): m[a] = x.++(y)(mf)
         }
 
-        private[ken] def _asFoldable[CC[+X] <: GenTraversableLike[X, CC[X]]]: Foldable[CC] = new Foldable[CC] {
+        private[ken] def _asTraversable[CC[+X] <: GenTraversableLike[X, CC[X]]](implicit mf: CanMapFrom[CC]): Traversable[CC] = new Traversable[CC] with FunctorProxy[CC] {
             private[this] type t[+a] = CC[a]
+            override val self = _monad[CC]
             override def foldr[a, b](f: a => (=> b) => b)(z: b)(t: t[a]): b = t.foldRight(z)((a, b) => f(a)(b))
             override def foldl[a, b](f: a => b => a)(z: a)(t: t[b]): a = t.foldLeft(z)((a, b) => f(a)(b))
+            override def traverse[f[+_], a, b](f: a => f[b])(t: t[a])(implicit i: Applicative[f]): f[t[b]] = {
+                import i.{<@>, <*>}
+                def cons_f(x: a)(ys: => f[List[b]]): f[List[b]] = List.op_!::[b]_ <@> f(x) <*> ys
+                val tmp: f[List[b]] = foldr(cons_f)(i.pure(Nil))(t)
+                ((xs: List[b]) => {
+                    val b = mf.apply[b]
+                    xs.foreach { x =>
+                        b += x
+                    }
+                    b.result
+                }) <@> tmp
+            }
         }
-        /*
-        private[ken] def _asTraversable[CC[+X] <: GenTraversableLike[X, CC[X]]](implicit mf: CanMapFrom[CC]): Traversable[CC] = new Traversable[CC] {
-            private[this] type t[+a] = CC[a]
-            override def foldr[a, b](f: a => (=> b) => b)(z: b)(t: t[a]): b = t.foldRight(z)((a, b) => f(a)(b))
-            override def foldl[a, b](f: a => b => a)(z: a)(t: t[b]): a = t.foldLeft(z)((a, b) => f(a)(b))
-        }*/
     }
 
-    object Option extends MonadPlus[Option] with ken.Traversable[Option] {
+    object Option extends MonadPlus[Option] with Traversable[Option] {
         // Functor
         private[this] type f[+a] = Option[a]
         override def fmap[a, b](f: a => b)(x: f[a]): f[b] = x match {

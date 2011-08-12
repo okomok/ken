@@ -16,7 +16,7 @@ class ForeachTest extends org.scalatest.junit.JUnit3Suite {
         val tr = List(1,2,3)
         val k1 = new java.util.ArrayList[Int]
         val k2 = new java.util.ArrayList[Int]
-        List.foreach[Int](e => k1.add(e))(tr)
+        tr.foreach(e => k1.add(e))
         k2.add(1); k2.add(2); k2.add(3)
         expect(k1)(k2)
     }
@@ -25,7 +25,7 @@ class ForeachTest extends org.scalatest.junit.JUnit3Suite {
         val tr = List.empty.of[Int]
         val k1 = new java.util.ArrayList[Int]
         val k2 = new java.util.ArrayList[Int]
-        List.foreach[Int](e => k1.add(e))(tr)
+        tr.foreach(e => k1.add(e))
         expect(k1)(k2)
     }
 }

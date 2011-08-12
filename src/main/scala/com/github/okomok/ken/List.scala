@@ -37,6 +37,15 @@ sealed abstract class List[+a] extends Up[List[a]] {
     final def filter(p: a => Bool): List[a] = List.filter(p)(this)
     final def withFilter(p: a => Bool): List[a] = List.filter(p)(this)
 
+    @tailrec
+    final def foreach(f: a => Unit): Unit = this match {
+        case Nil => ()
+        case x :: xs => {
+            f(x)
+            xs.!.foreach(f)
+        }
+    }
+
     final def breakOut[To](implicit bf: scala.collection.generic.CanBuildFrom[Nothing, a, To]): To = {
         List.foldl[scala.collection.mutable.Builder[a, To], a](b => x => seq(b += x)(b))(bf())(this).result
     }
@@ -98,8 +107,8 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
 
     // Overrides
     //
-    private[this] type m[+a] = List[a]
     // Monad
+    private[this] type m[+a] = List[a]
     override def `return`[a](x: => a): m[a] = List(x)
     override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = concat(map(y)(x))
     // MonadPlus
@@ -645,15 +654,6 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
 
     // Misc
     //
-    @tailrec
-    def foreach[a](f: a => Unit)(xs: List[a]): Unit = xs match {
-        case Nil => ()
-        case x :: xs => {
-            f(x)
-            foreach(f)(xs.!)
-        }
-    }
-
     def range[a](n: a, m: a)(implicit i: Ix[a]): List[a] = i.range(n, m)
 
     def rangeFrom[a](n: a)(implicit i: Num[a]): List[a] = n :: rangeFrom(i.op_+(n)(i.fromInteger(1)))

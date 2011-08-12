@@ -18,6 +18,7 @@ trait MonadPlus[m[+_]] extends Monad[m] with Alternative[m] {
 
     // Overrides
     //
+    // Alternative
     override def empty: m[Nothing] = mzero
     override def op_<|>[a](x: m[a])(y: => m[a]): m[a] = mplus(x)(y)
 

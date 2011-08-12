@@ -50,7 +50,7 @@ object IO extends MonadIO[IO] with ThisIsInstance {
     }
 
     val putStr: String_ => IO[Unit] = s => IO {
-        List.foreach(Predef.print)(s)
+        s.foreach(Predef.print)
     }
 
     val putStrLn: String_ => IO[Unit] = s => {

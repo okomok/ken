@@ -20,8 +20,8 @@ object Lazy extends Monad[Lazy] with ThisIsInstance {
 
     // Overrides
     //
-    private[this] type m[+a] = Lazy[a]
     // Monad
+    private[this] type m[+a] = Lazy[a]
     override def `return`[a](x: => a): m[a] = Lazy { x }
     override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = Lazy { y(x.!).! }
 }
