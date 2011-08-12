@@ -26,7 +26,7 @@ object Kind {
     }
 
     trait Function2 extends Function {
-        type apply[+a, +b]
+        type apply[-a, +b]
     }
 
     trait Strong0 extends Function0 {
@@ -50,15 +50,15 @@ object Kind {
     }
 
     trait const2[z] extends Function2 {
-        override type apply[+a, +b] = z
+        override type apply[-a, +b] = z
     }
 
     trait quote1[f[+_]] extends Function1 {
         override type apply[+a] = f[a]
     }
 
-    trait quote2[f[+_, +_]] extends Function2 {
-        override type apply[+a, +b] = f[a, b]
+    trait quote2[f[-_, +_]] extends Function2 {
+        override type apply[-a, +b] = f[a, b]
     }
 
     trait qcurry2[f[_, +_]] extends Function {

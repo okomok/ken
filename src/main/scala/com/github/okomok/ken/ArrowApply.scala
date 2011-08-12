@@ -8,15 +8,23 @@ package com.github.okomok
 package ken
 
 
-// TODO
+trait ArrowApply[a[-_, +_]] extends Arrow[a] {
+    final val asArrowApply: ArrowApply[apply] = this
 
-
-trait ArrowApply[a[_, _]] extends Arrow[a] {
+    // Core
+    //
     def app[b, c]: a[(a[b, c], b), c]
 }
 
 
+trait ArrowApplyProxy[a[-_, +_]] extends ArrowApply[a] with ArrowProxy[a] {
+    override def self: ArrowApply[a]
+
+    override def app[b, c]: a[(a[b, c], b), c] = self.app[b, c]
+}
+
+
 object ArrowApply {
-    def apply[a[_, _]](implicit i: ArrowApply[a]): ArrowApply[a] = i
+    def apply[a <: Kind.Function2](implicit i: ArrowApply[a#apply]): ArrowApply[a#apply] = i
 }
 

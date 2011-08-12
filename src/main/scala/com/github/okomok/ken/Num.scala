@@ -64,7 +64,7 @@ object Num extends NumInstance {
 }
 
 
-trait NumInstance { this: Num.type =>
+private[ken] trait NumInstance { this: Num.type =>
     implicit def _ofNumeric[a](implicit i: scala.Numeric[a]): Num[a] = new Num[a] {
         override val op_+ : a => a => a = { x => y => i.plus(x, y) }
         override val op_- : a => a => a = { x => y => i.minus(x, y) }

@@ -42,7 +42,7 @@ object _Eq extends EqInstance {
 }
 
 
-trait EqInstance { this: Eq.type =>
+private[ken] trait EqInstance { this: Eq.type =>
     implicit def _ofScalaEquiv[a](implicit i: scala.Equiv[a]): _Eq[a] = new _Eq[a] {
         override val op_== : a => a => Bool = x => y => i.equiv(x, y)
     }

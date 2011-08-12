@@ -13,7 +13,7 @@ import com.github.okomok.ken._
 
 class MonadToArrowTest extends org.scalatest.junit.JUnit3Suite {
 
-    def liftA2[a[_, _], b, c, d, e](op: b => c => d)(f: a[e, b])(g: a[e, c])(implicit i: Arrow[a]): a[e, d] = {
+    def liftA2[a[-_, +_], b, c, d, e](op: b => c => d)(f: a[e, b])(g: a[e, c])(implicit i: Arrow[a]): a[e, d] = {
         import i._
         (f &&& g) >>> arr{case (b, c) => op(b)(c)}
     }
@@ -59,7 +59,7 @@ class MonadToArrowTest extends org.scalatest.junit.JUnit3Suite {
     }
 
     object ArrowWay {
-        def eval[a[_, _]](exp: Exp)(implicit i: ArrowChoice[a]): a[Env, Val] = {
+        def eval[a[-_, +_]](exp: Exp)(implicit i: ArrowChoice[a]): a[Env, Val] = {
             import i._
             exp match {
                 case Var(s) => arr(lookup(s))

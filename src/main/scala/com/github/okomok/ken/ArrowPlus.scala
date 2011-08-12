@@ -8,19 +8,29 @@ package com.github.okomok
 package ken
 
 
-// TODO
+trait ArrowPlus[a[-_, +_]] extends ArrowZero[a] {
+    final val asArrowPlus: ArrowPlus[apply] = this
 
-
-trait ArrowPlus[a[_, _]] extends ArrowZero[a] {
+    // Core
+    //
     def op_<+>[b, c](f: a[b, c])(g: => a[b, c]): a[b, c]
 
-    final private[ken] class Op_<+>[b, c](f: a[b, c]) {
+    // Infix
+    //
+    sealed class Op_<+>[b, c](f: a[b, c]) {
         def <+>(g: => a[b, c]): a[b, c] = op_<+>(f)(g)
     }
     final implicit def <+>[b, c](f: a[b, c]): Op_<+>[b, c] = new Op_<+>[b, c](f)
 }
 
 
+trait ArrowPlusProxy[a[-_, +_]] extends ArrowPlus[a] with ArrowZeroProxy[a] {
+    override def self: ArrowPlus[a]
+
+    override def op_<+>[b, c](f: a[b, c])(g: => a[b, c]): a[b, c] = self.op_<+>(f)(g)
+}
+
+
 object ArrowPlus {
-    def apply[a[_, _]](implicit i: ArrowPlus[a]): ArrowPlus[a] = i
+    def apply[a <: Kind.Function2](implicit i: ArrowPlus[a#apply]): ArrowPlus[a#apply] = i
 }
