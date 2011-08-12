@@ -27,16 +27,21 @@ trait Imply1Proxy[p[+_], d[+_]] extends Imply1[p, d] with Proxy {
     override def imply1[a](p: p[a]): d[a] = self.imply1(p)
     override def unimply1[a](d: => d[a]): p[a] = self.unimply1(d)
 
-    override def asApplicative(implicit i: Applicative[p]): Applicative[d] = self.asApplicative
-    override def asMonad(implicit i: Monad[p]): Monad[d] = self.asMonad
-    override def asMonadCont(implicit i: MonadCont[p]): MonadCont[d] = self.asMonadCont
-    override def asMonadError[e](implicit i: MonadError[e, p]): MonadError[e, d] = self.asMonadError[e]
-    override def asMonadFix(implicit i: MonadFix[p]): MonadFix[d] = self.asMonadFix
-    override def asMonadIO(implicit i: MonadIO[p]): MonadIO[d] = self.asMonadIO
-    override def asMonadPlus(implicit i: MonadPlus[p]): MonadPlus[d] = self.asMonadPlus
-    override def asMonadReader[r](implicit i: MonadReader[r, p]): MonadReader[r, d] = self.asMonadReader[r]
-    override def asMonadState[s](implicit i: MonadState[s, p]): MonadState[s, d] = self.asMonadState[s]
-    override def asMonadWriter[w](implicit i: MonadWriter[w, p]): MonadWriter[w, d] = self.asMonadWriter[w]
+    override def asEq[z](implicit i: Eq[p[z]]): Eq[d[z]] = self.asEq(i)
+    override def asOrd[z](implicit i: Ord[p[z]]): Ord[d[z]] = self.asOrd(i)
+    override def asIx[z](implicit i: Ix[p[z]]): Ix[d[z]] = self.asIx(i)
+    override def asMonoid[z](implicit i: Monoid[p[z]]): Monoid[d[z]] = self.asMonoid(i)
+    override def asFunctor(implicit i: Functor[p]): Functor[d] = self.asFunctor(i)
+    override def asApplicative(implicit i: Applicative[p]): Applicative[d] = self.asApplicative(i)
+    override def asMonad(implicit i: Monad[p]): Monad[d] = self.asMonad(i)
+    override def asMonadCont(implicit i: MonadCont[p]): MonadCont[d] = self.asMonadCont(i)
+    override def asMonadError[e](implicit i: MonadError[e, p]): MonadError[e, d] = self.asMonadError(i)
+    override def asMonadFix(implicit i: MonadFix[p]): MonadFix[d] = self.asMonadFix(i)
+    override def asMonadIO(implicit i: MonadIO[p]): MonadIO[d] = self.asMonadIO(i)
+    override def asMonadPlus(implicit i: MonadPlus[p]): MonadPlus[d] = self.asMonadPlus(i)
+    override def asMonadReader[r](implicit i: MonadReader[r, p]): MonadReader[r, d] = self.asMonadReader(i)
+    override def asMonadState[s](implicit i: MonadState[s, p]): MonadState[s, d] = self.asMonadState(i)
+    override def asMonadWriter[w](implicit i: MonadWriter[w, p]): MonadWriter[w, d] = self.asMonadWriter(i)
 }
 
 

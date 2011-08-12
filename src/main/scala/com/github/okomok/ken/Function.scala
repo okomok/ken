@@ -24,7 +24,7 @@ object Function extends Kind.qcurry2[Function1] {
     def ~[b, c](f: b => c): (=> b) => c = { y => f(y) }
     def ~[a, b, c](f: a => b => c)(implicit i: DummyImplicit): a => (=> b) => c = { x => y => f(x)(y) }
 
-    private[ken] def _monad[z]: MonadReader[z, ({type m[+a] = z => a})#m] = new MonadReader[z, ({type m[+a] = z => a})#m] {
+    private[ken] def _asMonadReader[z]: MonadReader[z, ({type m[+a] = z => a})#m] = new MonadReader[z, ({type m[+a] = z => a})#m] {
         // Functor
         private[this] type f[+a] = z => a
         override def fmap[a, b](x: a => b)(y: f[a]): f[b] = x compose y

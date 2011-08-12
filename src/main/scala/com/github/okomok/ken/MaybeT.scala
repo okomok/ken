@@ -40,7 +40,7 @@ private[ken] final class _MaybeTs[n[+_]](val inner: Monad[n]) {
             override def unimply1[a](d: => d[a]): p[a] = _MaybeT(d)
         }
 
-        implicit val _monad: MonadPlus[_MaybeT] = new MonadPlus[_MaybeT] {
+        implicit val _asMonadPlus: MonadPlus[_MaybeT] = new MonadPlus[_MaybeT] {
             // Monad
             private[this] type m[+a] = _MaybeT[a]
             override def `return`[a](a: => a): m[a] = _MaybeT { inner.`return`(Just(a).up) }
@@ -74,7 +74,7 @@ private[ken] final class _MaybeTs[n[+_]](val inner: Monad[n]) {
             new MonadIO[_MaybeT] with MonadProxy[_MaybeT]
         {
             private[this] type m[+a] = _MaybeT[a]
-            override def self = _monad
+            override def self = _asMonadPlus
             override def liftIO[a](io: IO[a]): m[a] = _asMonadTrans.lift(i.liftIO(io))
         }
     }
@@ -84,7 +84,7 @@ private[ken] final class _MaybeTs[n[+_]](val inner: Monad[n]) {
             new MonadCont[_MaybeT] with MonadProxy[_MaybeT]
         {
             private[this] type m[+a] = _MaybeT[a]
-            override val self = _monad
+            override val self = _asMonadPlus
             override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = _MaybeT {
                 i.callCC { (c: Maybe[a] => n[Maybe[b]]) =>
                     run( f( a => _MaybeT { c(Just(a)) } ) )
@@ -98,7 +98,7 @@ private[ken] final class _MaybeTs[n[+_]](val inner: Monad[n]) {
             new MonadError[e, _MaybeT] with MonadProxy[_MaybeT]
         {
             private[this] type m[+a] = _MaybeT[a]
-            override val self = _monad
+            override val self = _asMonadPlus
             override def errorClass: ErrorClass[e] = i.errorClass
             override def throwError[a](e: e): m[a] = _asMonadTrans.lift(i.throwError(e))
             override def catchError[a](m: m[a])(h: e => m[a]): m[a] = _MaybeT {
@@ -112,7 +112,7 @@ private[ken] final class _MaybeTs[n[+_]](val inner: Monad[n]) {
             new MonadReader[r, _MaybeT] with MonadProxy[_MaybeT]
         {
             private[this] type m[+a] = _MaybeT[a]
-            override val self = _monad
+            override val self = _asMonadPlus
             override def ask: m[r] = _asMonadTrans.lift(i.ask)
             override def local[a](f: r => r)(m: m[a]): m[a] = _MaybeT { i.local(f)(run(m)) }
         }
@@ -123,7 +123,7 @@ private[ken] final class _MaybeTs[n[+_]](val inner: Monad[n]) {
             new MonadState[s, _MaybeT] with MonadProxy[_MaybeT]
         {
             private[this] type m[+a] = _MaybeT[a]
-            override val self = _monad
+            override val self = _asMonadPlus
             override def get: m[s] = _asMonadTrans.lift(i.get)
             override def put(s: s): m[Unit] = _asMonadTrans.lift(i.put(s))
         }

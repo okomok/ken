@@ -51,9 +51,9 @@ object Functor extends FunctorInstance {
 
 trait FunctorInstance { this: Functor.type =>
     implicit val _ofWeakIdentity: MonadFix[({type m[+a] = a})#m] = WeakIdentity
-    implicit def _ofFunction[z]: MonadReader[z, ({type m[+a] = z => a})#m] = Function._monad[z]
-    implicit def _ofPair[z](implicit ma: Monoid[z]): Applicative[({type f[+a] = (z, a)})#f] = Pair._asApplicative[z](ma)
+    implicit def _ofFunction[z]: MonadReader[z, ({type m[+a] = z => a})#m] = Function._asMonadReader[z]
+    implicit def _ofPair[z](implicit ma: Monoid[z]): Applicative[({type f[+a] = (z, a)})#f] = Pair._asApplicative(ma)
 
-    implicit def _ofScalaTraversable[CC[+X] <: scala.collection.GenTraversableLike[X, CC[X]]](implicit mf: Scala.CanMapFrom[CC]): MonadPlus[CC] = Scala.Traversable._monad[CC](mf)
+    implicit def _ofScalaTraversable[CC[+X] <: scala.collection.GenTraversableLike[X, CC[X]]](implicit mf: Scala.CanMapFrom[CC]): MonadPlus[CC] = Scala.Traversable._asMonadPlus(mf)
     implicit val _ofScalaOption: MonadPlus[Option] = Scala.Option
 }

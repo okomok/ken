@@ -23,7 +23,7 @@ final class World {
 
     object ST extends Kind.quote1[ST] {
         def apply[a](r: => a): ST[a] = State { s => (r, s) }
-        implicit val _monad = State._monad[Tag]
+        implicit val _asMonadState = State._asMonadState[Tag]
     }
 
     def runST[a](st: ST[a]): a = State.eval(st)(new Tag)
@@ -37,7 +37,7 @@ final class World {
     def writeSTRef[a](ref: STRef[a])(v: a): ST[Unit] = ST { ref.mutvar = v; () }
 
     def modifySTRef[a](ref: STRef[a])(f: a => a): ST[Unit] = {
-        import ST._monad.=<<
+        import ST._asMonadState.=<<
         (writeSTRef(ref)_ compose f) =<< readSTRef(ref)
     }
 }

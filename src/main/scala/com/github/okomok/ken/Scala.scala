@@ -30,10 +30,8 @@ object Scala {
         implicit def _toCanBuildFrom[CC[+_], A, B](mf: CanMapFrom[CC]): CanBuildFrom[CC[A], B, CC[B]] = mf.canBuild[A, B]
     }
 
-    //sealed trait Traversable[CC[+X] <: GenTraversableLike[X, CC[X]]] extends Kind.quote1[CC]
-
     object Traversable {
-        private[ken] def _monad[CC[+X] <: GenTraversableLike[X, CC[X]]](implicit mf: CanMapFrom[CC]): MonadPlus[CC] = new MonadPlus[CC] {
+        private[ken] def _asMonadPlus[CC[+X] <: GenTraversableLike[X, CC[X]]](implicit mf: CanMapFrom[CC]): MonadPlus[CC] = new MonadPlus[CC] {
             private[this] type m[+a] = CC[a]
             // Monad
             override def `return`[a](x: => a): m[a] = {
@@ -49,7 +47,7 @@ object Scala {
 
         private[ken] def _asTraversable[CC[+X] <: GenTraversableLike[X, CC[X]]](implicit mf: CanMapFrom[CC]): Traversable[CC] = new Traversable[CC] with FunctorProxy[CC] {
             private[this] type t[+a] = CC[a]
-            override val self = _monad[CC]
+            override val self = _asMonadPlus[CC](mf)
             override def foldr[a, b](f: a => (=> b) => b)(z: b)(t: t[a]): b = t.foldRight(z)((a, b) => f(a)(b))
             override def foldl[a, b](f: a => b => a)(z: a)(t: t[b]): a = t.foldLeft(z)((a, b) => f(a)(b))
             override def traverse[f[+_], a, b](f: a => f[b])(t: t[a])(implicit i: Applicative[f]): f[t[b]] = {

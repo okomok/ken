@@ -9,7 +9,7 @@ package ken
 
 
 /**
- * Lifts an inner _monad.
+ * Lifts an inner monad.
  */
 trait MonadTrans[n[+_], m[+_]] extends Typeclass {
     def lift[a](n: n[a]): m[a]
