@@ -9,7 +9,7 @@ package ken
 
 
 trait ArrowApply[a[-_, +_]] extends Arrow[a] {
-    final val asArrowApply: ArrowApply[apply] = this
+    final val asArrowApply: ArrowApply[apply2] = this
 
     // Core
     //
@@ -25,6 +25,6 @@ trait ArrowApplyProxy[a[-_, +_]] extends ArrowApply[a] with ArrowProxy[a] {
 
 
 object ArrowApply {
-    def apply[a <: Kind.Function2](implicit i: ArrowApply[a#apply]): ArrowApply[a#apply] = i
+    def apply[a <: Kind.Function2](implicit i: ArrowApply[a#apply2]): ArrowApply[a#apply2] = i
 }
 

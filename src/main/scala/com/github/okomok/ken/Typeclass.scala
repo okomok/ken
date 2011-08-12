@@ -30,7 +30,7 @@ trait Typeclass1[f[+_]] extends Typeclass with Kind.Function1 {
 
 
 trait Typeclass2[f[-_, +_]] extends Typeclass with Kind.Function2 {
-    override type apply[-a, +b] = f[a, b]
+    override type apply2[-a, +b] = f[a, b]
 
     /**
      * Helper for type-parameter inference

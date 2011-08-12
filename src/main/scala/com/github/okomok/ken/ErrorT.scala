@@ -13,7 +13,7 @@ private[ken] final class _ErrorTs[n[+_]](val inner: Monad[n]) {
 
     sealed abstract class _ErrorT[e, +a] extends Strong[n[Either[e, a]]]
 
-    object _ErrorT extends Kind.Function with Instance {
+    object _ErrorT extends Kind.FunctionLike with Instance {
         sealed trait apply[e] extends Kind.MonadTrans {
             override type apply[+a] = _ErrorT[e, a]
             override type inner[+a] = n[a]

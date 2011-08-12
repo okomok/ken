@@ -9,7 +9,7 @@ package ken
 
 
 trait Category[cat[-_, +_]] extends Typeclass2[cat] {
-    final val asCategory: Category[apply] = this
+    final val asCategory: Category[apply2] = this
 
     // Core
     //
@@ -45,9 +45,9 @@ trait CategoryProxy[cat[-_, +_]] extends Category[cat] with Proxy {
 
 
 object Category extends CategoryInstance {
-    def apply[cat <: Kind.Function2](implicit i: Category[cat#apply]): Category[cat#apply] = i
+    def apply[cat <: Kind.Function2](implicit i: Category[cat#apply2]): Category[cat#apply2] = i
 }
 
 private[ken] trait CategoryInstance { this: Category.type =>
-    implicit val _ofFunction1: ArrowChoice[Function1] with ArrowApply[Function1] = Function._arrow
+    implicit val _ofFunction1: ArrowChoice[Function1] with ArrowApply[Function1] = Function
 }

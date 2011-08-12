@@ -9,7 +9,8 @@ package ken
 
 
 trait Arrow[a[-_, +_]] extends Category[a] {
-    final val asArrow: Arrow[apply] = this
+    final val asArrow: Arrow[apply2] = this
+
     // Core
     //
     def arr[b, c](f: b => c): a[b, c]
@@ -22,7 +23,7 @@ trait Arrow[a[-_, +_]] extends Category[a] {
     // Overrides
     //
     // Category
-    override def cid[a_]: a[a_, a_] = arr(ken.id[a_])
+    override def cid[a_]: a[a_, a_] = arr(id[a_])
 
     // Extra
     //
@@ -33,6 +34,8 @@ trait Arrow[a[-_, +_]] extends Category[a] {
     def op_>>^[b, c, d](a: a[b, c])(f: c => d): a[b, d] = a >>> arr(f)
     def op_<<^[b, c, d](a: a[c, d])(f: b => c): a[b, d] = a <<< arr(f)
     def op_^<<[b, c, d](f: c => d)(a: a[b, c]): a[b, d] = arr(f) <<< a
+
+    def returnA[b]: a[b, b] = arr(id[b])
 
     // Infix
     //
@@ -46,7 +49,6 @@ trait Arrow[a[-_, +_]] extends Category[a] {
     }
     final implicit def &&&[b, c](f: a[b, c]): Op_&&&[b, c] = new Op_&&&[b, c](f)
 
-    final def returnA[b]: a[b, b] = arr(ken.id[b])
     sealed class Op_^>>[b, c](f: b => c) {
         def ^>>[d](a: a[c, d]): a[b, d] = op_^>>(f)(a)
     }
@@ -82,11 +84,12 @@ trait ArrowProxy[a[-_, +_]] extends Arrow[a] with CategoryProxy[a] {
     override def op_>>^[b, c, d](a: a[b, c])(f: c => d): a[b, d] = self.op_>>^(a)(f)
     override def op_<<^[b, c, d](a: a[c, d])(f: b => c): a[b, d] = self.op_<<^(a)(f)
     override def op_^<<[b, c, d](f: c => d)(a: a[b, c]): a[b, d] = self.op_^<<(f)(a)
+    override def returnA[b]: a[b, b] = self.returnA[b]
 }
 
 
 object Arrow {
-    def apply[a <: Kind.Function2](implicit i: Arrow[a#apply]): Arrow[a#apply] = i
+    def apply[a <: Kind.Function2](implicit i: Arrow[a#apply2]): Arrow[a#apply2] = i
 }
 
 

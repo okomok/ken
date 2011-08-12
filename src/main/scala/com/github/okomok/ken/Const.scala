@@ -11,7 +11,7 @@ package ken
 final case class Const[a, +b](override val get: a) extends Strong[a]
 
 
-object Const extends Kind.Function {
+object Const extends Kind.FunctionLike {
     sealed trait apply[z] extends Kind.Strong1 {
         override type apply[+a] = Const[z, a]
         override type weak[+a] = z

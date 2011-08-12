@@ -15,18 +15,18 @@ object Kind {
     /**
      * Marker trait for kind functions
      */
-    trait Function
+    trait FunctionLike
 
-    trait Function0 extends Function {
+    trait Function0 extends FunctionLike {
         type apply
     }
 
-    trait Function1 extends Function {
+    trait Function1 extends FunctionLike {
         type apply[+a]
     }
 
-    trait Function2 extends Function {
-        type apply[-a, +b]
+    trait Function2 extends FunctionLike {
+        type apply2[-a, +b]
     }
 
     trait Strong0 extends Function0 {
@@ -49,19 +49,11 @@ object Kind {
         override type apply[+a] = z
     }
 
-    trait const2[z] extends Function2 {
-        override type apply[-a, +b] = z
-    }
-
     trait quote1[f[+_]] extends Function1 {
         override type apply[+a] = f[a]
     }
 
-    trait quote2[f[-_, +_]] extends Function2 {
-        override type apply[-a, +b] = f[a, b]
-    }
-
-    trait qcurry2[f[_, +_]] extends Function {
+    trait qcurry2[f[_, +_]] extends FunctionLike {
         sealed trait apply[a] extends Function1 {
             override type apply[+b] = f[a, b]
         }

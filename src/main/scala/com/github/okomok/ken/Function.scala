@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-object Function extends Kind.qcurry2[Function1] {
+object Function extends Kind.qcurry2[Function1] with ArrowChoice[Function1] with ArrowApply[Function1] {
     def fix[a](f: (=> a) => a): a = {
         lazy val x: a = f(x)
         x
@@ -24,6 +24,26 @@ object Function extends Kind.qcurry2[Function1] {
     def ~[b, c](f: b => c): (=> b) => c = { y => f(y) }
     def ~[a, b, c](f: a => b => c)(implicit i: DummyImplicit): a => (=> b) => c = { x => y => f(x)(y) }
 
+    // Overrides
+    //
+    // Category
+    private[this] type cat[-a, +b] = a => b
+    override def cid[a]: cat[a, a] = id[a]
+    override def op_<<<[a, b, c](f: cat[b, c])(g: cat[a, b]): cat[a, c] = f.compose(g)
+    // Arrow
+    private[this] type a[-a, +b] = cat[a, b]
+    override def arr[b, c](f: b => c): a[b, c] = f
+    override def first[b, c, d](f: a[b, c]): a[(b, d), (c, d)] = f *** id[d]
+    override def second[b, c, d](f: a[b, c]): a[(d, b), (d, c)] = id[d] *** f
+    override def op_***[b, c, b_, c_](f: a[b, c])(g: a[b_, c_]): a[(b, b_), (c, c_)] = { case (x, y) => (f(x), g(y)) }
+    // ArrowChoice
+    override def left[b, c, d](f: a[b, c]): a[Either[b, d], Either[c, d]] = f +++ id[d]
+    override def right[b, c, d](f: a[b, c]): a[Either[d, b], Either[d, c]] = id[d] +++ f
+    override def op_+++[b, c, b_, c_](f: a[b, c])(g: a[b_, c_]): a[Either[b, b_], Either[c, c_]] = ((x: b) => Left(f(x)).of[c, c_]) ||| ((x: b_) => Right(g(x)).of[c, c_])
+    override def op_|||[b, c, d](f: a[b, d])(g: a[c, d]): a[Either[b, c], d] = Either.either(f)(g)
+    // ArrowApply
+    override def app[b, c]: a[(a[b, c], b), c] = { case (f, x) => f(x) }
+
     // Instances
     //
     private[ken] def _asMonadReader[z]: MonadReader[z, ({type m[+a] = z => a})#m] = new MonadReader[z, ({type m[+a] = z => a})#m] {
@@ -38,7 +58,7 @@ object Function extends Kind.qcurry2[Function1] {
         override def `return`[a](x: => a): m[a] = const(x)
         override def op_>>=[a, b](f: m[a])(k: a => m[b]): m[b] = { z => k(f(z))(z) }
         // MonadReader
-        override def ask: m[z] = ken.id
+        override def ask: m[z] = id
         override def local[a](f: z => z)(m: m[a]): m[a] = m compose f
     }
 
@@ -49,25 +69,5 @@ object Function extends Kind.qcurry2[Function1] {
             val y_ = y // scalac mistery
             z => mb.mappend(x(z))(y_(z))
         }
-    }
-
-    private[ken] val _arrow: ArrowChoice[Function1] with ArrowApply[Function1] = new ArrowChoice[Function1] with ArrowApply[Function1] {
-        // Category
-        private[this] type cat[-a, +b] = Function1[a, b]
-        override def cid[a]: cat[a, a] = id[a]
-        override def op_<<<[a, b, c](f: cat[b, c])(g: cat[a, b]): cat[a, c] = f.compose(g)
-        // Arrow
-        private[this] type a[a, b] = Function1[a, b]
-        override def arr[b, c](f: b => c): a[b, c] = f
-        override def first[b, c, d](f: a[b, c]): a[(b, d), (c, d)] = f *** ken.id[d]
-        override def second[b, c, d](f: a[b, c]): a[(d, b), (d, c)] = ken.id[d] *** f
-        override def op_***[b, c, b_, c_](f: a[b, c])(g: a[b_, c_]): a[(b, b_), (c, c_)] = { case (x, y) => (f(x), g(y)) }
-        // ArrowChoice
-        override def left[b, c, d](f: a[b, c]): a[Either[b, d], Either[c, d]] = f +++ ken.id[d]
-        override def right[b, c, d](f: a[b, c]): a[Either[d, b], Either[d, c]] = ken.id[d] +++ f
-        override def op_+++[b, c, b_, c_](f: a[b, c])(g: a[b_, c_]): a[Either[b, b_], Either[c, c_]] = ((x: b) => Left(f(x)).of[c, c_]) ||| ((x: b_) => Right(g(x)).of[c, c_])
-        override def op_|||[b, c, d](f: a[b, d])(g: a[c, d]): a[Either[b, c], d] = Either.either(f)(g)
-        // ArrowApply
-        override def app[b, c]: a[(a[b, c], b), c] = { case (f, x) => f(x) }
     }
 }
