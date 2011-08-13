@@ -48,6 +48,7 @@ object Category extends CategoryInstance {
     def apply[cat <: Kind.Function2](implicit i: Category[cat#apply2]): Category[cat#apply2] = i
 }
 
+
 private[ken] trait CategoryInstance { this: Category.type =>
     implicit val _ofFunction1: ArrowChoice[Function1] with ArrowApply[Function1] = Function
 }
