@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-trait Traversable[t[+_]] extends Functor[t] with Foldable[t] {
+trait Traversable[t[+_]] extends Functor[t] with Foldable[t] { outer =>
     final val asTraversable: Traversable[apply] = this
 
     // Core
@@ -32,8 +32,10 @@ trait Traversable[t[+_]] extends Functor[t] with Foldable[t] {
     def forM[m[+_], a, b](t: t[a])(f: a => m[b])(implicit i: Monad[m]): m[t[b]] = mapM(f)(t)
 
     def mapAccumL[a, b, c](f: a => b => (a, c))(s: a)(t: t[b]): (a, t[c]) = {
-        implicit val j = Applicative[StateL.apply[a]]
-        traverse( (x: b) => j.infer( StateL(flip(f)(x)) ) )(t).get.apply(s)
+        //implicit val j = Applicative[StateL.apply[a]]
+        //traverse( (x: b) => j.infer( StateL(flip(f)(x)) ) )(t).get.apply(s)
+        val k = with1[StateL.apply[a]]
+        k.traverse( (x: b) => StateL(flip(f)(x)) )(t).get.apply(s)
     }
 
     def mapAccumR[a, b, c](f: (=> a) => b => (a, c))(s: a)(t: t[b]): (a, t[c]) = {
@@ -49,6 +51,18 @@ trait Traversable[t[+_]] extends Functor[t] with Foldable[t] {
         // traverse[j.apply, a, Nothing]( (x: a) => Const(f(x)) )(t).get
         traverse( (x: a) => j.infer( Const(f(x)) ) )(t).get
     }
+
+    // With
+    //
+    trait TraversableWith1[f_ <: Kind.Function1] extends FoldableWith1[f_] {
+        final def traverse[a, b](f: a => f[b])(t: t[a])(implicit i: Applicative[f]): f[t[b]] = outer.traverse(f)(t)(i)
+        final def sequenceA[a](t: t[f[a]])(implicit i: Applicative[f]): f[t[a]] = outer.sequenceA(t)(i)
+        final def mapM[a, b](f: a => m[b])(t: t[a])(implicit i: Monad[m]): m[t[b]] = outer.mapM(f)(t)(i)
+        final def sequence[a](t: t[m[a]])(implicit i: Monad[m]): m[t[a]] = outer.sequence(t)(i)
+        final def `for`[ a, b](t: t[a])(f: a => f[b])(implicit i: Applicative[f]): f[t[b]] = outer.`for`(t)(f)(i)
+        final def forM[a, b](t: t[a])(f: a => m[b])(implicit i: Monad[m]): m[t[b]] = outer.forM(t)(f)
+    }
+    override def with1[f_ <: Kind.Function1]: TraversableWith1[f_] = new TraversableWith1[f_]{}
 }
 
 

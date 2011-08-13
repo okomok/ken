@@ -26,6 +26,17 @@ trait Typeclass1[f[+_]] extends Typeclass with Kind.Function1 {
      * Helper for type-parameter inference
      */
     final def infer[a](x: f[a]): f[a] = x
+
+    /**
+     * Helper for type-parameter inference
+     */
+    trait With1[f_ <: Kind.Function1] {
+        // Workaround: java.lang.Error: unexpected alias type: type f
+        protected type f[+a] = f_ #apply[a]
+        protected type m[+a] = f[a]
+    }
+
+    def with1[f_ <: Kind.Function1]: With1[f_] = new With1[f_]{}
 }
 
 
@@ -36,4 +47,15 @@ trait Typeclass2[f[-_, +_]] extends Typeclass with Kind.Function2 {
      * Helper for type-parameter inference
      */
     final def infer[a, b](x: f[a, b]): f[a, b] = x
+
+    /**
+     * Helper for type-parameter inference
+     */
+    trait With1[f_ <: Kind.Function1] {
+        // Workaround: java.lang.Error: unexpected alias type: type f
+        protected type f[+a] = f_ #apply[a]
+        protected type m[+a] = f[a]
+    }
+
+    def with1[f_ <: Kind.Function1]: With1[f_] = new With1[f_]{}
 }

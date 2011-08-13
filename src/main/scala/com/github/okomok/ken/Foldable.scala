@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-trait Foldable[t[+_]] extends Typeclass1[t] {
+trait Foldable[t[+_]] extends Typeclass1[t] { outer =>
     final val asFoldable: Foldable[apply] = this
 
     // Core
@@ -130,6 +130,22 @@ trait Foldable[t[+_]] extends Typeclass1[t] {
     def find[a](p: a => Bool)(xs: t[a]): Maybe[a] = {
         Maybe.listToMaybe(concatMap((x: a) => if (p(x)) List(x) else Nil)(xs))
     }
+
+    // With
+    //
+    trait FoldableWith1[f_ <: Kind.Function1] extends With1[f_] {
+        final def foldrM[a, b](f: a => (=> b) => m[b])(z0: b)(xs: t[a])(implicit i: Monad[m]): m[b] = outer.foldrM(f)(z0)(xs)(i)
+        final def foldlM[a, b](f: a => b => m[a])(z0: a)(xs: t[b])(implicit i: Monad[m]): m[a] = outer.foldlM(f)(z0)(xs)
+        final def traverse_[a, b](f: a => f[b])(xs: t[a])(implicit i: Applicative[f]): f[Unit] = outer.traverse_(f)(xs)(i)
+        final def for_[a, b](xs: t[a])(f: a => f[b])(implicit i: Applicative[f]): f[Unit] = outer.for_(xs)(f)(i)
+        final def mapM_[a, b](f: a => m[b])(xs: t[a])(implicit i: Monad[m]): m[Unit] = outer.mapM_(f)(xs)(i)
+        final def forM_[a, b](xs: t[a])(f: a => m[b])(implicit i: Monad[m]): m[Unit] = outer.forM_(xs)(f)(i)
+        final def sequenceA_[a](xs: t[f[a]])(implicit i: Applicative[f]): f[Unit] = outer.sequenceA_(xs)(i)
+        final def sequence_[a](xs: t[m[a]])(implicit i: Monad[m]): m[Unit] = outer.sequence_(xs)(i)
+        final def asum[a](xs: t[f[a]])(implicit i: Alternative[f]): f[a] = outer.asum(xs)(i)
+        final def msum[a](xs: t[m[a]])(implicit i: MonadPlus[m]): m[a] = outer.msum(xs)(i)
+    }
+    override def with1[f_ <: Kind.Function1]: FoldableWith1[f_] = new FoldableWith1[f_]{}
 }
 
 
