@@ -12,7 +12,7 @@ private[ken] final class _Kleislis[m[+_]](val monad: Monad[m]) {
     final case class _Kleisli[-a, +b](override val get: a => m[b]) extends Strong[a => m[b]]
 
     object _Kleisli extends Instance {
-        def run[a, b](rep: _Kleisli[a, b]): a => m[b] = rep.run
+        def run[a, b](f: _Kleisli[a, b]): a => m[b] = f.run
     }
 
     private[ken] trait Instance0 { this: _Kleisli.type =>
