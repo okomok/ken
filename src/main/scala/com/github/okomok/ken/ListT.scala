@@ -115,7 +115,7 @@ private[ken] final class _ListTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    private[ken] trait Instance5 extends Instance4 { this: _ListT.type =>
+    private[ken] trait Instance extends Instance4 { this: _ListT.type =>
         implicit def _asMonadState[s](implicit i: MonadState[s, n]): MonadState[s, _ListT] =
             new MonadState[s, _ListT] with MonadProxy[_ListT]
         {
@@ -124,8 +124,5 @@ private[ken] final class _ListTs[n[+_]](val inner: Monad[n]) {
             override def get: m[s] = _asMonadTrans.lift(i.get)
             override def put(s: s): m[Unit] = _asMonadTrans.lift(i.put(s))
         }
-    }
-
-    private[ken] trait Instance extends Instance5 { this: _ListT.type =>
     }
 }

@@ -151,6 +151,12 @@ trait Monad[m[+_]] extends Applicative[m] {
     final lazy val _lazyTs = new _LazyTs[m](this)
     type LazyT[+a] = _lazyTs._LazyT[a]
     final lazy val LazyT = _lazyTs._LazyT
+
+    // Arrows
+    //
+    final lazy val _kleislis = new _Kleislis[m](this)
+    type Kleisli[-a, +b] = _kleislis._Kleisli[a, b]
+    final lazy val Kleisli = _kleislis._Kleisli
 }
 
 

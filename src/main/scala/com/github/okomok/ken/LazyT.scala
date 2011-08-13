@@ -110,7 +110,7 @@ private[ken] final class _LazyTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    private[ken] trait Instance5 extends Instance4 { this: _LazyT.type =>
+    private[ken] trait Instance extends Instance4 { this: _LazyT.type =>
         implicit def _asMonadState[s](implicit i: MonadState[s, n]): MonadState[s, _LazyT] =
             new MonadState[s, _LazyT] with MonadProxy[_LazyT]
         {
@@ -119,8 +119,5 @@ private[ken] final class _LazyTs[n[+_]](val inner: Monad[n]) {
             override def get: m[s] = _asMonadTrans.lift(i.get)
             override def put(s: s): m[Unit] = _asMonadTrans.lift(i.put(s))
         }
-    }
-
-    private[ken] trait Instance extends Instance5 { this: _LazyT.type =>
     }
 }

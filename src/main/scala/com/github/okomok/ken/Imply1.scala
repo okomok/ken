@@ -31,6 +31,7 @@ trait Imply1Proxy[p[+_], d[+_]] extends Imply1[p, d] with Proxy {
     override def asOrd[z](implicit i: Ord[p[z]]): Ord[d[z]] = self.asOrd(i)
     override def asIx[z](implicit i: Ix[p[z]]): Ix[d[z]] = self.asIx(i)
     override def asMonoid[z](implicit i: Monoid[p[z]]): Monoid[d[z]] = self.asMonoid(i)
+
     override def asFunctor(implicit i: Functor[p]): Functor[d] = self.asFunctor(i)
     override def asApplicative(implicit i: Applicative[p]): Applicative[d] = self.asApplicative(i)
     override def asMonad(implicit i: Monad[p]): Monad[d] = self.asMonad(i)
@@ -179,7 +180,7 @@ private[ken] trait Imply1Instance6[p[+_], d[+_]] extends Imply1Instance5[p, d] {
     }
 }
 
-private[ken] trait Imply1Instance7[p[+_], d[+_]] extends Imply1Instance6[p, d] { outer: Imply1[p, d] =>
+private[ken] trait Imply1Instance[p[+_], d[+_]] extends Imply1Instance6[p, d] { outer: Imply1[p, d] =>
     implicit def asMonadWriter[w](implicit i: MonadWriter[w, p]): MonadWriter[w, d] = new MonadWriter[w, d] with MonadProxy[d] {
         private[this] type m[+a] = d[a]
         override val self = outer.asMonad(i)
@@ -188,7 +189,4 @@ private[ken] trait Imply1Instance7[p[+_], d[+_]] extends Imply1Instance6[p, d] {
         override def listen[a](x: m[a]): m[(a, w)] = imply1 { i.listen(unimply1(x)) }
         override def pass[a](x: m[(a, w => w)]): m[a] = imply1 { i.pass(unimply1(x)) }
     }
-}
-
-private[ken] trait Imply1Instance[p[+_], d[+_]] extends Imply1Instance7[p, d] { outer: Imply1[p, d] =>
 }

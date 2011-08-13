@@ -153,7 +153,7 @@ private[ken] final class _WriterTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    private[ken] trait Instance7 extends Instance6 { this: _WriterT.type =>
+    private[ken] trait Instance extends Instance6 { this: _WriterT.type =>
         implicit def _asMonadState[w, s](implicit i: MonadState[s, n], j: Monoid[w]): MonadState[s, ({type m[+a] = _WriterT[w, a]})#m] =
             new MonadState[s, ({type m[+a] = _WriterT[w, a]})#m] with MonadProxy[({type m[+a] = _WriterT[w, a]})#m]
         {
@@ -162,8 +162,5 @@ private[ken] final class _WriterTs[n[+_]](val inner: Monad[n]) {
             override def get: m[s] = _asMonadTrans.lift(i.get)
             override def put(s: s): m[Unit] = _asMonadTrans.lift(i.put(s))
         }
-    }
-
-    private[ken] trait Instance extends Instance7 { this: _WriterT.type =>
     }
 }

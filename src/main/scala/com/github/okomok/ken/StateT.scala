@@ -146,7 +146,7 @@ private[ken] final class _StateTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    private[ken] trait Instance7 extends Instance6 { this: _StateT.type =>
+    private[ken] trait Instance extends Instance6 { this: _StateT.type =>
         implicit def _asMonadWriter[s, w](implicit i: MonadWriter[w, n]): MonadWriter[w, ({type m[+a] = _StateT[s, a]})#m] =
             new MonadWriter[w, ({type m[+a] = _StateT[s, a]})#m] with MonadProxy[({type m[+a] = _StateT[s, a]})#m]
         {
@@ -163,8 +163,5 @@ private[ken] final class _StateTs[n[+_]](val inner: Monad[n]) {
                 }
             }
         }
-    }
-
-    private[ken] trait Instance extends Instance7 { this: _StateT.type =>
     }
 }

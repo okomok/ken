@@ -139,7 +139,7 @@ private[ken] final class _ReaderTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    private[ken] trait Instance7 extends Instance6 { this: _ReaderT.type =>
+    private[ken] trait Instance extends Instance6 { this: _ReaderT.type =>
         implicit def _asMonadWriter[r, w](implicit i: MonadWriter[w, n]): MonadWriter[w, ({type m[+a] = _ReaderT[r, a]})#m] =
             new MonadWriter[w, ({type m[+a] = _ReaderT[r, a]})#m] with MonadProxy[({type m[+a] = _ReaderT[r, a]})#m]
         {
@@ -150,8 +150,5 @@ private[ken] final class _ReaderTs[n[+_]](val inner: Monad[n]) {
             override def listen[a](m: m[a]): m[(a, w)] = _ReaderT { w => i.listen(run(m)(w)) }
             override def pass[a](m: m[(a, w => w)]): m[a] = _ReaderT { w => i.pass(run(m)(w)) }
         }
-    }
-
-    private[ken] trait Instance extends Instance7 { this: _ReaderT.type =>
     }
 }

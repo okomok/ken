@@ -151,7 +151,7 @@ private[ken] final class _ErrorTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    private[ken] trait Instance5 extends Instance4 { this: _ErrorT.type =>
+    private[ken] trait Instance extends Instance4 { this: _ErrorT.type =>
         implicit def _asMonadWriter[e, w](implicit i: MonadWriter[w, n], j: ErrorClass[e]): MonadWriter[w, ({type m[+a] = _ErrorT[e, a]})#m] =
             new MonadWriter[w, ({type m[+a] = _ErrorT[e, a]})#m] with MonadProxy[({type m[+a] = _ErrorT[e, a]})#m]
         {
@@ -180,8 +180,5 @@ private[ken] final class _ErrorTs[n[+_]](val inner: Monad[n]) {
                 }
             }
         }
-    }
-
-    private[ken] trait Instance extends Instance5 { this: _ErrorT.type =>
     }
 }

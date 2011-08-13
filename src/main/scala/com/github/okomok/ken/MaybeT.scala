@@ -118,7 +118,7 @@ private[ken] final class _MaybeTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    private[ken] trait Instance5 extends Instance4 { this: _MaybeT.type =>
+    private[ken] trait Instance extends Instance4 { this: _MaybeT.type =>
         implicit def _asMonadState[s](implicit i: MonadState[s, n]): MonadState[s, _MaybeT] =
             new MonadState[s, _MaybeT] with MonadProxy[_MaybeT]
         {
@@ -127,8 +127,5 @@ private[ken] final class _MaybeTs[n[+_]](val inner: Monad[n]) {
             override def get: m[s] = _asMonadTrans.lift(i.get)
             override def put(s: s): m[Unit] = _asMonadTrans.lift(i.put(s))
         }
-    }
-
-    private[ken] trait Instance extends Instance5 { this: _MaybeT.type =>
     }
 }
