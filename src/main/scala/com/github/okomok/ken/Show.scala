@@ -12,7 +12,7 @@ import Show._
 
 
 trait Show[a] extends Typeclass0[a] {
-    final val asShow: Show[apply] = this
+    final val asShow: Show[apply0] = this
 
     // Core
     //

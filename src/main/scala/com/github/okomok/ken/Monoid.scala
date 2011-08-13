@@ -9,7 +9,7 @@ package ken
 
 
 trait Monoid[m] extends Typeclass0[m] { outer =>
-    final val asMonoid: Monoid[apply] = this
+    final val asMonoid: Monoid[apply0] = this
 
     // Core
     //

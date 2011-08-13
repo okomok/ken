@@ -14,9 +14,9 @@ private[ken] final class _ListTs[n[+_]](val inner: Monad[n]) {
     sealed abstract class _ListT[+a] extends Strong[n[List[a]]]
 
     object _ListT extends Kind.MonadTrans with Instance {
-        override type apply[+a] = _ListT[a]
+        override type apply1[+a] = _ListT[a]
         override type inner[+a] = n[a]
-        override type weak[+a] = n[List[a]]
+        override type weak1[+a] = n[List[a]]
 
         def apply[a](rep: n[List[a]]): _ListT[a] = new _ListT[a] {
             override def get: n[List[a]] = rep

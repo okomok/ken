@@ -12,7 +12,7 @@ final case class ZipList[+a](override val get: List[a]) extends Strong[List[a]]
 
 
 object ZipList extends Kind.Strong1 with Applicative[ZipList] with ThisIsInstance {
-    override type weak[+a] = List[a]
+    override type weak1[+a] = List[a]
 
     def run[a](m: ZipList[a]): List[a] = m.run
     def getZipList[a](m: ZipList[a]): List[a] = m.run

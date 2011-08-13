@@ -34,7 +34,7 @@ trait Traversable[t[+_]] extends Functor[t] with Foldable[t] { outer =>
     def mapAccumL[a, b, c](f: a => b => (a, c))(s: a)(t: t[b]): (a, t[c]) = {
         //implicit val j = Applicative[StateL.apply[a]]
         //traverse( (x: b) => j.infer( StateL(flip(f)(x)) ) )(t).get.apply(s)
-        val k = with1[StateL.apply[a]]
+        val k = pull[StateL.apply[a]]
         k.traverse( (x: b) => StateL(flip(f)(x)) )(t).get.apply(s)
     }
 
@@ -52,17 +52,17 @@ trait Traversable[t[+_]] extends Functor[t] with Foldable[t] { outer =>
         traverse( (x: a) => j.infer( Const(f(x)) ) )(t).get
     }
 
-    // With
+    // Pull
     //
-    trait TraversableWith1[f_ <: Kind.Function1] extends FoldableWith1[f_] {
+    trait TraversablePull[f_ <: Kind.FunctionV] extends FoldablePull[f_] {
         final def traverse[a, b](f: a => f[b])(t: t[a])(implicit i: Applicative[f]): f[t[b]] = outer.traverse(f)(t)(i)
         final def sequenceA[a](t: t[f[a]])(implicit i: Applicative[f]): f[t[a]] = outer.sequenceA(t)(i)
         final def mapM[a, b](f: a => m[b])(t: t[a])(implicit i: Monad[m]): m[t[b]] = outer.mapM(f)(t)(i)
         final def sequence[a](t: t[m[a]])(implicit i: Monad[m]): m[t[a]] = outer.sequence(t)(i)
-        final def `for`[ a, b](t: t[a])(f: a => f[b])(implicit i: Applicative[f]): f[t[b]] = outer.`for`(t)(f)(i)
+        final def `for`[a, b](t: t[a])(f: a => f[b])(implicit i: Applicative[f]): f[t[b]] = outer.`for`(t)(f)(i)
         final def forM[a, b](t: t[a])(f: a => m[b])(implicit i: Monad[m]): m[t[b]] = outer.forM(t)(f)
     }
-    override def with1[f_ <: Kind.Function1]: TraversableWith1[f_] = new TraversableWith1[f_]{}
+    override def pull[f_ <: Kind.FunctionV]: TraversablePull[f_] = new TraversablePull[f_]{}
 }
 
 
@@ -94,8 +94,8 @@ private[ken] final case class StateL[s, +a](override val get: s => (s, a)) exten
 
 private[ken] object StateL extends Kind.FunctionLike {
     sealed trait apply[s] extends Kind.Strong1 {
-        override type apply[+a] = StateL[s, a]
-        override type weak[+a] = s => (a, s)
+        override type apply1[+a] = StateL[s, a]
+        override type weak1[+a] = s => (a, s)
     }
 
     implicit def _asApplicative[s]: Applicative[({type f[+a] = StateL[s, a]})#f] = new Applicative[({type f[+a] = StateL[s, a]})#f] {
@@ -122,8 +122,8 @@ private[ken] final case class StateR[s, +a](override val get: (=> s) => (s, a)) 
 
 private[ken] object StateR extends Kind.FunctionLike {
     sealed trait apply[s] extends Kind.Strong1 {
-        override type apply[+a] = StateR[s, a]
-        override type weak[+a] = (=> s) => (a, s)
+        override type apply1[+a] = StateR[s, a]
+        override type weak1[+a] = (=> s) => (a, s)
     }
 
     implicit def _asApplicative[s]: Applicative[({type f[+a] = StateR[s, a]})#f] = new Applicative[({type f[+a] = StateR[s, a]})#f] {

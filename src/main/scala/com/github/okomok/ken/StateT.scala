@@ -15,9 +15,9 @@ private[ken] final class _StateTs[n[+_]](val inner: Monad[n]) {
 
     object _StateT extends Kind.FunctionLike with Instance {
         sealed trait apply[s] extends Kind.MonadTrans {
-            override type apply[+a] = _StateT[s, a]
+            override type apply1[+a] = _StateT[s, a]
             override type inner[+a] = n[a]
-            override type weak[+a] = s => n[(a, s)]
+            override type weak1[+a] = s => n[(a, s)]
         }
 
         def apply[s, a](rep: s => n[(a, s)]): _StateT[s, a] = new _StateT[s, a] {

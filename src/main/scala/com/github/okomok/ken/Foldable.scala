@@ -131,9 +131,9 @@ trait Foldable[t[+_]] extends Typeclass1[t] { outer =>
         Maybe.listToMaybe(concatMap((x: a) => if (p(x)) List(x) else Nil)(xs))
     }
 
-    // With
+    // Pull
     //
-    trait FoldableWith1[f_ <: Kind.Function1] extends With1[f_] {
+    trait FoldablePull[f_ <: Kind.FunctionV] extends Pull[f_] {
         final def foldrM[a, b](f: a => (=> b) => m[b])(z0: b)(xs: t[a])(implicit i: Monad[m]): m[b] = outer.foldrM(f)(z0)(xs)(i)
         final def foldlM[a, b](f: a => b => m[a])(z0: a)(xs: t[b])(implicit i: Monad[m]): m[a] = outer.foldlM(f)(z0)(xs)
         final def traverse_[a, b](f: a => f[b])(xs: t[a])(implicit i: Applicative[f]): f[Unit] = outer.traverse_(f)(xs)(i)
@@ -145,7 +145,7 @@ trait Foldable[t[+_]] extends Typeclass1[t] { outer =>
         final def asum[a](xs: t[f[a]])(implicit i: Alternative[f]): f[a] = outer.asum(xs)(i)
         final def msum[a](xs: t[m[a]])(implicit i: MonadPlus[m]): m[a] = outer.msum(xs)(i)
     }
-    override def with1[f_ <: Kind.Function1]: FoldableWith1[f_] = new FoldableWith1[f_]{}
+    override def pull[f_ <: Kind.FunctionV]: FoldablePull[f_] = new FoldablePull[f_]{}
 }
 
 

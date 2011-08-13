@@ -9,8 +9,8 @@ package ken
 
 
 final case class Endo[a](override val get: a => a) extends Strong[a => a] with Kind.Strong0 {
-    override type apply = Endo[a]
-    override type weak = a => a
+    override type apply0 = Endo[a]
+    override type weak0 = a => a
 }
 
 

@@ -13,49 +13,70 @@ package ken
  */
 object Kind {
     /**
-     * Marker trait for kind functions
+     * Marker
      */
     trait FunctionLike
 
-    trait Function0 extends FunctionLike {
-        type apply
+    /**
+     * Variadic
+     */
+    trait FunctionV extends FunctionLike {
+        type applyV[-a, +b]
     }
 
-    trait Function1 extends FunctionLike {
-        type apply[+a]
+    trait Function0 extends FunctionV {
+        type apply0
     }
 
-    trait Function2 extends FunctionLike {
+    trait Function1 extends FunctionV {
+        type apply1[+a]
+        type apply[+a] // alias of apply1
+    }
+
+    trait Function2 extends FunctionV {
         type apply2[-a, +b]
     }
 
-    trait Strong0 extends Function0 {
-        type weak
+    trait AbstractFunction0 extends Function0  {
+        override type applyV[-a, +b] = apply0
     }
 
-    trait Strong1 extends Function1 {
-        type weak[+a]
+    trait AbstractFunction1 extends Function1 {
+        override type apply[+a] = apply1[a]
+        override type applyV[-a, +b] = apply1[b]
+    }
+
+    trait AbstractFunction2 extends Function2 {
+        override type applyV[-a, +b] = apply2[a, b]
+    }
+
+    trait Strong0 extends AbstractFunction0 {
+        type weak0
+    }
+
+    trait Strong1 extends AbstractFunction1 {
+        type weak1[+a]
     }
 
     trait MonadTrans extends Strong1 {
         type inner[+a]
     }
 
-    trait const0[z] extends Function0 {
-        override type apply = z
+    trait const0[z] extends AbstractFunction0 {
+        override type apply0 = z
     }
 
-    trait const1[z] extends Function1 {
-        override type apply[+a] = z
+    trait const1[z] extends AbstractFunction1 {
+        override type apply1[+a] = z
     }
 
-    trait quote1[f[+_]] extends Function1 {
-        override type apply[+a] = f[a]
+    trait quote1[f[+_]] extends AbstractFunction1 {
+        override type apply1[+a] = f[a]
     }
 
     trait qcurry2[f[_, +_]] extends FunctionLike {
-        sealed trait apply[a] extends Function1 {
-            override type apply[+b] = f[a, b]
+        sealed trait apply[a] extends AbstractFunction1 {
+            override type apply1[+b] = f[a, b]
         }
     }
 }

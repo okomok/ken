@@ -15,9 +15,9 @@ private[ken] final class _WriterTs[n[+_]](val inner: Monad[n]) {
 
     object _WriterT extends Kind.FunctionLike with Instance {
         sealed trait apply[w] extends Kind.MonadTrans {
-            override type apply[+a] = _WriterT[w, a]
+            override type apply1[+a] = _WriterT[w, a]
             override type inner[+a] = n[a]
-            override type weak[+a] = n[(a, w)]
+            override type weak1[+a] = n[(a, w)]
         }
 
         def apply[w, a](rep: n[(a, w)]): _WriterT[w, a] = new _WriterT[w, a] {

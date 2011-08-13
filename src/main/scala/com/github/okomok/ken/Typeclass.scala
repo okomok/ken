@@ -9,18 +9,18 @@ package ken
 
 
 /**
- * Marker for typeclasses
+ * Marker
  */
 trait Typeclass
 
 
-trait Typeclass0[a] extends Typeclass with Kind.Function0 {
-    override type apply = a
+trait Typeclass0[a] extends Typeclass with Kind.AbstractFunction0 {
+    override type apply0 = a
 }
 
 
-trait Typeclass1[f[+_]] extends Typeclass with Kind.Function1 {
-    override type apply[+a] = f[a]
+trait Typeclass1[f[+_]] extends Typeclass with Kind.AbstractFunction1 {
+    override type apply1[+a] = f[a]
 
     /**
      * Helper for type-parameter inference
@@ -30,32 +30,21 @@ trait Typeclass1[f[+_]] extends Typeclass with Kind.Function1 {
     /**
      * Helper for type-parameter inference
      */
-    trait With1[f_ <: Kind.Function1] {
+    trait Pull[f_ <: Kind.FunctionV] {
         // Workaround: java.lang.Error: unexpected alias type: type f
-        protected type f[+a] = f_ #apply[a]
-        protected type m[+a] = f[a]
+        protected[this] type f[+a] = f_ #applyV[_, a]
+        protected[this] type m[+a] = f[a]
     }
 
-    def with1[f_ <: Kind.Function1]: With1[f_] = new With1[f_]{}
+    def pull[f_ <: Kind.FunctionV]: Pull[f_] = new Pull[f_]{}
 }
 
 
-trait Typeclass2[f[-_, +_]] extends Typeclass with Kind.Function2 {
+trait Typeclass2[f[-_, +_]] extends Typeclass with Kind.AbstractFunction2 {
     override type apply2[-a, +b] = f[a, b]
 
     /**
      * Helper for type-parameter inference
      */
     final def infer[a, b](x: f[a, b]): f[a, b] = x
-
-    /**
-     * Helper for type-parameter inference
-     */
-    trait With1[f_ <: Kind.Function1] {
-        // Workaround: java.lang.Error: unexpected alias type: type f
-        protected type f[+a] = f_ #apply[a]
-        protected type m[+a] = f[a]
-    }
-
-    def with1[f_ <: Kind.Function1]: With1[f_] = new With1[f_]{}
 }

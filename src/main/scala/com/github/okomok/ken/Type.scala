@@ -11,8 +11,8 @@ package ken
 /**
  * Trival type envelope for type-parameter inference
  */
-sealed abstract class Type[a] extends Kind.Function0 {
-    override type apply = a
+sealed abstract class Type[a] extends Kind.AbstractFunction0 {
+    override type apply0 = a
 }
 
 object Type {

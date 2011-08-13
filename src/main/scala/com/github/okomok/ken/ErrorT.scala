@@ -15,9 +15,9 @@ private[ken] final class _ErrorTs[n[+_]](val inner: Monad[n]) {
 
     object _ErrorT extends Kind.FunctionLike with Instance {
         sealed trait apply[e] extends Kind.MonadTrans {
-            override type apply[+a] = _ErrorT[e, a]
+            override type apply1[+a] = _ErrorT[e, a]
             override type inner[+a] = n[a]
-            override type weak[+a] = n[Either[e, a]]
+            override type weak1[+a] = n[Either[e, a]]
         }
 
         def apply[e, a](rep: n[Either[e, a]]): _ErrorT[e, a] = new _ErrorT[e, a] {

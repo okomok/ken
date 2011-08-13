@@ -12,7 +12,7 @@ final case class Identity[+a](override val get: a) extends Strong[a]
 
 
 object Identity extends Kind.Strong1 with MonadFix[Identity] with ThisIsInstance {
-    override type weak[+a] = a
+    override type weak1[+a] = a
 
     def run[a](m: Identity[a]): a = m.run
 

@@ -13,8 +13,8 @@ final case class Const[a, +b](override val get: a) extends Strong[a]
 
 object Const extends Kind.FunctionLike {
     sealed trait apply[z] extends Kind.Strong1 {
-        override type apply[+a] = Const[z, a]
-        override type weak[+a] = z
+        override type apply1[+a] = Const[z, a]
+        override type weak1[+a] = z
     }
 
     implicit def weak[z]: Imply1[({type p[+a] = Const[z, a]})#p, ({type d[+a] = z})#d] = new Imply1[({type p[+a] = Const[z, a]})#p, ({type d[+a] = z})#d] {

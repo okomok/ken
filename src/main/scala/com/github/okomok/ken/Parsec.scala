@@ -120,8 +120,8 @@ object Parsec {
         final def <#>(msg: String): GenParser[tok, st, a] = label(this)(msg)
     }
 
-    object Parser extends Kind.Function1 {
-        override type apply[+a] = Parser[a]
+    object Parser extends Kind.AbstractFunction1 {
+        override type apply1[+a] = Parser[a]
 
         def apply[tok, st, a](p: State[tok, st] => ConsumedT[Reply[tok, st, a]]) = new GenParser[tok, st, a] {
             override def parse(st: State[tok, st]): ConsumedT[Reply[tok, st, a]] = p(st)
@@ -157,8 +157,8 @@ object Parsec {
     def stateUser[tok, st](state: State[tok,st]): st = state.user
 
     object GenParser extends Kind.FunctionLike {
-        sealed trait apply[tok, st] extends Kind.Function1 {
-            override type apply[+a] = GenParser[tok, st, a]
+        sealed trait apply[tok, st] extends Kind.AbstractFunction1 {
+            override type apply1[+a] = GenParser[tok, st, a]
         }
 
         implicit def _asMonadPlus[tok, st]: MonadPlus[({type m[+x] = GenParser[tok, st, x]})#m] = new MonadPlus[({type m[+x] = GenParser[tok, st, x]})#m] {
