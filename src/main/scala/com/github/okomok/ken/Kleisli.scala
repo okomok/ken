@@ -8,14 +8,14 @@ package com.github.okomok
 package ken
 
 
-private[ken] final class _Kleislis[m[+_]](val inner: Monad[m]) {
+private[ken] final class _Kleislis[m[+_]](val monad: Monad[m]) {
     final case class _Kleisli[-a, +b](override val get: a => m[b]) extends Strong[a => m[b]]
 
     object _Kleisli extends Instance
 
-    trait Instance { this: _Kleisli.type =>
+    private[ken] trait Instance { this: _Kleisli.type =>
         implicit val _asArrow: Arrow[_Kleisli] = new Arrow[_Kleisli] {
-            import inner.{>>=, `return`}
+            import monad.{>>=, `return`}
 
             private[this] type cat[-a, +b] = _Kleisli[a, b]
             override def cid[a]: cat[a, a] = _Kleisli { a => `return`(a) }
