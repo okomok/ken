@@ -11,16 +11,12 @@ package ken
 private[ken] final class _LazyTs[n[+_]](val inner: Monad[n]) {
     private[this] implicit def innerForComp[a](x: n[a]): inner.ForComp[a] = inner.forComp(x)
 
-    sealed abstract class _LazyT[+a] extends Strong[n[Lazy[a]]]
+    final case class _LazyT[+a](override val get: n[Lazy[a]]) extends Strong[n[Lazy[a]]]
 
     object _LazyT extends Kind.MonadTrans with Instance {
         override type apply1[+a] = _LazyT[a]
         override type inner[+a] = n[a]
         override type weak1[+a] = n[Lazy[a]]
-
-        def apply[a](rep: n[Lazy[a]]): _LazyT[a] = new _LazyT[a] {
-            override def get: n[Lazy[a]] = rep
-        }
 
         implicit def from[a](n: Strong[n[Lazy[a]]]): _LazyT[a] = _LazyT { n.run }
 

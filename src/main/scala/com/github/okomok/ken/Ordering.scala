@@ -18,7 +18,7 @@ case object GT extends Ordering
 object Ordering extends Monoid[Ordering] with ThisIsInstance {
     // Overrides
     //
-    // Ordering
+    // Monoid
     private[this] type m = Ordering
     override val mempty: m = EQ
     override val mappend: m => (=> m) => m = x => y => x match {

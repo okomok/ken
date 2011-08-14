@@ -11,16 +11,12 @@ package ken
 private[ken] final class _ListTs[n[+_]](val inner: Monad[n]) {
     private[this] implicit def innerForComp[a](x: n[a]): inner.ForComp[a] = inner.forComp(x)
 
-    sealed abstract class _ListT[+a] extends Strong[n[List[a]]]
+    final case class _ListT[+a](override val get: n[List[a]]) extends Strong[n[List[a]]]
 
     object _ListT extends Kind.MonadTrans with Instance {
         override type apply1[+a] = _ListT[a]
         override type inner[+a] = n[a]
         override type weak1[+a] = n[List[a]]
-
-        def apply[a](rep: n[List[a]]): _ListT[a] = new _ListT[a] {
-            override def get: n[List[a]] = rep
-        }
 
         implicit def from[a](n: Strong[n[List[a]]]): _ListT[a] = _ListT { n.run }
 

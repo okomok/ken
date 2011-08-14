@@ -12,16 +12,12 @@ private[ken] final class _MaybeTs[n[+_]](val inner: Monad[n]) {
     private[this] implicit def innerForComp[a](x: n[a]): inner.ForComp[a] = inner.forComp(x)
     private[this] implicit def innerInfix_>>=[a](x: n[a]): inner.Infix_>>=[a] = inner.>>=(x)
 
-    sealed abstract class _MaybeT[+a] extends Strong[n[Maybe[a]]]
+    final case class _MaybeT[+a](override val get: n[Maybe[a]]) extends Strong[n[Maybe[a]]]
 
     object _MaybeT extends Kind.MonadTrans with Instance {
         override type apply1[+a] = _MaybeT[a]
         override type inner[+a] = n[a]
         override type weak1[+a] = n[Maybe[a]]
-
-        def apply[a](rep: n[Maybe[a]]): _MaybeT[a] = new _MaybeT[a] {
-            override def get: n[Maybe[a]] = rep
-        }
 
         implicit def from[a](n: Strong[n[Maybe[a]]]): _MaybeT[a] = _MaybeT { n.run }
 

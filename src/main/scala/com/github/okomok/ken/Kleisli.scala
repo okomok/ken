@@ -13,6 +13,8 @@ private[ken] final class _Kleislis[m[+_]](val monad: Monad[m]) {
 
     object _Kleisli extends Instance {
         def run[a, b](f: _Kleisli[a, b]): a => m[b] = f.run
+
+        implicit def from[a, b](n: Strong[a => m[b]]): _Kleisli[a, b] = _Kleisli { n.run }
     }
 
     private[ken] trait Instance0 { this: _Kleisli.type =>

@@ -11,17 +11,13 @@ package ken
 private[ken] final class _ErrorTs[n[+_]](val inner: Monad[n]) {
     private[this] implicit def innerForComp[a](x: n[a]): inner.ForComp[a] = inner.forComp(x)
 
-    sealed abstract class _ErrorT[e, +a] extends Strong[n[Either[e, a]]]
+    final case class _ErrorT[e, +a](override val get: n[Either[e, a]]) extends Strong[n[Either[e, a]]]
 
     object _ErrorT extends Kind.FunctionLike with Instance {
         sealed trait apply[e] extends Kind.MonadTrans {
             override type apply1[+a] = _ErrorT[e, a]
             override type inner[+a] = n[a]
             override type weak1[+a] = n[Either[e, a]]
-        }
-
-        def apply[e, a](rep: n[Either[e, a]]): _ErrorT[e, a] = new _ErrorT[e, a] {
-            override def get: n[Either[e, a]] = rep
         }
 
         implicit def from[e, a](n: Strong[n[Either[e, a]]]): _ErrorT[e, a] = _ErrorT { n.run }

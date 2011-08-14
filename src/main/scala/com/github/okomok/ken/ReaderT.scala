@@ -11,17 +11,13 @@ package ken
 private[ken] final class _ReaderTs[n[+_]](val inner: Monad[n]) {
     private[this] implicit def innerForComp[a](x: n[a]): inner.ForComp[a] = inner.forComp(x)
 
-    sealed abstract class _ReaderT[r, +a] extends Strong[r => n[a]]
+    final case class _ReaderT[r, +a](override val get: r => n[a]) extends Strong[r => n[a]]
 
     object _ReaderT extends Kind.FunctionLike with Instance {
         sealed trait apply[r] extends Kind.MonadTrans {
             override type apply1[+a] = _ReaderT[r, a]
             override type inner[+a] = n[a]
             override type weak1[+a] = r => n[a]
-        }
-
-        def apply[r, a](rep: r => n[a]): _ReaderT[r, a] = new _ReaderT[r, a] {
-            override def get: r => n[a] = rep
         }
 
         implicit def from[r, a](n: Strong[r => n[a]]): _ReaderT[r, a] = _ReaderT { n.run }
