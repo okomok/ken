@@ -15,6 +15,8 @@ class ImplicitPriorityTest extends org.scalatest.junit.JUnit3Suite {
 
     trait D extends A
 
+    trait E extends A
+
     trait _Implicit0  {
         implicit val a: A = new A{}
     }
@@ -23,12 +25,18 @@ class ImplicitPriorityTest extends org.scalatest.junit.JUnit3Suite {
         implicit def b: B = new B{}
     }
 
-    object _Implicit2 extends _Implicit1 {
+    trait _Implicit2 extends _Implicit1 {
         implicit def d(implicit i: DummyImplicit): D = new D{}
     }
 
+    object _Implicit3 extends _Implicit2 {
+        trait Nowhere
+        implicit def e(implicit i: Nowhere): E = new E{} // kicked before eligibles overloading resolution.
+    }
+
     def testTrivial {
-        import _Implicit2._
+        import _Implicit3._
         assert(implicitly[A].isInstanceOf[D])
     }
 }
+
