@@ -18,7 +18,7 @@ private[ken] final class _LazyTs[n[+_]](val inner: Monad[n]) {
         override type inner[+a] = n[a]
         override type weak1[+a] = n[Lazy[a]]
 
-        implicit def from[a](n: Strong[n[Lazy[a]]]): _LazyT[a] = _LazyT { n.run }
+        implicit def dependent[a](n: Strong[n[Lazy[a]]]): _LazyT[a] = _LazyT { n.run }
 
         def run[a](n: _LazyT[a]): n[Lazy[a]] = n.run
 

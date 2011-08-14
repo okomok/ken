@@ -20,7 +20,7 @@ private[ken] final class _StateTs[n[+_]](val inner: Monad[n]) {
             override type weak1[+a] = s => n[(a, s)]
         }
 
-        implicit def from[s, a](n: Strong[s => n[(a, s)]]): _StateT[s, a] = _StateT { n.run }
+        implicit def dependent[s, a](n: Strong[s => n[(a, s)]]): _StateT[s, a] = _StateT { n.run }
 
         def run[s, a](n: _StateT[s, a]): s => n[(a, s)] = n.run
 

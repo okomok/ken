@@ -18,7 +18,7 @@ private[ken] final class _ListTs[n[+_]](val inner: Monad[n]) {
         override type inner[+a] = n[a]
         override type weak1[+a] = n[List[a]]
 
-        implicit def from[a](n: Strong[n[List[a]]]): _ListT[a] = _ListT { n.run }
+        implicit def dependent[a](n: Strong[n[List[a]]]): _ListT[a] = _ListT { n.run }
 
         def run[a](n: _ListT[a]): n[List[a]] = n.run
 

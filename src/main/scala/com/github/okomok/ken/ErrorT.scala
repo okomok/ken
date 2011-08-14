@@ -20,7 +20,7 @@ private[ken] final class _ErrorTs[n[+_]](val inner: Monad[n]) {
             override type weak1[+a] = n[Either[e, a]]
         }
 
-        implicit def from[e, a](n: Strong[n[Either[e, a]]]): _ErrorT[e, a] = _ErrorT { n.run }
+        implicit def dependent[e, a](n: Strong[n[Either[e, a]]]): _ErrorT[e, a] = _ErrorT { n.run }
 
         def run[e, a](n: _ErrorT[e, a]): n[Either[e, a]] = n.run
 

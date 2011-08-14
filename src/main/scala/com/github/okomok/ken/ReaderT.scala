@@ -20,7 +20,7 @@ private[ken] final class _ReaderTs[n[+_]](val inner: Monad[n]) {
             override type weak1[+a] = r => n[a]
         }
 
-        implicit def from[r, a](n: Strong[r => n[a]]): _ReaderT[r, a] = _ReaderT { n.run }
+        implicit def dependent[r, a](n: Strong[r => n[a]]): _ReaderT[r, a] = _ReaderT { n.run }
 
         def run[r, a](n: _ReaderT[r, a]): r => n[a] = n.run
 

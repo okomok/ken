@@ -20,7 +20,7 @@ private[ken] final class _WriterTs[n[+_]](val inner: Monad[n]) {
             override type weak1[+a] = n[(a, w)]
         }
 
-        implicit def from[w, a](n: Strong[n[(a, w)]]): _WriterT[w, a] = _WriterT(n.run)
+        implicit def dependent[w, a](n: Strong[n[(a, w)]]): _WriterT[w, a] = _WriterT(n.run)
 
         def run[w, a](n: _WriterT[w, a]): n[(a, w)] = n.run
 
