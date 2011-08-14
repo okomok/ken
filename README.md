@@ -3,62 +3,37 @@
 
 `ken` is a Haskell DSL in Scala without any elaborate technique:
 
-    // From: http://en.wikibooks.org/wiki/Haskell/Monad_transformers
-
     import com.github.okomok.ken._
 
-    // Strongly-typed monad; Haskell way.
-    def testStrongMonadT {
-        import IO.MaybeT
+    // From: http://www.haskell.org/haskellwiki/State_Monad
 
-        // Pull the monad explicitly.
-        val m = MonadPlus[MaybeT.type]
-        import m._
+    object StateGame extends Main {
+        type GameValue = Int
+        type GameState = (Boolean, Int)
 
-        val mt = MonadTrans[MaybeT.type]
-        import mt.lift
+        // Pull the Monad explicitly.
+        val i = MonadState[GameState, State.apply[GameState]]
+        import i._
 
-        def isValid(s: String_): Boolean = Eq[String_].op_==(s)("valid")
-
-        def getValidPassword: MaybeT[String_] = {
-            for {
-                s <- lift(IO.getLine)
-                _ <- guard(isValid(s))
-            } yield s
+        def playGame(xs: String_): State[GameState, GameValue] = xs match {
+            case Nil => for {
+                (_, score) <- get
+            } yield score
+            case x :: xs => for {
+                (on, score) <- get
+                _ <- x match {
+                    case 'a' if on => put(on, score + 1)
+                    case 'b' if on => put(on, score - 1)
+                    case 'c' => put(not(on), score)
+                    case _ => put(on, score)
+                }
+                * <- playGame(xs.!)
+            } yield *
         }
 
-        def askPassword: MaybeT[Unit] = for {
-            _ <- lift { IO.putStrLn("Insert your new password") }
-            value <- msum { List.repeat(getValidPassword) }
-            _ <- lift { IO.putStrLn("Storing in database...") }
-        } yield ()
+        val startState = (false, 0)
 
-        askPassword.run.unIO()
-    }
-
-    // Weakly-typed monad; Power of Scala
-    def testWeakMonadT {
-        import IO.MaybeT
-
-        val wm = MaybeT.weak.asMonadPlus
-        import wm._
-
-        def isValid(s: String_): Boolean = Eq[String_].op_==(s)("valid")
-
-        // No wrappers, no lifts.
-        def getValidPassword: IO[Maybe[String_]] = for {
-            s <- IO.getLine
-            _ <- guard(isValid(s))
-        } yield s
-
-        def askPassword: IO[Maybe[Unit]] = for {
-            _ <- IO.putStrLn("Insert your new password")
-            value <- msum { List.repeat(getValidPassword) }
-            _ <- IO.putStrLn("Storing in database...")
-        } yield Just()
-
-        // No runs
-        askPassword.unIO()
+        val main_ = IO.print { State.eval(playGame("abcaaacbbcabbab"))(startState) }
     }
 
 The current status is pre-alpha.

@@ -56,7 +56,7 @@ class MaybeTest extends org.scalatest.junit.JUnit3Suite {
     }
     */
     def testImplyMonadT2 {
-        val wm = IO.MaybeT.weak.asMonadPlus
+        val wm = IO.MaybeT.weak.MonadPlus
         import wm._
 
         def isValid(s: String_): Boolean = Eq[String_].op_==(s)("valid")

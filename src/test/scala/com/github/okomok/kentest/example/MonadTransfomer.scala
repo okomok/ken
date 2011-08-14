@@ -46,7 +46,7 @@ class MonadTransformerTezt { // extends org.scalatest.junit.JUnit3Suite {
     def testWeakMonadT {
         import IO.MaybeT
 
-        val wm = MaybeT.weak.asMonadPlus
+        val wm = MaybeT.weak.MonadPlus
         import wm._
 
         def isValid(s: String_): Boolean = Eq[String_].op_==(s)("valid")

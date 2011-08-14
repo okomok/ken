@@ -17,10 +17,10 @@ trait Foldable[t[+_]] extends Typeclass1[t] { outer =>
     def foldMap[a, m](f: a => m)(x: t[a])(implicit i: Monoid[m]): m = foldr[a, m](i.mappend compose f)(i.mempty)(x)
 
     def foldr[a, b](f: a => (=> b) => b)(z: b)(t: t[a]): b = {
-        foldMap[a, b => b](Function.!(f))(t)(Endo.weak[b].asMonoid)(z)
+        foldMap[a, b => b](Function.!(f))(t)(Endo.weak[b].Monoid)(z)
     }
 
-    def foldl[a, b](f: a => b => a)(z: a)(t: t[b]): a = foldMap(flip(f))(t)(Endo.weak[a].asMonoid.dual)(z)
+    def foldl[a, b](f: a => b => a)(z: a)(t: t[b]): a = foldMap(flip(f))(t)(Endo.weak[a].Monoid.dual)(z)
 
     def foldr1[a](f: a => (=> a) => a)(xs: t[a]): a = {
         def mf(x: a)(y: => Maybe[a]): Maybe[a] = y match {
@@ -95,14 +95,14 @@ trait Foldable[t[+_]] extends Typeclass1[t] { outer =>
     def concat[a](xs: t[List[a]]): List[a] = fold(xs)
     def concatMap[a, b](f: a => List[b])(xs: t[a]): List[b] = foldMap(f)(xs)
 
-    def and(xs: t[Bool]): Bool = foldMap(id[Bool])(xs)(Monoid.All.weak.asMonoid)
-    def or(xs: t[Bool]): Bool = foldMap(id[Bool])(xs)(Monoid.Any_.weak.asMonoid)
+    def and(xs: t[Bool]): Bool = foldMap(id[Bool])(xs)(Monoid.All.weak.Monoid)
+    def or(xs: t[Bool]): Bool = foldMap(id[Bool])(xs)(Monoid.Any_.weak.Monoid)
 
-    def any[a](p: a => Bool)(xs: t[a]): Bool = foldMap(p)(xs)(Monoid.Any_.weak.asMonoid)
-    def all[a](p: a => Bool)(xs: t[a]): Bool = foldMap(p)(xs)(Monoid.All.weak.asMonoid)
+    def any[a](p: a => Bool)(xs: t[a]): Bool = foldMap(p)(xs)(Monoid.Any_.weak.Monoid)
+    def all[a](p: a => Bool)(xs: t[a]): Bool = foldMap(p)(xs)(Monoid.All.weak.Monoid)
 
-    def sum[a](xs: t[a])(implicit i: Num[a]): a = foldMap(id[a])(xs)(Monoid.Sum.weak.asMonoid)
-    def product[a](xs: t[a])(implicit i: Num[a]): a = foldMap(id[a])(xs)(Monoid.Product.weak.asMonoid)
+    def sum[a](xs: t[a])(implicit i: Num[a]): a = foldMap(id[a])(xs)(Monoid.Sum.weak.Monoid)
+    def product[a](xs: t[a])(implicit i: Num[a]): a = foldMap(id[a])(xs)(Monoid.Product.weak.Monoid)
 
     def maximum[a](xs: t[a])(implicit i: Ord[a]): a = foldl1(i.max)(xs)
 

@@ -36,9 +36,9 @@ object Identity extends Kind.Strong1 with MonadFix[Identity] with ThisIsInstance
         override def imply1[a](p: p[a]): d[a] = run(p)
         override def unimply1[a](d: => d[a]): p[a] = Identity(d)
 
-        override def asFunctor(implicit i: Functor[p]): Functor[d] = WeakIdentity
-        override def asApplicative(implicit i: Applicative[p]): Applicative[d] = WeakIdentity
-        override def asMonad(implicit i: Monad[p]): Monad[d] = WeakIdentity
-        override def asMonadFix(implicit i: MonadFix[p]): MonadFix[d] = WeakIdentity
+        override def Functor(implicit i: Functor[p]): Functor[d] = WeakIdentity
+        override def Applicative(implicit i: Applicative[p]): Applicative[d] = WeakIdentity
+        override def Monad(implicit i: Monad[p]): Monad[d] = WeakIdentity
+        override def MonadFix(implicit i: MonadFix[p]): MonadFix[d] = WeakIdentity
     }
 }
