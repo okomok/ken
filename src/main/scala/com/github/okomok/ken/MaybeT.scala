@@ -19,11 +19,11 @@ private[ken] final class _MaybeTs[n[+_]](val inner: Monad[n]) {
         override type inner[+a] = n[a]
         override type weak1[+a] = n[Maybe[a]]
 
-        implicit def dependent[a](n: Strong[n[Maybe[a]]]): _MaybeT[a] = _MaybeT { n.run }
-
         def run[a](n: _MaybeT[a]): n[Maybe[a]] = n.run
 
         def map[m[+_], a, b](f: n[Maybe[a]] => m[Maybe[b]])(n: _MaybeT[a]): Strong[m[Maybe[b]]] = Strong { f(run(n)) }
+
+        implicit def dependent[a](n: Strong[n[Maybe[a]]]): _MaybeT[a] = _MaybeT { n.run }
     }
 
     private[ken] trait Instance0 { this: _MaybeT.type =>
