@@ -68,6 +68,13 @@ object Kind {
     trait AbstractNewtype1 extends Newtype1 with AbstractFunction1 {
     }
 
+    sealed trait Newtype2 extends Function2 {
+        type oldtype2[-a, +b]
+    }
+
+    trait AbstractNewtype2 extends Newtype2 with AbstractFunction2 {
+    }
+
     // MonadTrans
     //
     sealed trait MonadTrans extends Newtype1 {
@@ -89,6 +96,10 @@ object Kind {
 
     trait quote1[f[+_]] extends AbstractFunction1 {
         override type apply1[+a] = f[a]
+    }
+
+    trait quote2[f[-_, +_]] extends AbstractFunction2 {
+        override type apply2[-a, +b] = f[a, b]
     }
 
     trait qcurry2[f[_, +_]] extends FunctionLike {

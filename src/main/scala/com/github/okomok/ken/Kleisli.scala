@@ -11,13 +11,23 @@ package ken
 private[ken] final class _Kleislis[m[+_]](val monad: Monad[m]) {
     final case class _Kleisli[-a, +b](override val get: a => m[b]) extends NewtypeOf[a => m[b]]
 
-    object _Kleisli extends Instance {
+    object _Kleisli extends Kind.AbstractNewtype2 with Instance {
+        override type apply2[-a, +b] = _Kleisli[a, b]
+        override type oldtype2[-a, +b] = a => m[b]
+
         def run[a, b](f: _Kleisli[a, b]): a => m[b] = f.run
 
         implicit def dependent[a, b](n: NewtypeOf[a => m[b]]): _Kleisli[a, b] = _Kleisli { n.run }
     }
 
     private[ken] trait Instance0 { this: _Kleisli.type =>
+        implicit val _asNewtype2: Newtype2[_Kleisli, ({type ot[-a, +b] = a => m[b]})#ot] = new Newtype2[_Kleisli, ({type ot[-a, +b] = a => m[b]})#ot] {
+            private[this] type nt[-a, +b] = _Kleisli[a, b]
+            private[this] type ot[-a, +b] = a => m[b]
+            override def new2[a, b](ot: => ot[a, b]): nt[a, b] = _Kleisli(ot)
+            override def old2[a, b](nt: => nt[a, b]): ot[a, b] = nt.run
+        }
+
         implicit val _asArrow: Arrow[_Kleisli] = new Arrow[_Kleisli] {
             import monad.{>>=, `return`}
             // Category
