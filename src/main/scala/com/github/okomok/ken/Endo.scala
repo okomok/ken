@@ -8,18 +8,18 @@ package com.github.okomok
 package ken
 
 
-final case class Endo[a](override val get: a => a) extends Strong[a => a] with Kind.Strong0 {
+final case class Endo[a](override val get: a => a) extends NewtypeOf[a => a] with Kind.AbstractNewtype0 {
     override type apply0 = Endo[a]
-    override type weak0 = a => a
+    override type oldtype0 = a => a
 }
 
 
 object Endo {
-    implicit def weak[a]: Imply0[Endo[a], a => a] = new Imply0[Endo[a], a => a] {
-        private[this] type p = Endo[a]
-        private[this] type d = a => a
-        override def imply0(p: p): d = p.run
-        override def unimply0(d: => d): p = Endo(d)
+    implicit def _asNewtype0[a]: Newtype0[Endo[a], a => a] = new Newtype0[Endo[a], a => a] {
+        private[this] type nt = Endo[a]
+        private[this] type ot = a => a
+        override def new0(ot: => ot): nt = Endo(ot)
+        override def old0(nt: => nt): ot = nt.run
 
     }
 

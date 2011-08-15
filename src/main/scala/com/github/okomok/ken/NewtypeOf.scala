@@ -8,24 +8,21 @@ package com.github.okomok
 package ken
 
 
-/**
- * Same as Scalaz NewType.
- */
-trait Strong[+a] {
+trait NewtypeOf[+a] {
     def get: a
     final def run: a = get
     final def app: a = get
 }
 
 
-trait StrongProxy[+a] extends Strong[a] with Proxy {
-    override def self: Strong[a]
+trait NewtypeOfProxy[+a] extends NewtypeOf[a] with Proxy {
+    override def self: NewtypeOf[a]
     override def get: a = self.run
 }
 
 
-object Strong {
-    def apply[a](a: a): Strong[a] = new Strong[a] {
+object NewtypeOf {
+    def apply[a](a: a): NewtypeOf[a] = new NewtypeOf[a] {
         override def get: a = a
     }
 }

@@ -17,5 +17,5 @@ trait MonadTrans[n[+_], m[+_]] extends Typeclass {
 
 
 object MonadTrans {
-    def apply[m <: Kind.MonadTrans](implicit i: MonadTrans[m#inner, m#apply]): MonadTrans[m#inner, m#apply] = i
+    def apply[m <: Kind.MonadTrans](implicit i: MonadTrans[m#innerMonad, m#apply]): MonadTrans[m#innerMonad, m#apply] = i
 }

@@ -8,18 +8,19 @@ package com.github.okomok
 package ken
 
 
-final case class Identity[+a](override val get: a) extends Strong[a]
+final case class Identity[+a](override val get: a) extends NewtypeOf[a]
 
 
-object Identity extends Kind.Strong1 with MonadFix[Identity] with ThisIsInstance {
-    override type weak1[+a] = a
-
-    def run[a](m: Identity[a]): a = m.run
-
+object Identity extends Newtype1[Identity, ({type ot[+a] = a})#ot] with MonadFix[Identity] with ThisIsInstance {
     // Overrides
     //
+    // Newtype1
+    private[this] type nt[+a] = Identity[a]
+    private[this] type ot[+a] = a
+    override def new1[a](ot: => ot[a]): nt[a] = Identity(ot)
+    override def old1[a](nt: => nt[a]): ot[a] = nt.run
     // Functor
-    private[this] type f[+a] = Identity[a]
+    private[this] type f[+a] = nt[a]
     override def fmap[a, b](f: a => b)(m: f[a]): f[b] = Identity { f(run(m)) }
     // Monad
     private[this] type m[+a] = f[a]
@@ -27,18 +28,4 @@ object Identity extends Kind.Strong1 with MonadFix[Identity] with ThisIsInstance
     override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = k(run(m))
     // MonadFix
     override def mfix[a](f: (=> a) => m[a]): m[a] = Identity { Function.fix(run[a]_ compose f) }
-
-    // Instances
-    //
-    implicit val weak: Imply1[Identity, ({type d[+a] = a})#d] = new Imply1[Identity, ({type d[+a] = a})#d] {
-        type p[+a] = Identity[a]
-        type d[+a] = a
-        override def imply1[a](p: p[a]): d[a] = run(p)
-        override def unimply1[a](d: => d[a]): p[a] = Identity(d)
-
-        override def Functor(implicit i: Functor[p]): Functor[d] = WeakIdentity
-        override def Applicative(implicit i: Applicative[p]): Applicative[d] = WeakIdentity
-        override def Monad(implicit i: Monad[p]): Monad[d] = WeakIdentity
-        override def MonadFix(implicit i: MonadFix[p]): MonadFix[d] = WeakIdentity
-    }
 }

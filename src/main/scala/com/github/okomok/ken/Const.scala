@@ -8,20 +8,20 @@ package com.github.okomok
 package ken
 
 
-final case class Const[a, +b](override val get: a) extends Strong[a]
+final case class Const[a, +b](override val get: a) extends NewtypeOf[a]
 
 
 object Const extends Kind.FunctionLike {
-    sealed trait apply[z] extends Kind.Strong1 {
+    sealed trait apply[z] extends Kind.AbstractNewtype1 {
         override type apply1[+a] = Const[z, a]
-        override type weak1[+a] = z
+        override type oldtype1[+a] = z
     }
 
-    implicit def weak[z]: Imply1[({type p[+a] = Const[z, a]})#p, ({type d[+a] = z})#d] = new Imply1[({type p[+a] = Const[z, a]})#p, ({type d[+a] = z})#d] {
-        private[this] type p[+a] = Const[z, a]
-        private[this] type d[+a] = z
-        override def imply1[a](p: p[a]): d[a] = p.get
-        override def unimply1[a](d: => d[a]): p[a] = Const(d)
+    implicit def _asNewtype1[z]: Newtype1[({type nt[+a] = Const[z, a]})#nt, ({type ot[+a] = z})#ot] = new Newtype1[({type nt[+a] = Const[z, a]})#nt, ({type ot[+a] = z})#ot] {
+        private[this] type nt[+a] = Const[z, a]
+        private[this] type ot[+a] = z
+        override def new1[a](ot: => ot[a]): nt[a] = Const(ot)
+        override def old1[a](nt: => nt[a]): ot[a] = nt.run
     }
 
     implicit def _asFunctor[z]: Functor[({type f[+a] = Const[z, a]})#f] = new Functor[({type f[+a] = Const[z, a]})#f] {

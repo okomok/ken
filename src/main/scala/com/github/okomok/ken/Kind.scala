@@ -20,20 +20,22 @@ object Kind {
     /**
      * Variadic
      */
-    trait FunctionV extends FunctionLike {
+    sealed trait FunctionV extends FunctionLike {
         type applyV[-a, +b]
     }
 
-    trait Function0 extends FunctionV {
+    // Functions
+    //
+    sealed trait Function0 extends FunctionV {
         type apply0
     }
 
-    trait Function1 extends FunctionV {
+    sealed trait Function1 extends FunctionV {
         type apply1[+a]
         type apply[+a] // alias of apply1
     }
 
-    trait Function2 extends FunctionV {
+    sealed trait Function2 extends FunctionV {
         type apply2[-a, +b]
     }
 
@@ -50,18 +52,33 @@ object Kind {
         override type applyV[-a, +b] = apply2[a, b]
     }
 
-    trait Strong0 extends AbstractFunction0 {
-        type weak0
+    // Newtypes
+    //
+    sealed trait Newtype0 extends Function0 {
+        type oldtype0
     }
 
-    trait Strong1 extends AbstractFunction1 {
-        type weak1[+a]
+    trait AbstractNewtype0 extends Newtype0 with AbstractFunction0 {
     }
 
-    trait MonadTrans extends Strong1 {
-        type inner[+a]
+    sealed trait Newtype1 extends Function1 {
+        type oldtype1[+a]
     }
 
+    trait AbstractNewtype1 extends Newtype1 with AbstractFunction1 {
+    }
+
+    // MonadTrans
+    //
+    sealed trait MonadTrans extends Newtype1 {
+        type innerMonad[+a]
+    }
+
+    trait AbstractMonadTrans extends MonadTrans with AbstractNewtype1 {
+    }
+
+    // Utilities
+    //
     trait const0[z] extends AbstractFunction0 {
         override type apply0 = z
     }

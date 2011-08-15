@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-trait Functor[f[+_]] extends Typeclass1[f] {
+trait Functor[f[+_]] extends Typeclass1[f] { outer =>
     // Prefer `apply` to `f` for type-parameter inference.
     final val asFunctor: Functor[apply] = this
 
@@ -32,6 +32,15 @@ trait Functor[f[+_]] extends Typeclass1[f] {
         def <@[b](y: f[b]): f[a] = op_<@(x)(y)
     }
     final implicit def <@[a](x: a): Infix_<@[a] = new Infix_<@(x)
+
+    // Newtypes
+    //
+    override def deriving[nt <: Kind.Function1](implicit i: Newtype1[nt#apply, f]): Functor[nt#apply] = new Functor[nt#apply] {
+        private[this] type f[+a] = nt#apply[a]
+        override def fmap[a, b](f: a => b)(m: f[a]): f[b] = i.new1 { outer.fmap(f)(i.old1(m)) }
+    }
+
+    override def weak(implicit i: Newtype1[f, oldtype1]): Functor[oldtype1] = deriving[Kind.quote1[oldtype1]](i.dual)
 }
 
 

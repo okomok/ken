@@ -30,6 +30,15 @@ trait Monoid[m] extends Typeclass0[m] { outer =>
         def _mappend_(y: => m): m = mappend(x)(y)
     }
     final implicit def _mappend_(x: m): Infix_mappend = new Infix_mappend(x)
+
+    override def deriving[nt](implicit i: Newtype0[nt, m]): Monoid[nt] = new Monoid[nt] {
+        private[this] type _m = nt
+        override val mempty: _m = i.new0(outer.mempty)
+        override val mappend: _m => (=> _m) => _m = x => y => i.new0(outer.mappend(i.old0(x))(i.old0(y)))
+        override val mconcat: List[_m] => _m = xs => i.new0(outer.mconcat(List.map[_m, m](Function.!(i.old0))(xs)))
+    }
+
+    override def weak[ot](implicit i: Newtype0[m, ot]): Monoid[ot] = deriving[ot](i.dual)
 }
 
 
@@ -49,7 +58,7 @@ object Monoid extends MonoidInstance {
 
     // Dual
     //
-    final case class Dual[+a](override val get: a) extends Strong[a]
+    final case class Dual[+a](override val get: a) extends NewtypeOf[a]
 
     object Dual {
         implicit def weak[a]: Imply0[Dual[a], a] = new Imply0[Dual[a], a] {
@@ -68,7 +77,7 @@ object Monoid extends MonoidInstance {
 
     // All
     //
-    final case class All(override val get: Bool) extends Strong[Bool]
+    final case class All(override val get: Bool) extends NewtypeOf[Bool]
 
     object All {
         implicit val weak: Imply0[All, Bool] = new Imply0[All, Bool] {
@@ -87,7 +96,7 @@ object Monoid extends MonoidInstance {
 
     // Any_
     //
-    final case class Any_(override val get: Bool) extends Strong[Bool]
+    final case class Any_(override val get: Bool) extends NewtypeOf[Bool]
 
     object Any_ {
         implicit val weak: Imply0[Any_, Bool] = new Imply0[Any_, Bool] {
@@ -106,7 +115,7 @@ object Monoid extends MonoidInstance {
 
     // Sum
     //
-    final case class Sum[a](override val get: a) extends Strong[a]
+    final case class Sum[a](override val get: a) extends NewtypeOf[a]
 
     object Sum {
         implicit def weak[a]: Imply0[Sum[a], a] = new Imply0[Sum[a], a] {
@@ -126,7 +135,7 @@ object Monoid extends MonoidInstance {
 
     // Product
     //
-    final case class Product[a](override val get: a) extends Strong[a]
+    final case class Product[a](override val get: a) extends NewtypeOf[a]
 
     object Product {
         implicit def weak[a]: Imply0[Product[a], a] = new Imply0[Product[a], a] {

@@ -9,12 +9,12 @@ package ken
 
 
 private[ken] final class _Kleislis[m[+_]](val monad: Monad[m]) {
-    final case class _Kleisli[-a, +b](override val get: a => m[b]) extends Strong[a => m[b]]
+    final case class _Kleisli[-a, +b](override val get: a => m[b]) extends NewtypeOf[a => m[b]]
 
     object _Kleisli extends Instance {
         def run[a, b](f: _Kleisli[a, b]): a => m[b] = f.run
 
-        implicit def dependent[a, b](n: Strong[a => m[b]]): _Kleisli[a, b] = _Kleisli { n.run }
+        implicit def dependent[a, b](n: NewtypeOf[a => m[b]]): _Kleisli[a, b] = _Kleisli { n.run }
     }
 
     private[ken] trait Instance0 { this: _Kleisli.type =>

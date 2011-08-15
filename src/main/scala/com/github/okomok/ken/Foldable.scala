@@ -17,10 +17,10 @@ trait Foldable[t[+_]] extends Typeclass1[t] { outer =>
     def foldMap[a, m](f: a => m)(x: t[a])(implicit i: Monoid[m]): m = foldr[a, m](i.mappend compose f)(i.mempty)(x)
 
     def foldr[a, b](f: a => (=> b) => b)(z: b)(t: t[a]): b = {
-        foldMap[a, b => b](Function.!(f))(t)(Endo.weak[b].Monoid)(z)
+        foldMap[a, b => b](Function.!(f))(t)(Monoid[Endo[b]].weak)(z)
     }
 
-    def foldl[a, b](f: a => b => a)(z: a)(t: t[b]): a = foldMap(flip(f))(t)(Endo.weak[a].Monoid.dual)(z)
+    def foldl[a, b](f: a => b => a)(z: a)(t: t[b]): a = foldMap(flip(f))(t)(Monoid[Endo[a]].weak.dual)(z)
 
     def foldr1[a](f: a => (=> a) => a)(xs: t[a]): a = {
         def mf(x: a)(y: => Maybe[a]): Maybe[a] = y match {

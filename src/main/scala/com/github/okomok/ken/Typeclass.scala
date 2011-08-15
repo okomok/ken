@@ -14,12 +14,17 @@ package ken
 trait Typeclass
 
 
-trait Typeclass0[a] extends Typeclass with Kind.AbstractFunction0 {
+trait Typeclass0[a] extends Typeclass with Kind.AbstractNewtype0 {
     override type apply0 = a
+
+    // Newtypes
+    //
+    def deriving[nt](implicit i: Newtype0[nt, a]): Typeclass0[nt] = error("abstract me")
+    def weak[ot](implicit i: Newtype0[a, ot]): Typeclass0[ot] = error("abstract me")
 }
 
 
-trait Typeclass1[f[+_]] extends Typeclass with Kind.AbstractFunction1 {
+trait Typeclass1[f[+_]] extends Typeclass with Kind.AbstractNewtype1 {
     override type apply1[+a] = f[a]
 
     /**
@@ -35,8 +40,14 @@ trait Typeclass1[f[+_]] extends Typeclass with Kind.AbstractFunction1 {
         protected[this] type f[+a] = f_ #applyV[_, a]
         protected[this] type m[+a] = f[a]
     }
-
     def pull[f_ <: Kind.FunctionV]: Pull[f_] = new Pull[f_]{}
+
+    /**
+     * Newtypes
+     */
+    def deriving[nt <: Kind.Function1](implicit i: Newtype1[nt#apply, f]): Typeclass1[nt#apply] = error("abstract me")
+
+    def weak(implicit i: Newtype1[f, oldtype1]): Typeclass1[oldtype1] = error("abstract me")
 }
 
 
