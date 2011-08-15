@@ -56,6 +56,8 @@ trait MonoidProxy[m] extends Monoid[m] with Proxy {
 object Monoid extends MonoidInstance {
     def apply[m](implicit i: Monoid[m]): Monoid[m] = i
 
+    def weak[nt <: Kind.Newtype0](implicit i: Monoid[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Monoid[nt#oldtype0] = i.deriving[nt#oldtype0](j.dual)
+
     // Dual
     //
     final case class Dual[+a](override val get: a) extends NewtypeOf[a]
