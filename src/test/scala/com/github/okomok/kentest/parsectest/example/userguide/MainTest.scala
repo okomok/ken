@@ -94,7 +94,7 @@ class MainTezt {
     // 2.4
 
     lazy val nesting: Parser[Int] = {
-        val j = Ord[Int]
+        val j = implicitly[Ord[Int]]
         ( for {
             _ <- char_('(')
             n <- nesting

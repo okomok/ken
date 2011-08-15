@@ -66,12 +66,12 @@ class TypeclassTest extends org.scalatest.junit.JUnit3Suite {
     }
 
     def testImply1 {
-        val wt1 = Weak1[IO.LazyT.type]
+        val wt1 = Monad.weak[IO.LazyT.type]
     }
 
     def testEq {
-        val i = Eq[Int]
-        val j = Ord[Int]
-        val k = Ix[Int]
+        val i = implicitly[Eq[Int]]
+        val j = implicitly[Ord[Int]]
+        val k = implicitly[Ix[Int]]
     }
 }

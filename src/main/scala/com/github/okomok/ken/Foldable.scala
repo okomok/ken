@@ -95,14 +95,14 @@ trait Foldable[t[+_]] extends Typeclass1[t] { outer =>
     def concat[a](xs: t[List[a]]): List[a] = fold(xs)
     def concatMap[a, b](f: a => List[b])(xs: t[a]): List[b] = foldMap(f)(xs)
 
-    def and(xs: t[Bool]): Bool = foldMap(id[Bool])(xs)(Monoid.All.weak.Monoid)
-    def or(xs: t[Bool]): Bool = foldMap(id[Bool])(xs)(Monoid.Any_.weak.Monoid)
+    def and(xs: t[Bool]): Bool = foldMap(id[Bool])(xs)(Monoid.weak[Monoid.All.type])
+    def or(xs: t[Bool]): Bool = foldMap(id[Bool])(xs)(Monoid.weak[Monoid.Any_.type])
 
-    def any[a](p: a => Bool)(xs: t[a]): Bool = foldMap(p)(xs)(Monoid.Any_.weak.Monoid)
-    def all[a](p: a => Bool)(xs: t[a]): Bool = foldMap(p)(xs)(Monoid.All.weak.Monoid)
+    def any[a](p: a => Bool)(xs: t[a]): Bool = foldMap(p)(xs)(Monoid.weak[Monoid.Any_.type])
+    def all[a](p: a => Bool)(xs: t[a]): Bool = foldMap(p)(xs)(Monoid.weak[Monoid.All.type])
 
-    def sum[a](xs: t[a])(implicit i: Num[a]): a = foldMap(id[a])(xs)(Monoid.Sum.weak.Monoid)
-    def product[a](xs: t[a])(implicit i: Num[a]): a = foldMap(id[a])(xs)(Monoid.Product.weak.Monoid)
+    def sum[a](xs: t[a])(implicit i: Num[a]): a = foldMap(id[a])(xs)(Monoid.weak[Monoid.Sum[a]])
+    def product[a](xs: t[a])(implicit i: Num[a]): a = foldMap(id[a])(xs)(Monoid.weak[Monoid.Product[a]])
 
     def maximum[a](xs: t[a])(implicit i: Ord[a]): a = foldl1(i.max)(xs)
 
@@ -124,7 +124,7 @@ trait Foldable[t[+_]] extends Typeclass1[t] { outer =>
         foldl1(min_)(xs)
     }
 
-    def elem[a](x: a)(xs: t[a]): Bool = any(Eq[a].op_==(x))(xs)
+    def elem[a](x: a)(xs: t[a]): Bool = any(instance[Eq[a]].op_==(x))(xs)
     def notElem[a](x: a)(xs: t[a]): Bool = not(elem(x)(xs))
 
     def find[a](p: a => Bool)(xs: t[a]): Maybe[a] = {

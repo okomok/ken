@@ -450,7 +450,7 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
         case _ => Nothing
     }
 
-    def group[a](xs: List[a]): List[List[a]] = groupBy(Eq[a].op_==)(xs)
+    def group[a](xs: List[a]): List[List[a]] = groupBy(instance[Eq[a]].op_==)(xs)
 
     def inits[a](xs: List[a]): List[List[a]] = xs match {
         case Nil => List(Nil)
@@ -523,9 +523,9 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
         case (_ :: xs, n) => op_!!(xs.!)(n-1)
     }
 
-    def elemIndex[a](x: a)(xs: List[a]): Maybe[Int] = findIndex(Eq[a].op_==(x))(xs)
+    def elemIndex[a](x: a)(xs: List[a]): Maybe[Int] = findIndex(instance[Eq[a]].op_==(x))(xs)
 
-    def elemIndices[a](x: a)(xs: List[a]): List[Int] = findIndices(Eq[a].op_==(x))(xs)
+    def elemIndices[a](x: a)(xs: List[a]): List[Int] = findIndices(instance[Eq[a]].op_==(x))(xs)
 
     def findIndex[a](p: a => Bool)(xs: List[a]): Maybe[Int] = Maybe.listToMaybe(findIndices(p)(xs))
 
@@ -565,15 +565,15 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
 
     // Set operations
     //
-    def nub[a](xs: List[a]): List[a] = nubBy(Eq[a].op_==)(xs)
+    def nub[a](xs: List[a]): List[a] = nubBy(instance[Eq[a]].op_==)(xs)
 
-    def delete[a](x: a)(xs: List[a]) = deleteBy(Eq[a].op_==)(x)(xs)
+    def delete[a](x: a)(xs: List[a]) = deleteBy(instance[Eq[a]].op_==)(x)(xs)
 
     def op_\\[a](xs: List[a])(ys: List[a]): List[a] = foldl(flip(delete[a]))(xs)(ys)
 
-    def union[a](xs: List[a])(ys: List[a]): List[a] = unionBy(Eq[a].op_==)(xs)(ys)
+    def union[a](xs: List[a])(ys: List[a]): List[a] = unionBy(instance[Eq[a]].op_==)(xs)(ys)
 
-    def intersect[a](xs: List[a])(ys: List[a]): List[a] = intersectBy(Eq[a].op_==)(xs)(ys)
+    def intersect[a](xs: List[a])(ys: List[a]): List[a] = intersectBy(instance[Eq[a]].op_==)(xs)(ys)
 
     // Ordered lists
     //

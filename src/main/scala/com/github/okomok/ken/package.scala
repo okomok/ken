@@ -97,4 +97,6 @@ package object ken {
     // Scala specific utilities
     //
     val ignore: (=> Any) => Unit = { _ => () }
+
+    def instance[a](implicit i: a): a = i
 }

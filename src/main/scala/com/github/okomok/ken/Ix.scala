@@ -53,5 +53,18 @@ trait IxProxy[a] extends Ix[a] with OrdProxy[a] {
 
 
 object Ix {
-    def apply[a](implicit i: Ix[a]): Ix[a] = i
+    def apply[a <: Kind.Function0](implicit i: Ix[a#apply0]): Ix[a#apply0] = i
+
+    def deriving[nt <: Kind.Function0, ot <: Kind.Function0](implicit i: Ix[ot#apply0], j: Newtype0[nt#apply0, ot#apply0]): Ix[nt#apply0] = new Ix[nt#apply0] with OrdProxy[nt#apply0] {
+        private[this] type a = nt#apply0
+        override val self = Ord.deriving[nt, ot](i, j)
+        override val range: Tuple2[a, a] => List[a] = t => List.map[ot#apply0, a](Function.!(j.new0))(i.range(j.old0(t._1), j.old0(t._2)))
+        override val index: Tuple2[a, a] => a => Int = t => x => i.index(j.old0(t._1), j.old0(t._2))(j.old0(x))
+        override val unsafeIndex: Tuple2[a, a] => a => Int = t => x => i.unsafeIndex(j.old0(t._1), j.old0(t._2))(j.old0(x))
+        override val inRange: Tuple2[a, a] => a => Bool = t => x => i.inRange(j.old0(t._1), j.old0(t._2))(j.old0(x))
+        override val rangeSize: Tuple2[a, a] => Int = t => i.rangeSize(j.old0(t._1), j.old0(t._2))
+        override val unsafeRangeSize: Tuple2[a, a] => Int = t => i.unsafeRangeSize(j.old0(t._1), j.old0(t._2))
+    }
+
+    def weak[nt <: Kind.Newtype0](implicit i: Ix[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Ix[nt#oldtype0] = deriving[Kind.const0[nt#oldtype0], nt](i, j.dual)
 }

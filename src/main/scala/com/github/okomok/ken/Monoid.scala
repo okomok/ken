@@ -31,14 +31,14 @@ trait Monoid[m] extends Typeclass0[m] { outer =>
     }
     final implicit def _mappend_(x: m): Infix_mappend = new Infix_mappend(x)
 
+    // Newtypes
+    //
     override def deriving[nt](implicit i: Newtype0[nt, m]): Monoid[nt] = new Monoid[nt] {
         private[this] type _m = nt
         override val mempty: _m = i.new0(outer.mempty)
         override val mappend: _m => (=> _m) => _m = x => y => i.new0(outer.mappend(i.old0(x))(i.old0(y)))
         override val mconcat: List[_m] => _m = xs => i.new0(outer.mconcat(List.map[_m, m](Function.!(i.old0))(xs)))
     }
-
-    override def weak[ot](implicit i: Newtype0[m, ot]): Monoid[ot] = deriving[ot](i.dual)
 }
 
 
@@ -63,11 +63,11 @@ object Monoid extends MonoidInstance {
     final case class Dual[+a](override val get: a) extends NewtypeOf[a]
 
     object Dual {
-        implicit def weak[a]: Imply0[Dual[a], a] = new Imply0[Dual[a], a] {
-            private[this] type p = Dual[a]
-            private[this] type d = a
-            override def imply0(p: p): d = p.get
-            override def unimply0(d: => d): p = Dual(d)
+        implicit def _asNewtype0[a]: Newtype0[Dual[a], a] = new Newtype0[Dual[a], a] {
+            private[this] type nt = Dual[a]
+            private[this] type ot = a
+            override def new0(ot: => ot): nt = Dual(ot)
+            override def old0(nt: => nt): ot = nt.get
         }
 
         implicit def _asMonoid[a](implicit i: Monoid[a]): Monoid[Dual[a]] = new Monoid[Dual[a]] {
@@ -81,13 +81,14 @@ object Monoid extends MonoidInstance {
     //
     final case class All(override val get: Bool) extends NewtypeOf[Bool]
 
-    object All {
-        implicit val weak: Imply0[All, Bool] = new Imply0[All, Bool] {
-            private[this] type p = All
-            private[this] type d = Bool
-            override def imply0(p: p): d = p.get
-            override def unimply0(d: => d): p = All(d)
-        }
+    object All extends Newtype0[All, Bool] with ThisIsInstance {
+        // Overrides
+        //
+        // Newtype0
+        private[this] type nt = All
+        private[this] type ot = Bool
+        override def new0(ot: => ot): nt = All(ot)
+        override def old0(nt: => nt): ot = nt.get
 
         implicit val _asMonoid: Monoid[All] = new Monoid[All] {
             private[this] type m = All
@@ -100,13 +101,14 @@ object Monoid extends MonoidInstance {
     //
     final case class Any_(override val get: Bool) extends NewtypeOf[Bool]
 
-    object Any_ {
-        implicit val weak: Imply0[Any_, Bool] = new Imply0[Any_, Bool] {
-            private[this] type p = Any_
-            private[this] type d = Bool
-            override def imply0(p: p): d = p.get
-            override def unimply0(d: => d): p = Any_(d)
-        }
+    object Any_  extends Newtype0[Any_, Bool] with ThisIsInstance {
+        // Overrrides
+        //
+        // Newtype0
+        private[this] type nt = Any_
+        private[this] type ot = Bool
+        override def new0(ot: => ot): nt = Any_(ot)
+        override def old0(nt: => nt): ot = nt.get
 
         implicit val _asMonoid: Monoid[Any_] = new Monoid[Any_] {
             private[this] type m = Any_
@@ -117,14 +119,17 @@ object Monoid extends MonoidInstance {
 
     // Sum
     //
-    final case class Sum[a](override val get: a) extends NewtypeOf[a]
+    final case class Sum[a](override val get: a) extends NewtypeOf[a] with Kind.AbstractNewtype0 {
+        override type apply0 = Sum[a]
+        override type oldtype0 = a
+    }
 
     object Sum {
-        implicit def weak[a]: Imply0[Sum[a], a] = new Imply0[Sum[a], a] {
-            private[this] type p = Sum[a]
-            private[this] type d = a
-            override def imply0(p: p): d = p.get
-            override def unimply0(d: => d): p = Sum(d)
+        implicit def _asNewtype0[a]: Newtype0[Sum[a], a] = new Newtype0[Sum[a], a] {
+            private[this] type nt = Sum[a]
+            private[this] type ot = a
+            override def new0(ot: => ot): nt = Sum(ot)
+            override def old0(nt: => nt): ot = nt.get
         }
 
         implicit def _asMonoid[a](implicit i: Num[a]): Monoid[Sum[a]] = new Monoid[Sum[a]] {
@@ -137,14 +142,17 @@ object Monoid extends MonoidInstance {
 
     // Product
     //
-    final case class Product[a](override val get: a) extends NewtypeOf[a]
+    final case class Product[a](override val get: a) extends NewtypeOf[a] with Kind.AbstractNewtype0 {
+        override type apply0 = Product[a]
+        override type oldtype0 = a
+    }
 
     object Product {
-        implicit def weak[a]: Imply0[Product[a], a] = new Imply0[Product[a], a] {
-            private[this] type p = Product[a]
-            private[this] type d = a
-            override def imply0(p: p): d = p.get
-            override def unimply0(d: => d): p = Product(d)
+        implicit def _asNewtype0[a]: Newtype0[Product[a], a] = new Newtype0[Product[a], a] {
+            private[this] type nt = Product[a]
+            private[this] type ot = a
+            override def new0(ot: => ot): nt = Product(ot)
+            override def old0(nt: => nt): ot = nt.get
         }
 
         implicit def _asMonoid[a](implicit i: Num[a]): Monoid[Product[a]] = new Monoid[Product[a]] {

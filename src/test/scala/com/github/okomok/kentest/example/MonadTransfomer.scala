@@ -24,7 +24,7 @@ class MonadTransformerTezt { // extends org.scalatest.junit.JUnit3Suite {
         val mt = MonadTrans[MaybeT.type]
         import mt.lift
 
-        def isValid(s: String_): Boolean = Eq[String_].op_==(s)("valid")
+        def isValid(s: String_): Boolean = implicitly[Eq[String_]].op_==(s)("valid")
 
         def getValidPassword: MaybeT[String_] = {
             for {
@@ -46,10 +46,10 @@ class MonadTransformerTezt { // extends org.scalatest.junit.JUnit3Suite {
     def testWeakMonadT {
         import IO.MaybeT
 
-        val wm = MaybeT.weak.MonadPlus
+        val wm = MonadPlus.weak[MaybeT.type]
         import wm._
 
-        def isValid(s: String_): Boolean = Eq[String_].op_==(s)("valid")
+        def isValid(s: String_): Boolean = implicitly[Eq[String_]].op_==(s)("valid")
 
         // No wrappers, no lifts.
         def getValidPassword: IO[Maybe[String_]] = for {

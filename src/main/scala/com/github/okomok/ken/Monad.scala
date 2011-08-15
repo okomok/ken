@@ -199,4 +199,14 @@ trait MonadProxy[m[+_]] extends Monad[m] with ApplicativeProxy[m] {
 
 object Monad {
     def apply[m <: Kind.Function1](implicit i: Monad[m#apply]): Monad[m#apply] = i
+
+    def deriving[nt <: Kind.Function1, ot <: Kind.Function1](implicit i: Monad[ot#apply], j: Newtype1[nt#apply, ot#apply]): Monad[nt#apply] = new Monad[nt#apply] with ApplicativeProxy[nt#apply] {
+        private[this] type m[+a] = nt#apply[a]
+        override val self = Applicative.deriving[nt, ot](i, j)
+        override def `return`[a](x: => a): m[a] = j.new1 { i.`return`(x) }
+        override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = j.new1 { i.op_>>=(j.old1(x))(a => j.old1(y(a))) }
+        override def op_>>[b](x: m[_])(y: => m[b]): m[b] = j.new1 { i.op_>>(j.old1[Any](x))(j.old1(y)) }
+    }
+
+    def weak[nt <: Kind.Newtype1](implicit i: Monad[nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): Monad[nt#oldtype1] = deriving[Kind.quote1[nt#oldtype1], nt](i, j.dual)
 }

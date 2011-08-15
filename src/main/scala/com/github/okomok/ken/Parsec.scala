@@ -497,7 +497,7 @@ object Parsec {
     }
 
     def messageCompare(msg1: Message_)(msg2: Message_): Ordering = {
-        Ord[Int].compare(messageToEnum(msg1))(messageToEnum(msg2))
+        instance[Ord[Int]].compare(messageToEnum(msg1))(messageToEnum(msg2))
     }
 
     def messageString(msg: Message_): String = msg match {

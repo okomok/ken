@@ -32,15 +32,6 @@ trait Functor[f[+_]] extends Typeclass1[f] { outer =>
         def <@[b](y: f[b]): f[a] = op_<@(x)(y)
     }
     final implicit def <@[a](x: a): Infix_<@[a] = new Infix_<@(x)
-
-    // Newtypes
-    //
-    override def deriving[nt <: Kind.Function1](implicit i: Newtype1[nt#apply, f]): Functor[nt#apply] = new Functor[nt#apply] {
-        private[this] type f[+a] = nt#apply[a]
-        override def fmap[a, b](f: a => b)(m: f[a]): f[b] = i.new1 { outer.fmap(f)(i.old1(m)) }
-    }
-
-    override def weak(implicit i: Newtype1[f, oldtype1]): Functor[oldtype1] = deriving[Kind.quote1[oldtype1]](i.dual)
 }
 
 
@@ -55,6 +46,13 @@ trait FunctorProxy[f[+_]] extends Functor[f] with Proxy {
 
 object Functor extends FunctorInstance {
     def apply[f <: Kind.Function1](implicit i: Functor[f#apply]): Functor[f#apply] = i
+
+    def deriving[nt <: Kind.Function1, ot <: Kind.Function1](implicit i: Functor[ot#apply], j: Newtype1[nt#apply, ot#apply]): Functor[nt#apply] = new Functor[nt#apply] {
+        private[this] type f[+a] = nt#apply[a]
+        override def fmap[a, b](f: a => b)(m: f[a]): f[b] = j.new1 { i.fmap(f)(j.old1(m)) }
+    }
+
+    def weak[nt <: Kind.Newtype1](implicit i: Functor[nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): Functor[nt#oldtype1] = deriving[Kind.quote1[nt#oldtype1], nt](i, j.dual)
 }
 
 
