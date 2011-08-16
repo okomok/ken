@@ -33,7 +33,7 @@ trait Typeclass1[f[+_]] extends Typeclass with Kind.AbstractFunction1 {
      * Helper for type-parameter inference
      */
     trait Pull[f_ <: Kind.FunctionV] {
-        // Workaround: java.lang.Error: unexpected alias type: type f
+        // Workaround: https://issues.scala-lang.org/browse/SI-4312
         protected[this] type f[+a] = f_ #applyV[_, a]
         protected[this] type m[+a] = f[a]
     }
