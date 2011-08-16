@@ -42,8 +42,8 @@ object _Eq extends EqInstance {
 
     def deriving[nt <: Kind.Function0, ot <: Kind.Function0](implicit i: _Eq[ot#apply0], j: Newtype0[nt#apply0, ot#apply0]): _Eq[nt#apply0] = new _Eq[nt#apply0] {
         private[this] type a = nt#apply0
-        override val op_== : a => a => Bool = x => y => i.op_==(j.old0(x))(j.old0(y))
-        override val op_/= : a => a => Bool = x => y => i.op_/=(j.old0(x))(j.old0(y))
+        override val op_== : a => a => Bool = x => y => i.op_==(j.oldOf(x))(j.oldOf(y))
+        override val op_/= : a => a => Bool = x => y => i.op_/=(j.oldOf(x))(j.oldOf(y))
     }
 
     def weak[nt <: Kind.Newtype0](implicit i: _Eq[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): _Eq[nt#oldtype0] = deriving[Kind.const0[nt#oldtype0], nt](i, j.dual)

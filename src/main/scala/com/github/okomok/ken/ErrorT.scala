@@ -31,8 +31,8 @@ private[ken] final class _ErrorTs[n[+_]](val inner: Monad[n]) {
         implicit def _asNewtype1[e]: Newtype1[({type nt[+a] = _ErrorT[e, a]})#nt, ({type ot[+a] = n[Either[e, a]]})#ot] = new Newtype1[({type nt[+a] = _ErrorT[e, a]})#nt, ({type ot[+a] = n[Either[e, a]]})#ot] {
             private[this] type nt[+a] = _ErrorT[e, a]
             private[this] type ot[+a] = n[Either[e, a]]
-            override def new1[a](ot: => ot[a]): nt[a] = _ErrorT(ot)
-            override def old1[a](nt: => nt[a]): ot[a] = nt.run
+            override def newOf[a](ot: => ot[a]): nt[a] = _ErrorT(ot)
+            override def oldOf[a](nt: => nt[a]): ot[a] = nt.run
         }
 
         implicit def _monad[e](implicit i: ErrorClass[e]): MonadPlus[({type m[+a] = _ErrorT[e, a]})#m] with MonadError[e, ({type m[+a] = _ErrorT[e, a]})#m] = new MonadPlus[({type m[+a] = _ErrorT[e, a]})#m] with MonadError[e, ({type m[+a] = _ErrorT[e, a]})#m] {

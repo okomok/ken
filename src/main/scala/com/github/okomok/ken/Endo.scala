@@ -18,8 +18,8 @@ object Endo {
     implicit def _asNewtype0[a]: Newtype0[Endo[a], a => a] = new Newtype0[Endo[a], a => a] {
         private[this] type nt = Endo[a]
         private[this] type ot = a => a
-        override def new0(ot: => ot): nt = Endo(ot)
-        override def old0(nt: => nt): ot = nt.run
+        override def newOf(ot: => ot): nt = Endo(ot)
+        override def oldOf(nt: => nt): ot = nt.run
 
     }
 

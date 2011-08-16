@@ -33,8 +33,8 @@ private[ken] final class _WriterTs[n[+_]](val inner: Monad[n]) {
         implicit def _asNewtype1[w]: Newtype1[({type nt[+a] = _WriterT[w, a]})#nt, ({type ot[+a] = n[(a, w)]})#ot] = new Newtype1[({type nt[+a] = _WriterT[w, a]})#nt, ({type ot[+a] = n[(a, w)]})#ot] {
             private[this] type nt[+a] = _WriterT[w, a]
             private[this] type ot[+a] = n[(a, w)]
-            override def new1[a](ot: => ot[a]): nt[a] = _WriterT(ot)
-            override def old1[a](nt: => nt[a]): ot[a] = nt.run
+            override def newOf[a](ot: => ot[a]): nt[a] = _WriterT(ot)
+            override def oldOf[a](nt: => nt[a]): ot[a] = nt.run
         }
 
         implicit def _asMonadWriter[w](implicit i: Monoid[w]): MonadWriter[w, ({type m[+a] = _WriterT[w, a]})#m] = new MonadWriter[w, ({type m[+a] = _WriterT[w, a]})#m] {

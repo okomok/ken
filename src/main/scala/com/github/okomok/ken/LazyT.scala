@@ -29,8 +29,8 @@ private[ken] final class _LazyTs[n[+_]](val inner: Monad[n]) {
         implicit val _asNewtype1: Newtype1[_LazyT, ({type ot[+a] = n[Lazy[a]]})#ot] = new Newtype1[_LazyT, ({type ot[+a] = n[Lazy[a]]})#ot] {
             private[this] type nt[+a] = _LazyT[a]
             private[this] type ot[+a] = n[Lazy[a]]
-            override def new1[a](ot: => ot[a]): nt[a] = _LazyT(ot)
-            override def old1[a](nt: => nt[a]): ot[a] = nt.run
+            override def newOf[a](ot: => ot[a]): nt[a] = _LazyT(ot)
+            override def oldOf[a](nt: => nt[a]): ot[a] = nt.run
         }
 
         implicit val _asMonad: Monad[_LazyT] = new Monad[_LazyT] {

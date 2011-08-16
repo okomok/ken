@@ -31,8 +31,8 @@ object MonadFix {
         private[this] type m[+a] = nt#apply[a]
         override val self = Monad.deriving[nt, ot](i, j)
         override def mfix[a](f: (=> a) => m[a]): m[a] = {
-            def k(a: => a): ot#apply[a] = j.old1(f(a))
-            j.new1 { i.mfix(k) }
+            def k(a: => a): ot#apply[a] = j.oldOf(f(a))
+            j.newOf { i.mfix(k) }
         }
     }
 

@@ -24,8 +24,8 @@ private[ken] final class _Kleislis[m[+_]](val monad: Monad[m]) {
         implicit val _asNewtype2: Newtype2[_Kleisli, ({type ot[-a, +b] = a => m[b]})#ot] = new Newtype2[_Kleisli, ({type ot[-a, +b] = a => m[b]})#ot] {
             private[this] type nt[-a, +b] = _Kleisli[a, b]
             private[this] type ot[-a, +b] = a => m[b]
-            override def new2[a, b](ot: => ot[a, b]): nt[a, b] = _Kleisli(ot)
-            override def old2[a, b](nt: => nt[a, b]): ot[a, b] = nt.run
+            override def newOf[a, b](ot: => ot[a, b]): nt[a, b] = _Kleisli(ot)
+            override def oldOf[a, b](nt: => nt[a, b]): ot[a, b] = nt.run
         }
 
         implicit val _asArrow: Arrow[_Kleisli] = new Arrow[_Kleisli] {

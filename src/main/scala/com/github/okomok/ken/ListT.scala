@@ -29,8 +29,8 @@ private[ken] final class _ListTs[n[+_]](val inner: Monad[n]) {
         implicit val _asNewtype1: Newtype1[_ListT, ({type ot[+a] = n[List[a]]})#ot] = new Newtype1[_ListT, ({type ot[+a] = n[List[a]]})#ot] {
             private[this] type nt[+a] = _ListT[a]
             private[this] type ot[+a] = n[List[a]]
-            override def new1[a](ot: => ot[a]): nt[a] = _ListT(ot)
-            override def old1[a](nt: => nt[a]): ot[a] = nt.run
+            override def newOf[a](ot: => ot[a]): nt[a] = _ListT(ot)
+            override def oldOf[a](nt: => nt[a]): ot[a] = nt.run
         }
 
         implicit val _asMonadPlus: MonadPlus[_ListT] = new MonadPlus[_ListT] {

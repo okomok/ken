@@ -45,9 +45,9 @@ object MonadWriter {
         private[this] type m[+a] = nt#apply[a]
         override val self = Monad.deriving[nt, ot](i, j)
         override def monoid: Monoid[w] = i.monoid
-        override def tell(x: w): m[Unit] = j.new1 { i.tell(x) }
-        override def listen[a](x: m[a]): m[(a, w)] = j.new1 { i.listen(j.old1(x)) }
-        override def pass[a](x: m[(a, w => w)]): m[a] = j.new1 { i.pass(j.old1(x)) }
+        override def tell(x: w): m[Unit] = j.newOf { i.tell(x) }
+        override def listen[a](x: m[a]): m[(a, w)] = j.newOf { i.listen(j.oldOf(x)) }
+        override def pass[a](x: m[(a, w => w)]): m[a] = j.newOf { i.pass(j.oldOf(x)) }
     }
 
     def weak[w, nt <: Kind.Newtype1](implicit i: MonadWriter[w, nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): MonadWriter[w, nt#oldtype1] = deriving[w, Kind.quote1[nt#oldtype1], nt](i, j.dual)

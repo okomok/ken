@@ -12,9 +12,7 @@ package ken
  * Type-level utilities
  */
 object Kind {
-    /**
-     * Marker
-     */
+    @Annotation.marker
     trait FunctionLike
 
     /**
@@ -84,7 +82,7 @@ object Kind {
     trait AbstractMonadTrans extends MonadTrans with AbstractNewtype1 {
     }
 
-    // Utilities
+    // Misc
     //
     trait const0[z] extends AbstractFunction0 {
         override type apply0 = z

@@ -17,8 +17,8 @@ object Identity extends Newtype1[Identity, ({type ot[+a] = a})#ot] with MonadFix
     // Newtype1
     private[this] type nt[+a] = Identity[a]
     private[this] type ot[+a] = a
-    override def new1[a](ot: => ot[a]): nt[a] = Identity(ot)
-    override def old1[a](nt: => nt[a]): ot[a] = nt.run
+    override def newOf[a](ot: => ot[a]): nt[a] = Identity(ot)
+    override def oldOf[a](nt: => nt[a]): ot[a] = nt.run
     // Functor
     private[this] type f[+a] = nt[a]
     override def fmap[a, b](f: a => b)(m: f[a]): f[b] = Identity { f(run(m)) }

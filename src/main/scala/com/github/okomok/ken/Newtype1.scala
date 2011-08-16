@@ -16,16 +16,16 @@ trait Newtype1[nt[+_], ot[+_]] extends Typeclass with Kind.AbstractNewtype1 { ou
 
     // Core
     //
-    def new1[a](ot: => ot[a]): nt[a]
-    def old1[a](nt: => nt[a]): ot[a]
+    def newOf[a](ot: => ot[a]): nt[a]
+    def oldOf[a](nt: => nt[a]): ot[a]
 
     // Extra
     //
-    final def run[a](nt: nt[a]): ot[a] = old1(nt)
+    final def run[a](nt: nt[a]): ot[a] = oldOf(nt)
 
     def dual: Newtype1[ot, nt] = new Newtype1[ot, nt] {
-        override def old1[a](ot: => ot[a]): nt[a] = outer.new1(ot)
-        override def new1[a](nt: => nt[a]): ot[a] = outer.old1(nt)
+        override def oldOf[a](ot: => ot[a]): nt[a] = outer.newOf(ot)
+        override def newOf[a](nt: => nt[a]): ot[a] = outer.oldOf(nt)
     }
 }
 
@@ -33,8 +33,8 @@ trait Newtype1[nt[+_], ot[+_]] extends Typeclass with Kind.AbstractNewtype1 { ou
 trait Newtype1Proxy[nt[+_], ot[+_]] extends Newtype1[nt, ot] with Proxy {
     override def self: Newtype1[nt, ot]
 
-    override def new1[a](ot: => ot[a]): nt[a] = self.new1(ot)
-    override def old1[a](nt: => nt[a]): ot[a] = self.old1(nt)
+    override def newOf[a](ot: => ot[a]): nt[a] = self.newOf(ot)
+    override def oldOf[a](nt: => nt[a]): ot[a] = self.oldOf(nt)
 
     override def dual: Newtype1[ot, nt] = self.dual
 }

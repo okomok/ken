@@ -37,8 +37,8 @@ private[ken] final class _StateTs[n[+_]](val inner: Monad[n]) {
         implicit def _asNewtype1[s]: Newtype1[({type nt[+a] = _StateT[s, a]})#nt, ({type ot[+a] = s => n[(a, s)]})#ot] = new Newtype1[({type nt[+a] = _StateT[s, a]})#nt, ({type ot[+a] = s => n[(a, s)]})#ot] {
             private[this] type nt[+a] = _StateT[s, a]
             private[this] type ot[+a] = s => n[(a, s)]
-            override def new1[a](ot: => ot[a]): nt[a] = _StateT(ot)
-            override def old1[a](nt: => nt[a]): ot[a] = nt.run
+            override def newOf[a](ot: => ot[a]): nt[a] = _StateT(ot)
+            override def oldOf[a](nt: => nt[a]): ot[a] = nt.run
         }
 
         implicit def _asMonadState[s]: MonadState[s, ({type m[+a] = _StateT[s, a]})#m] = new MonadState[s, ({type m[+a] = _StateT[s, a]})#m] {

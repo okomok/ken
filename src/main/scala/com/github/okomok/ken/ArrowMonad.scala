@@ -19,8 +19,8 @@ private[ken] final class _ArrowMonads[k[-_, +_]](val arrow: ArrowApply[k]) {
         // Newtype1
         private[this] type nt[+a] = _ArrowMonad[a]
         private[this] type ot[+a] = k[Unit, a]
-        override def new1[a](ot: => ot[a]): nt[a] = _ArrowMonad(ot)
-        override def old1[a](nt: => nt[a]): ot[a] = nt.run
+        override def newOf[a](ot: => ot[a]): nt[a] = _ArrowMonad(ot)
+        override def oldOf[a](nt: => nt[a]): ot[a] = nt.run
         // Monad
         import arrow.{>>>, arr}
         private[this] type m[+a] = _ArrowMonad[a]

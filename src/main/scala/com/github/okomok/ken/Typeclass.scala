@@ -8,9 +8,7 @@ package com.github.okomok
 package ken
 
 
-/**
- * Marker
- */
+@Annotation.marker
 trait Typeclass
 
 

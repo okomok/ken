@@ -67,10 +67,10 @@ object ArrowChoice {
         private[this] type a[-a, +b] = nt#apply2[a, b]
         override val self = Arrow.deriving[nt, ot](i, j)
 
-        override def left[b, c, d](f: a[b, c]): a[Either[b, d], Either[c, d]] = j.new2(i.left(j.old2(f)))
-        override def right[b, c, d](f: a[b, c]): a[Either[d, b], Either[d, c]] = j.new2(i.right(j.old2(f)))
-        override def op_+++[b, c, b_, c_](f: a[b, c])(g: a[b_, c_]): a[Either[b, b_], Either[c, c_]] = j.new2(i.op_+++(j.old2(f))(j.old2(g)))
-        override def op_|||[b, c, d](f: a[b, d])(g: a[c, d]): a[Either[b, c], d] = j.new2(i.op_|||(j.old2(f))(j.old2(g)))
+        override def left[b, c, d](f: a[b, c]): a[Either[b, d], Either[c, d]] = j.newOf(i.left(j.oldOf(f)))
+        override def right[b, c, d](f: a[b, c]): a[Either[d, b], Either[d, c]] = j.newOf(i.right(j.oldOf(f)))
+        override def op_+++[b, c, b_, c_](f: a[b, c])(g: a[b_, c_]): a[Either[b, b_], Either[c, c_]] = j.newOf(i.op_+++(j.oldOf(f))(j.oldOf(g)))
+        override def op_|||[b, c, d](f: a[b, d])(g: a[c, d]): a[Either[b, c], d] = j.newOf(i.op_|||(j.oldOf(f))(j.oldOf(g)))
     }
 
     def weak[nt <: Kind.Newtype2](implicit i: ArrowChoice[nt#apply2], j: Newtype2[nt#apply2, nt#oldtype2]): ArrowChoice[nt#oldtype2] = deriving[Kind.quote2[nt#oldtype2], nt](i, j.dual)

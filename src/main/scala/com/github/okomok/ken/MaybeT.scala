@@ -30,8 +30,8 @@ private[ken] final class _MaybeTs[n[+_]](val inner: Monad[n]) {
         implicit val _asNewtype1: Newtype1[_MaybeT, ({type ot[+a] = n[Maybe[a]]})#ot] = new Newtype1[_MaybeT, ({type ot[+a] = n[Maybe[a]]})#ot] {
             private[this] type nt[+a] = _MaybeT[a]
             private[this] type ot[+a] = n[Maybe[a]]
-            override def new1[a](ot: => ot[a]): nt[a] = _MaybeT(ot)
-            override def old1[a](nt: => nt[a]): ot[a] = nt.run
+            override def newOf[a](ot: => ot[a]): nt[a] = _MaybeT(ot)
+            override def oldOf[a](nt: => nt[a]): ot[a] = nt.run
         }
 
         implicit val _asMonadPlus: MonadPlus[_MaybeT] = new MonadPlus[_MaybeT] {

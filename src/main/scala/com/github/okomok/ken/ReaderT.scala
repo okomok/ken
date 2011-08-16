@@ -33,8 +33,8 @@ private[ken] final class _ReaderTs[n[+_]](val inner: Monad[n]) {
         implicit def _asNewtype1[r]: Newtype1[({type nt[+a] = _ReaderT[r, a]})#nt, ({type ot[+a] = r => n[a]})#ot] = new Newtype1[({type nt[+a] = _ReaderT[r, a]})#nt, ({type ot[+a] = r => n[a]})#ot] {
             private[this] type nt[+a] = _ReaderT[r, a]
             private[this] type ot[+a] = r => n[a]
-            override def new1[a](ot: => ot[a]): nt[a] = _ReaderT(ot)
-            override def old1[a](nt: => nt[a]): ot[a] = nt.run
+            override def newOf[a](ot: => ot[a]): nt[a] = _ReaderT(ot)
+            override def oldOf[a](nt: => nt[a]): ot[a] = nt.run
         }
 
         implicit def _asMonadReader[r]: MonadReader[r, ({type m[+a] = _ReaderT[r, a]})#m] = new MonadReader[r, ({type m[+a] = _ReaderT[r, a]})#m] {

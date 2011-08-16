@@ -30,7 +30,7 @@ object MonadIO {
     def deriving[nt <: Kind.Function1, ot <: Kind.Function1](implicit i: MonadIO[ot#apply], j: Newtype1[nt#apply, ot#apply]): MonadIO[nt#apply] = new MonadIO[nt#apply] with MonadProxy[nt#apply] {
         private[this] type m[+a] = nt#apply[a]
         override val self = Monad.deriving[nt, ot](i, j)
-        override def liftIO[a](io: IO[a]): m[a] = j.new1 { i.liftIO(io) }
+        override def liftIO[a](io: IO[a]): m[a] = j.newOf { i.liftIO(io) }
     }
 
     def weak[nt <: Kind.Newtype1](implicit i: MonadIO[nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): MonadIO[nt#oldtype1] = deriving[Kind.quote1[nt#oldtype1], nt](i, j.dual)

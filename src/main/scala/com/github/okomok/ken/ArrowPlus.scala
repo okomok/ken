@@ -38,7 +38,7 @@ object ArrowPlus {
         private[this] type a[-a, +b] = nt#apply2[a, b]
         override val self = ArrowZero.deriving[nt, ot](i, j)
 
-        override def op_<+>[b, c](f: a[b, c])(g: => a[b, c]): a[b, c] = j.new2(i.op_<+>(j.old2(f))(j.old2(g)))
+        override def op_<+>[b, c](f: a[b, c])(g: => a[b, c]): a[b, c] = j.newOf(i.op_<+>(j.oldOf(f))(j.oldOf(g)))
     }
 
     def weak[nt <: Kind.Newtype2](implicit i: ArrowPlus[nt#apply2], j: Newtype2[nt#apply2, nt#oldtype2]): ArrowPlus[nt#oldtype2] = deriving[Kind.quote2[nt#oldtype2], nt](i, j.dual)

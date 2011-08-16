@@ -19,8 +19,8 @@ object ZipList extends Newtype1[ZipList, List] with Applicative[ZipList] with Th
     // Newtype1
     private[this] type nt[+a] = ZipList[a]
     private[this] type ot[+a] = List[a]
-    override def new1[a](ot: => ot[a]): nt[a] = ZipList(ot)
-    override def old1[a](nt: => nt[a]): ot[a] = nt.run
+    override def newOf[a](ot: => ot[a]): nt[a] = ZipList(ot)
+    override def oldOf[a](nt: => nt[a]): ot[a] = nt.run
     // Functor
     private[this] type f[+a] = ZipList[a]
     override def fmap[a, b](f: a => b)(xs: f[a]): f[b] = ZipList { List.map(f)(run(xs)) }

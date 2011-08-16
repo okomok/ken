@@ -40,8 +40,8 @@ object MonadState {
     def deriving[s, nt <: Kind.Function1, ot <: Kind.Function1](implicit i: MonadState[s, ot#apply], j: Newtype1[nt#apply, ot#apply]): MonadState[s, nt#apply] = new MonadState[s, nt#apply] with MonadProxy[nt#apply] {
         private[this] type m[+a] = nt#apply[a]
         override val self = Monad.deriving[nt, ot](i, j)
-        override def get: m[s] = j.new1 { i.get }
-        override def put(s: s): m[Unit] = j.new1 { i.put(s) }
+        override def get: m[s] = j.newOf { i.get }
+        override def put(s: s): m[Unit] = j.newOf { i.put(s) }
     }
 
     def weak[s, nt <: Kind.Newtype1](implicit i: MonadState[s, nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): MonadState[s, nt#oldtype1] = deriving[s, Kind.quote1[nt#oldtype1], nt](i, j.dual)

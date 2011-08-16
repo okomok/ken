@@ -31,7 +31,7 @@ object ArrowZero {
         private[this] type a[-a, +b] = nt#apply2[a, b]
         override val self = Arrow.deriving[nt, ot](i, j)
 
-        override def zeroArrow[b, c]: a[b, c] = j.new2(i.zeroArrow[b, c])
+        override def zeroArrow[b, c]: a[b, c] = j.newOf(i.zeroArrow[b, c])
     }
 
     def weak[nt <: Kind.Newtype2](implicit i: ArrowZero[nt#apply2], j: Newtype2[nt#apply2, nt#oldtype2]): ArrowZero[nt#oldtype2] = deriving[Kind.quote2[nt#oldtype2], nt](i, j.dual)

@@ -50,9 +50,9 @@ object ArrowApply {
         private[this] type a[-a, +b] = nt#apply2[a, b]
         override val self = Arrow.deriving[nt, ot](i, j)
 
-        override def app[b, c]: a[(a[b, c], b), c] = j.new2(i.op_^>>( (n: (nt#apply2[b, c], b)) => (j.old2(n._1), n._2) )(i.app[b, c]))
+        override def app[b, c]: a[(a[b, c], b), c] = j.newOf(i.op_^>>( (n: (nt#apply2[b, c], b)) => (j.oldOf(n._1), n._2) )(i.app[b, c]))
 
-        override def leftApp[b, c, d](f: a[b, c]): a[Either[b, d], Either[c, d]] = j.new2(i.leftApp(j.old2(f)))
+        override def leftApp[b, c, d](f: a[b, c]): a[Either[b, d], Either[c, d]] = j.newOf(i.leftApp(j.oldOf(f)))
     }
 
     def weak[nt <: Kind.Newtype2](implicit i: ArrowApply[nt#apply2], j: Newtype2[nt#apply2, nt#oldtype2]): ArrowApply[nt#oldtype2] = deriving[Kind.quote2[nt#oldtype2], nt](i, j.dual)

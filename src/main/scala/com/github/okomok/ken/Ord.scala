@@ -64,13 +64,13 @@ object Ord {
     def deriving[nt <: Kind.Function0, ot <: Kind.Function0](implicit i: Ord[ot#apply0], j: Newtype0[nt#apply0, ot#apply0]): Ord[nt#apply0] = new Ord[nt#apply0] with EqProxy[nt#apply0] {
         private[this] type a = nt#apply0
         override val self = Eq.deriving[nt, ot](i, j)
-        override val compare: a => a => Ordering = x => y => i.compare(j.old0(x))(j.old0(y))
-        override val op_< : a => a => Bool = x => y => i.op_<(j.old0(x))(j.old0(y))
-        override val op_<= : a => a => Bool = x => y => i.op_<=(j.old0(x))(j.old0(y))
-        override val op_> : a => a => Bool = x => y => i.op_>(j.old0(x))(j.old0(y))
-        override val op_>= : a => a => Bool = x => y => i.op_>=(j.old0(x))(j.old0(y))
-        override val max: a => a => a = x => y => j.new0(i.max(j.old0(x))(j.old0(y)))
-        override val min: a => a => a = x => y => j.new0(i.min(j.old0(x))(j.old0(y)))
+        override val compare: a => a => Ordering = x => y => i.compare(j.oldOf(x))(j.oldOf(y))
+        override val op_< : a => a => Bool = x => y => i.op_<(j.oldOf(x))(j.oldOf(y))
+        override val op_<= : a => a => Bool = x => y => i.op_<=(j.oldOf(x))(j.oldOf(y))
+        override val op_> : a => a => Bool = x => y => i.op_>(j.oldOf(x))(j.oldOf(y))
+        override val op_>= : a => a => Bool = x => y => i.op_>=(j.oldOf(x))(j.oldOf(y))
+        override val max: a => a => a = x => y => j.newOf(i.max(j.oldOf(x))(j.oldOf(y)))
+        override val min: a => a => a = x => y => j.newOf(i.min(j.oldOf(x))(j.oldOf(y)))
     }
 
     def weak[nt <: Kind.Newtype0](implicit i: Ord[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Ord[nt#oldtype0] = deriving[Kind.const0[nt#oldtype0], nt](i, j.dual)

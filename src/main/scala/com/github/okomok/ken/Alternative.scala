@@ -59,11 +59,11 @@ object Alternative {
     def deriving[nt <: Kind.Function1, ot <: Kind.Function1](implicit i: Alternative[ot#apply], j: Newtype1[nt#apply, ot#apply]): Alternative[nt#apply] = new Alternative[nt#apply] with ApplicativeProxy[nt#apply] {
         private[this] type f[+a] = nt#apply[a]
         override val self = Applicative.deriving[nt, ot](i, j)
-        override def empty: f[Nothing] = j.new1(i.empty)
-        override def op_<|>[a](x: f[a])(y: => f[a]): f[a] = j.new1(i.op_<|>(j.old1(x))(j.old1(y)))
-        override def some[a](v: f[a]): f[List[a]] = j.new1(i.some(j.old1(v)))
-        override def many[a](v: f[a]): f[List[a]] = j.new1(i.many(j.old1(v)))
-        override def optional[a](x: f[a]): f[Maybe[a]] = j.new1(i.optional(j.old1(x)))
+        override def empty: f[Nothing] = j.newOf(i.empty)
+        override def op_<|>[a](x: f[a])(y: => f[a]): f[a] = j.newOf(i.op_<|>(j.oldOf(x))(j.oldOf(y)))
+        override def some[a](v: f[a]): f[List[a]] = j.newOf(i.some(j.oldOf(v)))
+        override def many[a](v: f[a]): f[List[a]] = j.newOf(i.many(j.oldOf(v)))
+        override def optional[a](x: f[a]): f[Maybe[a]] = j.newOf(i.optional(j.oldOf(x)))
     }
 
     def weak[nt <: Kind.Newtype1](implicit i: Alternative[nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): Alternative[nt#oldtype1] = deriving[Kind.quote1[nt#oldtype1], nt](i, j.dual)

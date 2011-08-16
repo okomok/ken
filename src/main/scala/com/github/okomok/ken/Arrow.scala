@@ -95,17 +95,17 @@ object Arrow {
         private[this] type a[-a, +b] = nt#apply2[a, b]
         override val self = Category.deriving[nt, ot](i, j)
 
-        override def arr[b, c](f: b => c): a[b, c] = j.new2(i.arr(f))
-        override def first[b, c, d](f: a[b, c]): a[(b, d), (c, d)] = j.new2(i.first(j.old2(f)))
-        override def second[b, c, d](f: a[b, c]): a[(d, b), (d, c)] = j.new2(i.second(j.old2(f)))
+        override def arr[b, c](f: b => c): a[b, c] = j.newOf(i.arr(f))
+        override def first[b, c, d](f: a[b, c]): a[(b, d), (c, d)] = j.newOf(i.first(j.oldOf(f)))
+        override def second[b, c, d](f: a[b, c]): a[(d, b), (d, c)] = j.newOf(i.second(j.oldOf(f)))
 
-        override def op_***[b, c, b_, c_](f: a[b, c])(g: a[b_, c_]): a[(b, b_), (c, c_)] = j.new2(i.op_***(j.old2(f))(j.old2(g)))
-        override def op_&&&[b, c, c_](f: a[b, c])(g: a[b, c_]): a[b, (c, c_)] = j.new2(i.op_&&&(j.old2(f))(j.old2(g)))
-        override def op_^>>[b, c, d](f: b => c)(a: a[c, d]): a[b, d] = j.new2(i.op_^>>(f)(j.old2(a)))
-        override def op_>>^[b, c, d](a: a[b, c])(f: c => d): a[b, d] = j.new2(i.op_>>^(j.old2(a))(f))
-        override def op_<<^[b, c, d](a: a[c, d])(f: b => c): a[b, d] = j.new2(i.op_<<^(j.old2(a))(f))
-        override def op_^<<[b, c, d](f: c => d)(a: a[b, c]): a[b, d] = j.new2(i.op_^<<(f)(j.old2(a)))
-        override def returnA[b]: a[b, b] = j.new2(i.returnA[b])
+        override def op_***[b, c, b_, c_](f: a[b, c])(g: a[b_, c_]): a[(b, b_), (c, c_)] = j.newOf(i.op_***(j.oldOf(f))(j.oldOf(g)))
+        override def op_&&&[b, c, c_](f: a[b, c])(g: a[b, c_]): a[b, (c, c_)] = j.newOf(i.op_&&&(j.oldOf(f))(j.oldOf(g)))
+        override def op_^>>[b, c, d](f: b => c)(a: a[c, d]): a[b, d] = j.newOf(i.op_^>>(f)(j.oldOf(a)))
+        override def op_>>^[b, c, d](a: a[b, c])(f: c => d): a[b, d] = j.newOf(i.op_>>^(j.oldOf(a))(f))
+        override def op_<<^[b, c, d](a: a[c, d])(f: b => c): a[b, d] = j.newOf(i.op_<<^(j.oldOf(a))(f))
+        override def op_^<<[b, c, d](f: c => d)(a: a[b, c]): a[b, d] = j.newOf(i.op_^<<(f)(j.oldOf(a)))
+        override def returnA[b]: a[b, b] = j.newOf(i.returnA[b])
     }
 
     def weak[nt <: Kind.Newtype2](implicit i: Arrow[nt#apply2], j: Newtype2[nt#apply2, nt#oldtype2]): Arrow[nt#oldtype2] = deriving[Kind.quote2[nt#oldtype2], nt](i, j.dual)

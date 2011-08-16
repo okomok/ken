@@ -20,8 +20,8 @@ object Const extends Kind.FunctionLike {
     implicit def _asNewtype1[z]: Newtype1[({type nt[+a] = Const[z, a]})#nt, ({type ot[+a] = z})#ot] = new Newtype1[({type nt[+a] = Const[z, a]})#nt, ({type ot[+a] = z})#ot] {
         private[this] type nt[+a] = Const[z, a]
         private[this] type ot[+a] = z
-        override def new1[a](ot: => ot[a]): nt[a] = Const(ot)
-        override def old1[a](nt: => nt[a]): ot[a] = nt.run
+        override def newOf[a](ot: => ot[a]): nt[a] = Const(ot)
+        override def oldOf[a](nt: => nt[a]): ot[a] = nt.run
     }
 
     implicit def _asFunctor[z]: Functor[({type f[+a] = Const[z, a]})#f] = new Functor[({type f[+a] = Const[z, a]})#f] {
