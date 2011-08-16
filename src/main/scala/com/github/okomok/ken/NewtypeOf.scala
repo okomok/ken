@@ -8,7 +8,8 @@ package com.github.okomok
 package ken
 
 
-trait NewtypeOf[+a] {
+// Up is workaround: https://issues.scala-lang.org/browse/SI-4225
+trait NewtypeOf[+a] extends Up[NewtypeOf[a]] {
     def get: a
     final def run: a = get
     final def app: a = get

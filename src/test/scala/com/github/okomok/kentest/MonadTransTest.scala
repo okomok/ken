@@ -27,4 +27,13 @@ class MonadTransTest extends org.scalatest.junit.JUnit3Suite {
         }
         ()
     }
+
+    def testDependentUp {
+        def testIt[n[+_]](n1: Monad[n], n2: Monad[n]) {
+            val m1 = Monad[n1.MaybeT.type]
+            val m2 = Monad[n2.MaybeT.type]
+            n2.MaybeT.run(m1.`return`(Just(3)).up)
+        }
+        ()
+    }
 }
