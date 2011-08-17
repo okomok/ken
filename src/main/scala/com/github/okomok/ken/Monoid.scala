@@ -30,15 +30,6 @@ trait Monoid[m] extends Typeclass0[m] { outer =>
         def _mappend_(y: Lazy[m]): m = mappend(x)(y)
     }
     final implicit def _mappend_(x: m): Infix_mappend = new Infix_mappend(x)
-
-    // Newtypes
-    //
-    override def deriving[nt](implicit i: Newtype0[nt, m]): Monoid[nt] = new Monoid[nt] {
-        private[this] type _m = nt
-        override val mempty: _m = i.newOf(outer.mempty)
-        override val mappend: _m => Lazy[_m] => _m = x => y => i.newOf(outer.mappend(i.oldOf(x))(i.oldOf(y.!)))
-        override val mconcat: List[_m] => _m = xs => i.newOf(outer.mconcat(List.map[_m, m](Function.!(i.oldOf))(xs)))
-    }
 }
 
 
@@ -56,7 +47,14 @@ trait MonoidProxy[m] extends Monoid[m] with Proxy {
 object Monoid extends MonoidInstance {
     def apply[m](implicit i: Monoid[m]): Monoid[m] = i
 
-    def weak[nt <: Kind.Newtype0](implicit i: Monoid[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Monoid[nt#oldtype0] = i.deriving[nt#oldtype0](j.dual)
+    def deriving[nt <: Kind.Function0, ot <: Kind.Function0](implicit i: Monoid[ot#apply0], j: Newtype0[nt#apply0, ot#apply0]): Monoid[nt#apply0] = new Monoid[nt#apply0] {
+        private[this] type m = nt#apply0
+        override val mempty: m = j.newOf(i.mempty)
+        override val mappend: m => Lazy[m] => m = x => y => j.newOf(i.mappend(j.oldOf(x))(j.oldOf(y)))
+        override val mconcat: List[m] => m = xs => j.newOf(i.mconcat(List.map[m, ot#apply0](Function.!(j.oldOf))(xs)))
+    }
+
+    def weak[nt <: Kind.Newtype0](implicit i: Monoid[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Monoid[nt#oldtype0] = deriving[Kind.const0[nt#oldtype0], nt](i, j.dual)
 
     // Dual
     //

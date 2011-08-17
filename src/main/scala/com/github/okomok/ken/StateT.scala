@@ -78,10 +78,7 @@ private[ken] final class _StateTs[n[+_]](val inner: Monad[n]) {
             private[this] type m[+a] = _StateT[s, a]
             override val self = _asMonadState[s]
             override def mfix[a](f: Lazy[a] => m[a]): m[a] = _StateT { s =>
-                def k(aI_ : Lazy[(a, s)]) = run(f(aI_._1))(s)
-                i.mfix(k)
-                // scalac sucks.
-                // i.mfix { (aI_ : (=> (a, s))) => run(f(aI_._1))(s) }
+                i.mfix { (aI_ : Lazy[(a, s)]) => run(f(aI_._1))(s) }
             }
         }
     }
