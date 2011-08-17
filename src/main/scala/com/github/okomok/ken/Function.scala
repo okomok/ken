@@ -46,7 +46,7 @@ object Function extends Kind.qcurry2[Function1] with ArrowChoice[Function1] with
     // ArrowLoop
     override def loop[b, c, d](f: a[(b, Lazy[d]), (Lazy[c], Lazy[d])]): a[b, c] = b => {
         new { val t: (Lazy[c], Lazy[d]) = f(b, Lazy(t._2.!)) }.t._1.!
-        //lazy val t: (c, d) = f(b, Lazy(t._2))
+        //lazy val t: (c, d) = f(b, Lazy(t._2)) // scalac CRASH.
         //t._1
     }
 

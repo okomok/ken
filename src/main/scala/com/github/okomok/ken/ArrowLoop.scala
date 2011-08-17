@@ -36,4 +36,3 @@ object ArrowLoop {
 
     def weak[nt <: Kind.Newtype2](implicit i: ArrowLoop[nt#apply2], j: Newtype2[nt#apply2, nt#oldtype2]): ArrowLoop[nt#oldtype2] = deriving[Kind.quote2[nt#oldtype2], nt](i, j.dual)
 }
-
