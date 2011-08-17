@@ -81,8 +81,11 @@ private[ken] final class _Kleislis[m[+_]](val monad: Monad[m]) {
         implicit def _asArrowLoop(implicit i: MonadFix[m]): ArrowLoop[_Kleisli] = new ArrowLoop[_Kleisli] with ArrowProxy[_Kleisli] {
             private[this] type a[-a, +b] = _Kleisli[a, b]
             override def self = _asArrow
-            override def loop[b, c, d](f: a[(b, d), (c, d)]): a[b, c] = {
-                def f_(x: b)(y: => (c, d)): m[(c, d)] = f.run(x, snd(y))
+            override def loop[b, c, d](f: a[(b, Lazy[d]), (Lazy[c], Lazy[d])]): a[b, c] = {
+                def f_(x: b)(y: => (c, d)): m[(c, d)] = {
+                    import i.forComp
+                    for { (c, d) <- f.run(x, Lazy(snd(y))) } yield (c.!, d.!)
+                }
                 _Kleisli { i.liftM[(c, d), c](fst)_ compose i.mfix[(c, d)] compose f_ }
             }
         }

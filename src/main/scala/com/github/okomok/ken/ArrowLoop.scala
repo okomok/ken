@@ -13,14 +13,14 @@ trait ArrowLoop[a[-_, +_]] extends Arrow[a] {
 
     // Core
     //
-    def loop[b, c, d](f: a[(b, d), (c, d)]): a[b, c]
+    def loop[b, c, d](f: a[(b, Lazy[d]), (Lazy[c], Lazy[d])]): a[b, c]
 }
 
 
 trait ArrowLoopProxy[a[-_, +_]] extends ArrowLoop[a] with ArrowProxy[a] {
     override def self: ArrowLoop[a]
 
-    override def loop[b, c, d](f: a[(b, d), (c, d)]): a[b, c] = self.loop(f)
+    override def loop[b, c, d](f: a[(b, Lazy[d]), (Lazy[c], Lazy[d])]): a[b, c] = self.loop(f)
 }
 
 
@@ -31,7 +31,7 @@ object ArrowLoop {
         private[this] type a[-a, +b] = nt#apply2[a, b]
         override val self = Arrow.deriving[nt, ot](i, j)
 
-        override def loop[b, c, d](f: a[(b, d), (c, d)]): a[b, c] = j.newOf(i.loop(j.oldOf(f)))
+        override def loop[b, c, d](f: a[(b, Lazy[d]), (Lazy[c], Lazy[d])]): a[b, c] = j.newOf(i.loop(j.oldOf(f)))
     }
 
     def weak[nt <: Kind.Newtype2](implicit i: ArrowLoop[nt#apply2], j: Newtype2[nt#apply2, nt#oldtype2]): ArrowLoop[nt#oldtype2] = deriving[Kind.quote2[nt#oldtype2], nt](i, j.dual)

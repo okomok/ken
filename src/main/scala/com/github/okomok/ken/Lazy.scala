@@ -32,7 +32,11 @@ object ! {
 }
 
 
-case class Lazy2[+a1, +a2](x1: Lazy[a1], x2: Lazy[a2])
+// (Lazy[Int], Lazy[Char]) is enough?
+final case class Lazy2[+a1, +a2](x1: Lazy[a1], x2: Lazy[a2]) {
+    lazy val _1 = x1.!
+    lazy val _2 = x2.!
+}
 
 object Lazy2 {
     def apply[a1, a2](x1: => a1, x2: => a2): Lazy2[a1, a2] = new Lazy2(Lazy(x1), Lazy(x2))

@@ -26,11 +26,11 @@ package object ken {
 
     // Tuples
     //
-    def fst[a, b](p: (a, b)): a = p match {
+    def fst[a](p: (a, _)): a = p match {
         case (x, _) => x
     }
 
-    def snd[a, b](p: (a, b)): b = p match {
+    def snd[b](p: (_, b)): b = p match {
         case (_, y) => y
     }
 
