@@ -33,10 +33,10 @@ trait MonadPlus[m[+_]] extends Monad[m] with Alternative[m] {
 
     // Infix
     //
-    sealed class Infix_mplus[a](x: m[a]) {
+    sealed class _Infix_mplus[a](x: m[a]) {
         def _mplus_(y: Lazy[m[a]]): m[a] = mplus(x)(y)
     }
-    final implicit def _mplus_[a](x: m[a]): Infix_mplus[a] = new Infix_mplus(x)
+    final implicit def _mplus_[a](x: m[a]): _Infix_mplus[a] = new _Infix_mplus(x)
 }
 
 

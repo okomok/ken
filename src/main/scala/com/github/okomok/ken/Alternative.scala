@@ -34,10 +34,10 @@ trait Alternative[f[+_]] extends Applicative[f] {
 
     // Infix
     //
-    sealed class Infix_<|>[a](x: f[a]) {
+    sealed class _Infix_<|>[a](x: f[a]) {
         def <|>(y: Lazy[f[a]]): f[a] = op_<|>(x)(y)
     }
-    final implicit def <|>[a](x: f[a]): Infix_<|>[a] = new Infix_<|>(x)
+    final implicit def <|>[a](x: f[a]): _Infix_<|>[a] = new _Infix_<|>(x)
 }
 
 

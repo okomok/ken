@@ -23,15 +23,15 @@ trait Functor[f[+_]] extends Typeclass1[f] { outer =>
 
     // Infix
     //
-    sealed class Infix_<@>[a, b](x: a => b) {
+    sealed class _Infix_<@>[a, b](x: a => b) {
         def <@>(y: f[a]): f[b] = op_<@>(x)(y)
     }
-    final implicit def <@>[a, b](x: a => b): Infix_<@>[a, b] = new Infix_<@>(x)
+    final implicit def <@>[a, b](x: a => b): _Infix_<@>[a, b] = new _Infix_<@>(x)
 
-    sealed class Infix_<@[a](x: Lazy[a]) {
+    sealed class _Infix_<@[a](x: Lazy[a]) {
         def <@[b](y: f[b]): f[a] = op_<@(x)(y)
     }
-    final implicit def <@[a](x: a): Infix_<@[a] = new Infix_<@(x)
+    final implicit def <@[a](x: a): _Infix_<@[a] = new _Infix_<@(x)
 }
 
 

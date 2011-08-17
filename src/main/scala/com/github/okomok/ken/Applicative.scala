@@ -32,20 +32,20 @@ trait Applicative[f[+_]] extends Functor[f] {
 
     // Infix
     //
-    sealed class Infix_<*>[a, b](x: f[a => b]) {
+    sealed class _Infix_<*>[a, b](x: f[a => b]) {
         def <*>(y: f[a]): f[b] = op_<*>(x)(y)
     }
-    final implicit def <*>[a, b](x: f[a => b]): Infix_<*>[a, b] = new Infix_<*>(x)
+    final implicit def <*>[a, b](x: f[a => b]): _Infix_<*>[a, b] = new _Infix_<*>(x)
 
-    sealed class Infix_*>[a](x: f[a]) {
+    sealed class _Infix_*>[a](x: f[a]) {
         def *>[b](y: f[b]): f[b] = op_*>(x)(y)
     }
-    final implicit def *>[a](x: f[a]): Infix_*>[a] = new Infix_*>(x)
+    final implicit def *>[a](x: f[a]): _Infix_*>[a] = new _Infix_*>(x)
 
-    sealed class Infix_<*[a](x: f[a]) {
+    sealed class _Infix_<*[a](x: f[a]) {
         def <*[b](y: f[b]): f[a] = op_<*(x)(y)
     }
-    final implicit def <*[a](x: f[a]): Infix_<*[a] = new Infix_<*(x)
+    final implicit def <*[a](x: f[a]): _Infix_<*[a] = new _Infix_<*(x)
 }
 
 

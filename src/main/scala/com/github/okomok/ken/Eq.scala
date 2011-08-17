@@ -22,10 +22,10 @@ trait _Eq[-a] extends Typeclass { outer =>
 
     // Infix
     //
-    sealed class Infix_/=(x: a) {
+    sealed class _Infix_/=(x: a) {
         def /=(y: a): Bool = op_/=(x)(y)
     }
-    final implicit def /=(x: a): Infix_/= = new Infix_/=(x)
+    final implicit def /=(x: a): _Infix_/= = new _Infix_/=(x)
 }
 
 

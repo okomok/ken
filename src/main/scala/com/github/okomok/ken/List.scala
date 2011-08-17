@@ -99,7 +99,7 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
     def op_::[a](x: a)(xs: Lazy[List[a]]): List[a] = ::(x, Lazy(xs))
     def op_!::[a](x: a)(xs: List[a]): List[a] = op_::(x)(xs)
 
-    private[ken] class OfName[a](xs: Lazy[List[a]]) {
+    sealed class OfName[a](xs: Lazy[List[a]]) {
         def ::(x: a): List[a] = op_::(x)(xs)
         def :::(ys: List[a]): List[a] = op_:::(ys)(xs)
     }

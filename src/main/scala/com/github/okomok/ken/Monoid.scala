@@ -26,10 +26,10 @@ trait Monoid[m] extends Typeclass0[m] { outer =>
 
     // Infix
     //
-    sealed class Infix_mappend(x: m) {
+    sealed class _Infix_mappend(x: m) {
         def _mappend_(y: Lazy[m]): m = mappend(x)(y)
     }
-    final implicit def _mappend_(x: m): Infix_mappend = new Infix_mappend(x)
+    final implicit def _mappend_(x: m): _Infix_mappend = new _Infix_mappend(x)
 }
 
 
