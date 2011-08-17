@@ -18,7 +18,7 @@ object Lazy extends Monad[Lazy] with ThisIsInstance with LazyEval {
         override lazy val _eval : a = x
     }
 
-    implicit def eval[a](x: Lazy[a]): a = x._eval
+    implicit def eval[a](x: Lazy[a]): a = x._eval // higher priority
 
     // Overrides
     //
@@ -43,12 +43,11 @@ object Lazy extends Monad[Lazy] with ThisIsInstance with LazyEval {
 }
 
 
-// Lower priority
 private[ken] trait LazyEval { this: Lazy.type =>
-    sealed class _Postfix_![a](x: Lazy[a]) {
+    sealed class Op_![a](x: Lazy[a]) {
         def ! : a = x._eval
     }
-    implicit def _postfix_![a](x: Lazy[a]): _Postfix_![a] = new _Postfix_!(x)
+    implicit def __![a](x: Lazy[a]): Op_![a] = new Op_!(x) // lower priority
 }
 
 

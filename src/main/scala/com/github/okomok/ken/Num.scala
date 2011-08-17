@@ -25,22 +25,22 @@ trait Num[a] extends Typeclass0[a] {
     //
     def subtract: a => a => a = flip(op_-)
 
-    // Infix
+    // Operators
     //
-    sealed class _Infix_+(x: a) {
+    sealed class Op_+(x: a) {
         def +(y: a): a = op_+(x)(y)
     }
-    final implicit def +(x: a): _Infix_+ = new _Infix_+(x)
+    final implicit def +(x: a): Op_+ = new Op_+(x)
 
-    sealed class _Infix_-(x: a) {
+    sealed class Op_-(x: a) {
         def -(y: a): a = op_-(x)(y)
     }
-    final implicit def -(x: a): _Infix_- = new _Infix_-(x)
+    final implicit def -(x: a): Op_- = new Op_-(x)
 
-    sealed class _Infix_*(x: a) {
+    sealed class Op_*(x: a) {
         def *(y: a): a = op_*(x)(y)
     }
-    final implicit def *(x: a): _Infix_* = new _Infix_*(x)
+    final implicit def *(x: a): Op_* = new Op_*(x)
 }
 
 

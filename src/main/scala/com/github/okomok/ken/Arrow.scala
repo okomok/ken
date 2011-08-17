@@ -37,7 +37,7 @@ trait Arrow[a[-_, +_]] extends Category[a] {
 
     def returnA[b]: a[b, b] = arr(id[b])
 
-    // Infix
+    // Operators
     //
     sealed class Op_***[b, c](f: a[b, c]) {
         def ***[b_, c_](g: a[b_, c_]): a[(b, b_), (c, c_)] = op_***(f)(g)

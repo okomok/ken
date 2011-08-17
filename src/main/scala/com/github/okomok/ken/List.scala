@@ -72,14 +72,8 @@ final case class ::[+a](head: a, tail: Lazy[List[a]]) extends List[a] {
     }
 }
 
-object :: {
-    def of[a]: a => (=> List[a]) => List[a] = x => xs => x :: xs
-}
-
 
 object !:: { // strict extractor
-    def of[a]: a => List[a] => List[a] = x => xs => x :: xs
-
     def unapply[a](xs: List[a]): Option[(a, List[a])] = xs match {
         case Nil => None
         case x :: xs => Some(x, xs.!)
@@ -99,11 +93,11 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
     def op_::[a](x: a)(xs: Lazy[List[a]]): List[a] = ::(x, Lazy(xs))
     def op_!::[a](x: a)(xs: List[a]): List[a] = op_::(x)(xs)
 
-    sealed class OfName[a](xs: Lazy[List[a]]) {
+    sealed class _OfName[a](xs: Lazy[List[a]]) {
         def ::(x: a): List[a] = op_::(x)(xs)
         def :::(ys: List[a]): List[a] = op_:::(ys)(xs)
     }
-    implicit def _ofName[a](xs: => List[a]): OfName[a] = new OfName(xs)
+    implicit def _ofName[a](xs: => List[a]): _OfName[a] = new _OfName(xs)
 
     // Overrides
     //

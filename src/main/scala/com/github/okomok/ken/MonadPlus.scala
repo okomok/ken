@@ -31,12 +31,12 @@ trait MonadPlus[m[+_]] extends Monad[m] with Alternative[m] {
 
     def msum[a](xs: List[m[a]]): m[a] = List.foldr(mplus[a])(mzero)(xs)
 
-    // Infix
+    // Operators
     //
-    sealed class _Infix_mplus[a](x: m[a]) {
+    sealed class Op_mplus[a](x: m[a]) {
         def _mplus_(y: Lazy[m[a]]): m[a] = mplus(x)(y)
     }
-    final implicit def _mplus_[a](x: m[a]): _Infix_mplus[a] = new _Infix_mplus(x)
+    final implicit def _mplus_[a](x: m[a]): Op_mplus[a] = new Op_mplus(x)
 }
 
 

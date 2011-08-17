@@ -30,22 +30,22 @@ trait Applicative[f[+_]] extends Functor[f] {
     def liftA2[a, b, c](x: a => b => c)(y: f[a])(z: f[b]): f[c] = x <@> y <*> z
     def liftA3[a, b, c, d](x: a => b => c => d)(y: f[a])(z: f[b])(w: f[c]): f[d] = x <@> y <*> z <*> w
 
-    // Infix
+    // Operators
     //
-    sealed class _Infix_<*>[a, b](x: f[a => b]) {
+    sealed class Op_<*>[a, b](x: f[a => b]) {
         def <*>(y: f[a]): f[b] = op_<*>(x)(y)
     }
-    final implicit def <*>[a, b](x: f[a => b]): _Infix_<*>[a, b] = new _Infix_<*>(x)
+    final implicit def <*>[a, b](x: f[a => b]): Op_<*>[a, b] = new Op_<*>(x)
 
-    sealed class _Infix_*>[a](x: f[a]) {
+    sealed class Op_*>[a](x: f[a]) {
         def *>[b](y: f[b]): f[b] = op_*>(x)(y)
     }
-    final implicit def *>[a](x: f[a]): _Infix_*>[a] = new _Infix_*>(x)
+    final implicit def *>[a](x: f[a]): Op_*>[a] = new Op_*>(x)
 
-    sealed class _Infix_<*[a](x: f[a]) {
+    sealed class Op_<*[a](x: f[a]) {
         def <*[b](y: f[b]): f[a] = op_<*(x)(y)
     }
-    final implicit def <*[a](x: f[a]): _Infix_<*[a] = new _Infix_<*(x)
+    final implicit def <*[a](x: f[a]): Op_<*[a] = new Op_<*(x)
 }
 
 

@@ -21,17 +21,17 @@ trait Functor[f[+_]] extends Typeclass1[f] { outer =>
     def op_<@>[a, b](x: a => b)(y: f[a]): f[b] = fmap(x)(y)
     def op_<@[a, b](x: Lazy[a])(y: f[b]): f[a] = fmap[b, a](_ => x)(y)
 
-    // Infix
+    // Operators
     //
-    sealed class _Infix_<@>[a, b](x: a => b) {
+    sealed class Op_<@>[a, b](x: a => b) {
         def <@>(y: f[a]): f[b] = op_<@>(x)(y)
     }
-    final implicit def <@>[a, b](x: a => b): _Infix_<@>[a, b] = new _Infix_<@>(x)
+    final implicit def <@>[a, b](x: a => b): Op_<@>[a, b] = new Op_<@>(x)
 
-    sealed class _Infix_<@[a](x: Lazy[a]) {
+    sealed class Op_<@[a](x: Lazy[a]) {
         def <@[b](y: f[b]): f[a] = op_<@(x)(y)
     }
-    final implicit def <@[a](x: a): _Infix_<@[a] = new _Infix_<@(x)
+    final implicit def <@[a](x: a): Op_<@[a] = new Op_<@(x)
 }
 
 

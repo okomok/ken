@@ -8,7 +8,6 @@ package com.github.okomok
 package ken
 
 
-
 trait ArrowChoice[a[-_, +_]] extends Arrow[a] {
     final val asArrowChoice: ArrowChoice[apply2] = this
 
@@ -36,7 +35,7 @@ trait ArrowChoice[a[-_, +_]] extends Arrow[a] {
         f +++ g >>> arr(utag)
     }
 
-    // Infix
+    // Operators
     //
     sealed class Op_+++[b, c](f: a[b, c]) {
         def +++[b_, c_](g: a[b_, c_]): a[Either[b, b_], Either[c, c_]] = op_+++(f)(g)

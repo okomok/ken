@@ -20,7 +20,7 @@ trait Category[cat[-_, +_]] extends Typeclass2[cat] {
     //
     def op_>>>[a, b, c](f: cat[a, b])(g: cat[b, c]): cat[a, c] = op_<<<(g)(f)
 
-    // Infix
+    // Operators
     //
     sealed class Op_<<<[b, c](f: cat[b, c]) {
         def <<<[a](g: cat[a, b]): cat[a, c] = op_<<<(f)(g)

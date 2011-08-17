@@ -15,7 +15,7 @@ trait ArrowPlus[a[-_, +_]] extends ArrowZero[a] {
     //
     def op_<+>[b, c](f: a[b, c])(g: Lazy[a[b, c]]): a[b, c]
 
-    // Infix
+    // Operators
     //
     sealed class Op_<+>[b, c](f: a[b, c]) {
         def <+>(g: Lazy[a[b, c]]): a[b, c] = op_<+>(f)(g)

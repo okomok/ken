@@ -24,12 +24,12 @@ trait Monoid[m] extends Typeclass0[m] { outer =>
         override val mappend: m => Lazy[m] => m = x => y => outer.mappend(y.!)(x)
     }
 
-    // Infix
+    // Operators
     //
-    sealed class _Infix_mappend(x: m) {
+    sealed class Op_mappend(x: m) {
         def _mappend_(y: Lazy[m]): m = mappend(x)(y)
     }
-    final implicit def _mappend_(x: m): _Infix_mappend = new _Infix_mappend(x)
+    final implicit def _mappend_(x: m): Op_mappend = new Op_mappend(x)
 }
 
 

@@ -32,12 +32,12 @@ trait Alternative[f[+_]] extends Applicative[f] {
     //
     def optional[a](x: f[a]): f[Maybe[a]] = (Just(_: a).up) <@> x <|> pure(Nothing.of[a])
 
-    // Infix
+    // Operators
     //
-    sealed class _Infix_<|>[a](x: f[a]) {
+    sealed class Op_<|>[a](x: f[a]) {
         def <|>(y: Lazy[f[a]]): f[a] = op_<|>(x)(y)
     }
-    final implicit def <|>[a](x: f[a]): _Infix_<|>[a] = new _Infix_<|>(x)
+    final implicit def <|>[a](x: f[a]): Op_<|>[a] = new Op_<|>(x)
 }
 
 

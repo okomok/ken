@@ -20,12 +20,12 @@ trait _Eq[-a] extends Typeclass { outer =>
     def op_== : a => a => Bool = x => y => not(op_/=(x)(y))
     def op_/= : a => a => Bool = x => y => not(op_==(x)(y))
 
-    // Infix
+    // Operators
     //
-    sealed class _Infix_/=(x: a) {
+    sealed class Op_/=(x: a) {
         def /=(y: a): Bool = op_/=(x)(y)
     }
-    final implicit def /=(x: a): _Infix_/= = new _Infix_/=(x)
+    final implicit def /=(x: a): Op_/= = new Op_/=(x)
 }
 
 

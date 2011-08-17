@@ -87,17 +87,17 @@ trait Monad[m[+_]] extends Applicative[m] {
 
     def ap[a, b](x: m[a => b])(y: m[a]): m[b] = liftM2(id[a => b])(x)(y) // op_<*>(x)(y)
 
-    // Infix
+    // Operators
     //
-    sealed class _Infix_>>=[a](x: m[a]) {
+    sealed class Op_>>=[a](x: m[a]) {
         def >>=[b](y: a => m[b]): m[b] = op_>>=(x)(y)
     }
-    final implicit def >>=[a](x: m[a]): _Infix_>>=[a] = new _Infix_>>=(x)
+    final implicit def >>=[a](x: m[a]): Op_>>=[a] = new Op_>>=(x)
 
-    sealed class _Infix_>>(x: m[_]) {
+    sealed class Op_>>(x: m[_]) {
         def >>[b](y: m[b]): m[b] = op_>>(x)(y)
     }
-    final implicit def >>(x: m[_]): _Infix_>> = new _Infix_>>(x)
+    final implicit def >>(x: m[_]): Op_>> = new Op_>>(x)
 
     sealed class ForComp[a](x: m[a]) {
         def flatMap[b](y: a => m[b]): m[b] = op_>>=(x)(y)
@@ -107,20 +107,20 @@ trait Monad[m[+_]] extends Applicative[m] {
     }
     final implicit def forComp[a](x: m[a]): ForComp[a] = new ForComp(x)
 
-    sealed class _Infix_=<<[a, b](f: a => m[b]) {
+    sealed class Op_=<<[a, b](f: a => m[b]) {
         def =<<(x: m[a]): m[b] = op_=<<(f)(x)
     }
-    final implicit def =<<[a, b](f: a => m[b]): _Infix_=<<[a, b] = new _Infix_=<<[a, b](f)
+    final implicit def =<<[a, b](f: a => m[b]): Op_=<<[a, b] = new Op_=<<[a, b](f)
 
-    sealed class _Infix_>=>[a, b](f: a => m[b]) {
+    sealed class Op_>=>[a, b](f: a => m[b]) {
         def >=>[c](g: b => m[c]): a => m[c] = op_>=>(f)(g)
     }
-    final implicit def >=>[a, b](f: a => m[b]): _Infix_>=>[a, b] = new _Infix_>=>[a, b](f)
+    final implicit def >=>[a, b](f: a => m[b]): Op_>=>[a, b] = new Op_>=>[a, b](f)
 
-    sealed class _Infix_<=<[b, c](g: b => m[c]) {
+    sealed class Op_<=<[b, c](g: b => m[c]) {
         def <=<[a](f: a => m[b]): a => m[c] = op_<=<(g)(f)
     }
-    final implicit def <=<[b, c](g: b => m[c]): _Infix_<=<[b, c] = new _Infix_<=<[b, c](g)
+    final implicit def <=<[b, c](g: b => m[c]): Op_<=<[b, c] = new Op_<=<[b, c](g)
 
     // Transformers
     //

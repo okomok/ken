@@ -21,27 +21,27 @@ trait Ord[a] extends Eq[a] { outer =>
     def max: a => a => a = { x => y => if (op_<=(x)(y)) y else x }
     def min: a => a => a = { x => y => if (op_<=(x)(y)) x else y }
 
-    // Infix
+    // Operators
     //
-    sealed class _Infix_<(x: a) {
+    sealed class Op_<(x: a) {
         def <(y: a): Bool = op_<(x)(y)
     }
-    final implicit def <(x: a): _Infix_< = new _Infix_<(x)
+    final implicit def <(x: a): Op_< = new Op_<(x)
 
-    sealed class _Infix_<=(x: a) {
+    sealed class Op_<=(x: a) {
         def <=(y: a): Bool = op_<=(x)(y)
     }
-    final implicit def <=(x: a): _Infix_<= = new _Infix_<=(x)
+    final implicit def <=(x: a): Op_<= = new Op_<=(x)
 
-    sealed class _Infix_>(x: a) {
+    sealed class Op_>(x: a) {
         def >(y: a): Bool = op_>(x)(y)
     }
-    final implicit def >(x: a): _Infix_> = new _Infix_>(x)
+    final implicit def >(x: a): Op_> = new Op_>(x)
 
-    sealed class _Infix_>=(x: a) {
+    sealed class Op_>=(x: a) {
         def >=(y: a): Bool = op_>=(x)(y)
     }
-    final implicit def >=(x: a): _Infix_>= = new _Infix_>=(x)
+    final implicit def >=(x: a): Op_>= = new Op_>=(x)
 }
 
 
