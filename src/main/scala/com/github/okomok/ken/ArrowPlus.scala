@@ -13,12 +13,12 @@ trait ArrowPlus[a[-_, +_]] extends ArrowZero[a] {
 
     // Core
     //
-    def op_<+>[b, c](f: a[b, c])(g: => a[b, c]): a[b, c]
+    def op_<+>[b, c](f: a[b, c])(g: Lazy[a[b, c]]): a[b, c]
 
     // Infix
     //
     sealed class Op_<+>[b, c](f: a[b, c]) {
-        def <+>(g: => a[b, c]): a[b, c] = op_<+>(f)(g)
+        def <+>(g: Lazy[a[b, c]]): a[b, c] = op_<+>(f)(g)
     }
     final implicit def <+>[b, c](f: a[b, c]): Op_<+>[b, c] = new Op_<+>[b, c](f)
 }
@@ -27,7 +27,7 @@ trait ArrowPlus[a[-_, +_]] extends ArrowZero[a] {
 trait ArrowPlusProxy[a[-_, +_]] extends ArrowPlus[a] with ArrowZeroProxy[a] {
     override def self: ArrowPlus[a]
 
-    override def op_<+>[b, c](f: a[b, c])(g: => a[b, c]): a[b, c] = self.op_<+>(f)(g)
+    override def op_<+>[b, c](f: a[b, c])(g: Lazy[a[b, c]]): a[b, c] = self.op_<+>(f)(g)
 }
 
 
@@ -38,7 +38,7 @@ object ArrowPlus {
         private[this] type a[-a, +b] = nt#apply2[a, b]
         override val self = ArrowZero.deriving[nt, ot](i, j)
 
-        override def op_<+>[b, c](f: a[b, c])(g: => a[b, c]): a[b, c] = j.newOf(i.op_<+>(j.oldOf(f))(j.oldOf(g)))
+        override def op_<+>[b, c](f: a[b, c])(g: Lazy[a[b, c]]): a[b, c] = j.newOf(i.op_<+>(j.oldOf(f))(j.oldOf(g)))
     }
 
     def weak[nt <: Kind.Newtype2](implicit i: ArrowPlus[nt#apply2], j: Newtype2[nt#apply2, nt#oldtype2]): ArrowPlus[nt#oldtype2] = deriving[Kind.quote2[nt#oldtype2], nt](i, j.dual)

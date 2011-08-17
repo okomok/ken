@@ -38,7 +38,7 @@ trait Traversable[t[+_]] extends Functor[t] with Foldable[t] { outer =>
         k.traverse( (x: b) => StateL(flip(f)(x)) )(t).get.apply(s)
     }
 
-    def mapAccumR[a, b, c](f: (=> a) => b => (a, c))(s: a)(t: t[b]): (a, t[c]) = {
+    def mapAccumR[a, b, c](f: Lazy[a] => b => (a, c))(s: a)(t: t[b]): (a, t[c]) = {
         implicit val j = Applicative[StateR.apply[a]]
         traverse( (x: b) => j.infer( StateR(flip(f)(x)) ) )(t).get.apply(s)
     }
@@ -77,7 +77,7 @@ trait TraversableProxy[t[+_]] extends Traversable[t] with FunctorProxy[t] with F
     override def `for`[f[+_], a, b](t: t[a])(f: a => f[b])(implicit i: Applicative[f]): f[t[b]] = self.`for`(t)(f)(i)
     override def forM[m[+_], a, b](t: t[a])(f: a => m[b])(implicit i: Monad[m]): m[t[b]] = self.forM(t)(f)(i)
     override def mapAccumL[a, b, c](f: a => b => (a, c))(s: a)(t: t[b]): (a, t[c]) = self.mapAccumL(f)(s)(t)
-    override def mapAccumR[a, b, c](f: (=> a) => b => (a, c))(s: a)(t: t[b]): (a, t[c]) = self.mapAccumR(f)(s)(t)
+    override def mapAccumR[a, b, c](f: Lazy[a] => b => (a, c))(s: a)(t: t[b]): (a, t[c]) = self.mapAccumR(f)(s)(t)
     override def fmapDefault[a, b](f: a => b)(t: t[a]): t[b] = self.fmapDefault(f)(t)
     override def foldMapDefault[m, a](f: a => m)(t: t[a])(implicit i: Monoid[m]): m = self.foldMapDefault(f)(t)(i)
 }
@@ -106,7 +106,7 @@ private[ken] object StateL extends Kind.FunctionLike {
             (s_, f(v))
         }
         // Applicative
-        override def `pure`[a](x: => a): f[a] = StateL { s => (s, x) }
+        override def `pure`[a](x: Lazy[a]): f[a] = StateL { s => (s, x) }
         override def op_<*>[a, b](kf: f[a => b])(kv: f[a]): f[b] = StateL { s =>
             val (s_, f) = kf.get.apply(s)
             val (s__, v) = kv.get.apply(s_)
@@ -118,12 +118,12 @@ private[ken] object StateL extends Kind.FunctionLike {
 
 // StateR
 //
-private[ken] final case class StateR[s, +a](override val get: (=> s) => (s, a)) extends NewtypeOf[(=> s) => (s, a)]
+private[ken] final case class StateR[s, +a](override val get: Lazy[s] => (s, a)) extends NewtypeOf[Lazy[s] => (s, a)]
 
 private[ken] object StateR extends Kind.FunctionLike {
     sealed trait apply[s] extends Kind.AbstractNewtype1 {
         override type apply1[+a] = StateR[s, a]
-        override type oldtype1[+a] = (=> s) => (a, s)
+        override type oldtype1[+a] = Lazy[s] => (a, s)
     }
 
     implicit def _asApplicative[s]: Applicative[({type f[+a] = StateR[s, a]})#f] = new Applicative[({type f[+a] = StateR[s, a]})#f] {
@@ -134,7 +134,7 @@ private[ken] object StateR extends Kind.FunctionLike {
             (s_, f(v))
         }
         // Applicative
-        override def `pure`[a](x: => a): f[a] = StateR { s => (s, x) }
+        override def `pure`[a](x: Lazy[a]): f[a] = StateR { s => (s, x) }
         override def op_<*>[a, b](kf: f[a => b])(kv: f[a]): f[b] = StateR { s =>
             val (s_, v) = kv.get.apply(s)
             val (s__, f) = kf.get.apply(s_)

@@ -21,9 +21,9 @@ object Ordering extends Monoid[Ordering] with ThisIsInstance {
     // Monoid
     private[this] type m = Ordering
     override val mempty: m = EQ
-    override val mappend: m => (=> m) => m = x => y => x match {
+    override val mappend: m => Lazy[m] => m = x => y => x match {
         case LT => LT
-        case EQ => y
+        case EQ => y.!
         case GT => GT
     }
 }

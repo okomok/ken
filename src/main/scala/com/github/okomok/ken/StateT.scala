@@ -37,8 +37,8 @@ private[ken] final class _StateTs[n[+_]](val inner: Monad[n]) {
         implicit def _asNewtype1[s]: Newtype1[({type nt[+a] = _StateT[s, a]})#nt, ({type ot[+a] = s => n[(a, s)]})#ot] = new Newtype1[({type nt[+a] = _StateT[s, a]})#nt, ({type ot[+a] = s => n[(a, s)]})#ot] {
             private[this] type nt[+a] = _StateT[s, a]
             private[this] type ot[+a] = s => n[(a, s)]
-            override def newOf[a](ot: => ot[a]): nt[a] = _StateT(ot)
-            override def oldOf[a](nt: => nt[a]): ot[a] = nt.run
+            override def newOf[a](ot: Lazy[ot[a]]): nt[a] = _StateT(ot)
+            override def oldOf[a](nt: Lazy[nt[a]]): ot[a] = nt.run
         }
 
         implicit def _asMonadState[s]: MonadState[s, ({type m[+a] = _StateT[s, a]})#m] = new MonadState[s, ({type m[+a] = _StateT[s, a]})#m] {
@@ -49,7 +49,7 @@ private[ken] final class _StateTs[n[+_]](val inner: Monad[n]) {
             }
             // Monad
             private[this] type m[+a] = f[a]
-            override def `return`[a](a: => a): m[a] = _StateT { s => inner.`return`(a, s) }
+            override def `return`[a](a: Lazy[a]): m[a] = _StateT { s => inner.`return`(a.!, s) }
             override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = _StateT { s =>
                 for { (a, s_) <- run(m)(s); * <- run(k(a))(s_) } yield *
             }
@@ -69,7 +69,7 @@ private[ken] final class _StateTs[n[+_]](val inner: Monad[n]) {
             private[this] type m[+a] = _StateT[s, a]
             override val self = _asMonadState[s]
             override def mzero: m[Nothing] = _StateT { _ => i.mzero }
-            override def mplus[a](m: m[a])(n: => m[a]): m[a] = _StateT { s => i.mplus(run(m)(s))(run(n)(s)) }
+            override def mplus[a](m: m[a])(n: Lazy[m[a]]): m[a] = _StateT { s => i.mplus(run(m)(s))(run(n)(s)) }
         }
     }
 
@@ -77,8 +77,8 @@ private[ken] final class _StateTs[n[+_]](val inner: Monad[n]) {
         implicit def _asMonadFix[s](implicit i: MonadFix[n]): MonadFix[({type m[+a] = _StateT[s, a]})#m] = new MonadFix[({type m[+a] = _StateT[s, a]})#m] with MonadProxy[({type m[+a] = _StateT[s, a]})#m] {
             private[this] type m[+a] = _StateT[s, a]
             override val self = _asMonadState[s]
-            override def mfix[a](f: (=> a) => m[a]): m[a] = _StateT { s =>
-                def k(aI_ : => (a, s)) = run(f(aI_._1))(s)
+            override def mfix[a](f: Lazy[a] => m[a]): m[a] = _StateT { s =>
+                def k(aI_ : Lazy[(a, s)]) = run(f(aI_._1))(s)
                 i.mfix(k)
                 // scalac sucks.
                 // i.mfix { (aI_ : (=> (a, s))) => run(f(aI_._1))(s) }

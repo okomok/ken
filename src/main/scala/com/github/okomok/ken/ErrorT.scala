@@ -31,8 +31,8 @@ private[ken] final class _ErrorTs[n[+_]](val inner: Monad[n]) {
         implicit def _asNewtype1[e]: Newtype1[({type nt[+a] = _ErrorT[e, a]})#nt, ({type ot[+a] = n[Either[e, a]]})#ot] = new Newtype1[({type nt[+a] = _ErrorT[e, a]})#nt, ({type ot[+a] = n[Either[e, a]]})#ot] {
             private[this] type nt[+a] = _ErrorT[e, a]
             private[this] type ot[+a] = n[Either[e, a]]
-            override def newOf[a](ot: => ot[a]): nt[a] = _ErrorT(ot)
-            override def oldOf[a](nt: => nt[a]): ot[a] = nt.run
+            override def newOf[a](ot: Lazy[ot[a]]): nt[a] = _ErrorT(ot)
+            override def oldOf[a](nt: Lazy[nt[a]]): ot[a] = nt.run
         }
 
         implicit def _monad[e](implicit i: ErrorClass[e]): MonadPlus[({type m[+a] = _ErrorT[e, a]})#m] with MonadError[e, ({type m[+a] = _ErrorT[e, a]})#m] = new MonadPlus[({type m[+a] = _ErrorT[e, a]})#m] with MonadError[e, ({type m[+a] = _ErrorT[e, a]})#m] {
@@ -49,7 +49,7 @@ private[ken] final class _ErrorTs[n[+_]](val inner: Monad[n]) {
             }
             // Monad
             private[this] type m[+a] = f[a]
-            override def `return`[a](a: => a): m[a] = _ErrorT { inner.`return`(Right(a)) }
+            override def `return`[a](a: Lazy[a]): m[a] = _ErrorT { inner.`return`(Right(a.!)) }
             override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = _ErrorT {
                 for {
                     a <- run(m)
@@ -61,7 +61,7 @@ private[ken] final class _ErrorTs[n[+_]](val inner: Monad[n]) {
             }
             // MonadPlus
             override def mzero: m[Nothing] = _ErrorT { inner.`return`(Left(i.noMsg)) }
-            override def mplus[a](m: m[a])(n: => m[a]): m[a] = _ErrorT {
+            override def mplus[a](m: m[a])(n: Lazy[m[a]]): m[a] = _ErrorT {
                 for {
                     a <- run(m)
                     * <- a match {
@@ -96,8 +96,8 @@ private[ken] final class _ErrorTs[n[+_]](val inner: Monad[n]) {
         implicit def _asMonadFix[e](implicit i: MonadFix[n], j: ErrorClass[e]): MonadFix[({type m[+a] = _ErrorT[e, a]})#m] = new MonadFix[({type m[+a] = _ErrorT[e, a]})#m] with MonadProxy[({type m[+a] = _ErrorT[e, a]})#m] {
             private[this] type m[+a] = _ErrorT[e, a]
             override val self = _monad[e]
-            override def mfix[a](f: (=> a) => m[a]): m[a] = _ErrorT {
-                def k(a: => Either[e, a]) = run { f { a match {
+            override def mfix[a](f: Lazy[a] => m[a]): m[a] = _ErrorT {
+                def k(a: Lazy[Either[e, a]]) = run { f { a.! match {
                     case Right(r) => r
                     case _ => error("empty mfix argument")
                 } } }

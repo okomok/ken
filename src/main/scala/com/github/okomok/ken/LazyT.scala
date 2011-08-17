@@ -29,8 +29,8 @@ private[ken] final class _LazyTs[n[+_]](val inner: Monad[n]) {
         implicit val _asNewtype1: Newtype1[_LazyT, ({type ot[+a] = n[Lazy[a]]})#ot] = new Newtype1[_LazyT, ({type ot[+a] = n[Lazy[a]]})#ot] {
             private[this] type nt[+a] = _LazyT[a]
             private[this] type ot[+a] = n[Lazy[a]]
-            override def newOf[a](ot: => ot[a]): nt[a] = _LazyT(ot)
-            override def oldOf[a](nt: => nt[a]): ot[a] = nt.run
+            override def newOf[a](ot: Lazy[ot[a]]): nt[a] = _LazyT(ot)
+            override def oldOf[a](nt: Lazy[nt[a]]): ot[a] = nt.run
         }
 
         implicit val _asMonad: Monad[_LazyT] = new Monad[_LazyT] {
@@ -41,7 +41,7 @@ private[ken] final class _LazyTs[n[+_]](val inner: Monad[n]) {
             }
             // Monad
             private[this] type m[+a] = f[a]
-            override def `return`[a](a: => a): m[a] = _LazyT { inner.`return`(Lazy(a)) }
+            override def `return`[a](a: Lazy[a]): m[a] = _LazyT { inner.`return`(Lazy(a)) }
             override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = _LazyT {
                 for { a <- run(m); * <- run(k(a.!)) } yield *
             }

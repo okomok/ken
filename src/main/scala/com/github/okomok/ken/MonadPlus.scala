@@ -14,13 +14,13 @@ trait MonadPlus[m[+_]] extends Monad[m] with Alternative[m] {
     // Core
     //
     def mzero: m[Nothing]
-    def mplus[a](x: m[a])(y: => m[a]): m[a]
+    def mplus[a](x: m[a])(y: Lazy[m[a]]): m[a]
 
     // Overrides
     //
     // Alternative
     override def empty: m[Nothing] = mzero
-    override def op_<|>[a](x: m[a])(y: => m[a]): m[a] = mplus(x)(y)
+    override def op_<|>[a](x: m[a])(y: Lazy[m[a]]): m[a] = mplus(x)(y)
 
     // Extra
     //
@@ -34,7 +34,7 @@ trait MonadPlus[m[+_]] extends Monad[m] with Alternative[m] {
     // Infix
     //
     sealed class Infix_mplus[a](x: m[a]) {
-        def _mplus_(y: => m[a]): m[a] = mplus(x)(y)
+        def _mplus_(y: Lazy[m[a]]): m[a] = mplus(x)(y)
     }
     final implicit def _mplus_[a](x: m[a]): Infix_mplus[a] = new Infix_mplus(x)
 }
@@ -44,7 +44,7 @@ trait MonadPlusProxy[m[+_]] extends MonadPlus[m] with MonadProxy[m] with Alterna
     override def self: MonadPlus[m]
 
     override def mzero: m[Nothing] = self.mzero
-    override def mplus[a](x: m[a])(y: => m[a]): m[a] = self.mplus(x)(y)
+    override def mplus[a](x: m[a])(y: Lazy[m[a]]): m[a] = self.mplus(x)(y)
 
     override def guard(b: Bool): m[Unit] = self.guard(b)
     override def msum[a](xs: List[m[a]]): m[a] = msum(xs)
@@ -58,7 +58,7 @@ object MonadPlus {
         private[this] type m[+a] = nt#apply[a]
         override val self = Monad.deriving[nt, ot](i, j)
         override def mzero: m[Nothing] = j.newOf { i.mzero }
-        override def mplus[a](x: m[a])(y: => m[a]): m[a] = j.newOf { i.mplus(j.oldOf(x))(j.oldOf(y)) }
+        override def mplus[a](x: m[a])(y: Lazy[m[a]]): m[a] = j.newOf { i.mplus(j.oldOf(x))(j.oldOf(y)) }
     }
 
     def weak[nt <: Kind.Newtype1](implicit i: MonadPlus[nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): MonadPlus[nt#oldtype1] = deriving[Kind.quote1[nt#oldtype1], nt](i, j.dual)

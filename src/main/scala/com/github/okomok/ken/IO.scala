@@ -28,7 +28,7 @@ object IO extends MonadIO[IO] with ThisIsInstance {
     //
     private[this] type m[+a] = IO[a]
     // Monad
-    override def `return`[a](x: => a): m[a] = IO { x }
+    override def `return`[a](x: Lazy[a]): m[a] = IO { x }
     override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = IO {
         // Probably broken patchwork...
         val e = x.unIO()

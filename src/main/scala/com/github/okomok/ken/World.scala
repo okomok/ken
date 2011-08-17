@@ -22,7 +22,7 @@ final class World {
     type ST[+a] = State[Tag, a]
 
     object ST extends Kind.quote1[ST] {
-        def apply[a](r: => a): ST[a] = State { s => (r, s) }
+        def apply[a](r: Lazy[a]): ST[a] = State { s => (r, s) }
         implicit val _asMonadState = State._asMonadState[Tag]
     }
 

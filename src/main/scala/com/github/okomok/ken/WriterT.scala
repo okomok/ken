@@ -33,8 +33,8 @@ private[ken] final class _WriterTs[n[+_]](val inner: Monad[n]) {
         implicit def _asNewtype1[w]: Newtype1[({type nt[+a] = _WriterT[w, a]})#nt, ({type ot[+a] = n[(a, w)]})#ot] = new Newtype1[({type nt[+a] = _WriterT[w, a]})#nt, ({type ot[+a] = n[(a, w)]})#ot] {
             private[this] type nt[+a] = _WriterT[w, a]
             private[this] type ot[+a] = n[(a, w)]
-            override def newOf[a](ot: => ot[a]): nt[a] = _WriterT(ot)
-            override def oldOf[a](nt: => nt[a]): ot[a] = nt.run
+            override def newOf[a](ot: Lazy[ot[a]]): nt[a] = _WriterT(ot)
+            override def oldOf[a](nt: Lazy[nt[a]]): ot[a] = nt.run
         }
 
         implicit def _asMonadWriter[w](implicit i: Monoid[w]): MonadWriter[w, ({type m[+a] = _WriterT[w, a]})#m] = new MonadWriter[w, ({type m[+a] = _WriterT[w, a]})#m] {
@@ -45,7 +45,7 @@ private[ken] final class _WriterTs[n[+_]](val inner: Monad[n]) {
             }
             // Monad
             private[this] type m[+a] = f[a]
-            override def `return`[a](a: => a): m[a] = _WriterT { inner.`return`(a, i.mempty) }
+            override def `return`[a](a: Lazy[a]): m[a] = _WriterT { inner.`return`(a.!, i.mempty) }
             override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = _WriterT {
                 for { (a, w) <- run(m); (b, w_) <- run(k(a)) } yield (b, i.mappend(w)(w_))
             }
@@ -73,7 +73,7 @@ private[ken] final class _WriterTs[n[+_]](val inner: Monad[n]) {
             private[this] type m[+a] = _WriterT[w, a]
             override val self = _asMonadWriter[w]
             override def mzero: m[Nothing] = _WriterT { i.mzero }
-            override def mplus[a](m: m[a])(n: => m[a]): m[a] = _WriterT { i.mplus(run(m))(run(n)) }
+            override def mplus[a](m: m[a])(n: Lazy[m[a]]): m[a] = _WriterT { i.mplus(run(m))(run(n)) }
         }
     }
 
@@ -81,8 +81,8 @@ private[ken] final class _WriterTs[n[+_]](val inner: Monad[n]) {
         implicit def _asMonadFix[w](implicit i: MonadFix[n], j: Monoid[w]): MonadFix[({type m[+a] = _WriterT[w, a]})#m] = new MonadFix[({type m[+a] = _WriterT[w, a]})#m] with MonadProxy[({type m[+a] = _WriterT[w, a]})#m] {
             private[this] type m[+a] = _WriterT[w, a]
             override val self = _asMonadWriter[w]
-            override def mfix[a](m: (=> a) => m[a]): m[a] = _WriterT {
-                def k(aI_ : => (a, w)) = run(m(aI_._1))
+            override def mfix[a](m: Lazy[a] => m[a]): m[a] = _WriterT {
+                def k(aI_ : Lazy[(a, w)]) = run(m(aI_.!._1))
                 i.mfix(k)
             }
         }

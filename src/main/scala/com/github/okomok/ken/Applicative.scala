@@ -13,7 +13,7 @@ trait Applicative[f[+_]] extends Functor[f] {
 
     // Core
     //
-    def pure[a](x: => a): f[a]
+    def pure[a](x: Lazy[a]): f[a]
     def op_<*>[a, b](x: f[a => b])(y: f[a]): f[b]
     def op_*>[a, b](x: f[a])(y: f[b]): f[b] = liftA2[a, b, b](const(id))(x)(y)
     def op_<*[a, b](x: f[a])(y: f[b]): f[a] = liftA2[a, b, a](const)(x)(y)
@@ -52,7 +52,7 @@ trait Applicative[f[+_]] extends Functor[f] {
 trait ApplicativeProxy[f[+_]] extends Applicative[f] with FunctorProxy[f] {
     override def self: Applicative[f]
 
-    override def pure[a](x: => a): f[a] = self.pure(x)
+    override def pure[a](x: Lazy[a]): f[a] = self.pure(x)
     override def op_<*>[a, b](x: f[a => b])(y: f[a]): f[b] = self.op_<*>(x)(y)
     override def op_*>[a, b](x: f[a])(y: f[b]): f[b] = self.op_*>(x)(y)
     override def op_<*[a, b](x: f[a])(y: f[b]): f[a] = self.op_<*(x)(y)
@@ -70,7 +70,7 @@ object Applicative {
     def deriving[nt <: Kind.Function1, ot <: Kind.Function1](implicit i: Applicative[ot#apply], j: Newtype1[nt#apply, ot#apply]): Applicative[nt#apply] = new Applicative[nt#apply] with FunctorProxy[nt#apply] {
         private[this] type f[+a] = nt#apply[a]
         override val self = Functor.deriving[nt, ot](i, j)
-        override def pure[a](x: => a): f[a] = j.newOf { i.pure(x) }
+        override def pure[a](x: Lazy[a]): f[a] = j.newOf { i.pure(x) }
         override def op_<*>[a, b](x: f[a => b])(y: f[a]): f[b] = j.newOf { i.op_<*>(j.oldOf(x))(j.oldOf(y)) }
         override def op_*>[a, b](x: f[a])(y: f[b]): f[b] = j.newOf { i.op_*>(j.oldOf(x))(j.oldOf(y)) }
         override def op_<*[a, b](x: f[a])(y: f[b]): f[a] = j.newOf { i.op_<*(j.oldOf(x))(j.oldOf(y)) }

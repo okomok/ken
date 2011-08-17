@@ -13,14 +13,14 @@ trait Monad[m[+_]] extends Applicative[m] {
 
     // Core
     //
-    def `return`[a](x: => a): m[a]
+    def `return`[a](x: Lazy[a]): m[a]
     def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b]
-    def op_>>[b](x: m[_])(y: => m[b]): m[b] = { lazy val _y = y; x >>= (_ => _y) }
+    def op_>>[b](x: m[_])(y: Lazy[m[b]]): m[b] = { lazy val _y = y; x >>= (_ => _y) }
 
     // Overrides
     //
     // Applicative
-    override def pure[a](x: => a): m[a] = `return`(x)
+    override def pure[a](x: Lazy[a]): m[a] = `return`(x)
     override def op_<*>[a, b](x: m[a => b])(y: m[a]): m[b] = for { _x <- x; _y <- y } yield _x(_y)
 
     // Extra
@@ -28,7 +28,7 @@ trait Monad[m[+_]] extends Applicative[m] {
     def op_=<<[a, b](f: a => m[b])(x: m[a]): m[b] = x >>= f
 
     def sequence[a](ms: List[m[a]]): m[List[a]] = {
-        def k(m: m[a])(_m: => m[List[a]]): m[List[a]] = for { x <- m; xs <- _m } yield (x :: xs)
+        def k(m: m[a])(_m: Lazy[m[List[a]]]): m[List[a]] = for { x <- m; xs <- _m.! } yield (x :: xs)
         List.foldr(k)(`return`(Nil))(ms)
     }
 
@@ -76,8 +76,8 @@ trait Monad[m[+_]] extends Applicative[m] {
     def replicateM[a](n: Int)(x: m[a]): m[List[a]] = sequence(List.replicate(n)(x))
     def replicateM_[a](n: Int)(x: m[a]): m[Unit] = sequence_(List.replicate(n)(x))
 
-    def when(p: Bool)(s: => m[Unit]): m[Unit] = if (p) s else `return`()
-    def unless(p: Bool)(s: => m[Unit]): m[Unit] = if (p) `return`() else s
+    def when(p: Bool)(s: Lazy[m[Unit]]): m[Unit] = if (p) s else `return`()
+    def unless(p: Bool)(s: Lazy[m[Unit]]): m[Unit] = if (p) `return`() else s
 
     def liftM[a1, r](f: a1 => r)(m1: m[a1]): m[r] = for { x1 <- m1 } yield f(x1)
     def liftM2[a1, a2, r](f: a1 => a2 => r)(m1: m[a1])(m2: m[a2]): m[r] = for { x1 <- m1; x2 <- m2 } yield f(x1)(x2)
@@ -163,9 +163,9 @@ trait Monad[m[+_]] extends Applicative[m] {
 trait MonadProxy[m[+_]] extends Monad[m] with ApplicativeProxy[m] {
     override def self: Monad[m]
 
-    override def `return`[a](x: => a): m[a] = self.`return`(x)
+    override def `return`[a](x: Lazy[a]): m[a] = self.`return`(x)
     override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = self.op_>>=(x)(y)
-    override def op_>>[b](x: m[_])(y: => m[b]): m[b] = self.op_>>(x)(y)
+    override def op_>>[b](x: m[_])(y: Lazy[m[b]]): m[b] = self.op_>>(x)(y)
 
     override def op_=<<[a, b](f: a => m[b])(x: m[a]): m[b] = self.op_=<<(f)(x)
     override def sequence[a](ms: List[m[a]]): m[List[a]] = self.sequence(ms)
@@ -186,8 +186,8 @@ trait MonadProxy[m[+_]] extends Monad[m] with ApplicativeProxy[m] {
     override def foldM_[a, b](f: a => b => m[a])(a: a)(xs: List[b]): m[Unit] = self.foldM_(f)(a)(xs)
     override def replicateM[a](n: Int)(x: m[a]): m[List[a]] = self.replicateM(n)(x)
     override def replicateM_[a](n: Int)(x: m[a]): m[Unit] = self.replicateM_(n)(x)
-    override def when(p: Bool)(s: => m[Unit]): m[Unit] = self.when(p)(s)
-    override def unless(p: Bool)(s: => m[Unit]): m[Unit] = self.unless(p)(s)
+    override def when(p: Bool)(s: Lazy[m[Unit]]): m[Unit] = self.when(p)(s)
+    override def unless(p: Bool)(s: Lazy[m[Unit]]): m[Unit] = self.unless(p)(s)
     override def liftM[a1, r](f: a1 => r)(m1: m[a1]): m[r] = self.liftM(f)(m1)
     override def liftM2[a1, a2, r](f: a1 => a2 => r)(m1: m[a1])(m2: m[a2]): m[r] = self.liftM2(f)(m1)(m2)
     override def liftM3[a1, a2, a3, r](f: a1 => a2 => a3 => r)(m1: m[a1])(m2: m[a2])(m3: m[a3]): m[r] = self.liftM3(f)(m1)(m2)(m3)
@@ -203,9 +203,9 @@ object Monad {
     def deriving[nt <: Kind.Function1, ot <: Kind.Function1](implicit i: Monad[ot#apply], j: Newtype1[nt#apply, ot#apply]): Monad[nt#apply] = new Monad[nt#apply] with ApplicativeProxy[nt#apply] {
         private[this] type m[+a] = nt#apply[a]
         override val self = Applicative.deriving[nt, ot](i, j)
-        override def `return`[a](x: => a): m[a] = j.newOf { i.`return`(x) }
+        override def `return`[a](x: Lazy[a]): m[a] = j.newOf { i.`return`(x) }
         override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = j.newOf { i.op_>>=(j.oldOf(x))(a => j.oldOf(y(a))) }
-        override def op_>>[b](x: m[_])(y: => m[b]): m[b] = j.newOf { i.op_>>(j.oldOf[Any](x))(j.oldOf(y)) }
+        override def op_>>[b](x: m[_])(y: Lazy[m[b]]): m[b] = j.newOf { i.op_>>(j.oldOf(x: m[Any]))(j.oldOf(y)) }
     }
 
     def weak[nt <: Kind.Newtype1](implicit i: Monad[nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): Monad[nt#oldtype1] = deriving[Kind.quote1[nt#oldtype1], nt](i, j.dual)

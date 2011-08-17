@@ -30,14 +30,14 @@ private[ken] final class _MaybeTs[n[+_]](val inner: Monad[n]) {
         implicit val _asNewtype1: Newtype1[_MaybeT, ({type ot[+a] = n[Maybe[a]]})#ot] = new Newtype1[_MaybeT, ({type ot[+a] = n[Maybe[a]]})#ot] {
             private[this] type nt[+a] = _MaybeT[a]
             private[this] type ot[+a] = n[Maybe[a]]
-            override def newOf[a](ot: => ot[a]): nt[a] = _MaybeT(ot)
-            override def oldOf[a](nt: => nt[a]): ot[a] = nt.run
+            override def newOf[a](ot: Lazy[ot[a]]): nt[a] = _MaybeT(ot)
+            override def oldOf[a](nt: Lazy[nt[a]]): ot[a] = nt.run
         }
 
         implicit val _asMonadPlus: MonadPlus[_MaybeT] = new MonadPlus[_MaybeT] {
             // Monad
             private[this] type m[+a] = _MaybeT[a]
-            override def `return`[a](a: => a): m[a] = _MaybeT { inner.`return`(Just(a).up) }
+            override def `return`[a](a: Lazy[a]): m[a] = _MaybeT { inner.`return`(Just(a.!).up) }
             override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = _MaybeT {
                 run(m) >>= {
                     case Nothing => inner.`return`(Nothing.of[b])
@@ -46,7 +46,7 @@ private[ken] final class _MaybeTs[n[+_]](val inner: Monad[n]) {
             }
             // MonadPlus
             override def mzero: m[Nothing] = _MaybeT { inner.`return`(Nothing) }
-            override def mplus[a](x: m[a])(y: => m[a]): m[a] = _MaybeT {
+            override def mplus[a](x: m[a])(y: Lazy[m[a]]): m[a] = _MaybeT {
                 val runx = run(x)
                 runx >>= {
                     case Nothing => run(y)

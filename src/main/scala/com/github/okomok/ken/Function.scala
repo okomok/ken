@@ -9,7 +9,7 @@ package ken
 
 
 object Function extends Kind.qcurry2[Function1] with ArrowChoice[Function1] with ArrowApply[Function1] with ArrowLoop[Function1] {
-    def fix[a](f: (=> a) => a): a = {
+    def fix[a](f: Lazy[a] => a): a = {
         lazy val x: a = f(x)
         x
     }
@@ -18,11 +18,11 @@ object Function extends Kind.qcurry2[Function1] with ArrowChoice[Function1] with
 
     def on[a, b, c](* : b => b => c)(f: a => b): a => a => c = { x => y => *(f(x))(f(y)) }
 
-    def ![b, c](f: (=> b) => c): b => c = { y => f(y) }
-    def ![a, b, c](f: a => (=> b) => c)(implicit i: DummyImplicit): a => b => c = { x => y => f(x)(y) }
+    def ![b, c](f: Lazy[b] => c): b => c = { y => f(y) }
+    def ![a, b, c](f: a => Lazy[b] => c)(implicit i: DummyImplicit): a => b => c = { x => y => f(x)(y) }
 
-    def ~[b, c](f: b => c): (=> b) => c = { y => f(y) }
-    def ~[a, b, c](f: a => b => c)(implicit i: DummyImplicit): a => (=> b) => c = { x => y => f(x)(y) }
+    def ~[b, c](f: b => c): Lazy[b] => c = { y => f(y) }
+    def ~[a, b, c](f: a => b => c)(implicit i: DummyImplicit): a => Lazy[b] => c = { x => y => f(x)(y.!) }
 
     // Overrides
     //
@@ -57,11 +57,11 @@ object Function extends Kind.qcurry2[Function1] with ArrowChoice[Function1] with
         private[this] type f[+a] = z => a
         override def fmap[a, b](x: a => b)(y: f[a]): f[b] = x compose y
         // Applicative
-        override def pure[a](x: => a): f[a] = const(x)
+        override def pure[a](x: Lazy[a]): f[a] = const(x)
         override def op_<*>[a, b](x: f[a => b])(y: f[a]): f[b] = { z => x(z)(y(z)) }
         // Monad
         private[this] type m[+a] = f[a]
-        override def `return`[a](x: => a): m[a] = const(x)
+        override def `return`[a](x: Lazy[a]): m[a] = const(x)
         override def op_>>=[a, b](f: m[a])(k: a => m[b]): m[b] = { z => k(f(z))(z) }
         // MonadReader
         override def ask: m[z] = id
@@ -71,7 +71,7 @@ object Function extends Kind.qcurry2[Function1] with ArrowChoice[Function1] with
     private[ken] def _asMonoid[z, b](implicit mb: Monoid[b]): Monoid[z => b] = new Monoid[z => b] {
         private[this] type m = z => b
         override val mempty: m = _ => mb.mempty
-        override val mappend: m => (=> m) => m = { x => y =>
+        override val mappend: m => Lazy[m] => m = { x => y =>
             val y_ = y // scalac mistery
             z => mb.mappend(x(z))(y_(z))
         }

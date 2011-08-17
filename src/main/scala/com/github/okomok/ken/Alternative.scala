@@ -14,7 +14,7 @@ trait Alternative[f[+_]] extends Applicative[f] {
     // Core
     //
     def empty: f[Nothing]
-    def op_<|>[a](x: f[a])(y: => f[a]): f[a]
+    def op_<|>[a](x: f[a])(y: Lazy[f[a]]): f[a]
 
     def some[a](v: f[a]): f[List[a]] = {
         def many_v: f[List[a]] = some_v <|> pure(Nil)
@@ -35,7 +35,7 @@ trait Alternative[f[+_]] extends Applicative[f] {
     // Infix
     //
     sealed class Infix_<|>[a](x: f[a]) {
-        def <|>(y: => f[a]): f[a] = op_<|>(x)(y)
+        def <|>(y: Lazy[f[a]]): f[a] = op_<|>(x)(y)
     }
     final implicit def <|>[a](x: f[a]): Infix_<|>[a] = new Infix_<|>(x)
 }
@@ -45,7 +45,7 @@ trait AlternativeProxy[f[+_]] extends Alternative[f] with ApplicativeProxy[f] {
     override def self: Alternative[f]
 
     override def empty: f[Nothing] = self.empty
-    override def op_<|>[a](x: f[a])(y: => f[a]): f[a] = self.op_<|>(x)(y)
+    override def op_<|>[a](x: f[a])(y: Lazy[f[a]]): f[a] = self.op_<|>(x)(y)
     override def some[a](v: f[a]): f[List[a]] = self.some(v)
     override def many[a](v: f[a]): f[List[a]] = self.many(v)
 
@@ -60,7 +60,7 @@ object Alternative {
         private[this] type f[+a] = nt#apply[a]
         override val self = Applicative.deriving[nt, ot](i, j)
         override def empty: f[Nothing] = j.newOf(i.empty)
-        override def op_<|>[a](x: f[a])(y: => f[a]): f[a] = j.newOf(i.op_<|>(j.oldOf(x))(j.oldOf(y)))
+        override def op_<|>[a](x: f[a])(y: Lazy[f[a]]): f[a] = j.newOf(i.op_<|>(j.oldOf(x))(j.oldOf(y)))
         override def some[a](v: f[a]): f[List[a]] = j.newOf(i.some(j.oldOf(v)))
         override def many[a](v: f[a]): f[List[a]] = j.newOf(i.many(j.oldOf(v)))
         override def optional[a](x: f[a]): f[Maybe[a]] = j.newOf(i.optional(j.oldOf(x)))

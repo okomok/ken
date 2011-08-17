@@ -96,8 +96,8 @@ object Arrow {
         override val self = Category.deriving[nt, ot](i, j)
 
         override def arr[b, c](f: b => c): a[b, c] = j.newOf(i.arr(f))
-        override def first[b, c, d](f: a[b, c]): a[(b, d), (c, d)] = j.newOf(i.first(j.oldOf(f)))
-        override def second[b, c, d](f: a[b, c]): a[(d, b), (d, c)] = j.newOf(i.second(j.oldOf(f)))
+        override def first[b, c, d](f: a[b, c]): a[(b, d), (c, d)] = j.newOf(Lazy(i.first(j.oldOf(Lazy(f)))))
+        override def second[b, c, d](f: a[b, c]): a[(d, b), (d, c)] = j.newOf(Lazy(i.second(j.oldOf(Lazy(f)))))
 
         override def op_***[b, c, b_, c_](f: a[b, c])(g: a[b_, c_]): a[(b, b_), (c, c_)] = j.newOf(i.op_***(j.oldOf(f))(j.oldOf(g)))
         override def op_&&&[b, c, c_](f: a[b, c])(g: a[b, c_]): a[b, (c, c_)] = j.newOf(i.op_&&&(j.oldOf(f))(j.oldOf(g)))

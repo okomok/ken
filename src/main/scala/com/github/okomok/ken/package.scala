@@ -18,9 +18,9 @@ package object ken {
     //
     val not: Bool => Bool = { b => !b }
 
-    val op_&& : Bool => (=> Bool) => Bool = { b => c => b && c }
+    val op_&& : Bool => Lazy[Bool] => Bool = { b => c => b && c.! }
 
-    val op_|| : Bool => (=> Bool) => Bool = { b => c => b || c }
+    val op_|| : Bool => Lazy[Bool] => Bool = { b => c => b || c.! }
 
     final val otherwise = True
 

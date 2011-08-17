@@ -29,8 +29,8 @@ private[ken] final class _ListTs[n[+_]](val inner: Monad[n]) {
         implicit val _asNewtype1: Newtype1[_ListT, ({type ot[+a] = n[List[a]]})#ot] = new Newtype1[_ListT, ({type ot[+a] = n[List[a]]})#ot] {
             private[this] type nt[+a] = _ListT[a]
             private[this] type ot[+a] = n[List[a]]
-            override def newOf[a](ot: => ot[a]): nt[a] = _ListT(ot)
-            override def oldOf[a](nt: => nt[a]): ot[a] = nt.run
+            override def newOf[a](ot: Lazy[ot[a]]): nt[a] = _ListT(ot)
+            override def oldOf[a](nt: Lazy[nt[a]]): ot[a] = nt.run
         }
 
         implicit val _asMonadPlus: MonadPlus[_ListT] = new MonadPlus[_ListT] {
@@ -41,13 +41,13 @@ private[ken] final class _ListTs[n[+_]](val inner: Monad[n]) {
             }
             // Monad
             private[this] type m[+a] = f[a]
-            override def `return`[a](a: => a): m[a] = _ListT { inner.`return`(List(a)) }
+            override def `return`[a](a: Lazy[a]): m[a] = _ListT { inner.`return`(List(a.!)) }
             override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = _ListT {
                 for { a <- run(m); b <- inner.mapM(run[b]_ compose k)(a) } yield List.concat(b)
             }
             // MonadPlus
             override def mzero: m[Nothing] = _ListT { inner.`return`(Nil) }
-            override def mplus[a](m: m[a])(n: => m[a]): m[a] = _ListT {
+            override def mplus[a](m: m[a])(n: Lazy[m[a]]): m[a] = _ListT {
                 for { a <- run(m); b <- run(n) } yield a ::: b
             }
         }

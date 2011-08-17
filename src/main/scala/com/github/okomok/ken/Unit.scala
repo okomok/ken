@@ -14,6 +14,6 @@ object Unit extends Monoid[Unit] {
     // Monoid
     private[this] type m = Unit
     override val mempty: m = ()
-    override val mappend: m => (=> m) => m = { _ => _ => () }
+    override val mappend: m => Lazy[m] => m = { _ => _ => () }
     override val mconcat: List[m] => m = { _ => () }
 }

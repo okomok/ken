@@ -166,11 +166,11 @@ object Parsec {
             // Functor
             override def fmap[a, b](x: a => b)(y: m[a]): m[b] = parsecMap(x)(y)
             // Monad
-            override def `return`[a](x: => a): m[a] = parsecReturn(x)
+            override def `return`[a](x: Lazy[a]): m[a] = parsecReturn(x)
             override def op_>>=[a, b](p: m[a])(f: a => m[b]): m[b] = parsecBind(p)(f)
             // MonadPlus
             override def mzero: m[Nothing] = parsecZero
-            override def mplus[a](x: m[a])(y: => m[a]): m[a] = parsecPlus(x)(y)
+            override def mplus[a](x: m[a])(y: Lazy[m[a]]): m[a] = parsecPlus(x)(y)
         }
     }
 
@@ -282,7 +282,7 @@ object Parsec {
     }
 
     /** p1|p2 (non-backtracking) **/
-    def parsecPlus[tok, st, a](p1: GenParser[tok, st, a])(p2: => GenParser[tok, st, a]): GenParser[tok, st, a] = {
+    def parsecPlus[tok, st, a](p1: GenParser[tok, st, a])(p2: Lazy[GenParser[tok, st, a]]): GenParser[tok, st, a] = {
         Parser { (state: State[tok, st]) =>
             runP(p1)(state) match {
                 case Empty(Error(err)) => {
@@ -425,7 +425,7 @@ object Parsec {
     }
 
     /** star **/
-    def manyAccum[tok, st, a](accum: a => (=> List[a]) => List[a])(p: GenParser[tok, st, a]): GenParser[tok, st, List[a]] = {
+    def manyAccum[tok, st, a](accum: a => Lazy[List[a]] => List[a])(p: GenParser[tok, st, a]): GenParser[tok, st, List[a]] = {
         Parser { (state: State[tok, st]) =>
             @tailrec
             def walk(xs: List[a])(state: State[tok, st])(c: ConsumedT[Reply[tok, st, a]]): Reply[tok, st, List[a]] = c match {

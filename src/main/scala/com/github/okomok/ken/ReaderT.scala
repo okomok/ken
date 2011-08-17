@@ -33,8 +33,8 @@ private[ken] final class _ReaderTs[n[+_]](val inner: Monad[n]) {
         implicit def _asNewtype1[r]: Newtype1[({type nt[+a] = _ReaderT[r, a]})#nt, ({type ot[+a] = r => n[a]})#ot] = new Newtype1[({type nt[+a] = _ReaderT[r, a]})#nt, ({type ot[+a] = r => n[a]})#ot] {
             private[this] type nt[+a] = _ReaderT[r, a]
             private[this] type ot[+a] = r => n[a]
-            override def newOf[a](ot: => ot[a]): nt[a] = _ReaderT(ot)
-            override def oldOf[a](nt: => nt[a]): ot[a] = nt.run
+            override def newOf[a](ot: Lazy[ot[a]]): nt[a] = _ReaderT(ot)
+            override def oldOf[a](nt: Lazy[nt[a]]): ot[a] = nt.run
         }
 
         implicit def _asMonadReader[r]: MonadReader[r, ({type m[+a] = _ReaderT[r, a]})#m] = new MonadReader[r, ({type m[+a] = _ReaderT[r, a]})#m] {
@@ -45,7 +45,7 @@ private[ken] final class _ReaderTs[n[+_]](val inner: Monad[n]) {
             }
             // Monad
             private[this] type m[+a] = f[a]
-            override def `return`[a](a: => a): m[a] = _ReaderT { r => inner.`return`(a) }
+            override def `return`[a](a: Lazy[a]): m[a] = _ReaderT { r => inner.`return`(a) }
             override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = _ReaderT { r =>
                 for { a <- run(m)(r); * <- run(k(a))(r) } yield *
             }
@@ -65,7 +65,7 @@ private[ken] final class _ReaderTs[n[+_]](val inner: Monad[n]) {
             private[this] type m[+a] = _ReaderT[r, a]
             override val self = _asMonadReader[r]
             override def mzero: m[Nothing] = _ReaderT { _ => i.mzero }
-            override def mplus[a](m: m[a])(n: => m[a]): m[a] = _ReaderT { r => i.mplus(run(m)(r))(run(n)(r)) }
+            override def mplus[a](m: m[a])(n: Lazy[m[a]]): m[a] = _ReaderT { r => i.mplus(run(m)(r))(run(n)(r)) }
         }
     }
 
@@ -73,8 +73,8 @@ private[ken] final class _ReaderTs[n[+_]](val inner: Monad[n]) {
         implicit def _asMonadFix[r](implicit i: MonadFix[n]): MonadFix[({type m[+a] = _ReaderT[r, a]})#m] = new MonadFix[({type m[+a] = _ReaderT[r, a]})#m] with MonadProxy[({type m[+a] = _ReaderT[r, a]})#m] {
             private[this] type m[+a] = _ReaderT[r, a]
             override val self = _asMonadReader[r]
-            override def mfix[a](f: (=> a) => m[a]): m[a] = _ReaderT { r =>
-                def k(a: => a) = run(f(a))(r)
+            override def mfix[a](f: Lazy[a] => m[a]): m[a] = _ReaderT { r =>
+                def k(a: Lazy[a]) = run(f(a))(r)
                 i.mfix(k)
             }
         }

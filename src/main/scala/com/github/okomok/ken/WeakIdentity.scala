@@ -16,8 +16,8 @@ object WeakIdentity extends MonadFix[({type m[+a] = a})#m] {
     override def fmap[a, b](f: a => b)(m: f[a]): f[b] = f(m)
     // Monad
     private[this] type m[+a] = f[a]
-    override def `return`[a](a: => a): m[a] = a
+    override def `return`[a](a: Lazy[a]): m[a] = a
     override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = k(m)
     // MonadFix
-    override def mfix[a](f: (=> a) => m[a]): m[a] = Function.fix(f)
+    override def mfix[a](f: Lazy[a] => m[a]): m[a] = Function.fix(f)
 }

@@ -19,7 +19,7 @@ trait Functor[f[+_]] extends Typeclass1[f] { outer =>
     // Extra
     //
     def op_<@>[a, b](x: a => b)(y: f[a]): f[b] = fmap(x)(y)
-    def op_<@[a, b](x: => a)(y: f[b]): f[a] = fmap[b, a](_ => x)(y)
+    def op_<@[a, b](x: Lazy[a])(y: f[b]): f[a] = fmap[b, a](_ => x)(y)
 
     // Infix
     //
@@ -28,7 +28,7 @@ trait Functor[f[+_]] extends Typeclass1[f] { outer =>
     }
     final implicit def <@>[a, b](x: a => b): Infix_<@>[a, b] = new Infix_<@>(x)
 
-    sealed class Infix_<@[a](x: => a) {
+    sealed class Infix_<@[a](x: Lazy[a]) {
         def <@[b](y: f[b]): f[a] = op_<@(x)(y)
     }
     final implicit def <@[a](x: a): Infix_<@[a] = new Infix_<@(x)
@@ -40,7 +40,7 @@ trait FunctorProxy[f[+_]] extends Functor[f] with Proxy {
 
     override def fmap[a, b](x: a => b)(y: f[a]): f[b] = self.fmap(x)(y)
     override def op_<@>[a, b](x: a => b)(y: f[a]): f[b] = self.op_<@>(x)(y)
-    override def op_<@[a, b](x: => a)(y: f[b]): f[a] = self.op_<@(x)(y)
+    override def op_<@[a, b](x: Lazy[a])(y: f[b]): f[a] = self.op_<@(x)(y)
 }
 
 

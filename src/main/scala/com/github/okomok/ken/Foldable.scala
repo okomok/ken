@@ -16,14 +16,14 @@ trait Foldable[t[+_]] extends Typeclass1[t] { outer =>
     def fold[m](f: t[m])(implicit i: Monoid[m]): m = foldMap(id[m])(f)(i)
     def foldMap[a, m](f: a => m)(x: t[a])(implicit i: Monoid[m]): m = foldr[a, m](i.mappend compose f)(i.mempty)(x)
 
-    def foldr[a, b](f: a => (=> b) => b)(z: b)(t: t[a]): b = {
+    def foldr[a, b](f: a => Lazy[b] => b)(z: b)(t: t[a]): b = {
         foldMap[a, b => b](Function.!(f))(t)(Monoid.weak[Endo[b]])(z)
     }
 
     def foldl[a, b](f: a => b => a)(z: a)(t: t[b]): a = foldMap(flip(f))(t)(Monoid.weak[Endo[a]].dual)(z)
 
-    def foldr1[a](f: a => (=> a) => a)(xs: t[a]): a = {
-        def mf(x: a)(y: => Maybe[a]): Maybe[a] = y match {
+    def foldr1[a](f: a => Lazy[a] => a)(xs: t[a]): a = {
+        def mf(x: a)(y: Lazy[Maybe[a]]): Maybe[a] = y.! match {
             case Nothing => Just(x)
             case Just(y) => Just(f(x)(y))
         }
@@ -45,10 +45,10 @@ trait Foldable[t[+_]] extends Typeclass1[t] { outer =>
         foldl[b => b, a](f_)(id)(xs)(z0)
     }
 
-    def foldrM[m[+_], a, b](f: a => (=> b) => m[b])(z0: b)(xs: t[a])(implicit i: Monad[m]): m[b] = {
+    def foldrM[m[+_], a, b](f: a => Lazy[b] => m[b])(z0: b)(xs: t[a])(implicit i: Monad[m]): m[b] = {
         // not lazy
         import i.>>=
-        def f_(k: (=> b) => m[b])(x: a)(z: => b): m[b] = f(x)(z) >>= Function.!(k)
+        def f_(k: Lazy[b] => m[b])(x: a)(z: Lazy[b]): m[b] = f(x)(z) >>= Function.!(k)
         foldl(f_)(i.`return`)(xs)(z0)
     }
 
@@ -134,7 +134,7 @@ trait Foldable[t[+_]] extends Typeclass1[t] { outer =>
     // Pull
     //
     trait FoldablePull[f_ <: Kind.FunctionV] extends Pull[f_] {
-        final def foldrM[a, b](f: a => (=> b) => m[b])(z0: b)(xs: t[a])(implicit i: Monad[m]): m[b] = outer.foldrM(f)(z0)(xs)(i)
+        final def foldrM[a, b](f: a => Lazy[b] => m[b])(z0: b)(xs: t[a])(implicit i: Monad[m]): m[b] = outer.foldrM(f)(z0)(xs)(i)
         final def foldlM[a, b](f: a => b => m[a])(z0: a)(xs: t[b])(implicit i: Monad[m]): m[a] = outer.foldlM(f)(z0)(xs)
         final def traverse_[a, b](f: a => f[b])(xs: t[a])(implicit i: Applicative[f]): f[Unit] = outer.traverse_(f)(xs)(i)
         final def for_[a, b](xs: t[a])(f: a => f[b])(implicit i: Applicative[f]): f[Unit] = outer.for_(xs)(f)(i)
@@ -154,13 +154,13 @@ trait FoldableProxy[t[+_]] extends Foldable[t] with Proxy {
 
     override def fold[m](f: t[m])(implicit i: Monoid[m]): m = self.fold(f)(i)
     override def foldMap[a, m](f: a => m)(x: t[a])(implicit i: Monoid[m]): m = self.foldMap(f)(x)(i)
-    override def foldr[a, b](f: a => (=> b) => b)(z: b)(t: t[a]): b = self.foldr(f)(z)(t)
+    override def foldr[a, b](f: a => Lazy[b] => b)(z: b)(t: t[a]): b = self.foldr(f)(z)(t)
     override def foldl[a, b](f: a => b => a)(z: a)(t: t[b]): a = self.foldl(f)(z)(t)
-    override def foldr1[a](f: a => (=> a) => a)(xs: t[a]): a = self.foldr1(f)(xs)
+    override def foldr1[a](f: a => Lazy[a] => a)(xs: t[a]): a = self.foldr1(f)(xs)
     override def foldl1[a](f: a => a => a)(xs: t[a]):a = self.foldl1(f)(xs)
 
     override def foldr_[a, b](f: a => b => b)(z0: b)(xs: t[a]): b = self.foldr_(f)(z0)(xs)
-    override def foldrM[m[+_], a, b](f: a => (=> b) => m[b])(z0: b)(xs: t[a])(implicit i: Monad[m]): m[b] = self.foldrM(f)(z0)(xs)(i)
+    override def foldrM[m[+_], a, b](f: a => Lazy[b] => m[b])(z0: b)(xs: t[a])(implicit i: Monad[m]): m[b] = self.foldrM(f)(z0)(xs)(i)
     override def foldlM[m[+_], a, b](f: a => b => m[a])(z0: a)(xs: t[b])(implicit i: Monad[m]): m[a] = self.foldlM(f)(z0)(xs)(i)
     override def traverse_[f[+_], a, b](f: a => f[b])(xs: t[a])(implicit i: Applicative[f]): f[Unit] = self.traverse_(f)(xs)(i)
     override def for_[f[+_], a, b](xs: t[a])(f: a => f[b])(implicit i: Applicative[f]): f[Unit] = self.for_(xs)(f)(i)

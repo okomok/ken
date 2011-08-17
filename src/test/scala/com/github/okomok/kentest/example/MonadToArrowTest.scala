@@ -39,7 +39,7 @@ class MonadToArrowTest extends org.scalatest.junit.JUnit3Suite {
         def eval[m[+_]](exp: Exp)(env: Env)(implicit i: Monad[m]): m[Val] = {
             import i._
             exp match {
-                case Var(s) => `return`(lookup(s)(env))
+                case Var(s) => `return`(Lazy(lookup(s)(env)))
                 case Add(e1, e2) => liftM2(add)(eval(e1)(env))(eval(e2)(env))
                 case If(e1, e2, e3) => eval(e1)(env) >>= { case Bl(b) =>
                     if (b) eval(e2)(env) else eval(e3)(env)

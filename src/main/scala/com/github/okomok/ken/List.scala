@@ -96,10 +96,10 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
         case (x :: xs, y :: ys) => if (x == y) equal(xs.!)(ys.!) else False
     }
 
-    def op_::[a](x: a)(xs: => List[a]): List[a] = ::(x, Lazy(xs))
+    def op_::[a](x: a)(xs: Lazy[List[a]]): List[a] = ::(x, Lazy(xs))
     def op_!::[a](x: a)(xs: List[a]): List[a] = op_::(x)(xs)
 
-    private[ken] class OfName[a](xs: => List[a]) {
+    private[ken] class OfName[a](xs: Lazy[List[a]]) {
         def ::(x: a): List[a] = op_::(x)(xs)
         def :::(ys: List[a]): List[a] = op_:::(ys)(xs)
     }
@@ -109,18 +109,18 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
     //
     // Monad
     private[this] type m[+a] = List[a]
-    override def `return`[a](x: => a): m[a] = List(x)
+    override def `return`[a](x: Lazy[a]): m[a] = List(x)
     override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = concat(map(y)(x))
     // MonadPlus
     override def mzero: m[Nothing] = Nil
-    override def mplus[a](x: m[a])(y: => m[a]): m[a] = x ::: y
+    override def mplus[a](x: m[a])(y: Lazy[m[a]]): m[a] = x ::: y.!
     // Foldable
     private[this] type t[+a] = List[a]
     override def toList[a](xs: t[a]): List[a]  = xs
     // Traversable
     override def traverse[f[+_], a, b](f: a => f[b])(t: t[a])(implicit i: Applicative[f]): f[t[b]] = {
         import i.{<@>, <*>}
-        def cons_f(x: a)(ys: => f[t[b]]): f[t[b]] = op_!::[b]_ <@> f(x) <*> ys
+        def cons_f(x: a)(ys: Lazy[f[t[b]]]): f[t[b]] = op_!::[b]_ <@> f(x) <*> ys
         foldr(cons_f)(i.pure(Nil))(t)
     }
     override def mapM[m_[+_], a, b](f: a => m_[b])(t: t[a])(implicit i: Monad[m_]): m_[t[b]] = i.mapM(f)(t)
@@ -130,7 +130,7 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
     implicit def _asMonoid[a]: Monoid[List[a]] = new Monoid[List[a]] {
         private[this] type m = List[a]
         override val mempty: m = Nil
-        override val mappend: m => (=> m) => m = op_:::[a]
+        override val mappend: m => Lazy[m] => m = op_:::[a]
     }
 
     implicit def _asOrd[a](implicit i: Ord[a]): Ord[List[a]] = new Ord[List[a]] with EqProxy[List[a]] {
@@ -172,7 +172,7 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
 
     // Basic functions
     //
-    def op_:::[a](xs: List[a])(ys: => List[a]): List[a] = xs match {
+    def op_:::[a](xs: List[a])(ys: Lazy[List[a]]): List[a] = xs match {
         case Nil => ys
         case x :: xs => x :: op_:::(xs.!)(ys)
     }
@@ -244,7 +244,7 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
     def nonEmptySubsequences[a](xs: List[a]): List[List[a]] = xs match {
         case Nil => Nil
         case x :: xs => {
-            def f(ys: List[a])(r: => List[List[a]]): List[List[a]] = ys :: (x :: ys) :: r
+            def f(ys: List[a])(r: Lazy[List[List[a]]]): List[List[a]] = ys :: (x :: ys) :: r.!
             (x :: Nil) :: foldr(f)(Nil)(nonEmptySubsequences(xs.!))
         }
     }
@@ -253,7 +253,7 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
         def perms(ts: List[a])(is: List[a]): List[List[a]] = ts match {
             case Nil => Nil
             case t :: ts => {
-                def interleave(xs: List[a])(r: => List[List[a]]): List[List[a]] = interleave_(id)(xs)(r)._2
+                def interleave(xs: List[a])(r: Lazy[List[List[a]]]): List[List[a]] = interleave_(id)(xs)(r)._2
                 def interleave_(f: List[a] => List[a])(ys: List[a])(r: List[List[a]]): (List[a], List[List[a]]) = ys match {
                     case Nil => (ts.!, r)
                     case y :: ys => {
@@ -283,12 +283,12 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
         case x :: xs => foldl(f)(x)(xs.!)
     }
 
-    override def foldr[a, b](f: a => (=> b) => b)(z: b)(xs: List[a]): b = xs match {
+    override def foldr[a, b](f: a => Lazy[b] => b)(z: b)(xs: List[a]): b = xs match {
         case Nil => z
         case x :: xs => f(x)(foldr(f)(z)(xs.!))
     }
 
-    override def foldr1[a](f: a => (=> a) => a)(xs: List[a]): a = xs match {
+    override def foldr1[a](f: a => Lazy[a] => a)(xs: List[a]): a = xs match {
         case Nil => error("empty List")
         case x !:: Nil => x
         case x :: xs => f(x)(foldr1(f)(xs.!))
@@ -298,7 +298,7 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
     //
     override def concat[a](xs: List[List[a]]): List[a] = foldr(op_:::[a])(Nil)(xs)
 
-    override def concatMap[a, b](f: a => List[b])(xs: List[a]): List[b] = foldr[a, List[b]](x => y => f(x) ::: y)(Nil)(xs)
+    override def concatMap[a, b](f: a => List[b])(xs: List[a]): List[b] = foldr[a, List[b]](x => y => f(x) ::: y.!)(Nil)(xs)
 
     override def and(xs: List[Bool]): Bool = foldr(op_&&)(True)(xs)
 
@@ -324,7 +324,7 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
 
     // Building lists
     //
-    def scanl[a, b](f: a => b => a)(q: => a)(ls: List[b]): List[a] = { // why `q` is by-name?
+    def scanl[a, b](f: a => b => a)(q: Lazy[a])(ls: List[b]): List[a] = { // why `q` is by-name?
         q :: (ls match {
             case Nil => Nil
             case x :: xs => scanl(f)(f(q)(x))(xs.!)
@@ -336,20 +336,20 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
         case x :: xs => scanl(f)(x)(xs.!)
     }
 
-    def scanr[a, b](f: a => (=> b) => b)(q0: b)(xs: List[a]): List[b] = xs match {
+    def scanr[a, b](f: a => Lazy[b] => b)(q0: b)(xs: List[a]): List[b] = xs match {
         case Nil => List(q0)
         case x :: xs => {
-            lazy val qs = scanr(f)(q0)(xs.!)
-            f(x)(head(qs)) :: qs
+            lazy val qs: List[b] = scanr(f)(q0)(xs.!)
+            f(x)(Lazy(head(qs))) :: qs
         }
     }
 
-    def scanr1[a](f: a => (=> a) => a)(xs: List[a]): List[a] = xs match {
+    def scanr1[a](f: a => Lazy[a] => a)(xs: List[a]): List[a] = xs match {
         case Nil => Nil
         case x !:: Nil => List(x)
         case x :: xs => {
             lazy val qs = scanr1(f)(xs.!)
-            f(x)(head(qs)) :: qs
+            f(x)(Lazy(head(qs))) :: qs
         }
     }
 
@@ -364,7 +364,7 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
         }
     }
 
-    override def mapAccumR[acc, x, y](f: (=> acc) => x => (acc, y))(s: acc)(xs: List[x]): (acc, List[y]) = xs match {
+    override def mapAccumR[acc, x, y](f: Lazy[acc] => x => (acc, y))(s: acc)(xs: List[x]): (acc, List[y]) = xs match {
         case Nil => (s, Nil)
         case x :: xs => {
             lazy val s_ys = mapAccumR(f)(s)(xs.!)
