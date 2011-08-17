@@ -18,12 +18,6 @@ object Function extends Kind.qcurry2[Function1] with ArrowChoice[Function1] with
 
     def on[a, b, c](* : b => b => c)(f: a => b): a => a => c = { x => y => *(f(x))(f(y)) }
 
-    def ![b, c](f: Lazy[b] => c): b => c = { y => f(y) }
-    def ![a, b, c](f: a => Lazy[b] => c)(implicit i: DummyImplicit): a => b => c = { x => y => f(x)(y) }
-
-    def ~[b, c](f: b => c): Lazy[b] => c = { y => f(y) }
-    def ~[a, b, c](f: a => b => c)(implicit i: DummyImplicit): a => Lazy[b] => c = { x => y => f(x)(y.!) }
-
     // Overrides
     //
     // Category

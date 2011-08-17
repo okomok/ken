@@ -502,7 +502,7 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
     }
 
     def partition[a](p: a => Bool)(xs: List[a]): (List[a], List[a]) = {
-        foldr(Function.~(select(p)_))((Nil, Nil))(xs)
+        foldr(select(p))((Nil, Nil))(xs)
     }
 
     def select[a](p: a => Bool)(x: a)(tfs: (List[a], List[a])): (List[a], List[a]) = {
@@ -616,7 +616,7 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
     // User-supplied comparison
     //
     def sortBy[a](cmp: a => a => Ordering)(xs: List[a]): List[a] = {
-        foldr(Function.~(insertBy(cmp)_))(Nil)(xs)
+        foldr(insertBy(cmp))(Nil)(xs)
     }
 
     def insertBy[a](cmp: a => a => Ordering)(x: a)(ys: List[a]): List[a] = ys match {

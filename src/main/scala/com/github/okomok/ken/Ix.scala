@@ -58,7 +58,7 @@ object Ix {
     def deriving[nt <: Kind.Function0, ot <: Kind.Function0](implicit i: Ix[ot#apply0], j: Newtype0[nt#apply0, ot#apply0]): Ix[nt#apply0] = new Ix[nt#apply0] with OrdProxy[nt#apply0] {
         private[this] type a = nt#apply0
         override val self = Ord.deriving[nt, ot](i, j)
-        override val range: Tuple2[a, a] => List[a] = t => List.map[ot#apply0, a](Function.!(j.newOf))(i.range(j.oldOf(t._1), j.oldOf(t._2)))
+        override val range: Tuple2[a, a] => List[a] = t => List.map[ot#apply0, a](j.newOf)(i.range(j.oldOf(t._1), j.oldOf(t._2)))
         override val index: Tuple2[a, a] => a => Int = t => x => i.index(j.oldOf(t._1), j.oldOf(t._2))(j.oldOf(x))
         override val unsafeIndex: Tuple2[a, a] => a => Int = t => x => i.unsafeIndex(j.oldOf(t._1), j.oldOf(t._2))(j.oldOf(x))
         override val inRange: Tuple2[a, a] => a => Bool = t => x => i.inRange(j.oldOf(t._1), j.oldOf(t._2))(j.oldOf(x))

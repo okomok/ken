@@ -10,24 +10,34 @@ package com.github.okomok.kentest
 import com.github.okomok.ken._
 
 
-// See: https://gist.github.com/1022916
-
-
 class ArrowLoopTest extends org.scalatest.junit.JUnit3Suite {
 
-    val ar = ArrowLoop[Function.type]
+    val fa = ArrowLoop[Function.type]
 
-    val factorial = ar.loop[Int, Int, Int => Int] {
-        case (b, d) => (
-            Lazy { d.!(b) },
-            Lazy {
-                case 0 => 1
-                case x => x * d.!(x - 1)
-            }
-        )
+    def testFactorial {
+        // See: https://gist.github.com/1022916
+
+        val factorial = fa.loop[Int, Int, Int => Int] {
+            case (b, d) => (
+                Lazy { d.!(b) },
+                Lazy {
+                    case 0 => 1
+                    case x => x * d.!(x - 1)
+                }
+            )
+        }
+
+        expect(List(1,1,2,6,24,120,720,5040,40320,362880))(List.map(factorial)(List.range(0, 10)))
     }
 
-    def testTrivial {
-        expect(List(1,1,2,6,24,120,720,5040,40320,362880))(List.map(factorial)(List.range(0, 10)))
+    def testRepeat {
+        // See: http://d.hatena.ne.jp/MaD/20070818
+
+        import fa.&&&
+        type r[x] = Tuple2[Int, Lazy[List[Int]]] => Lazy[List[Int]]
+        val x: r[Int] = snd[Lazy[List[Int]]]_
+        val y: r[Int] = uncurry(List.op_::[Int])
+        val r = fa.loop(x &&& y)
+        expect(List(1,1,1,1,1))(List.take(5)(r(1)))
     }
 }
