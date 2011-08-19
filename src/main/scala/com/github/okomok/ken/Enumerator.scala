@@ -11,8 +11,10 @@ package ken
 // Draft
 
 
-object Enumerator {
-    sealed abstract class Stream[+a]
+final class Enumerators[n[+_]](implicit val inner: Monad[n]) {
+    // Types
+    //
+    sealed abstract class Stream[+a] extends Up[Stream[a]]
     final case class Chunks[+a](_1: List[a]) extends Stream[a]
     final case object EOF extends Stream[Nothing]
 
@@ -39,11 +41,6 @@ object Enumerator {
             }
         }
     }
-}
-
-private[ken] final class _Enumerators[n[+_]](val inner: Monad[n]) {
-    private[this] implicit def innerForComp[a](x: n[a]): inner.ForComp[a] = inner.forComp(x)
-    private[this] implicit def innerOp_>>=[a](x: n[a]): inner.Op_>>=[a] = inner.>>=(x)
 
     sealed abstract class Step[-a, +b]
     final case class Continue[a, b](_1: Stream[a] => Iteratee[a, b]) extends Step[a, b]
@@ -52,14 +49,68 @@ private[ken] final class _Enumerators[n[+_]](val inner: Monad[n]) {
 
     final case class Iteratee[-a, +b](override val get: n[Step[a, b]]) extends NewtypeOf[n[Step[a, b]]] with Kind.alwaysThis
 
-    object Iteratee extends Kind.AbstractNewtype2 {
-        override type apply2[-a, +b] = Iteratee[a, b]
-        override type oldtype2[-a, +b] = n[Step[a, b]]
+    object Iteratee extends InstanceForIteratee with Kind.FunctionLike {
+        sealed trait apply[z] extends Kind.AbstractMonadTrans {
+            override type apply1[+a] = Iteratee[z, a]
+            override type oldtype1[+a] = n[Step[z, a]]
+            override type innerMonad[+a] = n[a]
+        }
+
+        implicit def dependent[a, b](n: NewtypeOf[n[Step[a, b]]]): Iteratee[a, b] = Iteratee { n.run }
 
         def run[a, b](n: Iteratee[a, b]): n[Step[a, b]] = n.run
 
         def map[m[+_], a, a_, b, b_](f: n[Step[a, b]] => m[Step[a_, b_]])(n: Iteratee[a, b]): NewtypeOf[m[Step[a_, b_]]] = NewtypeOf { f(run(n)) }
 
-        implicit def dependent[a, b](n: NewtypeOf[n[Step[a, b]]]): Iteratee[a, b] = Iteratee { n.run }
+        def returnI[a, b](step: Step[a, b]): Iteratee[a, b] = Iteratee { inner.`return`(step) }
+        def `yield`[a, b](x: b)(extra: Stream[a]): Iteratee[a, b] = returnI(Yield(x, extra))
+        def continue[a, b](k: Stream[a] => Iteratee[a, b]): Iteratee[a, b] = returnI(Continue(k))
+    }
+
+    type Enumerator[a, b] = Step[a, b] => Iteratee[a, b]
+
+    private[ken] trait InstanceForIteratee0 { this: Iteratee.type =>
+        implicit def _asNewtype1[z]: Newtype1[({type nt[+a] = Iteratee[z, a]})#nt, ({type ot[+a] = n[Step[z, a]]})#ot] = new Newtype1[({type nt[+a] = Iteratee[z, a]})#nt, ({type ot[+a] = n[Step[z, a]]})#ot] {
+            private[this] type nt[+a] = Iteratee[z, a]
+            private[this] type ot[+a] = n[Step[z, a]]
+            override def newOf[a](ot: Lazy[ot[a]]): nt[a] = Iteratee(ot)
+            override def oldOf[a](nt: Lazy[nt[a]]): ot[a] = nt.run
+        }
+
+        implicit def _asMonad[z]: Monad[({type m[+a] = Iteratee[z, a]})#m] = new Monad[({type m[+a] = Iteratee[z, a]})#m] {
+            private[this] type m[+a] = Iteratee[z, a]
+            override def `return`[a](x: Lazy[a]): m[a] = `yield`(x.!)(Chunks(Nil.of[a]).up)
+            override def op_>>=[a, b](m0: m[a])(f: a => m[b]): m[b] = Function.fix {
+                (bind: Lazy[m[a] => m[b]]) => (m: m[a]) => Iteratee {
+                    import inner.>>=
+                    m.run >>= {
+                        case Continue(k) => inner.`return`(Continue(bind compose k))
+                        case Error(err) => inner.`return`(Error(err))
+                        case Yield(x, Chunks(Nil)) => f(x).run
+                        case Yield(x, extra) => f(x).run >>= {
+                            case Continue(k) => k(extra).run
+                            case Error(err) => inner.`return`(Error(err))
+                            case Yield(x_, _) => inner.`return`(Yield(x_, extra))
+                        }
+                    }
+                }
+            }.apply(m0)
+        }
+
+        implicit def _asMonadTrans[z]: MonadTrans[n, ({type m[+a] = Iteratee[z, a]})#m] = new MonadTrans[n, ({type m[+a] = Iteratee[z, a]})#m] {
+            private[this] type m[+a] = Iteratee[z, a]
+            override def lift[a](n: n[a]): m[a] = Iteratee {
+                import inner.>>=
+                n >>= { p => _asMonad[z].`return`(p).run }
+            }
+        }
+    }
+
+    private[ken] trait InstanceForIteratee extends InstanceForIteratee0 { this: Iteratee.type =>
+        implicit def _asMonadIO[z](implicit i: MonadIO[n]): MonadIO[({type m[+a] = Iteratee[z, a]})#m] = new MonadIO[({type m[+a] = Iteratee[z, a]})#m] with MonadProxy[({type m[+a] = Iteratee[z, a]})#m] {
+            private[this] type m[+a] = Iteratee[z, a]
+            override val self = _asMonad[z]
+            override def liftIO[a](io: IO[a]): m[a] = _asMonadTrans.lift(i.liftIO(io))
+        }
     }
 }

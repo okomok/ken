@@ -20,6 +20,8 @@ private[ken] final class _StateTs[n[+_]](val inner: Monad[n]) {
             override type innerMonad[+a] = n[a]
         }
 
+        implicit def dependent[s, a](n: NewtypeOf[s => n[(a, s)]]): _StateT[s, a] = _StateT { n.run }
+
         def run[s, a](n: _StateT[s, a]): s => n[(a, s)] = n.run
 
         def eval[s, a](n: _StateT[s, a]): s => n[a] = s => for { (a, _) <- run(n)(s) } yield a
@@ -29,8 +31,6 @@ private[ken] final class _StateTs[n[+_]](val inner: Monad[n]) {
         def map[s, m[+_], a, b](f: n[(a, s)] => m[(b, s)])(n: _StateT[s, a]): NewtypeOf[s => m[(b, s)]] = NewtypeOf { f compose run(n) }
 
         def `with`[s, a](f: s => s)(n: _StateT[s, a]): _StateT[s, a] = _StateT { run(n) compose f }
-
-        implicit def dependent[s, a](n: NewtypeOf[s => n[(a, s)]]): _StateT[s, a] = _StateT { n.run }
     }
 
     private[ken] trait Instance0 { this: _StateT.type =>

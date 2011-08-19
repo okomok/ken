@@ -15,9 +15,9 @@ private[ken] final class _Kleislis[m[+_]](val monad: Monad[m]) {
         override type apply2[-a, +b] = _Kleisli[a, b]
         override type oldtype2[-a, +b] = a => m[b]
 
-        def run[a, b](f: _Kleisli[a, b]): a => m[b] = f.run
-
         implicit def dependent[a, b](n: NewtypeOf[a => m[b]]): _Kleisli[a, b] = _Kleisli { n.run }
+
+        def run[a, b](f: _Kleisli[a, b]): a => m[b] = f.run
     }
 
     private[ken] trait Instance0 { this: _Kleisli.type =>

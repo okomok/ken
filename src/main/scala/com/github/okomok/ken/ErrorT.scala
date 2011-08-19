@@ -20,11 +20,11 @@ private[ken] final class _ErrorTs[n[+_]](val inner: Monad[n]) {
             override type innerMonad[+a] = n[a]
         }
 
+        implicit def dependent[e, a](n: NewtypeOf[n[Either[e, a]]]): _ErrorT[e, a] = _ErrorT { n.run }
+
         def run[e, a](n: _ErrorT[e, a]): n[Either[e, a]] = n.run
 
         def map[e, e_, m[+_], a, b](f: n[Either[e, a]] => m[Either[e_, b]])(n: _ErrorT[e, a]): NewtypeOf[m[Either[e_, b]]] = NewtypeOf { f(run(n)) }
-
-        implicit def dependent[e, a](n: NewtypeOf[n[Either[e, a]]]): _ErrorT[e, a] = _ErrorT { n.run }
     }
 
     private[ken] trait Instance0 { this: _ErrorT.type =>

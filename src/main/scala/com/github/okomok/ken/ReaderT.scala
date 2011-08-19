@@ -20,13 +20,13 @@ private[ken] final class _ReaderTs[n[+_]](val inner: Monad[n]) {
             override type innerMonad[+a] = n[a]
         }
 
+        implicit def dependent[r, a](n: NewtypeOf[r => n[a]]): _ReaderT[r, a] = _ReaderT { n.run }
+
         def run[r, a](n: _ReaderT[r, a]): r => n[a] = n.run
 
         def map[r, m[+_], a, b](f: n[a] => m[b])(n: _ReaderT[r, a]): NewtypeOf[r => m[b]] = NewtypeOf { f compose run(n) }
 
         def `with`[r, r_, a](f: r_ => r)(n: _ReaderT[r, a]): _ReaderT[r_, a] = _ReaderT { run(n) compose f }
-
-        implicit def dependent[r, a](n: NewtypeOf[r => n[a]]): _ReaderT[r, a] = _ReaderT { n.run }
     }
 
     private[ken] trait Instance0 { this: _ReaderT.type =>

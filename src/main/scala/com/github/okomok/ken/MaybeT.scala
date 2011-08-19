@@ -19,11 +19,11 @@ private[ken] final class _MaybeTs[n[+_]](val inner: Monad[n]) {
         override type oldtype1[+a] = n[Maybe[a]]
         override type innerMonad[+a] = n[a]
 
+        implicit def dependent[a](n: NewtypeOf[n[Maybe[a]]]): _MaybeT[a] = _MaybeT { n.run }
+
         def run[a](n: _MaybeT[a]): n[Maybe[a]] = n.run
 
         def map[m[+_], a, b](f: n[Maybe[a]] => m[Maybe[b]])(n: _MaybeT[a]): NewtypeOf[m[Maybe[b]]] = NewtypeOf { f(run(n)) }
-
-        implicit def dependent[a](n: NewtypeOf[n[Maybe[a]]]): _MaybeT[a] = _MaybeT { n.run }
     }
 
     private[ken] trait Instance0 { this: _MaybeT.type =>

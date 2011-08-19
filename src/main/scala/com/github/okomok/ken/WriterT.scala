@@ -20,13 +20,13 @@ private[ken] final class _WriterTs[n[+_]](val inner: Monad[n]) {
             override type innerMonad[+a] = n[a]
         }
 
+        implicit def dependent[w, a](n: NewtypeOf[n[(a, w)]]): _WriterT[w, a] = _WriterT(n.run)
+
         def run[w, a](n: _WriterT[w, a]): n[(a, w)] = n.run
 
         def exec[w, a](n: _WriterT[w, a]): n[w] = for { (_, w) <- run(n) } yield w
 
         def map[w, w_, m[+_], a, b](f: n[(a, w)] => m[(b, w_)])(n: _WriterT[w, a]): NewtypeOf[m[(b, w_)]] = NewtypeOf { f(run(n)) }
-
-        implicit def dependent[w, a](n: NewtypeOf[n[(a, w)]]): _WriterT[w, a] = _WriterT(n.run)
     }
 
     private[ken] trait Instance0 { this: _WriterT.type =>
