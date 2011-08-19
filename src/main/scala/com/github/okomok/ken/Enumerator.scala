@@ -11,8 +11,15 @@ package ken
 // Draft
 
 
-final class Enumerators[n[+_]](implicit val inner: Monad[n]) {
-    // Types
+final class Enumerators[n <: Kind.Function1](override implicit val inner: Monad[n#apply]) extends EnumeratorsOf[n]
+
+trait EnumeratorsOf[n <: Kind.Function1] extends _Enumerators[n#apply]
+
+
+private[ken] trait _Enumerators[n[+_]] {
+    val inner: Monad[n]
+
+    // types
     //
     sealed abstract class Stream[+a] extends Up[Stream[a]]
     final case class Chunks[+a](_1: List[a]) extends Stream[a]
@@ -49,7 +56,7 @@ final class Enumerators[n[+_]](implicit val inner: Monad[n]) {
 
     final case class Iteratee[-a, +b](override val get: n[Step[a, b]]) extends NewtypeOf[n[Step[a, b]]] with Kind.alwaysThis
 
-    object Iteratee extends InstanceForIteratee with Kind.FunctionLike {
+    object Iteratee extends IterateeAs with Kind.FunctionLike {
         sealed trait apply[z] extends Kind.AbstractMonadTrans {
             override type apply1[+a] = Iteratee[z, a]
             override type oldtype1[+a] = n[Step[z, a]]
@@ -61,15 +68,17 @@ final class Enumerators[n[+_]](implicit val inner: Monad[n]) {
         def run[a, b](n: Iteratee[a, b]): n[Step[a, b]] = n.run
 
         def map[m[+_], a, a_, b, b_](f: n[Step[a, b]] => m[Step[a_, b_]])(n: Iteratee[a, b]): NewtypeOf[m[Step[a_, b_]]] = NewtypeOf { f(run(n)) }
-
-        def returnI[a, b](step: Step[a, b]): Iteratee[a, b] = Iteratee { inner.`return`(step) }
-        def `yield`[a, b](x: b)(extra: Stream[a]): Iteratee[a, b] = returnI(Yield(x, extra))
-        def continue[a, b](k: Stream[a] => Iteratee[a, b]): Iteratee[a, b] = returnI(Continue(k))
     }
+
+    def runIteratee[a, b](n: Iteratee[a, b]): n[Step[a, b]] = n.run
+
+    def returnI[a, b](step: Step[a, b]): Iteratee[a, b] = Iteratee { inner.`return`(step) }
+    def `yield`[a, b](x: b)(extra: Stream[a]): Iteratee[a, b] = returnI(Yield(x, extra))
+    def continue[a, b](k: Stream[a] => Iteratee[a, b]): Iteratee[a, b] = returnI(Continue(k))
 
     type Enumerator[a, b] = Step[a, b] => Iteratee[a, b]
 
-    private[ken] trait InstanceForIteratee0 { this: Iteratee.type =>
+    private[ken] trait IterateeAs0 { this: Iteratee.type =>
         implicit def _asNewtype1[z]: Newtype1[({type nt[+a] = Iteratee[z, a]})#nt, ({type ot[+a] = n[Step[z, a]]})#ot] = new Newtype1[({type nt[+a] = Iteratee[z, a]})#nt, ({type ot[+a] = n[Step[z, a]]})#ot] {
             private[this] type nt[+a] = Iteratee[z, a]
             private[this] type ot[+a] = n[Step[z, a]]
@@ -83,12 +92,12 @@ final class Enumerators[n[+_]](implicit val inner: Monad[n]) {
             override def op_>>=[a, b](m0: m[a])(f: a => m[b]): m[b] = Function.fix {
                 (bind: Lazy[m[a] => m[b]]) => (m: m[a]) => Iteratee {
                     import inner.>>=
-                    m.run >>= {
+                    runIteratee(m) >>= {
                         case Continue(k) => inner.`return`(Continue(bind compose k))
                         case Error(err) => inner.`return`(Error(err))
-                        case Yield(x, Chunks(Nil)) => f(x).run
-                        case Yield(x, extra) => f(x).run >>= {
-                            case Continue(k) => k(extra).run
+                        case Yield(x, Chunks(Nil)) => runIteratee(f(x))
+                        case Yield(x, extra) => runIteratee(f(x)) >>= {
+                            case Continue(k) => runIteratee(k(extra))
                             case Error(err) => inner.`return`(Error(err))
                             case Yield(x_, _) => inner.`return`(Yield(x_, extra))
                         }
@@ -101,16 +110,69 @@ final class Enumerators[n[+_]](implicit val inner: Monad[n]) {
             private[this] type m[+a] = Iteratee[z, a]
             override def lift[a](n: n[a]): m[a] = Iteratee {
                 import inner.>>=
-                n >>= { p => _asMonad[z].`return`(p).run }
+                n >>= { runIteratee[z, a]_ compose _asMonad[z].`return`[a] }
             }
         }
     }
 
-    private[ken] trait InstanceForIteratee extends InstanceForIteratee0 { this: Iteratee.type =>
+    private[ken] trait IterateeAs extends IterateeAs0 { this: Iteratee.type =>
         implicit def _asMonadIO[z](implicit i: MonadIO[n]): MonadIO[({type m[+a] = Iteratee[z, a]})#m] = new MonadIO[({type m[+a] = Iteratee[z, a]})#m] with MonadProxy[({type m[+a] = Iteratee[z, a]})#m] {
             private[this] type m[+a] = Iteratee[z, a]
             override val self = _asMonad[z]
             override def liftIO[a](io: IO[a]): m[a] = _asMonadTrans.lift(i.liftIO(io))
         }
+    }
+
+    // primitives
+    //
+    def op_>>==[a, b, a_, b_](i: Iteratee[a, b])(f: Step[a, b] => Iteratee[a_, b_]): Iteratee[a_, b_] = {
+        import inner.>>=
+        Iteratee { runIteratee(i) >>= (runIteratee[a_, b_]_ compose f) }
+    }
+
+    def op_==<<[a, b, a_, b_](f: Step[a, b] => Iteratee[a_, b_])(i: Iteratee[a, b]): Iteratee[a_, b_] = op_>>==(i)(f)
+
+    def run[a, b](i: Iteratee[a, b]): n[Either[Throwable, b]] = {
+        import inner.{forComp, `return`}
+        for {
+            mStep <- runIteratee { op_==<<(enumEOF[a, b])(i) }
+            * <- mStep match {
+                case Error(err) => `return` { Left(err) }
+                case Yield(x, _) => `return`{ Right(x) }
+                case Continue(_) => error("run: divergent iteratee")
+            }
+        } yield *
+    }
+
+    def run_[b](i: Iteratee[_, b]): n[b] = {
+        import inner.>>=
+        run(i) >>= Either.either((x: Throwable) => throw x)(inner.`return`[b])
+    }
+
+    def throwError[a, b](exc: Throwable): Iteratee[a, b] = returnI(Error(exc))
+
+    // utilities
+    //
+    def enumEOF[a, b]: Enumerator[a, b] = step => step match {
+        case Yield(x, _) => `yield`(x)(EOF)
+        case Error(err) => throwError(err)
+        case Continue(k) => {
+            def check(s: Step[a, b]): Iteratee[a, b] = s match {
+                case Continue(_) => error("enumEOF: divergent iteratee")
+                case s => enumEOF(s)
+            }
+            op_>>==(k(EOF))(check)
+        }
+    }
+
+    // list-analoges
+    //
+    def head[a]: Iteratee[a, Maybe[a]] = {
+        def loop(in: Stream[a]): Iteratee[a, Maybe[a]] = in match {
+            case Chunks(Nil) => head
+            case Chunks(x :: xs) => `yield`(Just(x))(Chunks(xs.!))
+            case EOF => `yield`(Nothing)(EOF)
+        }
+        continue(loop)
     }
 }
