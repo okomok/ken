@@ -13,7 +13,7 @@ private[ken] final class _ErrorTs[n[+_]](val inner: Monad[n]) {
 
     final case class _ErrorT[e, +a](override val get: n[Either[e, a]]) extends NewtypeOf[n[Either[e, a]]]
 
-    object _ErrorT extends Kind.FunctionLike with Instance {
+    object _ErrorT extends Instance with Kind.FunctionLike {
         sealed trait apply[e] extends Kind.AbstractMonadTrans {
             override type apply1[+a] = _ErrorT[e, a]
             override type oldtype1[+a] = n[Either[e, a]]

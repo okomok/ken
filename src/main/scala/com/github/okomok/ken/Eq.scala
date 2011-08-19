@@ -46,7 +46,7 @@ object _Eq extends EqInstance {
         override val op_/= : a => a => Bool = x => y => i.op_/=(j.oldOf(x))(j.oldOf(y))
     }
 
-    def weak[nt <: Kind.Newtype0](implicit i: _Eq[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): _Eq[nt#oldtype0] = deriving[Kind.const0[nt#oldtype0], nt](i, j.dual)
+    def weak[nt <: Kind.Newtype0](implicit i: _Eq[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): _Eq[nt#oldtype0] = deriving[Kind.always[nt#oldtype0], nt](i, j.dual)
 }
 
 

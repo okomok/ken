@@ -66,5 +66,5 @@ object Ix {
         override val unsafeRangeSize: Tuple2[a, a] => Int = t => i.unsafeRangeSize(j.oldOf(t._1), j.oldOf(t._2))
     }
 
-    def weak[nt <: Kind.Newtype0](implicit i: Ix[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Ix[nt#oldtype0] = deriving[Kind.const0[nt#oldtype0], nt](i, j.dual)
+    def weak[nt <: Kind.Newtype0](implicit i: Ix[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Ix[nt#oldtype0] = deriving[Kind.always[nt#oldtype0], nt](i, j.dual)
 }

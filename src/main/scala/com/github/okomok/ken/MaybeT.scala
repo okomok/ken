@@ -14,7 +14,7 @@ private[ken] final class _MaybeTs[n[+_]](val inner: Monad[n]) {
 
     final case class _MaybeT[+a](override val get: n[Maybe[a]]) extends NewtypeOf[n[Maybe[a]]]
 
-    object _MaybeT extends Kind.AbstractMonadTrans with Instance {
+    object _MaybeT extends Instance with Kind.AbstractMonadTrans {
         override type apply1[+a] = _MaybeT[a]
         override type oldtype1[+a] = n[Maybe[a]]
         override type innerMonad[+a] = n[a]

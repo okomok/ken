@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-// TODO
+// Draft
 
 
 trait Typeable[a] {

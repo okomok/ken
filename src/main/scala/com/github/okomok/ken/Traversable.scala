@@ -54,7 +54,7 @@ trait Traversable[t[+_]] extends Functor[t] with Foldable[t] { outer =>
 
     // Pull
     //
-    trait TraversablePull[f_ <: Kind.FunctionV] extends FoldablePull[f_] {
+    trait TraversablePull[f_ <: Kind.Function1] extends FoldablePull[f_] {
         final def traverse[a, b](f: a => f[b])(t: t[a])(implicit i: Applicative[f]): f[t[b]] = outer.traverse(f)(t)(i)
         final def sequenceA[a](t: t[f[a]])(implicit i: Applicative[f]): f[t[a]] = outer.sequenceA(t)(i)
         final def mapM[a, b](f: a => m[b])(t: t[a])(implicit i: Monad[m]): m[t[b]] = outer.mapM(f)(t)(i)
@@ -62,7 +62,7 @@ trait Traversable[t[+_]] extends Functor[t] with Foldable[t] { outer =>
         final def `for`[a, b](t: t[a])(f: a => f[b])(implicit i: Applicative[f]): f[t[b]] = outer.`for`(t)(f)(i)
         final def forM[a, b](t: t[a])(f: a => m[b])(implicit i: Monad[m]): m[t[b]] = outer.forM(t)(f)
     }
-    override def pull[f_ <: Kind.FunctionV]: TraversablePull[f_] = new TraversablePull[f_]{}
+    override def pull[f_ <: Kind.Function1]: TraversablePull[f_] = new TraversablePull[f_]{}
 }
 
 

@@ -15,39 +15,29 @@ object Kind {
     @Annotation.marker
     trait FunctionLike
 
-    /**
-     * Variadic
-     */
-    sealed trait FunctionV extends FunctionLike {
-        type applyV[-a, +b]
-    }
-
     // Functions
     //
-    sealed trait Function0 extends FunctionV {
+    sealed trait Function0 extends FunctionLike {
         type apply0
     }
 
-    sealed trait Function1 extends FunctionV {
+    sealed trait Function1 extends FunctionLike {
         type apply1[+a]
         type apply[+a] // alias of apply1
     }
 
-    sealed trait Function2 extends FunctionV {
+    sealed trait Function2 extends FunctionLike {
         type apply2[-a, +b]
     }
 
     trait AbstractFunction0 extends Function0  {
-        override type applyV[-a, +b] = apply0
     }
 
     trait AbstractFunction1 extends Function1 {
         override type apply[+a] = apply1[a]
-        override type applyV[-a, +b] = apply1[b]
     }
 
     trait AbstractFunction2 extends Function2 {
-        override type applyV[-a, +b] = apply2[a, b]
     }
 
     // Newtypes
@@ -84,12 +74,16 @@ object Kind {
 
     // Misc
     //
-    trait const0[z] extends AbstractFunction0 {
-        override type apply0 = z
+    trait alwaysThis extends AbstractFunction0 with AbstractFunction1 with AbstractFunction2 {
+        override type apply0 = this.type
+        override type apply1[+a] = this.type
+        override type apply2[-a, +b] = this.type
     }
 
-    trait const1[z] extends AbstractFunction1 {
+    trait always[z] extends AbstractFunction0 with AbstractFunction1 with AbstractFunction2 {
+        override type apply0 = z
         override type apply1[+a] = z
+        override type apply2[-a, +b] = z
     }
 
     trait quote1[f[+_]] extends AbstractFunction1 {

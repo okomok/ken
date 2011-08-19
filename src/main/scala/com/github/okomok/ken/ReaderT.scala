@@ -13,7 +13,7 @@ private[ken] final class _ReaderTs[n[+_]](val inner: Monad[n]) {
 
     final case class _ReaderT[r, +a](override val get: r => n[a]) extends NewtypeOf[r => n[a]]
 
-    object _ReaderT extends Kind.FunctionLike with Instance {
+    object _ReaderT extends Instance with Kind.FunctionLike {
         sealed trait apply[r] extends Kind.AbstractMonadTrans {
             override type apply1[+a] = _ReaderT[r, a]
             override type oldtype1[+a] = r => n[a]

@@ -13,7 +13,7 @@ private[ken] final class _LazyTs[n[+_]](val inner: Monad[n]) {
 
     final case class _LazyT[+a](override val get: n[Lazy[a]]) extends NewtypeOf[n[Lazy[a]]]
 
-    object _LazyT extends Kind.AbstractMonadTrans with Instance {
+    object _LazyT extends Instance with Kind.AbstractMonadTrans {
         override type apply1[+a] = _LazyT[a]
         override type oldtype1[+a] = n[Lazy[a]]
         override type innerMonad[+a] = n[a]

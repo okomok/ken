@@ -13,7 +13,7 @@ private[ken] final class _WriterTs[n[+_]](val inner: Monad[n]) {
 
     final case class _WriterT[w, +a](override val get: n[(a, w)]) extends NewtypeOf[n[(a, w)]]
 
-    object _WriterT extends Kind.FunctionLike with Instance {
+    object _WriterT extends Instance with Kind.FunctionLike {
         sealed trait apply[w] extends Kind.AbstractMonadTrans {
             override type apply1[+a] = _WriterT[w, a]
             override type oldtype1[+a] = n[(a, w)]

@@ -13,7 +13,7 @@ private[ken] final class _ListTs[n[+_]](val inner: Monad[n]) {
 
     final case class _ListT[+a](override val get: n[List[a]]) extends NewtypeOf[n[List[a]]]
 
-    object _ListT extends Kind.AbstractMonadTrans with Instance {
+    object _ListT extends Instance with Kind.AbstractMonadTrans {
         override type apply1[+a] = _ListT[a]
         override type oldtype1[+a] = n[List[a]]
         override type innerMonad[+a] = n[a]

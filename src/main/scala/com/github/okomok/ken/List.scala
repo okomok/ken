@@ -11,7 +11,7 @@ package ken
 import scala.annotation.tailrec
 
 
-sealed abstract class List[+a] extends Up[List[a]] {
+sealed abstract class List[+a] extends Up[List[a]] with Kind.alwaysThis {
     final def of[b >: a]: List[b] = this
 
     final override def toString: String = {

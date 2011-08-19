@@ -13,7 +13,7 @@ private[ken] final class _StateTs[n[+_]](val inner: Monad[n]) {
 
     final case class _StateT[s, +a](override val get: s => n[(a, s)]) extends NewtypeOf[s => n[(a, s)]]
 
-    object _StateT extends Kind.FunctionLike with Instance {
+    object _StateT extends Instance with Kind.FunctionLike {
         sealed trait apply[s] extends Kind.AbstractMonadTrans {
             override type apply1[+a] = _StateT[s, a]
             override type oldtype1[+a] = s => n[(a, s)]

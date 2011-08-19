@@ -8,8 +8,7 @@ package com.github.okomok
 package ken
 
 
-final case class Endo[a](override val get: a => a) extends NewtypeOf[a => a] with Kind.AbstractNewtype0 {
-    override type apply0 = Endo[a]
+final case class Endo[a](override val get: a => a) extends NewtypeOf[a => a] with Kind.AbstractNewtype0 with Kind.alwaysThis {
     override type oldtype0 = a => a
 }
 
