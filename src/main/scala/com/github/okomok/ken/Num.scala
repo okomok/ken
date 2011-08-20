@@ -25,6 +25,8 @@ trait Num[a] extends Typeclass0[a] {
     //
     def subtract: a => a => a = flip(op_-)
 
+    final implicit def fromInt(n: Int): a = fromInteger(n)
+
     // Operators
     //
     sealed class Op_+(x: a) {
@@ -44,19 +46,18 @@ trait Num[a] extends Typeclass0[a] {
 }
 
 
-trait NumProxy[a] extends Num[a] with Proxy {
-    def selfNum: Num[a] = self
-    override def self: Num[a] = selfNum
+trait NumProxy[a] extends Num[a] {
+    def selfNum: Num[a]
 
-    override def op_+ : a => a => a = self.op_+
-    override def op_- : a => a => a = self.op_-
-    override def op_* : a => a => a = self.op_*
-    override def negate: a => a = self.negate
-    override def abs: a => a = self.abs
-    override def signum: a => a = self.signum
-    override def fromInteger: Integer => a = self.fromInteger
+    override def op_+ : a => a => a = selfNum.op_+
+    override def op_- : a => a => a = selfNum.op_-
+    override def op_* : a => a => a = selfNum.op_*
+    override def negate: a => a = selfNum.negate
+    override def abs: a => a = selfNum.abs
+    override def signum: a => a = selfNum.signum
+    override def fromInteger: Integer => a = selfNum.fromInteger
 
-    override def subtract: a => a => a = self.subtract
+    override def subtract: a => a => a = selfNum.subtract
 }
 
 

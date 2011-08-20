@@ -39,14 +39,14 @@ trait Show[a] extends Typeclass0[a] {
 }
 
 
-trait ShowProxy[a] extends Show[a] with Proxy {
-    override def self: Show[a]
+trait ShowProxy[a] extends Show[a] {
+    def selfShow: Show[a]
 
-    override def showsPrec(n: Int)(x: a): ShowS = self.showsPrec(n)(x)
-    override def show(x: a): String_ = self.show(x)
-    override def showList(ls: List[a]): ShowS = self.showList(ls)
+    override def showsPrec(n: Int)(x: a): ShowS = selfShow.showsPrec(n)(x)
+    override def show(x: a): String_ = selfShow.show(x)
+    override def showList(ls: List[a]): ShowS = selfShow.showList(ls)
 
-    override def shows(x: a): ShowS = self.shows(x)
+    override def shows(x: a): ShowS = selfShow.shows(x)
 }
 
 

@@ -42,14 +42,15 @@ trait Alternative[f[+_]] extends Applicative[f] {
 
 
 trait AlternativeProxy[f[+_]] extends Alternative[f] with ApplicativeProxy[f] {
-    override def self: Alternative[f]
+    def selfAlternative: Alternative[f]
+    override def selfApplicative: Applicative[f] = selfAlternative
 
-    override def empty: f[Nothing] = self.empty
-    override def op_<|>[a](x: f[a])(y: Lazy[f[a]]): f[a] = self.op_<|>(x)(y)
-    override def some[a](v: f[a]): f[List[a]] = self.some(v)
-    override def many[a](v: f[a]): f[List[a]] = self.many(v)
+    override def empty: f[Nothing] = selfAlternative.empty
+    override def op_<|>[a](x: f[a])(y: Lazy[f[a]]): f[a] = selfAlternative.op_<|>(x)(y)
+    override def some[a](v: f[a]): f[List[a]] = selfAlternative.some(v)
+    override def many[a](v: f[a]): f[List[a]] = selfAlternative.many(v)
 
-    override def optional[a](x: f[a]): f[Maybe[a]] = self.optional(x)
+    override def optional[a](x: f[a]): f[Maybe[a]] = selfAlternative.optional(x)
 }
 
 
@@ -58,7 +59,7 @@ object Alternative {
 
     def deriving[nt <: Kind.Function1, ot <: Kind.Function1](implicit i: Alternative[ot#apply], j: Newtype1[nt#apply, ot#apply]): Alternative[nt#apply] = new Alternative[nt#apply] with ApplicativeProxy[nt#apply] {
         private[this] type f[+a] = nt#apply[a]
-        override val self = Applicative.deriving[nt, ot](i, j)
+        override val selfApplicative = Applicative.deriving[nt, ot](i, j)
         override def empty: f[Nothing] = j.newOf(i.empty)
         override def op_<|>[a](x: f[a])(y: Lazy[f[a]]): f[a] = j.newOf(i.op_<|>(j.oldOf(x))(j.oldOf(y)))
         override def some[a](v: f[a]): f[List[a]] = j.newOf(i.some(j.oldOf(v)))

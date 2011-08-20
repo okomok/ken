@@ -16,10 +16,10 @@ trait MonadTrans[n[+_], m[+_]] extends Typeclass {
 }
 
 
-trait MonadTransProxy[n[+_], m[+_]] extends MonadTrans[n, m] with Proxy {
-    override def self: MonadTrans[n, m]
+trait MonadTransProxy[n[+_], m[+_]] extends MonadTrans[n, m] {
+    def selfMonadTrans: MonadTrans[n, m]
 
-    override def lift[a](n: n[a]): m[a] = self.lift(n)
+    override def lift[a](n: n[a]): m[a] = selfMonadTrans.lift(n)
 }
 
 

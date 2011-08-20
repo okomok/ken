@@ -50,17 +50,18 @@ trait Applicative[f[+_]] extends Functor[f] {
 
 
 trait ApplicativeProxy[f[+_]] extends Applicative[f] with FunctorProxy[f] {
-    override def self: Applicative[f]
+    def selfApplicative: Applicative[f]
+    override def selfFunctor: Functor[f] = selfApplicative
 
-    override def pure[a](x: Lazy[a]): f[a] = self.pure(x)
-    override def op_<*>[a, b](x: f[a => b])(y: f[a]): f[b] = self.op_<*>(x)(y)
-    override def op_*>[a, b](x: f[a])(y: f[b]): f[b] = self.op_*>(x)(y)
-    override def op_<*[a, b](x: f[a])(y: f[b]): f[a] = self.op_<*(x)(y)
+    override def pure[a](x: Lazy[a]): f[a] = selfApplicative.pure(x)
+    override def op_<*>[a, b](x: f[a => b])(y: f[a]): f[b] = selfApplicative.op_<*>(x)(y)
+    override def op_*>[a, b](x: f[a])(y: f[b]): f[b] = selfApplicative.op_*>(x)(y)
+    override def op_<*[a, b](x: f[a])(y: f[b]): f[a] = selfApplicative.op_<*(x)(y)
 
-    override def op_<**>[a, b](x: f[a])(y: f[a => b]): f[b] = self.op_<**>(x)(y)
-    override def liftA[a, b](x: a => b)(y: f[a]): f[b] = self.liftA(x)(y)
-    override def liftA2[a, b, c](x: a => b => c)(y: f[a])(z: f[b]): f[c] = self.liftA2(x)(y)(z)
-    override def liftA3[a, b, c, d](x: a => b => c => d)(y: f[a])(z: f[b])(w: f[c]): f[d] = self.liftA3(x)(y)(z)(w)
+    override def op_<**>[a, b](x: f[a])(y: f[a => b]): f[b] = selfApplicative.op_<**>(x)(y)
+    override def liftA[a, b](x: a => b)(y: f[a]): f[b] = selfApplicative.liftA(x)(y)
+    override def liftA2[a, b, c](x: a => b => c)(y: f[a])(z: f[b]): f[c] = selfApplicative.liftA2(x)(y)(z)
+    override def liftA3[a, b, c, d](x: a => b => c => d)(y: f[a])(z: f[b])(w: f[c]): f[d] = selfApplicative.liftA3(x)(y)(z)(w)
 }
 
 
@@ -69,7 +70,7 @@ object Applicative {
 
     def deriving[nt <: Kind.Function1, ot <: Kind.Function1](implicit i: Applicative[ot#apply], j: Newtype1[nt#apply, ot#apply]): Applicative[nt#apply] = new Applicative[nt#apply] with FunctorProxy[nt#apply] {
         private[this] type f[+a] = nt#apply[a]
-        override val self = Functor.deriving[nt, ot](i, j)
+        override val selfFunctor = Functor.deriving[nt, ot](i, j)
         override def pure[a](x: Lazy[a]): f[a] = j.newOf { i.pure(x) }
         override def op_<*>[a, b](x: f[a => b])(y: f[a]): f[b] = j.newOf { i.op_<*>(j.oldOf(x))(j.oldOf(y)) }
         override def op_*>[a, b](x: f[a])(y: f[b]): f[b] = j.newOf { i.op_*>(j.oldOf(x))(j.oldOf(y)) }

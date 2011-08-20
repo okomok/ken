@@ -18,11 +18,11 @@ trait ErrorClass[a] extends Typeclass0[a] {
 }
 
 
-trait ErrorClassProxy[a] extends ErrorClass[a] with Proxy {
-    override def self: ErrorClass[a]
+trait ErrorClassProxy[a] extends ErrorClass[a] {
+    def selfErrorClass: ErrorClass[a]
 
-    override def noMsg: a = self.noMsg
-    override def strMsg: String_ => a = self.strMsg
+    override def noMsg: a = selfErrorClass.noMsg
+    override def strMsg: String_ => a = selfErrorClass.strMsg
 }
 
 

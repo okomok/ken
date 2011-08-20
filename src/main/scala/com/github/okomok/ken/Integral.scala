@@ -51,31 +51,19 @@ trait Integral[a] extends Real[a] with Enum[a] { outer =>
 
 
 trait IntegralProxy[a] extends Integral[a] with RealProxy[a] with EnumProxy[a] {
-    def selfIntegral: Integral[a] = self
-    override def self: Integral[a] = selfIntegral
-    override def selfReal: Real[a] = self
-    override def selfEnum: Enum[a] = self
+    def selfIntegral: Integral[a]
+    override def selfReal: Real[a] = selfIntegral
+    override def selfEnum: Enum[a] = selfIntegral
 
-    override def quot: a => a => a = self.quot
-    override def rem: a => a => a = self.rem
-    override def div: a => a => a = self.div
-    override def mod: a => a => a = self.mod
+    override def quot: a => a => a = selfIntegral.quot
+    override def rem: a => a => a = selfIntegral.rem
+    override def div: a => a => a = selfIntegral.div
+    override def mod: a => a => a = selfIntegral.mod
 
-    override def quotRem: a => a => (a, a) = self.quotRem
-    override def divMod: a => a => (a, a) = self.divMod
+    override def quotRem: a => a => (a, a) = selfIntegral.quotRem
+    override def divMod: a => a => (a, a) = selfIntegral.divMod
 
-    override def toInteger: a => Integer = self.toInteger
-
-    // Enum
-    //
-    override def succ: a => a = self.succ
-    override def pred: a => a = self.pred
-    override def toEnum: Int => a = self.toEnum
-    override def fromEnum: a => Int = self.fromEnum
-    override def enumFrom: a => List[a] = self.enumFrom
-    override def enumFromThen: a => a => List[a] = self.enumFromThen
-    override def enumFromTo: a => a => List[a] = self.enumFromTo
-    override def enumFromThenTo: a => a => a => List[a] = self.enumFromThenTo
+    override def toInteger: a => Integer = selfIntegral.toInteger
 }
 
 

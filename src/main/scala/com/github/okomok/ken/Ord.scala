@@ -45,17 +45,17 @@ trait Ord[a] extends Eq[a] { outer =>
 }
 
 
-trait OrdProxy[a] extends Ord[a] with Proxy {
-    def selfOrd: Ord[a] = self
-    override def self: Ord[a] = selfOrd
+trait OrdProxy[a] extends Ord[a] with EqProxy[a] {
+    def selfOrd: Ord[a]
+    override def selfEq: Eq[a] = selfOrd
 
-    override def compare: a => a => Ordering = self.compare
-    override def op_< : a => a => Bool = self.op_<
-    override def op_<= : a => a => Bool = self.op_<=
-    override def op_> : a => a => Bool = self.op_>
-    override def op_>= : a => a => Bool = self.op_>=
-    override def max: a => a => a = self.max
-    override def min: a => a => a = self.min
+    override def compare: a => a => Ordering = selfOrd.compare
+    override def op_< : a => a => Bool = selfOrd.op_<
+    override def op_<= : a => a => Bool = selfOrd.op_<=
+    override def op_> : a => a => Bool = selfOrd.op_>
+    override def op_>= : a => a => Bool = selfOrd.op_>=
+    override def max: a => a => a = selfOrd.max
+    override def min: a => a => a = selfOrd.min
 }
 
 
@@ -64,7 +64,7 @@ object Ord {
 
     def deriving[nt <: Kind.Function0, ot <: Kind.Function0](implicit i: Ord[ot#apply0], j: Newtype0[nt#apply0, ot#apply0]): Ord[nt#apply0] = new Ord[nt#apply0] with EqProxy[nt#apply0] {
         private[this] type a = nt#apply0
-        override val self = Eq.deriving[nt, ot](i, j)
+        override val selfEq = Eq.deriving[nt, ot](i, j)
         override val compare: a => a => Ordering = x => y => i.compare(j.oldOf(x))(j.oldOf(y))
         override val op_< : a => a => Bool = x => y => i.op_<(j.oldOf(x))(j.oldOf(y))
         override val op_<= : a => a => Bool = x => y => i.op_<=(j.oldOf(x))(j.oldOf(y))

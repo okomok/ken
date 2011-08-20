@@ -18,9 +18,10 @@ trait ArrowLoop[a[-_, +_]] extends Arrow[a] {
 
 
 trait ArrowLoopProxy[a[-_, +_]] extends ArrowLoop[a] with ArrowProxy[a] {
-    override def self: ArrowLoop[a]
+    def selfArrowLoop: ArrowLoop[a]
+    override def selfArrow: Arrow[a] = selfArrowLoop
 
-    override def loop[b, c, d](f: a[(b, Lazy[d]), (Lazy[c], Lazy[d])]): a[b, c] = self.loop(f)
+    override def loop[b, c, d](f: a[(b, Lazy[d]), (Lazy[c], Lazy[d])]): a[b, c] = selfArrowLoop.loop(f)
 }
 
 
@@ -29,7 +30,7 @@ object ArrowLoop {
 
     def deriving[nt <: Kind.Function2, ot <: Kind.Function2](implicit i: ArrowLoop[ot#apply2], j: Newtype2[nt#apply2, ot#apply2]): ArrowLoop[nt#apply2] = new ArrowLoop[nt#apply2] with ArrowProxy[nt#apply2] {
         private[this] type a[-a, +b] = nt#apply2[a, b]
-        override val self = Arrow.deriving[nt, ot](i, j)
+        override val selfArrow = Arrow.deriving[nt, ot](i, j)
 
         override def loop[b, c, d](f: a[(b, Lazy[d]), (Lazy[c], Lazy[d])]): a[b, c] = j.newOf(i.loop(j.oldOf(f)))
     }

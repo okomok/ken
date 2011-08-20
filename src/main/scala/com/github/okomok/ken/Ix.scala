@@ -41,14 +41,15 @@ trait Ix[a] extends Ord[a] {
 
 
 trait IxProxy[a] extends Ix[a] with OrdProxy[a] {
-    override def self: Ix[a]
+    def selfIx: Ix[a]
+    override def selfOrd: Ord[a] = selfIx
 
-    override def range: Tuple2[a, a] => List[a] = self.range
-    override def index: Tuple2[a, a] => a => Int = self.index
-    override def unsafeIndex: Tuple2[a, a] => a => Int = self.unsafeIndex
-    override def inRange: Tuple2[a, a] => a => Bool = self.inRange
-    override def rangeSize: Tuple2[a, a] => Int = self.rangeSize
-    override def unsafeRangeSize: Tuple2[a, a] => Int = self.unsafeRangeSize
+    override def range: Tuple2[a, a] => List[a] = selfIx.range
+    override def index: Tuple2[a, a] => a => Int = selfIx.index
+    override def unsafeIndex: Tuple2[a, a] => a => Int = selfIx.unsafeIndex
+    override def inRange: Tuple2[a, a] => a => Bool = selfIx.inRange
+    override def rangeSize: Tuple2[a, a] => Int = selfIx.rangeSize
+    override def unsafeRangeSize: Tuple2[a, a] => Int = selfIx.unsafeRangeSize
 }
 
 
@@ -57,7 +58,7 @@ object Ix {
 
     def deriving[nt <: Kind.Function0, ot <: Kind.Function0](implicit i: Ix[ot#apply0], j: Newtype0[nt#apply0, ot#apply0]): Ix[nt#apply0] = new Ix[nt#apply0] with OrdProxy[nt#apply0] {
         private[this] type a = nt#apply0
-        override val self = Ord.deriving[nt, ot](i, j)
+        override val selfOrd = Ord.deriving[nt, ot](i, j)
         override val range: Tuple2[a, a] => List[a] = t => List.map[ot#apply0, a](j.newOf)(i.range(j.oldOf(t._1), j.oldOf(t._2)))
         override val index: Tuple2[a, a] => a => Int = t => x => i.index(j.oldOf(t._1), j.oldOf(t._2))(j.oldOf(x))
         override val unsafeIndex: Tuple2[a, a] => a => Int = t => x => i.unsafeIndex(j.oldOf(t._1), j.oldOf(t._2))(j.oldOf(x))

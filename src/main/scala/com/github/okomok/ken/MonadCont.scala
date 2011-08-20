@@ -18,9 +18,10 @@ trait MonadCont[m[+_]] extends Monad[m] {
 
 
 trait MonadContProxy[m[+_]] extends MonadCont[m] with MonadProxy[m] {
-    override def self: MonadCont[m]
+    def selfMonadCont: MonadCont[m]
+    override def selfMonad: Monad[m] = selfMonadCont
 
-    override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = self.callCC(f)
+    override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = selfMonadCont.callCC(f)
 }
 
 
@@ -29,7 +30,7 @@ object MonadCont {
 
     def deriving[nt <: Kind.Function1, ot <: Kind.Function1](implicit i: MonadCont[ot#apply], j: Newtype1[nt#apply, ot#apply]): MonadCont[nt#apply] = new MonadCont[nt#apply] with MonadProxy[nt#apply] {
         private[this] type m[+a] = nt#apply[a]
-        override val self = Monad.deriving[nt, ot](i, j)
+        override val selfMonad = Monad.deriving[nt, ot](i, j)
         override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = j.newOf {
             i.callCC { (c: a => ot#apply[b]) =>
                 j.oldOf { f( a => j.newOf(c(a)) ) }

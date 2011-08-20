@@ -122,7 +122,7 @@ private[ken] trait _Enumerators[n[+_]] {
     private[ken] trait IterateeAs extends IterateeAs0 { this: Iteratee.type =>
         implicit def _asMonadIO[z](implicit i: MonadIO[n]): MonadIO[({type m[+a] = Iteratee[z, a]})#m] = new MonadIO[({type m[+a] = Iteratee[z, a]})#m] with MonadProxy[({type m[+a] = Iteratee[z, a]})#m] {
             private[this] type m[+a] = Iteratee[z, a]
-            override val self = _asMonad[z]
+            override val selfMonad = _asMonad[z]
             override def liftIO[a](io: IO[a]): m[a] = _asMonadTrans.lift(i.liftIO(io))
         }
     }
@@ -207,10 +207,10 @@ private[ken] trait _Enumerators[n[+_]] {
         }
     }
 
-    def enumList_[a, b](n: Int)(xs: List[a]): Enumerator[a, b] = {
+    def enumList[a, b](n: Integer)(xs: List[a]): Enumerator[a, b] = {
         def loop(xs: List[a])(step: Step[a, b]): Iteratee[a, b] = step match {
             case Continue(k) if not(List.`null`(xs)) => {
-                val (s1, s2) = List.splitAt(n)(xs)
+                val (s1, s2) = List.genericSplitAt(n)(xs)
                 k(Chunks(s1)) >>== loop(s2)
             }
             case _ => returnI(step)

@@ -72,19 +72,20 @@ trait Arrow[a[-_, +_]] extends Category[a] {
 
 
 trait ArrowProxy[a[-_, +_]] extends Arrow[a] with CategoryProxy[a] {
-    override def self: Arrow[a]
+    def selfArrow: Arrow[a]
+    override def selfCategory: Category[a] = selfArrow
 
-    override def arr[b, c](f: b => c): a[b, c] = self.arr(f)
-    override def first[b, c, d](f: a[b, c]): a[(b, d), (c, d)] = self.first(f)
-    override def second[b, c, d](f: a[b, c]): a[(d, b), (d, c)] = self.second(f)
+    override def arr[b, c](f: b => c): a[b, c] = selfArrow.arr(f)
+    override def first[b, c, d](f: a[b, c]): a[(b, d), (c, d)] = selfArrow.first(f)
+    override def second[b, c, d](f: a[b, c]): a[(d, b), (d, c)] = selfArrow.second(f)
 
-    override def op_***[b, c, b_, c_](f: a[b, c])(g: a[b_, c_]): a[(b, b_), (c, c_)] = self.op_***(f)(g)
-    override def op_&&&[b, c, c_](f: a[b, c])(g: a[b, c_]): a[b, (c, c_)] = self.op_&&&(f)(g)
-    override def op_^>>[b, c, d](f: b => c)(a: a[c, d]): a[b, d] = self.op_^>>(f)(a)
-    override def op_>>^[b, c, d](a: a[b, c])(f: c => d): a[b, d] = self.op_>>^(a)(f)
-    override def op_<<^[b, c, d](a: a[c, d])(f: b => c): a[b, d] = self.op_<<^(a)(f)
-    override def op_^<<[b, c, d](f: c => d)(a: a[b, c]): a[b, d] = self.op_^<<(f)(a)
-    override def returnA[b]: a[b, b] = self.returnA[b]
+    override def op_***[b, c, b_, c_](f: a[b, c])(g: a[b_, c_]): a[(b, b_), (c, c_)] = selfArrow.op_***(f)(g)
+    override def op_&&&[b, c, c_](f: a[b, c])(g: a[b, c_]): a[b, (c, c_)] = selfArrow.op_&&&(f)(g)
+    override def op_^>>[b, c, d](f: b => c)(a: a[c, d]): a[b, d] = selfArrow.op_^>>(f)(a)
+    override def op_>>^[b, c, d](a: a[b, c])(f: c => d): a[b, d] = selfArrow.op_>>^(a)(f)
+    override def op_<<^[b, c, d](a: a[c, d])(f: b => c): a[b, d] = selfArrow.op_<<^(a)(f)
+    override def op_^<<[b, c, d](f: c => d)(a: a[b, c]): a[b, d] = selfArrow.op_^<<(f)(a)
+    override def returnA[b]: a[b, b] = selfArrow.returnA[b]
 }
 
 
@@ -93,7 +94,7 @@ object Arrow {
 
     def deriving[nt <: Kind.Function2, ot <: Kind.Function2](implicit i: Arrow[ot#apply2], j: Newtype2[nt#apply2, ot#apply2]): Arrow[nt#apply2] = new Arrow[nt#apply2] with CategoryProxy[nt#apply2] {
         private[this] type a[-a, +b] = nt#apply2[a, b]
-        override val self = Category.deriving[nt, ot](i, j)
+        override val selfCategory = Category.deriving[nt, ot](i, j)
 
         override def arr[b, c](f: b => c): a[b, c] = j.newOf(i.arr(f))
         override def first[b, c, d](f: a[b, c]): a[(b, d), (c, d)] = j.newOf(Lazy(i.first(j.oldOf(Lazy(f)))))

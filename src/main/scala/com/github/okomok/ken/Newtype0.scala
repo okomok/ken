@@ -30,13 +30,13 @@ trait Newtype0[nt, ot] extends Typeclass with Kind.AbstractNewtype0 { outer =>
 }
 
 
-trait Newtype0Proxy[nt, ot] extends Newtype0[nt, ot] with Proxy {
-    override def self: Newtype0[nt, ot]
+trait Newtype0Proxy[nt, ot] extends Newtype0[nt, ot] {
+    def selfNewtype0: Newtype0[nt, ot]
 
-    override def newOf(ot: Lazy[ot]): nt = self.newOf(ot)
-    override def oldOf(nt: Lazy[nt]): ot = self.oldOf(nt)
+    override def newOf(ot: Lazy[ot]): nt = selfNewtype0.newOf(ot)
+    override def oldOf(nt: Lazy[nt]): ot = selfNewtype0.oldOf(nt)
 
-    override def dual: Newtype0[ot, nt] = self.dual
+    override def dual: Newtype0[ot, nt] = selfNewtype0.dual
 }
 
 

@@ -18,9 +18,10 @@ trait MonadFix[m[+_]] extends Monad[m] {
 
 
 trait MonadFixProxy[m[+_]] extends MonadFix[m] with MonadProxy[m] {
-    override def self: MonadFix[m]
+    def selfMonadFix: MonadFix[m]
+    override def selfMonad: Monad[m] = selfMonadFix
 
-    override def mfix[a](f: Lazy[a] => m[a]): m[a] = self.mfix(f)
+    override def mfix[a](f: Lazy[a] => m[a]): m[a] = selfMonadFix.mfix(f)
 }
 
 
@@ -29,7 +30,7 @@ object MonadFix {
 
     def deriving[nt <: Kind.Function1, ot <: Kind.Function1](implicit i: MonadFix[ot#apply], j: Newtype1[nt#apply, ot#apply]): MonadFix[nt#apply] = new MonadFix[nt#apply] with MonadProxy[nt#apply] {
         private[this] type m[+a] = nt#apply[a]
-        override val self = Monad.deriving[nt, ot](i, j)
+        override val selfMonad = Monad.deriving[nt, ot](i, j)
         override def mfix[a](f: Lazy[a] => m[a]): m[a] = {
             def k(a: Lazy[a]): ot#apply[a] = j.oldOf(f(a))
             j.newOf { i.mfix(k) }

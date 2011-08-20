@@ -31,19 +31,18 @@ trait Enum[a] extends Typeclass0[a] { outer =>
 }
 
 
-trait EnumProxy[a] extends Enum[a] with Proxy {
-    def selfEnum: Enum[a] = self
-    override def self: Enum[a] = selfEnum
+trait EnumProxy[a] extends Enum[a] {
+    def selfEnum: Enum[a]
 
-    override def succ: a => a = self.succ
-    override def pred: a => a = self.pred
-    override def toEnum: Int => a = self.toEnum
-    override def fromEnum: a => Int = self.fromEnum
+    override def succ: a => a = selfEnum.succ
+    override def pred: a => a = selfEnum.pred
+    override def toEnum: Int => a = selfEnum.toEnum
+    override def fromEnum: a => Int = selfEnum.fromEnum
 
-    override def enumFrom: a => List[a] = self.enumFrom
-    override def enumFromThen: a => a => List[a] = self.enumFromThen
-    override def enumFromTo: a => a => List[a] = self.enumFromTo
-    override def enumFromThenTo: a => a => a => List[a] = self.enumFromThenTo
+    override def enumFrom: a => List[a] = selfEnum.enumFrom
+    override def enumFromThen: a => a => List[a] = selfEnum.enumFromThen
+    override def enumFromTo: a => a => List[a] = selfEnum.enumFromTo
+    override def enumFromThenTo: a => a => a => List[a] = selfEnum.enumFromThenTo
 }
 
 

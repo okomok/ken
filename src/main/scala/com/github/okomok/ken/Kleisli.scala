@@ -49,7 +49,7 @@ private[ken] final class _Kleislis[m[+_]](val monad: Monad[m]) {
 
         implicit def _asArrowPlus(implicit i: MonadPlus[m]): ArrowPlus[_Kleisli] = new ArrowPlus[_Kleisli] with ArrowProxy[_Kleisli] {
             private[this] type a[-a, +b] = _Kleisli[a, b]
-            override def self = _asArrow
+            override def selfArrow = _asArrow
             override def zeroArrow[b, c]: a[b, c] = _Kleisli { _ => i.mzero }
             override def op_<+>[b, c](f: a[b, c])(g: Lazy[a[b, c]]): a[b, c] = _Kleisli { x =>
                 import i._mplus_
@@ -61,7 +61,7 @@ private[ken] final class _Kleislis[m[+_]](val monad: Monad[m]) {
     private[ken] trait Instance1 extends Instance0 { this: _Kleisli.type =>
         implicit val _asArrowChoice: ArrowChoice[_Kleisli] = new ArrowChoice[_Kleisli] with ArrowProxy[_Kleisli] {
             private[this] type a[-a, +b] = _Kleisli[a, b]
-            override def self = _asArrow
+            override def selfArrow = _asArrow
             override def left[b, c, d](f: a[b, c]): a[Either[b, d], Either[c, d]] = f +++ arr(id[d])
             override def right[b, c, d](f: a[b, c]): a[Either[d, b], Either[d, c]] = arr(id[d]) +++ f
             override def op_+++[b, c, b_, c_](f: a[b, c])(g: a[b_, c_]): a[Either[b, b_], Either[c, c_]] = (f >>> arr(Left(_: c).of[c, c_])) ||| (g >>> arr(Right(_: c_).of[c, c_]))
@@ -72,7 +72,7 @@ private[ken] final class _Kleislis[m[+_]](val monad: Monad[m]) {
     private[ken] trait Instance2 extends Instance1 { this: _Kleisli.type =>
         implicit val _asArrowApply: ArrowApply[_Kleisli] = new ArrowApply[_Kleisli] with ArrowProxy[_Kleisli] {
             private[this] type a[-a, +b] = _Kleisli[a, b]
-            override def self = _asArrow
+            override def selfArrow = _asArrow
             override def app[b, c]: a[(a[b, c], b), c] = _Kleisli { case (f, x) => f.run(x) }
         }
     }
@@ -80,7 +80,7 @@ private[ken] final class _Kleislis[m[+_]](val monad: Monad[m]) {
     private[ken] trait Instance extends Instance2 { this: _Kleisli.type =>
         implicit def _asArrowLoop(implicit i: MonadFix[m]): ArrowLoop[_Kleisli] = new ArrowLoop[_Kleisli] with ArrowProxy[_Kleisli] {
             private[this] type a[-a, +b] = _Kleisli[a, b]
-            override def self = _asArrow
+            override def selfArrow = _asArrow
             override def loop[b, c, d](f: a[(b, Lazy[d]), (Lazy[c], Lazy[d])]): a[b, c] = {
                 def f_(x: b)(y: Lazy[(c, d)]): m[(c, d)] = {
                     import i.forComp

@@ -29,11 +29,11 @@ trait _Eq[-a] extends Typeclass { outer =>
 }
 
 
-trait EqProxy[a] extends _Eq[a] with Proxy {
-    override def self: _Eq[a]
+trait EqProxy[a] extends _Eq[a] {
+    def selfEq: _Eq[a]
 
-    override def op_== = self.op_==
-    override def op_/= = self.op_/=
+    override def op_== : a => a => Bool = selfEq.op_==
+    override def op_/= : a => a => Bool = selfEq.op_/=
 }
 
 
@@ -56,7 +56,7 @@ private[ken] trait EqInstance0 { this: Eq.type =>
     }
 
     implicit def _Ord_ofScalaOrdering[a](implicit i: scala.Ordering[a]): Ord[a] = new Ord[a] with EqProxy[a] {
-        override val self = _ofScalaEquiv(i)
+        override val selfEq = _ofScalaEquiv(i)
         override val compare: a => a => Ordering = { x => y => i.compare(x, y) match {
             case 0 => EQ
             case s if s < 0 => LT
@@ -71,7 +71,7 @@ private[ken] trait EqInstance0 { this: Eq.type =>
     }
 
     implicit def _Ix_ofScalaNumeric[a](implicit i: scala.Numeric[a]): Ix[a] = new Ix[a] with OrdProxy[a] {
-        override val self = _Ord_ofScalaOrdering(i)
+        override val selfOrd = _Ord_ofScalaOrdering(i)
         override val range: Tuple2[a, a] => List[a] = { case (n, m) =>
             Predef.require(i.lteq(n, m))
             if (i.equiv(n, m)) Nil else n :: range(i.plus(n, i.one), m)
@@ -90,7 +90,7 @@ private[ken] trait EqInstance extends EqInstance0 { this: Eq.type =>
         override val selfOrd = _Ord_ofScalaOrdering(i)
         override val selfEnum = Enum._ofScalaNumeric(i)
         // Real
-
+        override def toRational: a => Rational = error("todo")
         // Integral
         override val quot: a => a => a = x => y => i.quot(x, y)
         override val rem: a => a => a = x => y => i.rem(x, y)

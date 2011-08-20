@@ -26,15 +26,16 @@ trait MonadWriter[w, m[+_]] extends Monad[m] {
 
 
 trait MonadWriterProxy[w, m[+_]] extends MonadWriter[w, m] with MonadProxy[m] {
-    override def self: MonadWriter[w, m]
+    def selfMonadWriter: MonadWriter[w, m]
+    override def selfMonad: Monad[m] = selfMonadWriter
 
-    override def monoid: Monoid[w] = self.monoid
-    override def tell(x: w): m[Unit] = self.tell(x)
-    override def listen[a](x: m[a]): m[(a, w)] = self.listen(x)
-    override def pass[a](x: m[(a, w => w)]): m[a] = self.pass(x)
+    override def monoid: Monoid[w] = selfMonadWriter.monoid
+    override def tell(x: w): m[Unit] = selfMonadWriter.tell(x)
+    override def listen[a](x: m[a]): m[(a, w)] = selfMonadWriter.listen(x)
+    override def pass[a](x: m[(a, w => w)]): m[a] = selfMonadWriter.pass(x)
 
-    override def listens[a, b](f: w => b)(m: m[a]): m[(a, b)] = self.listens(f)(m)
-    override def censor[a](f: w => w)(m: m[a]): m[a] = self.censor(f)(m)
+    override def listens[a, b](f: w => b)(m: m[a]): m[(a, b)] = selfMonadWriter.listens(f)(m)
+    override def censor[a](f: w => w)(m: m[a]): m[a] = selfMonadWriter.censor(f)(m)
 }
 
 
@@ -43,7 +44,7 @@ object MonadWriter {
 
     def deriving[w, nt <: Kind.Function1, ot <: Kind.Function1](implicit i: MonadWriter[w, ot#apply], j: Newtype1[nt#apply, ot#apply]): MonadWriter[w, nt#apply] = new MonadWriter[w, nt#apply] with MonadProxy[nt#apply] {
         private[this] type m[+a] = nt#apply[a]
-        override val self = Monad.deriving[nt, ot](i, j)
+        override val selfMonad = Monad.deriving[nt, ot](i, j)
         override def monoid: Monoid[w] = i.monoid
         override def tell(x: w): m[Unit] = j.newOf { i.tell(x) }
         override def listen[a](x: m[a]): m[(a, w)] = j.newOf { i.listen(j.oldOf(x)) }

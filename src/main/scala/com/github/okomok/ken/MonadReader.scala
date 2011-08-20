@@ -23,12 +23,13 @@ trait MonadReader[r, m[+_]] extends Monad[m] {
 
 
 trait MonadReaderProxy[r, m[+_]] extends MonadReader[r, m] with MonadProxy[m] {
-    override def self: MonadReader[r, m]
+    def selfMonadReader: MonadReader[r, m]
+    override def selfMonad: Monad[m] = selfMonadReader
 
-    override def ask: m[r] = self.ask
-    override def local[a](f: r => r)(m: m[a]): m[a] = self.local(f)(m)
+    override def ask: m[r] = selfMonadReader.ask
+    override def local[a](f: r => r)(m: m[a]): m[a] = selfMonadReader.local(f)(m)
 
-    override def asks[a](f: r => a): m[a] = self.asks(f)
+    override def asks[a](f: r => a): m[a] = selfMonadReader.asks(f)
 }
 
 
@@ -37,7 +38,7 @@ object MonadReader {
 
     def deriving[r, nt <: Kind.Function1, ot <: Kind.Function1](implicit i: MonadReader[r, ot#apply], j: Newtype1[nt#apply, ot#apply]): MonadReader[r, nt#apply] = new MonadReader[r, nt#apply] with MonadProxy[nt#apply] {
         private[this] type m[+a] = nt#apply[a]
-        override val self = Monad.deriving[nt, ot](i, j)
+        override val selfMonad = Monad.deriving[nt, ot](i, j)
         override def ask: m[r] = j.newOf { i.ask }
         override def local[a](f: r => r)(m: m[a]): m[a] = j.newOf { i.local(f)(j.oldOf(m)) }
     }

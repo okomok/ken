@@ -19,12 +19,11 @@ trait Real[a] extends Num[a] with Ord[a] { outer =>
 
 
 trait RealProxy[a] extends Real[a] with NumProxy[a] with OrdProxy[a] {
-    def selfReal: Real[a] = self
-    override def self: Real[a] = selfReal
-    override def selfNum: Num[a] = self
-    override def selfOrd: Ord[a] = self
+    def selfReal: Real[a]
+    override def selfNum: Num[a] = selfReal
+    override def selfOrd: Ord[a] = selfReal
 
-    override def toRational: a => Rational
+    override def toRational: a => Rational = selfReal.toRational
 }
 
 

@@ -24,13 +24,14 @@ trait MonadState[s, m[+_]] extends Monad[m] {
 
 
 trait MonadStateProxy[s, m[+_]] extends MonadState[s, m] with MonadProxy[m] {
-    override def self: MonadState[s, m]
+    def selfMonadState: MonadState[s, m]
+    override def selfMonad: Monad[m] = selfMonadState
 
-    override def get: m[s] = self.get
-    override def put(s: s): m[Unit] = self.put(s)
+    override def get: m[s] = selfMonadState.get
+    override def put(s: s): m[Unit] = selfMonadState.put(s)
 
-    override def modify(f: s => s): m[Unit] = self.modify(f)
-    override def gets[a](f: s => a): m[a] = self.gets(f)
+    override def modify(f: s => s): m[Unit] = selfMonadState.modify(f)
+    override def gets[a](f: s => a): m[a] = selfMonadState.gets(f)
 }
 
 
@@ -39,7 +40,7 @@ object MonadState {
 
     def deriving[s, nt <: Kind.Function1, ot <: Kind.Function1](implicit i: MonadState[s, ot#apply], j: Newtype1[nt#apply, ot#apply]): MonadState[s, nt#apply] = new MonadState[s, nt#apply] with MonadProxy[nt#apply] {
         private[this] type m[+a] = nt#apply[a]
-        override val self = Monad.deriving[nt, ot](i, j)
+        override val selfMonad = Monad.deriving[nt, ot](i, j)
         override def get: m[s] = j.newOf { i.get }
         override def put(s: s): m[Unit] = j.newOf { i.put(s) }
     }

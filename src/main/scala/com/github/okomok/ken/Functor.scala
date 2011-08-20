@@ -35,12 +35,12 @@ trait Functor[f[+_]] extends Typeclass1[f] { outer =>
 }
 
 
-trait FunctorProxy[f[+_]] extends Functor[f] with Proxy {
-    override def self: Functor[f]
+trait FunctorProxy[f[+_]] extends Functor[f] {
+    def selfFunctor: Functor[f]
 
-    override def fmap[a, b](x: a => b)(y: f[a]): f[b] = self.fmap(x)(y)
-    override def op_<@>[a, b](x: a => b)(y: f[a]): f[b] = self.op_<@>(x)(y)
-    override def op_<@[a, b](x: Lazy[a])(y: f[b]): f[a] = self.op_<@(x)(y)
+    override def fmap[a, b](x: a => b)(y: f[a]): f[b] = selfFunctor.fmap(x)(y)
+    override def op_<@>[a, b](x: a => b)(y: f[a]): f[b] = selfFunctor.op_<@>(x)(y)
+    override def op_<@[a, b](x: Lazy[a])(y: f[b]): f[a] = selfFunctor.op_<@(x)(y)
 }
 
 

@@ -35,11 +35,12 @@ trait ArrowApply[a[-_, +_]] extends Arrow[a] {
 
 
 trait ArrowApplyProxy[a[-_, +_]] extends ArrowApply[a] with ArrowProxy[a] {
-    override def self: ArrowApply[a]
+    def selfArrowApply: ArrowApply[a]
+    override def selfArrow: Arrow[a] = selfArrowApply
 
-    override def app[b, c]: a[(a[b, c], b), c] = self.app[b, c]
+    override def app[b, c]: a[(a[b, c], b), c] = selfArrowApply.app[b, c]
 
-    override def leftApp[b, c, d](f: a[b, c]): a[Either[b, d], Either[c, d]] = self.leftApp(f)
+    override def leftApp[b, c, d](f: a[b, c]): a[Either[b, d], Either[c, d]] = selfArrowApply.leftApp(f)
 }
 
 
@@ -48,7 +49,7 @@ object ArrowApply {
 
     def deriving[nt <: Kind.Function2, ot <: Kind.Function2](implicit i: ArrowApply[ot#apply2], j: Newtype2[nt#apply2, ot#apply2]): ArrowApply[nt#apply2] = new ArrowApply[nt#apply2] with ArrowProxy[nt#apply2] {
         private[this] type a[-a, +b] = nt#apply2[a, b]
-        override val self = Arrow.deriving[nt, ot](i, j)
+        override val selfArrow = Arrow.deriving[nt, ot](i, j)
 
         override def app[b, c]: a[(a[b, c], b), c] = j.newOf(i.op_^>>( (n: (nt#apply2[b, c], b)) => (j.oldOf(n._1), n._2) )(i.app[b, c]))
 

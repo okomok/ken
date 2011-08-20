@@ -18,9 +18,10 @@ trait MonadIO[m[+_]] extends Monad[m] {
 
 
 trait MonadIOProxy[m[+_]] extends MonadIO[m] with MonadProxy[m] {
-    override def self: MonadIO[m]
+    def selfMonadIO: MonadIO[m]
+    override def selfMonad: Monad[m] = selfMonadIO
 
-    override def liftIO[a](io: IO[a]): m[a] = self.liftIO(io)
+    override def liftIO[a](io: IO[a]): m[a] = selfMonadIO.liftIO(io)
 }
 
 
@@ -29,7 +30,7 @@ object MonadIO {
 
     def deriving[nt <: Kind.Function1, ot <: Kind.Function1](implicit i: MonadIO[ot#apply], j: Newtype1[nt#apply, ot#apply]): MonadIO[nt#apply] = new MonadIO[nt#apply] with MonadProxy[nt#apply] {
         private[this] type m[+a] = nt#apply[a]
-        override val self = Monad.deriving[nt, ot](i, j)
+        override val selfMonad = Monad.deriving[nt, ot](i, j)
         override def liftIO[a](io: IO[a]): m[a] = j.newOf { i.liftIO(io) }
     }
 

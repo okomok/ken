@@ -30,13 +30,13 @@ trait Newtype2[nt[-_, +_], ot[-_, +_]] extends Typeclass with Kind.AbstractNewty
 }
 
 
-trait Newtype2Proxy[nt[-_, +_], ot[-_, +_]] extends Newtype2[nt, ot] with Proxy {
-    override def self: Newtype2[nt, ot]
+trait Newtype2Proxy[nt[-_, +_], ot[-_, +_]] extends Newtype2[nt, ot] {
+    def selfNewtype2: Newtype2[nt, ot]
 
-    override def newOf[a, b](ot: Lazy[ot[a, b]]): nt[a, b] = self.newOf(ot)
-    override def oldOf[a, b](nt: Lazy[nt[a, b]]): ot[a, b] = self.oldOf(nt)
+    override def newOf[a, b](ot: Lazy[ot[a, b]]): nt[a, b] = selfNewtype2.newOf(ot)
+    override def oldOf[a, b](nt: Lazy[nt[a, b]]): ot[a, b] = selfNewtype2.oldOf(nt)
 
-    override def dual: Newtype2[ot, nt] = self.dual
+    override def dual: Newtype2[ot, nt] = selfNewtype2.dual
 }
 
 

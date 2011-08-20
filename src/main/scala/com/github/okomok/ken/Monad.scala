@@ -161,39 +161,40 @@ trait Monad[m[+_]] extends Applicative[m] {
 
 
 trait MonadProxy[m[+_]] extends Monad[m] with ApplicativeProxy[m] {
-    override def self: Monad[m]
+    def selfMonad: Monad[m]
+    override def selfApplicative: Applicative[m] = selfMonad
 
-    override def `return`[a](x: Lazy[a]): m[a] = self.`return`(x)
-    override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = self.op_>>=(x)(y)
-    override def op_>>[b](x: m[_])(y: Lazy[m[b]]): m[b] = self.op_>>(x)(y)
+    override def `return`[a](x: Lazy[a]): m[a] = selfMonad.`return`(x)
+    override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = selfMonad.op_>>=(x)(y)
+    override def op_>>[b](x: m[_])(y: Lazy[m[b]]): m[b] = selfMonad.op_>>(x)(y)
 
-    override def op_=<<[a, b](f: a => m[b])(x: m[a]): m[b] = self.op_=<<(f)(x)
-    override def sequence[a](ms: List[m[a]]): m[List[a]] = self.sequence(ms)
-    override def sequence_[a](ms: List[m[a]]): m[Unit] = self.sequence_(ms)
-    override def mapM[a, b](f: a => m[b])(as: List[a]): m[List[b]] = self.mapM(f)(as)
-    override def mapM_[a, b](f: a => m[b])(as: List[a]): m[Unit] = self.mapM_(f)(as)
-    override def filterM[a](p: a => m[Bool])(xs: List[a]): m[List[a]] = self.filterM(p)(xs)
-    override def forM[a, b](xs: List[a])(f: a => m[b]): m[List[b]] = self.forM(xs)(f)
-    override def forM_[a, b](xs: List[a])(f: a => m[b]): m[Unit] = self.forM_(xs)(f)
-    override def op_>=>[a, b, c](f: a => m[b])(g: b => m[c]): a => m[c] = self.op_>=>(f)(g)
-    override def op_<=<[a, b, c](g: b => m[c])(f: a => m[b]): a => m[c] = self.op_<=<(g)(f)
-    override def forever[a](a: m[a]): m[a] = self.forever(a)
-    override def join[a](x: m[m[a]]): m[a] = self.join(x)
-    override def mapAndUnzipM[a, b, c](f: a => m[(b, c)])(xs: List[a]): m[(List[b], List[c])] = self.mapAndUnzipM(f)(xs)
-    override def zipWithM[a, b, c](f: a => b => m[c])(xs: List[a])(ys: List[b]): m[List[c]] = self.zipWithM(f)(xs)(ys)
-    override def zipWithM_[a, b, c](f: a => b => m[c])(xs: List[a])(ys: List[b]): m[Unit] = self.zipWithM_(f)(xs)(ys)
-    override def foldM[a, b](f: a => b => m[a])(a: a)(xs: List[b]): m[a] = self.foldM(f)(a)(xs)
-    override def foldM_[a, b](f: a => b => m[a])(a: a)(xs: List[b]): m[Unit] = self.foldM_(f)(a)(xs)
-    override def replicateM[a](n: Int)(x: m[a]): m[List[a]] = self.replicateM(n)(x)
-    override def replicateM_[a](n: Int)(x: m[a]): m[Unit] = self.replicateM_(n)(x)
-    override def when(p: Bool)(s: Lazy[m[Unit]]): m[Unit] = self.when(p)(s)
-    override def unless(p: Bool)(s: Lazy[m[Unit]]): m[Unit] = self.unless(p)(s)
-    override def liftM[a1, r](f: a1 => r)(m1: m[a1]): m[r] = self.liftM(f)(m1)
-    override def liftM2[a1, a2, r](f: a1 => a2 => r)(m1: m[a1])(m2: m[a2]): m[r] = self.liftM2(f)(m1)(m2)
-    override def liftM3[a1, a2, a3, r](f: a1 => a2 => a3 => r)(m1: m[a1])(m2: m[a2])(m3: m[a3]): m[r] = self.liftM3(f)(m1)(m2)(m3)
-    override def liftM4[a1, a2, a3, a4, r](f: a1 => a2 => a3 => a4 => r)(m1: m[a1])(m2: m[a2])(m3: m[a3])(m4: m[a4]): m[r] = self.liftM4(f)(m1)(m2)(m3)(m4)
-    override def liftM5[a1, a2, a3, a4, a5, r](f: a1 => a2 => a3 => a4 => a5 => r)(m1: m[a1])(m2: m[a2])(m3: m[a3])(m4: m[a4])(m5: m[a5]): m[r] = self.liftM5(f)(m1)(m2)(m3)(m4)(m5)
-    override def ap[a, b](x: m[a => b])(y: m[a]): m[b] = self.ap(x)(y)
+    override def op_=<<[a, b](f: a => m[b])(x: m[a]): m[b] = selfMonad.op_=<<(f)(x)
+    override def sequence[a](ms: List[m[a]]): m[List[a]] = selfMonad.sequence(ms)
+    override def sequence_[a](ms: List[m[a]]): m[Unit] = selfMonad.sequence_(ms)
+    override def mapM[a, b](f: a => m[b])(as: List[a]): m[List[b]] = selfMonad.mapM(f)(as)
+    override def mapM_[a, b](f: a => m[b])(as: List[a]): m[Unit] = selfMonad.mapM_(f)(as)
+    override def filterM[a](p: a => m[Bool])(xs: List[a]): m[List[a]] = selfMonad.filterM(p)(xs)
+    override def forM[a, b](xs: List[a])(f: a => m[b]): m[List[b]] = selfMonad.forM(xs)(f)
+    override def forM_[a, b](xs: List[a])(f: a => m[b]): m[Unit] = selfMonad.forM_(xs)(f)
+    override def op_>=>[a, b, c](f: a => m[b])(g: b => m[c]): a => m[c] = selfMonad.op_>=>(f)(g)
+    override def op_<=<[a, b, c](g: b => m[c])(f: a => m[b]): a => m[c] = selfMonad.op_<=<(g)(f)
+    override def forever[a](a: m[a]): m[a] = selfMonad.forever(a)
+    override def join[a](x: m[m[a]]): m[a] = selfMonad.join(x)
+    override def mapAndUnzipM[a, b, c](f: a => m[(b, c)])(xs: List[a]): m[(List[b], List[c])] = selfMonad.mapAndUnzipM(f)(xs)
+    override def zipWithM[a, b, c](f: a => b => m[c])(xs: List[a])(ys: List[b]): m[List[c]] = selfMonad.zipWithM(f)(xs)(ys)
+    override def zipWithM_[a, b, c](f: a => b => m[c])(xs: List[a])(ys: List[b]): m[Unit] = selfMonad.zipWithM_(f)(xs)(ys)
+    override def foldM[a, b](f: a => b => m[a])(a: a)(xs: List[b]): m[a] = selfMonad.foldM(f)(a)(xs)
+    override def foldM_[a, b](f: a => b => m[a])(a: a)(xs: List[b]): m[Unit] = selfMonad.foldM_(f)(a)(xs)
+    override def replicateM[a](n: Int)(x: m[a]): m[List[a]] = selfMonad.replicateM(n)(x)
+    override def replicateM_[a](n: Int)(x: m[a]): m[Unit] = selfMonad.replicateM_(n)(x)
+    override def when(p: Bool)(s: Lazy[m[Unit]]): m[Unit] = selfMonad.when(p)(s)
+    override def unless(p: Bool)(s: Lazy[m[Unit]]): m[Unit] = selfMonad.unless(p)(s)
+    override def liftM[a1, r](f: a1 => r)(m1: m[a1]): m[r] = selfMonad.liftM(f)(m1)
+    override def liftM2[a1, a2, r](f: a1 => a2 => r)(m1: m[a1])(m2: m[a2]): m[r] = selfMonad.liftM2(f)(m1)(m2)
+    override def liftM3[a1, a2, a3, r](f: a1 => a2 => a3 => r)(m1: m[a1])(m2: m[a2])(m3: m[a3]): m[r] = selfMonad.liftM3(f)(m1)(m2)(m3)
+    override def liftM4[a1, a2, a3, a4, r](f: a1 => a2 => a3 => a4 => r)(m1: m[a1])(m2: m[a2])(m3: m[a3])(m4: m[a4]): m[r] = selfMonad.liftM4(f)(m1)(m2)(m3)(m4)
+    override def liftM5[a1, a2, a3, a4, a5, r](f: a1 => a2 => a3 => a4 => a5 => r)(m1: m[a1])(m2: m[a2])(m3: m[a3])(m4: m[a4])(m5: m[a5]): m[r] = selfMonad.liftM5(f)(m1)(m2)(m3)(m4)(m5)
+    override def ap[a, b](x: m[a => b])(y: m[a]): m[b] = selfMonad.ap(x)(y)
 }
 
 
@@ -202,7 +203,7 @@ object Monad {
 
     def deriving[nt <: Kind.Function1, ot <: Kind.Function1](implicit i: Monad[ot#apply], j: Newtype1[nt#apply, ot#apply]): Monad[nt#apply] = new Monad[nt#apply] with ApplicativeProxy[nt#apply] {
         private[this] type m[+a] = nt#apply[a]
-        override val self = Applicative.deriving[nt, ot](i, j)
+        override val selfApplicative = Applicative.deriving[nt, ot](i, j)
         override def `return`[a](x: Lazy[a]): m[a] = j.newOf { i.`return`(x) }
         override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = j.newOf { i.op_>>=(j.oldOf(x))(a => j.oldOf(y(a))) }
         override def op_>>[b](x: m[_])(y: Lazy[m[b]]): m[b] = j.newOf { i.op_>>(j.oldOf(x: m[Any]))(j.oldOf(y)) }

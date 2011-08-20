@@ -67,19 +67,21 @@ trait Traversable[t[+_]] extends Functor[t] with Foldable[t] { outer =>
 
 
 trait TraversableProxy[t[+_]] extends Traversable[t] with FunctorProxy[t] with FoldableProxy[t] {
-    override def self: Traversable[t]
+    def selfTraversable: Traversable[t]
+    override def selfFunctor: Functor[t] = selfTraversable
+    override def selfFoldable: Foldable[t] = selfTraversable
 
-    override def traverse[f[+_], a, b](f: a => f[b])(t: t[a])(implicit i: Applicative[f]): f[t[b]] = self.traverse(f)(t)(i)
-    override def sequenceA[f[+_], a](t: t[f[a]])(implicit i: Applicative[f]): f[t[a]] = self.sequenceA(t)(i)
-    override def mapM[m[+_], a, b](f: a => m[b])(t: t[a])(implicit i: Monad[m]): m[t[b]] = self.mapM(f)(t)(i)
-    override def sequence[m[+_], a](t: t[m[a]])(implicit i: Monad[m]): m[t[a]] = self.sequence(t)(i)
+    override def traverse[f[+_], a, b](f: a => f[b])(t: t[a])(implicit i: Applicative[f]): f[t[b]] = selfTraversable.traverse(f)(t)(i)
+    override def sequenceA[f[+_], a](t: t[f[a]])(implicit i: Applicative[f]): f[t[a]] = selfTraversable.sequenceA(t)(i)
+    override def mapM[m[+_], a, b](f: a => m[b])(t: t[a])(implicit i: Monad[m]): m[t[b]] = selfTraversable.mapM(f)(t)(i)
+    override def sequence[m[+_], a](t: t[m[a]])(implicit i: Monad[m]): m[t[a]] = selfTraversable.sequence(t)(i)
 
-    override def `for`[f[+_], a, b](t: t[a])(f: a => f[b])(implicit i: Applicative[f]): f[t[b]] = self.`for`(t)(f)(i)
-    override def forM[m[+_], a, b](t: t[a])(f: a => m[b])(implicit i: Monad[m]): m[t[b]] = self.forM(t)(f)(i)
-    override def mapAccumL[a, b, c](f: a => b => (a, c))(s: a)(t: t[b]): (a, t[c]) = self.mapAccumL(f)(s)(t)
-    override def mapAccumR[a, b, c](f: Lazy[a] => b => (a, c))(s: a)(t: t[b]): (a, t[c]) = self.mapAccumR(f)(s)(t)
-    override def fmapDefault[a, b](f: a => b)(t: t[a]): t[b] = self.fmapDefault(f)(t)
-    override def foldMapDefault[m, a](f: a => m)(t: t[a])(implicit i: Monoid[m]): m = self.foldMapDefault(f)(t)(i)
+    override def `for`[f[+_], a, b](t: t[a])(f: a => f[b])(implicit i: Applicative[f]): f[t[b]] = selfTraversable.`for`(t)(f)(i)
+    override def forM[m[+_], a, b](t: t[a])(f: a => m[b])(implicit i: Monad[m]): m[t[b]] = selfTraversable.forM(t)(f)(i)
+    override def mapAccumL[a, b, c](f: a => b => (a, c))(s: a)(t: t[b]): (a, t[c]) = selfTraversable.mapAccumL(f)(s)(t)
+    override def mapAccumR[a, b, c](f: Lazy[a] => b => (a, c))(s: a)(t: t[b]): (a, t[c]) = selfTraversable.mapAccumR(f)(s)(t)
+    override def fmapDefault[a, b](f: a => b)(t: t[a]): t[b] = selfTraversable.fmapDefault(f)(t)
+    override def foldMapDefault[m, a](f: a => m)(t: t[a])(implicit i: Monoid[m]): m = selfTraversable.foldMapDefault(f)(t)(i)
 }
 
 

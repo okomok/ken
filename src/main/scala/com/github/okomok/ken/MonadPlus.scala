@@ -41,12 +41,14 @@ trait MonadPlus[m[+_]] extends Monad[m] with Alternative[m] {
 
 
 trait MonadPlusProxy[m[+_]] extends MonadPlus[m] with MonadProxy[m] with AlternativeProxy[m] {
-    override def self: MonadPlus[m]
+    def selfMonadPlus: MonadPlus[m]
+    override def selfMonad: Monad[m] = selfMonadPlus
+    override def selfAlternative: Alternative[m] = selfMonadPlus
 
-    override def mzero: m[Nothing] = self.mzero
-    override def mplus[a](x: m[a])(y: Lazy[m[a]]): m[a] = self.mplus(x)(y)
+    override def mzero: m[Nothing] = selfMonadPlus.mzero
+    override def mplus[a](x: m[a])(y: Lazy[m[a]]): m[a] = selfMonadPlus.mplus(x)(y)
 
-    override def guard(b: Bool): m[Unit] = self.guard(b)
+    override def guard(b: Bool): m[Unit] = selfMonadPlus.guard(b)
     override def msum[a](xs: List[m[a]]): m[a] = msum(xs)
 }
 
@@ -56,7 +58,7 @@ object MonadPlus {
 
     def deriving[nt <: Kind.Function1, ot <: Kind.Function1](implicit i: MonadPlus[ot#apply], j: Newtype1[nt#apply, ot#apply]): MonadPlus[nt#apply] = new MonadPlus[nt#apply] with MonadProxy[nt#apply] {
         private[this] type m[+a] = nt#apply[a]
-        override val self = Monad.deriving[nt, ot](i, j)
+        override val selfMonad = Monad.deriving[nt, ot](i, j)
         override def mzero: m[Nothing] = j.newOf { i.mzero }
         override def mplus[a](x: m[a])(y: Lazy[m[a]]): m[a] = j.newOf { i.mplus(j.oldOf(x))(j.oldOf(y)) }
     }

@@ -33,14 +33,14 @@ trait Monoid[m] extends Typeclass0[m] { outer =>
 }
 
 
-trait MonoidProxy[m] extends Monoid[m] with Proxy {
-    override def self: Monoid[m]
+trait MonoidProxy[m] extends Monoid[m] {
+    def selfMonoid: Monoid[m]
 
-    override def mempty: m = self.mempty
-    override def mappend: m => Lazy[m] => m = self.mappend
-    override def mconcat: List[m] => m = self.mconcat
+    override def mempty: m = selfMonoid.mempty
+    override def mappend: m => Lazy[m] => m = selfMonoid.mappend
+    override def mconcat: List[m] => m = selfMonoid.mconcat
 
-    override def dual: Monoid[m] = self.dual
+    override def dual: Monoid[m] = selfMonoid.dual
 }
 
 

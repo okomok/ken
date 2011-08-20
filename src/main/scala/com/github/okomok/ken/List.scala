@@ -128,7 +128,7 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
     }
 
     implicit def _asOrd[a](implicit i: Ord[a]): Ord[List[a]] = new Ord[List[a]] with EqProxy[List[a]] {
-        override val self = Eq._ofScalaEquiv[List[a]]
+        override val selfEq = Eq._ofScalaEquiv[List[a]]
         override val compare: List[a] => List[a] => Ordering = {
             @tailrec
             def impl(x: List[a])(y: List[a]): Ordering = (x, y) match {
@@ -645,10 +645,54 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
 
     // The generic operations
     //
-    def genericLength[i](xs: List[_])(implicit i: Num[i]): i = xs match {
-        case Nil => i.fromInteger(0)
-        case _ :: l => i.op_+(i.fromInteger(1))(genericLength(l))
+    def genericLength[i](xs: List[_])(implicit i: Num[i]): i = {
+        import i._
+        xs match {
+            case Nil => 0
+            case _ :: l => fromInteger(1) + genericLength(l)
+        }
     }
+
+    def genericTake[i, a](n: i)(xs: List[a])(implicit i: Integral[i]): List[a] = {
+        import i._
+        (n, xs) match {
+            case (n, _) if n <= 0 => Nil
+            case (_, Nil) => Nil
+            case (n, x :: xs) => x :: genericTake(n-1)(xs)
+        }
+    }
+
+    def genericDrop[i, a](n: i)(xs: List[a])(implicit i: Integral[i]): List[a] = {
+        import i._
+        (n, xs) match {
+            case (n, xs) if n <= 0 => xs
+            case (_, Nil) => Nil
+            case (n, _ :: xs) => genericDrop(n-1)(xs)
+        }
+    }
+
+    def genericSplitAt[i, b](n: i)(xs: List[b])(implicit i: Integral[i]): (List[b], List[b]) = {
+        import i._
+        (n, xs) match {
+            case (n, xs) if n <= 0 => (Nil, xs)
+            case (_, Nil) => (Nil, Nil)
+            case (n, x :: xs) => {
+                val (xs_, xs__) = genericSplitAt(n-1)(xs)
+                (x :: xs_, xs__)
+            }
+        }
+    }
+
+    def genericIndex[a, b](xs: List[b])(n: a)(implicit i: Integral[a]): b = {
+        import i._
+        (xs, n) match {
+            case (x :: _, 0) => x
+            case (_ :: xs, n) => if (n > 0) genericIndex(xs)(n-1) else error("List.genericIndex: negative argument.")
+            case _ => error("List.genericIndex: index too large.")
+        }
+    }
+
+    def genericReplicate[i, a](n: i)(x: a)(implicit i: Integral[i]): List[a] = genericTake(n)(repeat(x))
 
     // Misc
     //

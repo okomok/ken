@@ -13,9 +13,10 @@ trait IO[+a] {
 }
 
 
-trait IOProxy[+a] extends IO[a] with Proxy {
-    override def self: IO[a]
-    override def unIO(): a = self.unIO()
+trait IOProxy[+a] extends IO[a] {
+    def selfIO: IO[a]
+
+    override def unIO(): a = selfIO.unIO()
 }
 
 
