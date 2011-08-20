@@ -11,6 +11,9 @@ package ken
 // Draft
 
 
+import scala.annotation.tailrec
+
+
 final case class Ratio[a](numerator: a, denominator:a)
 
 object Ratio {
@@ -45,9 +48,8 @@ object Ratio {
 
     def gcd[a](x: a)(y: a)(implicit i: Integral[a]): a = {
         import i._
-        def gcd_(a: a)(b: a): a = {
-            if (i.op_==(b)(0)) a else gcd_(b)(a _rem_ b)
-        }
+        @tailrec
+        def gcd_(a: a)(b: a): a = if (op_==(b)(0)) a else gcd_(b)(a _rem_ b)
         gcd_(abs(x))(abs(y))
     }
 }
