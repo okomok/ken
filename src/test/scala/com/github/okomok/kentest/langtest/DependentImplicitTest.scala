@@ -1,6 +1,6 @@
 
 
-package com.github.okomok.kentest.defecttest
+package com.github.okomok.kentest.langtest
 
 
 // See also: https://issues.scala-lang.org/browse/SI-4225
