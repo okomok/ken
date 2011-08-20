@@ -54,7 +54,9 @@ private[ken] trait _Enumerators[n[+_]] {
     final case class Yield[a, b](_1: b, _2: Stream[a]) extends Step[a, b]
     final case class Error(_1: Throwable) extends Step[Any, Nothing]
 
-    final case class Iteratee[-a, +b](override val get: n[Step[a, b]]) extends NewtypeOf[n[Step[a, b]]] with Kind.constThis
+    final case class Iteratee[-a, +b](override val get: n[Step[a, b]]) extends NewtypeOf[n[Step[a, b]]] with Kind.constThis {
+        def >>==[a_, b_](f: Step[a, b] => Iteratee[a_, b_]): Iteratee[a_, b_] = op_>>==(this)(f)
+    }
 
     object Iteratee extends IterateeAs with Kind.FunctionLike {
         sealed trait apply[z] extends Kind.AbstractMonadTrans {
@@ -131,11 +133,40 @@ private[ken] trait _Enumerators[n[+_]] {
     }
 
     def op_==<<[a, b, a_, b_](f: Step[a, b] => Iteratee[a_, b_])(i: Iteratee[a, b]): Iteratee[a_, b_] = op_>>==(i)(f)
+    def op_@@[a, b, a_, b_](f: Step[a, b] => Iteratee[a_, b_])(i: Iteratee[a, b]): Iteratee[a_, b_] = op_==<<(f)(i)
+
+    def op_>==>[a, b, a_, b_](e1: Enumerator[a, b])(e2: Step[a, b] => Iteratee[a_, b_]): Step[a, b] => Iteratee[a_, b_] = s => e1(s) >>== e2
+    def op_<==<[a, b, a_, b_](e2: Step[a, b] => Iteratee[a_, b_])(e1: Enumerator[a, b]): Step[a, b] => Iteratee[a_, b_] = op_>==>(e1)(e2)
+/*
+    sealed class Op_>>==[a, b](i: Iteratee[a, b]) {
+        def >>==[a_, b_](f: Step[a, b] => Iteratee[a_, b_]): Iteratee[a_, b_] = op_>>==(i)(f)
+    }
+    implicit def >>==[a, b](i: Iteratee[a, b]): Op_>>==[a, b] = new Op_>>==(i)
+*/
+    sealed class Op_==<<[a, b, a_, b_](f: Step[a, b] => Iteratee[a_, b_]) {
+        def ==<<(i: Iteratee[a, b]): Iteratee[a_, b_] = op_==<<(f)(i)
+    }
+    implicit def ==<<[a, b, a_, b_](f: Step[a, b] => Iteratee[a_, b_]): Op_==<<[a, b, a_, b_] = new Op_==<<(f)
+
+    sealed class Op_@@[a, b, a_, b_](f: Step[a, b] => Iteratee[a_, b_]) {
+        def @@(i: Iteratee[a, b]): Iteratee[a_, b_] = op_@@(f)(i)
+    }
+    implicit def @@[a, b, a_, b_](f: Step[a, b] => Iteratee[a_, b_]): Op_@@[a, b, a_, b_] = new Op_@@(f)
+
+    sealed class Op_>==>[a, b](e1: Enumerator[a, b]) {
+        def >==>[a_, b_](e2: Step[a, b] => Iteratee[a_, b_]): Step[a, b] => Iteratee[a_, b_] = op_>==>(e1)(e2)
+    }
+    implicit def >==>[a, b](e1: Enumerator[a, b]): Op_>==>[a, b] = new Op_>==>(e1)
+
+    sealed class Op_<==<[a, b, a_, b_](e2: Step[a, b] => Iteratee[a_, b_]) {
+        def <==<(e1: Enumerator[a, b]): Step[a, b] => Iteratee[a_, b_] = op_<==<(e2)(e1)
+    }
+    implicit def <==<[a, b, a_, b_](e2: Step[a, b] => Iteratee[a_, b_]): Op_<==<[a, b, a_, b_] = new Op_<==<(e2)
 
     def run[a, b](i: Iteratee[a, b]): n[Either[Throwable, b]] = {
         import inner.{forComp, `return`}
         for {
-            mStep <- runIteratee { op_==<<(enumEOF[a, b])(i) }
+            mStep <- runIteratee { enumEOF[a, b] ==<< i }
             * <- mStep match {
                 case Error(err) => `return` { Left(err) }
                 case Yield(x, _) => `return`{ Right(x) }
@@ -151,6 +182,15 @@ private[ken] trait _Enumerators[n[+_]] {
 
     def throwError[a, b](exc: Throwable): Iteratee[a, b] = returnI(Error(exc))
 
+    def catchError[a, b](iter: Iteratee[a, b])(h: Throwable => Iteratee[a, b]): Iteratee[a, b] = {
+        def step(s: Step[a, b]): Iteratee[a, b] = s match {
+            case Yield(b, as) => `yield`(b)(as)
+            case Error(err) => h(err)
+            case Continue(k) => continue(s => k(s) >>== step)
+        }
+        iter >>== step
+    }
+
     // utilities
     //
     def enumEOF[a, b]: Enumerator[a, b] = step => step match {
@@ -161,11 +201,11 @@ private[ken] trait _Enumerators[n[+_]] {
                 case Continue(_) => error("enumEOF: divergent iteratee")
                 case s => enumEOF(s)
             }
-            op_>>==(k(EOF))(check)
+            k(EOF) >>== check
         }
     }
 
-    // list-analoges
+    // list-analogues
     //
     def head[a]: Iteratee[a, Maybe[a]] = {
         def loop(in: Stream[a]): Iteratee[a, Maybe[a]] = in match {
