@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-sealed abstract class Maybe[+a] extends Up[Maybe[a]] with Kind.alwaysThis {
+sealed abstract class Maybe[+a] extends Up[Maybe[a]] with Kind.constThis {
     final def of[b >: a]: Maybe[b] = this
 }
 

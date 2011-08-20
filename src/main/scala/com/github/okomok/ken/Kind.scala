@@ -74,16 +74,17 @@ object Kind {
 
     // Misc
     //
-    trait alwaysThis extends AbstractFunction0 with AbstractFunction1 with AbstractFunction2 {
-        override type apply0 = this.type
-        override type apply1[+a] = this.type
-        override type apply2[-a, +b] = this.type
-    }
-
-    trait always[z] extends AbstractFunction0 with AbstractFunction1 with AbstractFunction2 {
+    trait const[z] extends AbstractFunction0 with AbstractFunction1 with AbstractFunction2 {
         override type apply0 = z
         override type apply1[+a] = z
         override type apply2[-a, +b] = z
+    }
+
+    // needed for variance-correct
+    trait constThis extends AbstractFunction0 with AbstractFunction1 with AbstractFunction2 {
+        override type apply0 = this.type
+        override type apply1[+a] = this.type
+        override type apply2[-a, +b] = this.type
     }
 
     trait quote1[f[+_]] extends AbstractFunction1 {

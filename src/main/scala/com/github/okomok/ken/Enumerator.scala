@@ -54,7 +54,7 @@ private[ken] trait _Enumerators[n[+_]] {
     final case class Yield[a, b](_1: b, _2: Stream[a]) extends Step[a, b]
     final case class Error(_1: Throwable) extends Step[Any, Nothing]
 
-    final case class Iteratee[-a, +b](override val get: n[Step[a, b]]) extends NewtypeOf[n[Step[a, b]]] with Kind.alwaysThis
+    final case class Iteratee[-a, +b](override val get: n[Step[a, b]]) extends NewtypeOf[n[Step[a, b]]] with Kind.constThis
 
     object Iteratee extends IterateeAs with Kind.FunctionLike {
         sealed trait apply[z] extends Kind.AbstractMonadTrans {

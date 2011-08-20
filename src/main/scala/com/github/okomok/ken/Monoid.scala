@@ -54,7 +54,7 @@ object Monoid extends MonoidInstance {
         override val mconcat: List[m] => m = xs => j.newOf(i.mconcat(List.map[m, ot#apply0](j.oldOf)(xs)))
     }
 
-    def weak[nt <: Kind.Newtype0](implicit i: Monoid[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Monoid[nt#oldtype0] = deriving[Kind.always[nt#oldtype0], nt](i, j.dual)
+    def weak[nt <: Kind.Newtype0](implicit i: Monoid[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Monoid[nt#oldtype0] = deriving[Kind.const[nt#oldtype0], nt](i, j.dual)
 
     // Dual
     //

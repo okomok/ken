@@ -42,12 +42,12 @@ class MonadTransformerTezt { // extends org.scalatest.junit.JUnit3Suite {
         askPassword.run.unIO()
     }
 
-    // Weakly-typed monad; Power of Scala
+    // Weakly-typed monad; Power of Scala (any pitfall?)
     def testWeakMonadT {
         import IO.MaybeT
 
         val wm = MonadPlus.weak[MaybeT.type]
-        import wm._
+        import wm._ // IO[Maybe[_]] monad hides the default IO monad.
 
         def isValid(s: String_): Boolean = implicitly[Eq[String_]].op_==(s)("valid")
 
@@ -61,7 +61,7 @@ class MonadTransformerTezt { // extends org.scalatest.junit.JUnit3Suite {
             _ <- IO.putStrLn("Insert your new password")
             value <- msum { List.repeat(getValidPassword) }
             _ <- IO.putStrLn("Storing in database...")
-        } yield Just()
+        } yield Just() // lift finally.
 
         // No runs
         askPassword.unIO()

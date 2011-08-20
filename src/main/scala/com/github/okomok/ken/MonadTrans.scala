@@ -16,6 +16,21 @@ trait MonadTrans[n[+_], m[+_]] extends Typeclass {
 }
 
 
+trait MonadTransProxy[n[+_], m[+_]] extends MonadTrans[n, m] with Proxy {
+    override def self: MonadTrans[n, m]
+
+    override def lift[a](n: n[a]): m[a] = self.lift(n)
+}
+
+
 object MonadTrans {
     def apply[m <: Kind.MonadTrans](implicit i: MonadTrans[m#innerMonad, m#apply]): MonadTrans[m#innerMonad, m#apply] = i
+
+    def deriving[nt <: Kind.Function1, ot <: Kind.MonadTrans](implicit i: MonadTrans[ot#innerMonad, ot#apply], j: Newtype1[nt#apply, ot#apply]): MonadTrans[ot#innerMonad, nt#apply] = new MonadTrans[ot#innerMonad, nt#apply] {
+        private[this] type n[+a] = ot#innerMonad[a]
+        private[this] type m[+a] = nt#apply[a]
+        override def lift[a](n: n[a]): m[a] = j.newOf { i.lift(n) }
+    }
+
+    def weak[nt <: Kind.MonadTrans](implicit i: MonadTrans[nt#innerMonad, nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): MonadTrans[nt#innerMonad, nt#oldtype1] = deriving[Kind.quote1[nt#oldtype1], nt](i, j.dual)
 }

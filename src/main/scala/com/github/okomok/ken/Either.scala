@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-sealed abstract class Either[+a, +b] extends Up[Either[a, b]] with Kind.alwaysThis {
+sealed abstract class Either[+a, +b] extends Up[Either[a, b]] with Kind.constThis {
     final def of[a_ >: a, b_ >: b]: Either[a_, b_] = this
 }
 
