@@ -46,7 +46,8 @@ trait Ord[a] extends Eq[a] { outer =>
 
 
 trait OrdProxy[a] extends Ord[a] with Proxy {
-    override def self: Ord[a]
+    def selfOrd: Ord[a] = self
+    override def self: Ord[a] = selfOrd
 
     override def compare: a => a => Ordering = self.compare
     override def op_< : a => a => Bool = self.op_<

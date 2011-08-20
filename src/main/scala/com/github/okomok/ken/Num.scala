@@ -45,7 +45,8 @@ trait Num[a] extends Typeclass0[a] {
 
 
 trait NumProxy[a] extends Num[a] with Proxy {
-    override def self: Num[a]
+    def selfNum: Num[a] = self
+    override def self: Num[a] = selfNum
 
     override def op_+ : a => a => a = self.op_+
     override def op_- : a => a => a = self.op_-
@@ -65,7 +66,7 @@ object Num extends NumInstance {
 
 
 private[ken] trait NumInstance { this: Num.type =>
-    implicit def _ofNumeric[a](implicit i: scala.Numeric[a]): Num[a] = new Num[a] {
+    implicit def _ofScalaNumeric[a](implicit i: scala.Numeric[a]): Num[a] = new Num[a] {
         override val op_+ : a => a => a = { x => y => i.plus(x, y) }
         override val op_- : a => a => a = { x => y => i.minus(x, y) }
         override val op_* : a => a => a = { x => y => i.times(x, y) }

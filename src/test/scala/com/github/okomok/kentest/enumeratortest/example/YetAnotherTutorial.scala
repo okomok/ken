@@ -41,6 +41,19 @@ class YetAnotherTutorialTest extends org.scalatest.junit.JUnit3Suite {
         }
     }
 
+    def testTrivial8 {
+        val my = new My[Identity.type]
+        val v = my.run_(my.sum8)
+        expect(Identity(55))(v)
+    }
+
+    def testTrivial9 {
+        val my = new My[Identity.type]
+        import my._
+        val v = run_(sum6 >>== enumList_(3)(List.range(1, 11)))
+        expect(Identity(55))(v)
+    }
+
     def testTrivial {
         val my = new My[IO.type]
         import IO.>>=

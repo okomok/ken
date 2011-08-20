@@ -644,15 +644,19 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
     }
 
     // The generic operations
-    // TODO
+    //
+    def genericLength[i](xs: List[_])(implicit i: Num[i]): i = xs match {
+        case Nil => i.fromInteger(0)
+        case _ :: l => i.op_+(i.fromInteger(1))(genericLength(l))
+    }
 
     // Misc
     //
-    def range[a](n: a, m: a)(implicit i: Ix[a]): List[a] = i.range(n, m)
+    def range[a](nm: (a, a))(implicit i: Ix[a]): List[a] = i.range(nm)
 
     def rangeFrom[a](n: a)(implicit i: Num[a]): List[a] = n :: rangeFrom(i.op_+(n)(i.fromInteger(1)))
 
-    def slice[a](n: Int, m: Int)(xs: List[a]): List[a] = List.drop(n)(List.take(m)(xs))
+    def slice[a](nm: (Int, Int))(xs: List[a]): List[a] = List.drop(nm._1)(List.take(nm._2)(xs))
 
     def step[a](n: Int)(xs: List[a]): List[a] = {
         Predef.require(n > 0)

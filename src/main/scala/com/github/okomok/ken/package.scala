@@ -93,6 +93,7 @@ package object ken {
     final val True = true
     final val False = false
     type Integer = BigInt
+    type Rational = Ratio[Integer]
 
     // Scala specific utilities
     //

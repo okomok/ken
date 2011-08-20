@@ -80,6 +80,8 @@ private[ken] trait _Enumerators[n[+_]] {
 
     type Enumerator[a, b] = Step[a, b] => Iteratee[a, b]
 
+    type Enumeratee[ao, ai, b] = Step[ai, b] => Iteratee[ao, Step[ai, b]]
+
     private[ken] trait IterateeAs0 { this: Iteratee.type =>
         implicit def _asNewtype1[z]: Newtype1[({type nt[+a] = Iteratee[z, a]})#nt, ({type ot[+a] = n[Step[z, a]]})#ot] = new Newtype1[({type nt[+a] = Iteratee[z, a]})#nt, ({type ot[+a] = n[Step[z, a]]})#ot] {
             private[this] type nt[+a] = Iteratee[z, a]
@@ -193,7 +195,7 @@ private[ken] trait _Enumerators[n[+_]] {
 
     // utilities
     //
-    def enumEOF[a, b]: Enumerator[a, b] = step => step match {
+    def enumEOF[a, b]: Enumerator[a, b] = {
         case Yield(x, _) => `yield`(x)(EOF)
         case Error(err) => throwError(err)
         case Continue(k) => {
@@ -203,6 +205,17 @@ private[ken] trait _Enumerators[n[+_]] {
             }
             k(EOF) >>== check
         }
+    }
+
+    def enumList_[a, b](n: Int)(xs: List[a]): Enumerator[a, b] = {
+        def loop(xs: List[a])(step: Step[a, b]): Iteratee[a, b] = step match {
+            case Continue(k) if not(List.`null`(xs)) => {
+                val (s1, s2) = List.splitAt(n)(xs)
+                k(Chunks(s1)) >>== loop(s2)
+            }
+            case _ => returnI(step)
+        }
+        loop(xs)
     }
 
     // list-analogues

@@ -50,12 +50,12 @@ object _Eq extends EqInstance {
 }
 
 
-private[ken] trait EqInstance { this: Eq.type =>
+private[ken] trait EqInstance0 { this: Eq.type =>
     implicit def _ofScalaEquiv[a](implicit i: scala.Equiv[a]): _Eq[a] = new _Eq[a] {
         override val op_== : a => a => Bool = x => y => i.equiv(x, y)
     }
 
-    implicit def _ofScalaOrdering[a](implicit i: scala.Ordering[a]): Ord[a] = new Ord[a] with EqProxy[a] {
+    implicit def _Ord_ofScalaOrdering[a](implicit i: scala.Ordering[a]): Ord[a] = new Ord[a] with EqProxy[a] {
         override val self = _ofScalaEquiv(i)
         override val compare: a => a => Ordering = { x => y => i.compare(x, y) match {
             case 0 => EQ
@@ -70,8 +70,8 @@ private[ken] trait EqInstance { this: Eq.type =>
         override val min: a => a => a = { x => y => i.min(x, y) }
     }
 
-    implicit def _ofScalaNumeric[a](implicit i: scala.Numeric[a]): Ix[a] = new Ix[a] with OrdProxy[a] {
-        override val self = _ofScalaOrdering(i)
+    implicit def _Ix_ofScalaNumeric[a](implicit i: scala.Numeric[a]): Ix[a] = new Ix[a] with OrdProxy[a] {
+        override val self = _Ord_ofScalaOrdering(i)
         override val range: Tuple2[a, a] => List[a] = { case (n, m) =>
             Predef.require(i.lteq(n, m))
             if (i.equiv(n, m)) Nil else n :: range(i.plus(n, i.one), m)
@@ -81,5 +81,20 @@ private[ken] trait EqInstance { this: Eq.type =>
             if (inRange(b)(i)) unsafeIndex(b)(i) else indexError(b)(i)("Integer")
         }
         override val inRange: Tuple2[a, a] => a => Bool = { case (n, m) => k => i.lteq(n, k) && i.lteq(k, m) }
+    }
+}
+
+private[ken] trait EqInstance extends EqInstance0 { this: Eq.type =>
+    implicit def _Integral_ofScalaIntegral[a](implicit i: scala.math.Integral[a]): Integral[a] = new Integral[a] with NumProxy[a] with OrdProxy[a] with EnumProxy[a] {
+        override val selfNum = Num._ofScalaNumeric(i)
+        override val selfOrd = _Ord_ofScalaOrdering(i)
+        override val selfEnum = Enum._ofScalaNumeric(i)
+        // Real
+
+        // Integral
+        override val quot: a => a => a = x => y => i.quot(x, y)
+        override val rem: a => a => a = x => y => i.rem(x, y)
+        override val quotRem: a => a => (a, a) = { x => y => (i.quot(x, y), i.rem(x, y)) }
+        override val toInteger: a => Integer = i.toInt
     }
 }
