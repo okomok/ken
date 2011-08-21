@@ -21,7 +21,7 @@ trait Integral[a] extends Real[a] with Enum[a] { outer =>
     def quotRem: a => a => (a, a)
     def divMod: a => a => (a, a) = n => d => {
         val qr@(q, r) = quotRem(n)(d)
-        if (signum(r) == negate(signum(d))) (q-fromInteger(1), r+d) else qr
+        if (signum(r) === negate(signum(d))) (q-1, r+d) else qr
     }
 
     def toInteger: a => Integer

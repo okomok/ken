@@ -35,7 +35,7 @@ class MaybeTest extends org.scalatest.junit.JUnit3Suite {
         import MaybeT._monad._
 
         var valid = false
-        def isValid(s: String_): Boolean = implicitly[Eq[String_]].op_==(s)("valid")
+        def isValid(s: String_): Boolean = Eq[Kind.const[String_]].op_===(s)("valid")
 
         def getValidPassword: MaybeT[String_] = {
             for {
@@ -62,7 +62,7 @@ class MaybeTest extends org.scalatest.junit.JUnit3Suite {
         val wmt = MonadTrans.weak[IO.MaybeT.type]
         import wmt.lift
 
-        def isValid(s: String_): Boolean = implicitly[Eq[String_]].op_==(s)("valid")
+        def isValid(s: String_): Boolean = Eq[Kind.const[String_]].op_===(s)("valid")
 
         def getValidPassword: IO[Maybe[String_]] = for {
             s <- IO.getLine
@@ -103,7 +103,7 @@ class MaybeTest extends org.scalatest.junit.JUnit3Suite {
         import mt.lift
 
         var valid = false
-        def isValid(s: String_): Boolean = implicitly[Eq[String_]].op_==(s)("valid")
+        def isValid(s: String_): Boolean = Eq[Kind.const[String_]].op_===(s)("valid")
 
         def getValidPassword: MaybeT[String_] = {
             for {

@@ -16,7 +16,7 @@ trait Num[a] extends Typeclass0[a] {
     def op_+ : a => a => a
     def op_- : a => a => a = { x => y => op_+(x)(negate(y)) }
     def op_* : a => a => a
-    def negate: a => a = { x => op_-(fromInteger(0))(x) }
+    def negate: a => a = { x => op_-(fromInt(0))(x) }
     def abs: a => a
     def signum: a => a
     def fromInteger: Integer => a
@@ -24,8 +24,6 @@ trait Num[a] extends Typeclass0[a] {
     // Extra
     //
     def subtract: a => a => a = flip(op_-)
-
-    final implicit def fromInt(n: Int): a = fromInteger(n)
 
     // Operators
     //
@@ -43,6 +41,10 @@ trait Num[a] extends Typeclass0[a] {
         def *(y: a): a = op_*(x)(y)
     }
     final implicit def *(x: a): Op_* = new Op_*(x)
+
+    // Convenience
+    //
+    implicit def fromInt(n: Int): a = fromInteger(n)
 }
 
 
@@ -58,6 +60,8 @@ trait NumProxy[a] extends Num[a] {
     override def fromInteger: Integer => a = selfNum.fromInteger
 
     override def subtract: a => a => a = selfNum.subtract
+
+    override def fromInt(n: Int): a = selfNum.fromInt(n)
 }
 
 
@@ -75,5 +79,12 @@ private[ken] trait NumInstance { this: Num.type =>
         override val abs: a => a = { x => i.abs(x) }
         override val signum: a => a = { x => fromInteger(i.signum(x)) }
         override val fromInteger: Integer => a = { n => i.fromInt(n.toInt) }
+        override def fromInt(n: Int): a = i.fromInt(n)
+    }
+
+    implicit val _ofInteger: Num[Integer] = new Num[Integer] with NumProxy[Integer] {
+        private[this] type a = Integer
+        override val selfNum = _ofScalaNumeric[Integer]
+        override val fromInteger: Integer => a = id
     }
 }

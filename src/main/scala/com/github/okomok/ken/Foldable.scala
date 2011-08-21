@@ -124,7 +124,7 @@ trait Foldable[t[+_]] extends Typeclass1[t] { outer =>
         foldl1(min_)(xs)
     }
 
-    def elem[a](x: a)(xs: t[a]): Bool = any(instance[Eq[a]].op_==(x))(xs)
+    def elem[a](x: a)(xs: t[a]): Bool = any(Eq[Kind.const[a]].op_===(x))(xs)
     def notElem[a](x: a)(xs: t[a]): Bool = not(elem(x)(xs))
 
     def find[a](p: a => Bool)(xs: t[a]): Maybe[a] = {

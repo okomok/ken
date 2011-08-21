@@ -13,7 +13,7 @@ trait Ord[a] extends Eq[a] { outer =>
 
     // Core
     //
-    def compare: a => a => Ordering = { x => y => if (x == y) EQ else if (op_<=(x)(y)) LT else GT }
+    def compare: a => a => Ordering = { x => y => if (x === y) EQ else if (op_<=(x)(y)) LT else GT }
     def op_< : a => a => Bool = { x => y => compare(x)(y) match { case LT => True; case _ => False } }
     def op_<= : a => a => Bool = { x => y => compare(x)(y) match { case GT => False; case _ => True } }
     def op_> : a => a => Bool = { x => y => compare(x)(y) match { case GT => True; case _ => False } }

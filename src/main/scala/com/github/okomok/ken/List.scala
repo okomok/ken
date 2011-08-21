@@ -302,9 +302,9 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
 
     override def all[a](p: a => Bool)(xs: List[a]): Bool = and(map(p)(xs))
 
-    override def sum[a](xs: List[a])(implicit i: Num[a]): a = foldl(i.op_+)(i.fromInteger(0))(xs)
+    override def sum[a](xs: List[a])(implicit i: Num[a]): a = foldl(i.op_+)(i.fromInt(0))(xs)
 
-    override def product[a](xs: List[a])(implicit i: Num[a]): a = foldl(i.op_*)(i.fromInteger(1))(xs)
+    override def product[a](xs: List[a])(implicit i: Num[a]): a = foldl(i.op_*)(i.fromInt(1))(xs)
 
     override def maximum[a](xs: List[a])(implicit i: Ord[a]): a = xs match {
         case Nil => error("empty List")
@@ -444,7 +444,7 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
         case _ => Nothing
     }
 
-    def group[a](xs: List[a]): List[List[a]] = groupBy(instance[Eq[a]].op_==)(xs)
+    def group[a](xs: List[a]): List[List[a]] = groupBy(Eq[Kind.const[a]].op_===)(xs)
 
     def inits[a](xs: List[a]): List[List[a]] = xs match {
         case Nil => List(Nil)
@@ -517,9 +517,9 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
         case (_ :: xs, n) => op_!!(xs.!)(n-1)
     }
 
-    def elemIndex[a](x: a)(xs: List[a]): Maybe[Int] = findIndex(instance[Eq[a]].op_==(x))(xs)
+    def elemIndex[a](x: a)(xs: List[a]): Maybe[Int] = findIndex(Eq[Kind.const[a]].op_===(x))(xs)
 
-    def elemIndices[a](x: a)(xs: List[a]): List[Int] = findIndices(instance[Eq[a]].op_==(x))(xs)
+    def elemIndices[a](x: a)(xs: List[a]): List[Int] = findIndices(Eq[Kind.const[a]].op_===(x))(xs)
 
     def findIndex[a](p: a => Bool)(xs: List[a]): Maybe[Int] = Maybe.listToMaybe(findIndices(p)(xs))
 
@@ -559,15 +559,15 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
 
     // Set operations
     //
-    def nub[a](xs: List[a]): List[a] = nubBy(instance[Eq[a]].op_==)(xs)
+    def nub[a](xs: List[a]): List[a] = nubBy(Eq[Kind.const[a]].op_===)(xs)
 
-    def delete[a](x: a)(xs: List[a]) = deleteBy(instance[Eq[a]].op_==)(x)(xs)
+    def delete[a](x: a)(xs: List[a]) = deleteBy(Eq[Kind.const[a]].op_===)(x)(xs)
 
     def op_\\[a](xs: List[a])(ys: List[a]): List[a] = foldl(flip(delete[a]))(xs)(ys)
 
-    def union[a](xs: List[a])(ys: List[a]): List[a] = unionBy(instance[Eq[a]].op_==)(xs)(ys)
+    def union[a](xs: List[a])(ys: List[a]): List[a] = unionBy(Eq[Kind.const[a]].op_===)(xs)(ys)
 
-    def intersect[a](xs: List[a])(ys: List[a]): List[a] = intersectBy(instance[Eq[a]].op_==)(xs)(ys)
+    def intersect[a](xs: List[a])(ys: List[a]): List[a] = intersectBy(Eq[Kind.const[a]].op_===)(xs)(ys)
 
     // Ordered lists
     //
@@ -649,7 +649,7 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
         import i._
         xs match {
             case Nil => 0
-            case _ :: l => fromInteger(1) + genericLength(l)
+            case _ :: l => fromInt(1) + genericLength(l)
         }
     }
 
@@ -698,7 +698,7 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
     //
     def range[a](nm: (a, a))(implicit i: Ix[a]): List[a] = i.range(nm)
 
-    def rangeFrom[a](n: a)(implicit i: Num[a]): List[a] = n :: rangeFrom(i.op_+(n)(i.fromInteger(1)))
+    def rangeFrom[a](n: a)(implicit i: Num[a]): List[a] = n :: rangeFrom(i.op_+(n)(i.fromInt(1)))
 
     def slice[a](nm: (Int, Int))(xs: List[a]): List[a] = List.drop(nm._1)(List.take(nm._2)(xs))
 

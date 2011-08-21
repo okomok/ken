@@ -25,7 +25,7 @@ object Ratio {
 
     def reduce[a](x: a)(y: a)(implicit i: Integral[a]): Ratio[a] = {
         import i._
-        if (op_==(y)(0)) {
+        if (y === 0) {
             error("Ratio.%: zero denominator")
         } else {
             val d = gcd(x)(y)
@@ -49,7 +49,7 @@ object Ratio {
     def gcd[a](x: a)(y: a)(implicit i: Integral[a]): a = {
         import i._
         @tailrec
-        def gcd_(a: a)(b: a): a = if (op_==(b)(0)) a else gcd_(b)(a _rem_ b)
+        def gcd_(a: a)(b: a): a = if (b === 0) a else gcd_(b)(a _rem_ b)
         gcd_(abs(x))(abs(y))
     }
 }

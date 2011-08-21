@@ -13,7 +13,7 @@ class MonadTransformerTezt { // extends org.scalatest.junit.JUnit3Suite {
 
     import com.github.okomok.ken._
 
-    def isValid(s: String_): Boolean = Eq[Kind.const[String_]].op_==(s)("valid")
+    def isValid(s: String_): Boolean = Eq[Kind.const[String_]].op_===(s)("valid")
 
     // Strongly-typed monad; Haskell way.
     def testStrongMonadT {
