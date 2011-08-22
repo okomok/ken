@@ -13,7 +13,7 @@ import scala.annotation.tailrec
 
 sealed class Ratio[a](val numerator: a, val denominator:a) {
     override def equals(that: Any): Boolean = that match {
-        case that: Ratio[_] => numerator == that.numerator && denominator == that.denominator
+        case that: Ratio[_] => (numerator == that.numerator) && (denominator == that.denominator)
         case _ => false
     }
     override def toString: String = "Ratio(" + numerator + "," + denominator + ")"
