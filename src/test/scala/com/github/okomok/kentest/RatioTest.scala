@@ -17,12 +17,17 @@ class RatioTest extends org.scalatest.junit.JUnit3Suite {
         expect(Ratio(10, 1))(i.toRational(10))
     }
 
-    def testGcd {
-        expect(3)(Ratio.gcd(15)(6))
+    def testTrivial2 {
+        expect(Ratio(15, 6))(Ratio(5, 2))
     }
 
     def testNotAmibiguous {
         val i = Ord[Kind.const[Int]]
         ()
+    }
+
+    def testMatch {
+        val Ratio(n, d) = Ratio(18, 9)
+        expect((2, 1))((n, d))
     }
 }

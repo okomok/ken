@@ -95,7 +95,7 @@ private[ken] trait EqInstance extends EqInstance0 { this: Eq.type =>
         override val selfOrd = _Ord_ofScalaOrdering(i)
         override val selfEnum = Enum._ofScalaNumeric(i)
         // Real
-        override val toRational: a => Rational = x => Ratio.op_%(toInteger(x))(1)
+        override val toRational: a => Rational = x => Ratio(toInteger(x), 1)
         // Integral
         override val quot: a => a => a = x => y => i.quot(x, y)
         override val rem: a => a => a = x => y => i.rem(x, y)
