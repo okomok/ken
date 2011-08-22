@@ -24,6 +24,7 @@ trait Num[a] extends Typeclass0[a] {
     // Extra
     //
     def subtract: a => a => a = flip(op_-)
+    def fromIntegral[z](x: z)(implicit i: Integral[z]): a = fromInteger(i.toInteger(x))
 
     // Operators
     //
@@ -44,7 +45,7 @@ trait Num[a] extends Typeclass0[a] {
 
     // Convenience
     //
-    implicit def fromInt(n: Int): a = fromInteger(n)
+    final implicit def fromInt(n: Int): a = fromInteger(n)
 }
 
 
@@ -60,8 +61,7 @@ trait NumProxy[a] extends Num[a] {
     override def fromInteger: Integer => a = selfNum.fromInteger
 
     override def subtract: a => a => a = selfNum.subtract
-
-    override def fromInt(n: Int): a = selfNum.fromInt(n)
+    override def fromIntegral[z](x: z)(implicit i: Integral[z]): a = selfNum.fromIntegral(x)
 }
 
 
@@ -79,12 +79,29 @@ private[ken] trait NumInstance { this: Num.type =>
         override val abs: a => a = { x => i.abs(x) }
         override val signum: a => a = { x => fromInteger(i.signum(x)) }
         override val fromInteger: Integer => a = { n => i.fromInt(n.toInt) }
-        override def fromInt(n: Int): a = i.fromInt(n)
     }
 
     implicit val _ofInteger: Num[Integer] = new Num[Integer] with NumProxy[Integer] {
         private[this] type a = Integer
         override val selfNum = _ofScalaNumeric[Integer]
         override val fromInteger: Integer => a = id
+    }
+
+    implicit def _Fractional_ofScalaFractional[a](implicit i: scala.math.Fractional[a]): Fractional[a] = new Fractional[a] with NumProxy[a] {
+        override val selfNum = _ofScalaNumeric[a]
+        override val op_/ : a => a => a = x => y => i.div(x, y)
+        override lazy val fromRational: Rational => a = error("todo")
+    }
+
+    implicit val _Real_ofFloat: Real[Float] = new Real[Float] with NumProxy[Float] {
+        private[this] type a = Float
+        override val selfNum = _ofScalaNumeric[Float]
+        override lazy val toRational: a => Rational = error("todo")
+    }
+
+    implicit val _Real_ofDouble: Real[Double] = new Real[Double] with NumProxy[Double] {
+        private[this] type a = Double
+        override val selfNum = _ofScalaNumeric[Double]
+        override lazy val toRational: a => Rational = error("todo")
     }
 }

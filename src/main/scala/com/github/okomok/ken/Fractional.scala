@@ -17,6 +17,10 @@ trait Fractional[a] extends Num[a] {
     def recip: a => a = x => fromInt(1) / x
     def fromRational: Rational => a
 
+    // Extra
+    //
+    def realToFrac[z](x: z)(implicit i: Real[z]): a = fromRational(i.toRational(x))
+
     // Operators
     //
     sealed class Op_/(x: a) {
@@ -32,18 +36,11 @@ trait FractionalProxy[a] extends Fractional[a] {
     override def op_/ : a => a => a = selfFractional.op_/
     override def recip: a => a = selfFractional.recip
     override def fromRational: Rational => a = selfFractional.fromRational
+
+    override def realToFrac[z](x: z)(implicit i: Real[z]): a = selfFractional.realToFrac(x)(i)
 }
 
 
-object Fractional extends FractionalInstance {
+object Fractional {
     def apply[a](implicit i: Fractional[a]): Fractional[a] = i
-}
-
-
-private[ken] trait FractionalInstance { this: Fractional.type =>
-    implicit def _ofScalaFractional[a](implicit i: scala.math.Fractional[a]): Fractional[a] = new Fractional[a] with NumProxy[a] {
-        override val selfNum = Num._ofScalaNumeric[a]
-        override val op_/ : a => a => a = x => y => i.div(x, y)
-        override def fromRational: Rational => a = error("todo")
-    }
 }

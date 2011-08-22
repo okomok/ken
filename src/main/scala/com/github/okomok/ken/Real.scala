@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-trait Real[a] extends Num[a] with Ord[a] { outer =>
+trait Real[a] extends Num[a] with Ord[a] {
     final val asReal: Real[apply0] = this
 
     // Core

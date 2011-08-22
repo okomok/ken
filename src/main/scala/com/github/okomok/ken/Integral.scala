@@ -26,6 +26,10 @@ trait Integral[a] extends Real[a] with Enum[a] { outer =>
 
     def toInteger: a => Integer
 
+    // Extra
+    def even: a => Bool = n => (n _rem_ 2) == 0
+    def odd: a => Bool = not compose even
+
     // Operators
     //
     sealed class Op_quot(x: a) {
@@ -47,6 +51,14 @@ trait Integral[a] extends Real[a] with Enum[a] { outer =>
         def _mod_(y: a): a = mod(x)(y)
     }
     final implicit def _mod_(x: a): Op_mod = new Op_mod(x)
+
+    // Convenience
+    //
+    final val toInt: a => Int = x => toInteger(x).toInt
+
+    object FromInt {
+        def unapply(x: a): Option[Int] = Some(toInt(x))
+    }
 }
 
 

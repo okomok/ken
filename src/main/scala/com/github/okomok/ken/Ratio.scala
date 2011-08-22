@@ -11,7 +11,7 @@ package ken
 import scala.annotation.tailrec
 
 
-sealed class Ratio[a](val numerator: a, val denominator:a) {
+sealed class Ratio[a](val numerator: a, val denominator:a) extends Kind.constThis {
     override def equals(that: Any): Boolean = that match {
         case that: Ratio[_] => (numerator == that.numerator) && (denominator == that.denominator)
         case _ => false
@@ -59,5 +59,39 @@ object Ratio {
         import i._
         @tailrec def gcd_(a: a)(b: a): a = if (b === 0) a else gcd_(b)(a _rem_ b)
         gcd_(abs(x))(abs(y))
+    }
+
+    implicit def _asRealFrac[z](implicit i: Integral[z]): RealFrac[Ratio[z]] = new RealFrac[Ratio[z]] {
+        private[this] type a = Ratio[z]
+        // Num
+        override val op_+ : a => a => a = { case Ratio(x, y) => { case Ratio(x_, y_) => reduce(i.op_+(i.op_*(x)(y_))(i.op_*(x_)(y)))(i.op_*(y)(y_)) } }
+        override val op_- : a => a => a = { case Ratio(x, y) => { case Ratio(x_, y_) => reduce(i.op_-(i.op_*(x)(y_))(i.op_*(x_)(y)))(i.op_*(y)(y_)) } }
+        override val op_* : a => a => a = { case Ratio(x, y) => { case Ratio(x_, y_) => reduce(i.op_*(x)(x_))(i.op_*(y)(y_)) } }
+        override val negate: a => a = { case Ratio(x, y) => new Ratio(i.negate(x), y) }
+        override val abs: a => a = { case Ratio(x, y) => new Ratio(i.abs(x), y) }
+        override val signum: a => a = { case Ratio(x, _) => new Ratio(i.signum(x), i.fromInt(1))  }
+        override val fromInteger: Integer => a = x => new Ratio(i.fromInteger(x), i.fromInt(1))
+        // Fractional
+        override val op_/ : a => a => a = { case Ratio(x, y) => { case Ratio(x_, y_) => Ratio(i.op_*(x)(y), i.op_*(x_)(y_))  } }
+        override val recip: a => a = { case Ratio(x, y) => Ratio(y, x) }
+        override val fromRational: Rational => a = { case Ratio(x, y) => new Ratio(i.fromInteger(x), i.fromInteger(y)) }
+        // Real
+        override val toRational: a => Rational = { case Ratio(x, y) => new Ratio(i.toInteger(x), i.toInteger(y)) }
+        // RealFrac
+        override def properFraction[b](r: a)(implicit j : Integral[b]): (b, a) = r match {
+            case Ratio(x, y) => {
+                val (q, r) = i.quotRem(x)(y)
+                (j.fromInteger(i.toInteger(q)), new Ratio(r, y))
+            }
+        }
+    }
+
+    implicit def _asEnum[z](implicit i: Integral[z]): Enum[Ratio[z]] = new Enum[Ratio[z]] {
+        private[this] val j = _asRealFrac[z]
+        private[this] type a = Ratio[z]
+        override val succ: a => a = x => j.op_+(x)(j.fromInt(1))
+        override val pred: a => a = x => j.op_-(x)(j.fromInt(1))
+        override val toEnum: Int => a = n => new Ratio(i.fromIntegral(n), i.fromInt(1))
+        override val fromEnum: a => Int = Num[Kind.const[Int]].fromInteger compose j.truncate[Integer]
     }
 }
