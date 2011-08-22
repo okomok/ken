@@ -13,7 +13,7 @@ private[ken] final class _ReaderTs[n[+_]](val inner: Monad[n]) {
 
     final case class _ReaderT[r, +a](override val get: r => n[a]) extends NewtypeOf[r => n[a]]
 
-    object _ReaderT extends Instance with Kind.FunctionLike {
+    object _ReaderT extends _ReaderT_as with Kind.FunctionLike {
         sealed trait apply[r] extends Kind.AbstractMonadTrans {
             override type apply1[+a] = _ReaderT[r, a]
             override type oldtype1[+a] = r => n[a]
@@ -29,7 +29,7 @@ private[ken] final class _ReaderTs[n[+_]](val inner: Monad[n]) {
         def `with`[r, r_, a](f: r_ => r)(n: _ReaderT[r, a]): _ReaderT[r_, a] = _ReaderT { run(n) compose f }
     }
 
-    private[ken] trait Instance0 { this: _ReaderT.type =>
+    private[ken] trait _ReaderT_as0 { this: _ReaderT.type =>
         implicit def _asNewtype1[r]: Newtype1[({type nt[+a] = _ReaderT[r, a]})#nt, ({type ot[+a] = r => n[a]})#ot] = new Newtype1[({type nt[+a] = _ReaderT[r, a]})#nt, ({type ot[+a] = r => n[a]})#ot] {
             private[this] type nt[+a] = _ReaderT[r, a]
             private[this] type ot[+a] = r => n[a]
@@ -60,7 +60,7 @@ private[ken] final class _ReaderTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    private[ken] trait Instance1 extends Instance0 { this: _ReaderT.type =>
+    private[ken] trait _ReaderT_as1 extends _ReaderT_as0 { this: _ReaderT.type =>
         implicit def _asMonadPlus[r](implicit i: MonadPlus[n]): MonadPlus[({type m[+a] = _ReaderT[r, a]})#m] = new MonadPlus[({type m[+a] = _ReaderT[r, a]})#m] with MonadProxy[({type m[+a] = _ReaderT[r, a]})#m] {
             private[this] type m[+a] = _ReaderT[r, a]
             override val selfMonad = _asMonadReader[r]
@@ -69,7 +69,7 @@ private[ken] final class _ReaderTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    private[ken] trait Instance2 extends Instance1 { this: _ReaderT.type =>
+    private[ken] trait _ReaderT_as2 extends _ReaderT_as1 { this: _ReaderT.type =>
         implicit def _asMonadFix[r](implicit i: MonadFix[n]): MonadFix[({type m[+a] = _ReaderT[r, a]})#m] = new MonadFix[({type m[+a] = _ReaderT[r, a]})#m] with MonadProxy[({type m[+a] = _ReaderT[r, a]})#m] {
             private[this] type m[+a] = _ReaderT[r, a]
             override val selfMonad = _asMonadReader[r]
@@ -80,7 +80,7 @@ private[ken] final class _ReaderTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    private[ken] trait Instance3 extends Instance2 { this: _ReaderT.type =>
+    private[ken] trait _ReaderT_as3 extends _ReaderT_as2 { this: _ReaderT.type =>
         implicit def _asMonadIO[r](implicit i: MonadIO[n]): MonadIO[({type m[+a] = _ReaderT[r, a]})#m] = new MonadIO[({type m[+a] = _ReaderT[r, a]})#m] with MonadProxy[({type m[+a] = _ReaderT[r, a]})#m] {
             private[this] type m[+a] = _ReaderT[r, a]
             override val selfMonad = _asMonadReader[r]
@@ -88,7 +88,7 @@ private[ken] final class _ReaderTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    private[ken] trait Instance4 extends Instance3 { this: _ReaderT.type =>
+    private[ken] trait _ReaderT_as4 extends _ReaderT_as3 { this: _ReaderT.type =>
         implicit def _asMonadCont[r](implicit i: MonadCont[n]): MonadCont[({type m[+a] = _ReaderT[r, a]})#m] = new MonadCont[({type m[+a] = _ReaderT[r, a]})#m] with MonadProxy[({type m[+a] = _ReaderT[r, a]})#m] {
             private[this] type m[+a] = _ReaderT[r, a]
             override val selfMonad = _asMonadReader[r]
@@ -100,7 +100,7 @@ private[ken] final class _ReaderTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    private[ken] trait Instance5 extends Instance4 { this: _ReaderT.type =>
+    private[ken] trait _ReaderT_as5 extends _ReaderT_as4 { this: _ReaderT.type =>
         implicit def _asMonadError[r, e](implicit i: MonadError[e, n]): MonadError[e, ({type m[+a] = _ReaderT[r, a]})#m] = new MonadError[e, ({type m[+a] = _ReaderT[r, a]})#m] with MonadProxy[({type m[+a] = _ReaderT[r, a]})#m] {
             private[this] type m[+a] = _ReaderT[r, a]
             override val selfMonad = _asMonadReader[r]
@@ -112,7 +112,7 @@ private[ken] final class _ReaderTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    private[ken] trait Instance6 extends Instance5 { this: _ReaderT.type =>
+    private[ken] trait _ReaderT_as6 extends _ReaderT_as5 { this: _ReaderT.type =>
         implicit def _asMonadState[r, s](implicit i: MonadState[s, n]): MonadState[s, ({type m[+a] = _ReaderT[r, a]})#m] = new MonadState[s, ({type m[+a] = _ReaderT[r, a]})#m] with MonadProxy[({type m[+a] = _ReaderT[r, a]})#m] {
             private[this] type m[+a] = _ReaderT[r, a]
             override val selfMonad = _asMonadReader[r]
@@ -121,7 +121,7 @@ private[ken] final class _ReaderTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    private[ken] trait Instance extends Instance6 { this: _ReaderT.type =>
+    private[ken] trait _ReaderT_as extends _ReaderT_as6 { this: _ReaderT.type =>
         implicit def _asMonadWriter[r, w](implicit i: MonadWriter[w, n]): MonadWriter[w, ({type m[+a] = _ReaderT[r, a]})#m] = new MonadWriter[w, ({type m[+a] = _ReaderT[r, a]})#m] with MonadProxy[({type m[+a] = _ReaderT[r, a]})#m] {
             private[this] type m[+a] = _ReaderT[r, a]
             override val selfMonad = _asMonadReader[r]

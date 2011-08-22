@@ -13,7 +13,7 @@ private[ken] final class _ErrorTs[n[+_]](val inner: Monad[n]) {
 
     final case class _ErrorT[e, +a](override val get: n[Either[e, a]]) extends NewtypeOf[n[Either[e, a]]]
 
-    object _ErrorT extends Instance with Kind.FunctionLike {
+    object _ErrorT extends _ErrorT_as with Kind.FunctionLike {
         sealed trait apply[e] extends Kind.AbstractMonadTrans {
             override type apply1[+a] = _ErrorT[e, a]
             override type oldtype1[+a] = n[Either[e, a]]
@@ -27,7 +27,7 @@ private[ken] final class _ErrorTs[n[+_]](val inner: Monad[n]) {
         def map[e, e_, m[+_], a, b](f: n[Either[e, a]] => m[Either[e_, b]])(n: _ErrorT[e, a]): NewtypeOf[m[Either[e_, b]]] = NewtypeOf { f(run(n)) }
     }
 
-    private[ken] trait Instance0 { this: _ErrorT.type =>
+    private[ken] trait _ErrorT_as0 { this: _ErrorT.type =>
         implicit def _asNewtype1[e]: Newtype1[({type nt[+a] = _ErrorT[e, a]})#nt, ({type ot[+a] = n[Either[e, a]]})#ot] = new Newtype1[({type nt[+a] = _ErrorT[e, a]})#nt, ({type ot[+a] = n[Either[e, a]]})#ot] {
             private[this] type nt[+a] = _ErrorT[e, a]
             private[this] type ot[+a] = n[Either[e, a]]
@@ -92,7 +92,7 @@ private[ken] final class _ErrorTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    private[ken] trait Instance1 extends Instance0 { this: _ErrorT.type =>
+    private[ken] trait _ErrorT_as1 extends _ErrorT_as0 { this: _ErrorT.type =>
         implicit def _asMonadFix[e](implicit i: MonadFix[n], j: ErrorClass[e]): MonadFix[({type m[+a] = _ErrorT[e, a]})#m] = new MonadFix[({type m[+a] = _ErrorT[e, a]})#m] with MonadProxy[({type m[+a] = _ErrorT[e, a]})#m] {
             private[this] type m[+a] = _ErrorT[e, a]
             override val selfMonad = _monad[e]
@@ -106,7 +106,7 @@ private[ken] final class _ErrorTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    private[ken] trait Instance2 extends Instance1 { this: _ErrorT.type =>
+    private[ken] trait _ErrorT_as2 extends _ErrorT_as1 { this: _ErrorT.type =>
         implicit def _asMonadIO[e](implicit i: MonadIO[n], j: ErrorClass[e]): MonadIO[({type m[+a] = _ErrorT[e, a]})#m] = new MonadIO[({type m[+a] = _ErrorT[e, a]})#m] with MonadProxy[({type m[+a] = _ErrorT[e, a]})#m] {
             private[this] type m[+a] = _ErrorT[e, a]
             override val selfMonad = _monad[e]
@@ -114,7 +114,7 @@ private[ken] final class _ErrorTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    private[ken] trait Instance3 extends Instance2 { this: _ErrorT.type =>
+    private[ken] trait _ErrorT_as3 extends _ErrorT_as2 { this: _ErrorT.type =>
         implicit def _asMonadCont[e](implicit i: MonadCont[n], j: ErrorClass[e]): MonadCont[({type m[+a] = _ErrorT[e, a]})#m] = new MonadCont[({type m[+a] = _ErrorT[e, a]})#m] with MonadProxy[({type m[+a] = _ErrorT[e, a]})#m] {
             private[this] type m[+a] = _ErrorT[e, a]
             override val selfMonad = _monad[e]
@@ -126,7 +126,7 @@ private[ken] final class _ErrorTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    private[ken] trait Instance4 extends Instance3 { this: _ErrorT.type =>
+    private[ken] trait _ErrorT_as4 extends _ErrorT_as3 { this: _ErrorT.type =>
         implicit def _asMonadReader[e, r](implicit i: MonadReader[r, n], j: ErrorClass[e]): MonadReader[r, ({type m[+a] = _ErrorT[e, a]})#m] = new MonadReader[r, ({type m[+a] = _ErrorT[e, a]})#m] with MonadProxy[({type m[+a] = _ErrorT[e, a]})#m] {
             private[this] type m[+a] = _ErrorT[e, a]
             override val selfMonad = _monad[e]
@@ -135,7 +135,7 @@ private[ken] final class _ErrorTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    private[ken] trait Instance extends Instance4 { this: _ErrorT.type =>
+    private[ken] trait _ErrorT_as extends _ErrorT_as4 { this: _ErrorT.type =>
         implicit def _asMonadWriter[e, w](implicit i: MonadWriter[w, n], j: ErrorClass[e]): MonadWriter[w, ({type m[+a] = _ErrorT[e, a]})#m] = new MonadWriter[w, ({type m[+a] = _ErrorT[e, a]})#m] with MonadProxy[({type m[+a] = _ErrorT[e, a]})#m] {
             private[this] type m[+a] = _ErrorT[e, a]
             override val selfMonad = _monad[e]
