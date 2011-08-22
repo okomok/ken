@@ -66,7 +66,7 @@ trait NumProxy[a] extends Num[a] {
 
 
 object Num extends NumInstance {
-    def apply[a](implicit i: Num[a]): Num[a] = i
+    def apply[a <: Kind.Function0](implicit i: Num[a#apply0]): Num[a#apply0] = i
 }
 
 

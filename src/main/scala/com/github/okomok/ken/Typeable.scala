@@ -8,9 +8,6 @@ package com.github.okomok
 package ken
 
 
-// Draft
-
-
 trait Typeable[a] extends Typeclass0[a] {
     final val asTypeable: Typeable[a] = this
 
@@ -28,8 +25,6 @@ trait TypeableProxy[a] extends Typeable[a] {
 
 
 object Typeable extends TypeableInstance {
-    def apply[a <: Kind.Function0](implicit i: Typeable[a#apply0]): Typeable[a#apply0] = i
-
     // For some reason, result type-ascription doesn't work.
     def cast[a, b](x: => a, y: Type[b])(implicit i: Typeable[a], j: Typeable[b]): Maybe[b] = {
         lazy val r: Maybe[b] = if (i.typeOf(x) <:< j.typeOf(Maybe.fromJust(r))) {
@@ -59,7 +54,6 @@ object Typeable extends TypeableInstance {
         case Nothing => x
         case Just(g) => g(x)
     }
-
 }
 
 
