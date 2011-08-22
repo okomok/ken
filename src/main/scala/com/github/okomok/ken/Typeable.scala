@@ -11,21 +11,24 @@ package ken
 // Draft
 
 
-trait Typeable[a] {
+trait Typeable[a] extends Typeclass0[a] {
+    final val asTypeable: Typeable[a] = this
+
+    // Core
+    //
     def typeOf(x: => a): ClassManifest[a]
 }
 
 
-trait TypeableProxy[a] extends Typeable[a] with Proxy {
-    override def self: Typeable[a]
-    override def typeOf(x: => a): ClassManifest[a] = self.typeOf(x)
+trait TypeableProxy[a] extends Typeable[a] {
+    def selfTypeable: Typeable[a]
+
+    override def typeOf(x: => a): ClassManifest[a] = selfTypeable.typeOf(x)
 }
 
 
-object Typeable {
-    implicit def _ofAny[a](implicit i: ClassManifest[a]): Typeable[a] = new Typeable[a] {
-        override def typeOf(x: => a): ClassManifest[a] = i
-    }
+object Typeable extends TypeableInstance {
+    def apply[a <: Kind.Function0](implicit i: Typeable[a#apply0]): Typeable[a#apply0] = i
 
     // For some reason, result type-ascription doesn't work.
     def cast[a, b](x: => a, y: Type[b])(implicit i: Typeable[a], j: Typeable[b]): Maybe[b] = {
@@ -35,12 +38,6 @@ object Typeable {
             Nothing
         }
         r
-    }
-
-    // Typeable[a => a] is bothersome.
-    def _mkT[a, b](f: b => b)(x: a)(implicit i: Typeable[a => a], j: Typeable[b => b]): a = cast(f, Type[a => a]) match {
-        case Nothing => x
-        case Just(g) => g(x)
     }
 
     // In short, success only if a == b.
@@ -55,5 +52,19 @@ object Typeable {
     def mkQ[a, b, r](r: r)(q: b => r)(a: a)(implicit i: Typeable[a], j: Typeable[b]): r = cast(a, Type[b]) match {
         case Nothing => r
         case Just(b) => q(b)
+    }
+
+    // Typeable[a => a] is bothersome.
+    private def _original_mkT[a, b](f: b => b)(x: a)(implicit i: Typeable[a => a], j: Typeable[b => b]): a = cast(f, Type[a => a]) match {
+        case Nothing => x
+        case Just(g) => g(x)
+    }
+
+}
+
+
+private[ken] trait TypeableInstance { this: Typeable.type =>
+    implicit def _ofAny[a](implicit i: ClassManifest[a]): Typeable[a] = new Typeable[a] {
+        override def typeOf(x: => a): ClassManifest[a] = i
     }
 }

@@ -17,4 +17,6 @@ sealed abstract class Type[a] extends Kind.AbstractFunction0 {
 
 object Type {
     def apply[a]: Type[a] = new Type[a]{}
+
+    implicit def _ofAny[a]: Type[a] = new Type[a]{}
 }

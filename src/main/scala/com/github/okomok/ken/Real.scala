@@ -9,13 +9,12 @@ package ken
 
 
 trait Real[a] extends Num[a] with Ord[a] { outer =>
-    final val asReal: Real[apply] = this
+    final val asReal: Real[apply0] = this
 
     // Core
     //
     def toRational: a => Rational
 }
-
 
 
 trait RealProxy[a] extends Real[a] with NumProxy[a] with OrdProxy[a] {

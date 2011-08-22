@@ -9,7 +9,7 @@ package ken
 
 
 trait Integral[a] extends Real[a] with Enum[a] { outer =>
-    final val asIntegral: Integral[apply] = this
+    final val asIntegral: Integral[apply0] = this
 
     // Core
     //

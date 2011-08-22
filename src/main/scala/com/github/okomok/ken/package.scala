@@ -11,7 +11,7 @@ package object ken {
 
     // Eq
     //
-    type Eq[-a] = _Eq[a]
+    type Eq[a] = _Eq[a]
     val Eq = _Eq
 
     // Bools
