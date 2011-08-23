@@ -94,6 +94,6 @@ private[ken] trait NumInstance { this: Num.type =>
         override lazy val fromRational: Rational => a = error("todo")
     }
 */
-    implicit val _RealFrac_ofFloat: RealFrac[Float] = Float._Float_asRealFrac
-    implicit val _RealFrac_ofDouble: RealFrac[Double] = Float._Double_asRealFrac
+    implicit val _RealFloat_ofFloat: RealFloat[Float] = Float._asRealFloat
+    implicit val _RealFloat_ofDouble: RealFloat[Double] = Double._asRealFloat
 }

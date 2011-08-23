@@ -9,23 +9,23 @@ package ken
 
 
 import java.lang.{Math => JMath}
-import java.lang.{Float => JFloat}
+import java.lang.{Double => JDouble}
 
 
-object Float {
-    private[ken] val _asRealFloat: RealFloat[Float] = new RealFloat[Float] with NumProxy[Float] {
-        private[this] type a = Float
-        override val selfNum = Num._ofScalaNumeric[Float]
+object Double {
+    private[ken] val _asRealFloat: RealFloat[Double] = new RealFloat[Double] with NumProxy[Double] {
+        private[this] type a = Double
+        override val selfNum = Num._ofScalaNumeric[Double]
         // Fractional
         override val op_/ : a => a => a = x => y => x / y
-        override val recip: a => a = x => 1.0F / x
+        override val recip: a => a = x => 1.0D / x
         override lazy val fromRational: Rational => a = error("todo")
         // Real
         override lazy val toRational: a => Rational = error("todo")
         // RealFrac
         override def properFraction[b](r: a)(implicit j : Integral[b]): (b, a) = error("todo")
         // Floating
-        override val pi: a = JMath.PI.toFloat // suppress realToFrac by toFloat.
+        override val pi: a = JMath.PI
         override val exp: a => a = JMath.exp(_)
         override val log: a => a = JMath.log(_)
         override val sqrt: a => a = JMath.sqrt(_)
@@ -52,33 +52,11 @@ object Float {
         override val exponent: a => Int = JMath.getExponent(_)
         override lazy val significand: a => a = error("todo")
         override lazy val scaleFloat: Int => a => a = error("todo")
-        override val isNaN: a => Bool = JFloat.isNaN(_)
-        override val isInfinite: a => Bool = JFloat.isInfinite(_)
+        override val isNaN: a => Bool = JDouble.isNaN(_)
+        override val isInfinite: a => Bool = JDouble.isInfinite(_)
         override lazy val isDenormalized: a => Bool = error("todo")
         override lazy val isNegativeZero: a => Bool = error("todo")
         override val isIEEE: a => Bool = const(True)
         override val atan2: a => a => a = x => y => JMath.atan2(x, y)
     }
-/*
-    private val fromRat: Rational => Float = {
-        case Ratio(n, 0) => {
-            if (n > 0) {
-                1/0
-            } else if (n < 0) {
-                -1/0
-            } else {
-                0/0
-            }
-        }
-        case r@Ratio(n, d) => {
-            if (n > 0) {
-                fromRat_(r)
-            } else if (n < 0) {
-                -fromRat_(Ratio(-n, d))
-            } else {
-                encodeFloat(0)(0)
-            }
-        }
-    }
-*/
 }
