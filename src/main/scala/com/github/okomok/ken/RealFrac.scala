@@ -14,11 +14,22 @@ trait RealFrac[a] extends Real[a] with Fractional[a] {
     // Core
     //
     def properFraction[b](x: a)(implicit i: Integral[b]): (b, a)
-    def truncate[b](x: a)(implicit i: Integral[b]): b = { val (m, _) = properFraction(x); m }
+
+    def truncate[b](x: a)(implicit i: Integral[b]): b = {
+        val (m, _) = properFraction(x)
+        m
+    }
+
     def round[b](x: a)(implicit i: Integral[b]): b = {
         val (n, r) = properFraction(x)
-        val m = if (r < 0) i.op_-(n)(i.fromInt(1)) else i.op_+(n)(i.fromInt(1))
-        val s = signum(abs(r) - realToFrac(0.5))
+        val m = if (r < 0) {
+            import i._
+            n - 1
+        } else {
+            import i._
+            n + 1
+        }
+        val s = signum(abs(r) - 0.5)
         if (s === -1) {
             n
         } else if (s === 0) {
@@ -29,13 +40,21 @@ trait RealFrac[a] extends Real[a] with Fractional[a] {
             error("round default defn: Bad value")
         }
     }
+
     def ceiling[b](x: a)(implicit i: Integral[b]): b = {
         val (n, r) = properFraction(x)
-        if (r > 0) i.op_+(n)(i.fromInt(1)) else n
+        if (r > 0) {
+            import i._
+            n + 1
+        } else n
     }
+
     def floor[b](x: a)(implicit i: Integral[b]): b = {
         val (n, r) = properFraction(x)
-        if (r < 0) i.op_-(n)(i.fromInt(1)) else n
+        if (r < 0) {
+            import i._
+            n - 1
+        } else n
     }
 }
 

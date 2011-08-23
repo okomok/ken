@@ -19,7 +19,8 @@ trait Fractional[a] extends Num[a] {
 
     // Extra
     //
-    def realToFrac[z](x: z)(implicit i: Real[z]): a = fromRational(i.toRational(x))
+    // higher priority than Num.fromIntegral
+    implicit def realToFrac[z](x: z)(implicit i: Real[z]): a = fromRational(i.toRational(x))
 
     // Operators
     //

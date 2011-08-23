@@ -24,7 +24,8 @@ trait Num[a] extends Typeclass0[a] {
     // Extra
     //
     def subtract: a => a => a = flip(op_-)
-    def fromIntegral[z](x: z)(implicit i: Integral[z]): a = fromInteger(i.toInteger(x))
+
+    implicit def fromIntegral[z](x: z)(implicit i: Integral[z]): a = fromInteger(i.toInteger(x))
 
     // Operators
     //
@@ -45,7 +46,7 @@ trait Num[a] extends Typeclass0[a] {
 
     // Convenience
     //
-    final implicit def fromInt(n: Int): a = fromInteger(n)
+    final def fromInt(n: Int): a = fromInteger(n)
 }
 
 
@@ -86,22 +87,13 @@ private[ken] trait NumInstance { this: Num.type =>
         override val selfNum = _ofScalaNumeric[Integer]
         override val fromInteger: Integer => a = id
     }
-
+/*
     implicit def _Fractional_ofScalaFractional[a](implicit i: scala.math.Fractional[a]): Fractional[a] = new Fractional[a] with NumProxy[a] {
         override val selfNum = _ofScalaNumeric[a]
         override val op_/ : a => a => a = x => y => i.div(x, y)
         override lazy val fromRational: Rational => a = error("todo")
     }
-
-    implicit val _Real_ofFloat: Real[Float] = new Real[Float] with NumProxy[Float] {
-        private[this] type a = Float
-        override val selfNum = _ofScalaNumeric[Float]
-        override lazy val toRational: a => Rational = error("todo")
-    }
-
-    implicit val _Real_ofDouble: Real[Double] = new Real[Double] with NumProxy[Double] {
-        private[this] type a = Double
-        override val selfNum = _ofScalaNumeric[Double]
-        override lazy val toRational: a => Rational = error("todo")
-    }
+*/
+    implicit val _RealFrac_ofFloat: RealFrac[Float] = Float._Float_asRealFrac
+    implicit val _RealFrac_ofDouble: RealFrac[Double] = Float._Double_asRealFrac
 }
