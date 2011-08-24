@@ -11,9 +11,7 @@ package ken
 /**
  * Trival type envelope for type-parameter inference
  */
-sealed class Type[a] extends Kind.AbstractFunction0 {
-    override type apply0 = a
-}
+sealed class Type[a] extends Kind.const[a]
 
 object Type {
     def apply[a]: Type[a] = new Type[a]
