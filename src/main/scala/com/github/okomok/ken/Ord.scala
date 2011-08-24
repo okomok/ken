@@ -75,4 +75,19 @@ object Ord {
     }
 
     def weak[nt <: Kind.Newtype0](implicit i: Ord[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Ord[nt#oldtype0] = deriving[Kind.const[nt#oldtype0], nt](i, j.dual)
+
+    private[ken] def _ofScalaOrdering[a](implicit i: scala.Ordering[a]): Ord[a] = new Ord[a] with EqProxy[a] {
+        override val selfEq = Eq._ofScalaEquiv(i)
+        override val compare: a => a => Ordering = { x => y => i.compare(x, y) match {
+            case 0 => EQ
+            case s if s < 0 => LT
+            case s if s > 0 => GT
+        } }
+        override val op_< : a => a => Bool = { x => y => i.lt(x, y) }
+        override val op_<= : a => a => Bool = { x => y => i.lteq(x, y) }
+        override val op_> : a => a => Bool = { x => y => i.gt(x, y) }
+        override val op_>= : a => a => Bool = { x => y => i.gteq(x, y) }
+        override val max: a => a => a = { x => y => i.max(x, y) }
+        override val min: a => a => a = { x => y => i.min(x, y) }
+    }
 }

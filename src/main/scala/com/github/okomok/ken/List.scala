@@ -696,11 +696,22 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
 
     // Misc
     //
-    def range[a](nm: (a, a))(implicit i: Ix[a]): List[a] = i.range(nm)
+    val range: Tuple2[Int, Int] => List[Int] = { case (n, m) =>
+        Predef.require(n <= m)
+        if (n == m) {
+            Nil
+        } else {
+            n :: range(n + 1, m)
+        }
+    }
 
-    def rangeFrom[a](n: a)(implicit i: Num[a]): List[a] = n :: rangeFrom(i.op_+(n)(i.fromIntegral(1)))
+    val rangeFrom: Int => List[Int] = n => {
+        n :: rangeFrom(n + 1)
+    }
 
-    def slice[a](nm: (Int, Int))(xs: List[a]): List[a] = List.drop(nm._1)(List.take(nm._2)(xs))
+    def slice[a](n_m: (Int, Int))(xs: List[a]): List[a] = n_m match {
+        case (n, m) => List.drop(n)(List.take(m)(xs))
+    }
 
     def step[a](n: Int)(xs: List[a]): List[a] = {
         Predef.require(n > 0)

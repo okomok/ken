@@ -194,7 +194,7 @@ object Foldable extends FoldableInstance {
 }
 
 
-private[ken] trait FoldableInstance { this: Foldable.type =>
+sealed trait FoldableInstance { this: Foldable.type =>
     implicit def _ofScalaTraversable[CC[+X] <: scala.collection.GenTraversableLike[X, CC[X]]](implicit mf: Scala.CanMapFrom[CC]): Traversable[CC] = Scala.Traversable._asTraversable(mf)
     implicit val _ofScalaOption: Traversable[Option] = Scala.Option
 }

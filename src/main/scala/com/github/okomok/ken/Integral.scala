@@ -81,4 +81,17 @@ trait IntegralProxy[a] extends Integral[a] with RealProxy[a] with EnumProxy[a] {
 
 object Integral {
     def apply[a <: Kind.Function0](implicit i: Integral[a#apply0]): Integral[a#apply0] = i
+
+    private[ken] def _ofScalaIntegral[a](implicit i: scala.math.Integral[a]): Integral[a] = new Integral[a] with NumProxy[a] with OrdProxy[a] with EnumProxy[a] {
+        override val selfNum = Num._ofScalaNumeric(i)
+        override val selfOrd = Ord._ofScalaOrdering(i)
+        override val selfEnum = Enum._ofScalaNumeric(i)
+        // Real
+        override val toRational: a => Rational = x => Ratio(toInteger(x), 1)
+        // Integral
+        override val quot: a => a => a = x => y => i.quot(x, y)
+        override val rem: a => a => a = x => y => i.rem(x, y)
+        override val quotRem: a => a => (a, a) = { x => y => (i.quot(x, y), i.rem(x, y)) }
+        override val toInteger: a => Integer = i.toInt
+    }
 }

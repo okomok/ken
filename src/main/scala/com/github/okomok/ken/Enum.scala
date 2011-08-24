@@ -18,15 +18,17 @@ trait Enum[a] extends Typeclass0[a] { outer =>
     def toEnum: Int => a
     def fromEnum: a => Int
 
-    def enumFrom: a => List[a] = x => List.map(toEnum)(List.rangeFrom(fromEnum(x)))
-    def enumFromThen: a => a => List[a] = x => y => {
-        val (n, m) = (fromEnum(x), fromEnum(y))
-        List.map(toEnum)(List.step(m - n)(List.rangeFrom(n)))
+    def enumFrom: a => List[a] = x => {
+        List.map(toEnum)(Int.enumFrom(fromEnum(x)))
     }
-    def enumFromTo: a => a => List[a] = x => y => List.map(toEnum)(List.range(fromEnum(x), fromEnum(y)+1))
+    def enumFromThen: a => a => List[a] = x => y => {
+        List.map(toEnum)(Int.enumFromThen(fromEnum(x))(fromEnum(y)))
+    }
+    def enumFromTo: a => a => List[a] = x => y => {
+        List.map(toEnum)(Int.enumFromTo(fromEnum(x))(fromEnum(y)))
+    }
     def enumFromThenTo: a => a => a => List[a] = x1 => x2 => y => {
-        val (n, m) = (fromEnum(x1), fromEnum(x2))
-        List.map(toEnum)(List.step(m - n)(List.range(n, fromEnum(y)+1)))
+        List.map(toEnum)(Int.enumFromThenTo(fromEnum(x1))(fromEnum(x2))(fromEnum(y)))
     }
 }
 
@@ -51,9 +53,11 @@ object Enum extends EnumInstance {
 }
 
 
-private[ken] trait EnumInstance { this: Enum.type =>
+sealed trait EnumInstance { this: Enum.type =>
     implicit def _ofScalaNumeric[a](implicit i: scala.math.Numeric[a]): Enum[a] = new Enum[a] {
         override val toEnum: Int => a = n => i.fromInt(n)
         override val fromEnum: a => Int = x => i.toInt(x)
     }
+
+    implicit val _ofInt: Enum[Int] = Int
 }

@@ -59,46 +59,10 @@ private[ken] trait EqInstance0 { this: Eq.type =>
         override val op_=== : a => a => Bool = x => y => i.equiv(x, y)
     }
 
-    implicit def _Ord_ofScalaOrdering[a](implicit i: scala.Ordering[a]): Ord[a] = new Ord[a] with EqProxy[a] {
-        override val selfEq = _ofScalaEquiv(i)
-        override val compare: a => a => Ordering = { x => y => i.compare(x, y) match {
-            case 0 => EQ
-            case s if s < 0 => LT
-            case s if s > 0 => GT
-        } }
-        override val op_< : a => a => Bool = { x => y => i.lt(x, y) }
-        override val op_<= : a => a => Bool = { x => y => i.lteq(x, y) }
-        override val op_> : a => a => Bool = { x => y => i.gt(x, y) }
-        override val op_>= : a => a => Bool = { x => y => i.gteq(x, y) }
-        override val max: a => a => a = { x => y => i.max(x, y) }
-        override val min: a => a => a = { x => y => i.min(x, y) }
-    }
-
-    implicit def _Ix_ofScalaNumeric[a](implicit i: scala.Numeric[a]): Ix[a] = new Ix[a] with OrdProxy[a] {
-        override val selfOrd = _Ord_ofScalaOrdering(i)
-        override val range: Tuple2[a, a] => List[a] = { case (n, m) =>
-            Predef.require(i.lteq(n, m))
-            if (i.equiv(n, m)) Nil else n :: range(i.plus(n, i.one), m)
-        }
-        override val unsafeIndex: Tuple2[a, a] => a => Int = { case (n, _) => k => i.toInt(i.minus(k, n)) }
-        override val index: Tuple2[a, a] => a => Int = b => i => {
-            if (inRange(b)(i)) unsafeIndex(b)(i) else indexError(b)(i)("Integer")
-        }
-        override val inRange: Tuple2[a, a] => a => Bool = { case (n, m) => k => i.lteq(n, k) && i.lteq(k, m) }
-    }
+    implicit def _Ord_ofScalaOrdering[a](implicit i: scala.Ordering[a]): Ord[a] = Ord._ofScalaOrdering(i)
+    implicit def _Ix_ofScalaNumeric[a](implicit i: scala.Numeric[a]): Ix[a] = Ix._ofScalaNumeric(i)
 }
 
-private[ken] trait EqInstance extends EqInstance0 { this: Eq.type =>
-    implicit def _Integral_ofScalaIntegral[a](implicit i: scala.math.Integral[a]): Integral[a] = new Integral[a] with NumProxy[a] with OrdProxy[a] with EnumProxy[a] {
-        override val selfNum = Num._ofScalaNumeric(i)
-        override val selfOrd = _Ord_ofScalaOrdering(i)
-        override val selfEnum = Enum._ofScalaNumeric(i)
-        // Real
-        override val toRational: a => Rational = x => Ratio(toInteger(x), 1)
-        // Integral
-        override val quot: a => a => a = x => y => i.quot(x, y)
-        override val rem: a => a => a = x => y => i.rem(x, y)
-        override val quotRem: a => a => (a, a) = { x => y => (i.quot(x, y), i.rem(x, y)) }
-        override val toInteger: a => Integer = i.toInt
-    }
+sealed trait EqInstance extends EqInstance0 { this: Eq.type =>
+    implicit def _Integral_ofScalaIntegral[a](implicit i: scala.math.Integral[a]): Integral[a] = Integral._ofScalaIntegral(i)
 }

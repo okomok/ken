@@ -68,4 +68,17 @@ object Ix {
     }
 
     def weak[nt <: Kind.Newtype0](implicit i: Ix[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Ix[nt#oldtype0] = deriving[Kind.const[nt#oldtype0], nt](i, j.dual)
+
+    private[ken] def _ofScalaNumeric[a](implicit i: scala.Numeric[a]): Ix[a] = new Ix[a] with OrdProxy[a] {
+        override val selfOrd = Ord._ofScalaOrdering(i)
+        override val range: Tuple2[a, a] => List[a] = { case (n, m) =>
+            Predef.require(i.lteq(n, m))
+            if (i.equiv(n, m)) Nil else n :: range(i.plus(n, i.one), m)
+        }
+        override val unsafeIndex: Tuple2[a, a] => a => Int = { case (n, _) => k => i.toInt(i.minus(k, n)) }
+        override val index: Tuple2[a, a] => a => Int = b => i => {
+            if (inRange(b)(i)) unsafeIndex(b)(i) else indexError(b)(i)("Integer")
+        }
+        override val inRange: Tuple2[a, a] => a => Bool = { case (n, m) => k => i.lteq(n, k) && i.lteq(k, m) }
+    }
 }

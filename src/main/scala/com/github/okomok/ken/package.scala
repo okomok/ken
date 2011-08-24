@@ -58,7 +58,12 @@ package object ken {
         if (p(x)) x else until(p)(f)(f(x))
     }
 
-    def asTypeOf[a](x: a): a => a = const(x)
+    def asTypeOf[a](x: a)(y: a): a = x
+
+    sealed class AsTypeOf[a](x: a) {
+        def _asTypeOf_(y: => a): a = x
+    }
+    implicit def _asTypeOf_[a](x: a): AsTypeOf[a] = new AsTypeOf(x)
 
     val error: String_ => Nothing = { msg => throw new java.lang.Error(List.stringize(msg)) }
 

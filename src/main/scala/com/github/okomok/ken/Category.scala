@@ -60,6 +60,6 @@ object Category extends CategoryInstance {
 }
 
 
-private[ken] trait CategoryInstance { this: Category.type =>
+sealed trait CategoryInstance { this: Category.type =>
     implicit val _ofFunction1: ArrowChoice[Function1] with ArrowApply[Function1] with ArrowLoop[Function1] = Function
 }
