@@ -1,7 +1,7 @@
 
 
 // Copyright Shunsuke Sogame 2011.
-// Distributed under the terms of an MIT-style license.
+// Distributed under the New BSD license.
 
 
 // Copyright 1999-2000, Daan Leijen. All rights reserved.
