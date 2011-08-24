@@ -16,7 +16,7 @@ trait Num[a] extends Typeclass0[a] {
     def op_+ : a => a => a
     def op_- : a => a => a = { x => y => op_+(x)(negate(y)) }
     def op_* : a => a => a
-    def negate: a => a = { x => op_-(fromInt(0))(x) }
+    def negate: a => a = { x => op_-(fromIntegral(0))(x) }
     def abs: a => a
     def signum: a => a
     def fromInteger: Integer => a
@@ -46,7 +46,7 @@ trait Num[a] extends Typeclass0[a] {
 
     // Convenience
     //
-    final def fromInt(n: Int): a = fromInteger(n)
+    // final def fromInt(n: Int): a = fromInteger(n)
 }
 
 

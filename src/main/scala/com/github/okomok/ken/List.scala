@@ -302,9 +302,9 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
 
     override def all[a](p: a => Bool)(xs: List[a]): Bool = and(map(p)(xs))
 
-    override def sum[a](xs: List[a])(implicit i: Num[a]): a = foldl(i.op_+)(i.fromInt(0))(xs)
+    override def sum[a](xs: List[a])(implicit i: Num[a]): a = foldl(i.op_+)(i.fromIntegral(0))(xs)
 
-    override def product[a](xs: List[a])(implicit i: Num[a]): a = foldl(i.op_*)(i.fromInt(1))(xs)
+    override def product[a](xs: List[a])(implicit i: Num[a]): a = foldl(i.op_*)(i.fromIntegral(1))(xs)
 
     override def maximum[a](xs: List[a])(implicit i: Ord[a]): a = xs match {
         case Nil => error("empty List")
@@ -649,7 +649,7 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
         import i._
         xs match {
             case Nil => 0
-            case _ :: l => fromInt(1) + genericLength(l)
+            case _ :: l => fromIntegral(1) + genericLength(l)
         }
     }
 
@@ -698,7 +698,7 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
     //
     def range[a](nm: (a, a))(implicit i: Ix[a]): List[a] = i.range(nm)
 
-    def rangeFrom[a](n: a)(implicit i: Num[a]): List[a] = n :: rangeFrom(i.op_+(n)(i.fromInt(1)))
+    def rangeFrom[a](n: a)(implicit i: Num[a]): List[a] = n :: rangeFrom(i.op_+(n)(i.fromIntegral(1)))
 
     def slice[a](nm: (Int, Int))(xs: List[a]): List[a] = List.drop(nm._1)(List.take(nm._2)(xs))
 

@@ -65,25 +65,21 @@ object Ratio {
         private[this] type a = Ratio[z]
         // Num
         override val op_+ : a => a => a = { case Ratio(x, y) => { case Ratio(x_, y_) => {
-            import i._
-            reduce(x * y_ + x_ * y)(y * y_)
+            reduce(i.op_+(i.op_*(x)(y_))(i.op_*(x_)(y)))(i.op_*(y)(y_))
         } } }
         override val op_- : a => a => a = { case Ratio(x, y) => { case Ratio(x_, y_) => {
-            import i._
-            reduce(x * y_ - x_ * y)(y * y_)
+            reduce(i.op_-(i.op_*(x)(y_))(i.op_*(x_)(y)))(i.op_*(y)(y_))
         } } }
         override val op_* : a => a => a = { case Ratio(x, y) => { case Ratio(x_, y_) => {
-            import i._
-            reduce(x * x_)(y * y_)
+            reduce(i.op_*(x)(x_))(i.op_*(y)(y_))
         } } }
         override val negate: a => a = { case Ratio(x, y) => new Ratio(i.negate(x), y) }
         override val abs: a => a = { case Ratio(x, y) => new Ratio(i.abs(x), y) }
-        override val signum: a => a = { case Ratio(x, _) => new Ratio(i.signum(x), i.fromInt(1))  }
-        override val fromInteger: Integer => a = x => new Ratio(i.fromInteger(x), i.fromInt(1))
+        override val signum: a => a = { case Ratio(x, _) => new Ratio(i.signum(x), i.fromIntegral(1))  }
+        override val fromInteger: Integer => a = x => new Ratio(i.fromInteger(x), i.fromIntegral(1))
         // Fractional
         override val op_/ : a => a => a = { case Ratio(x, y) => { case Ratio(x_, y_) => {
-            import i._
-            Ratio(x * y, x_ * y_)
+            Ratio(i.op_*(x)(y), i.op_*(x_)(y_))
         } } }
         override val recip: a => a = { case Ratio(x, y) => Ratio(y, x) }
         override val fromRational: Rational => a = { case Ratio(x, y) => new Ratio(i.fromInteger(x), i.fromInteger(y)) }
@@ -101,15 +97,9 @@ object Ratio {
     implicit def _asEnum[z](implicit i: Integral[z]): Enum[Ratio[z]] = new Enum[Ratio[z]] {
         private[this] val j = _asRealFrac[z]
         private[this] type a = Ratio[z]
-        override val succ: a => a = x => {
-            import j._
-            x + 1
-        }
-        override val pred: a => a = x => {
-            import j._
-            x - 1
-        }
-        override val toEnum: Int => a = n => new Ratio(i.fromIntegral(n), i.fromInt(1))
+        override val succ: a => a = x => j.op_+(x)(j.fromIntegral(1))
+        override val pred: a => a = x => j.op_-(x)(j.fromIntegral(1))
+        override val toEnum: Int => a = n => new Ratio(i.fromIntegral(n), i.fromIntegral(1))
         override val fromEnum: a => Int = Num[Kind.const[Int]].fromInteger compose j.truncate[Integer]
     }
 }

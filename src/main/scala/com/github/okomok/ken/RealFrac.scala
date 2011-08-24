@@ -23,11 +23,9 @@ trait RealFrac[a] extends Real[a] with Fractional[a] {
     def round[b](x: a)(implicit i: Integral[b]): b = {
         val (n, r) = properFraction(x)
         val m = if (r < 0) {
-            import i._
-            n - 1
+            i.op_-(n)(i.fromIntegral(1))
         } else {
-            import i._
-            n + 1
+            i.op_+(n)(i.fromIntegral(1))
         }
         val s = signum(abs(r) - 0.5)
         if (s === -1) {
@@ -44,17 +42,19 @@ trait RealFrac[a] extends Real[a] with Fractional[a] {
     def ceiling[b](x: a)(implicit i: Integral[b]): b = {
         val (n, r) = properFraction(x)
         if (r > 0) {
-            import i._
-            n + 1
-        } else n
+            i.op_+(n)(i.fromIntegral(1))
+        } else {
+            n
+        }
     }
 
     def floor[b](x: a)(implicit i: Integral[b]): b = {
         val (n, r) = properFraction(x)
         if (r < 0) {
-            import i._
-            n - 1
-        } else n
+            i.op_-(n)(i.fromIntegral(1))
+        } else {
+            n
+        }
     }
 }
 

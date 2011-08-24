@@ -133,7 +133,7 @@ object Monoid extends MonoidInstance {
         implicit def _asMonoid[a](implicit i: Num[a]): Monoid[Sum[a]] = new Monoid[Sum[a]] {
             import i.+
             private[this] type m = Sum[a]
-            override val mempty: m = Sum(i.fromInt(0))
+            override val mempty: m = Sum(i.fromIntegral(0))
             override val mappend: m => Lazy[m] => m = x => y => Sum(x.get + y.get)
         }
     }
@@ -156,7 +156,7 @@ object Monoid extends MonoidInstance {
         implicit def _asMonoid[a](implicit i: Num[a]): Monoid[Product[a]] = new Monoid[Product[a]] {
             import i.*
             private[this] type m = Product[a]
-            override val mempty: m = Product(i.fromInt(1))
+            override val mempty: m = Product(i.fromIntegral(1))
             override val mappend: m => Lazy[m] => m = x => y => Product(x.get * y.get)
         }
     }

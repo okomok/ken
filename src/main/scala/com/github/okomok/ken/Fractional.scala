@@ -14,7 +14,7 @@ trait Fractional[a] extends Num[a] {
     // Core
     //
     def op_/ : a => a => a = x => y => x * recip(y)
-    def recip: a => a = x => fromInt(1) / x
+    def recip: a => a = x => fromIntegral(1) / x
     def fromRational: Rational => a
 
     // Extra
