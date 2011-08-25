@@ -18,7 +18,7 @@ object Bool extends Bounded[Bool] with Enum[Bool] with Ord[Bool] with Show[Bool]
     // Overrides
     //
     // Bounded
-    private[this] type a = Boolean // Bool alias make it crash.
+    private[this] type a = Boolean // Bool alias makes it crash.
     override val minBound: a = False
     override val maxBound: a = True
     // Enum

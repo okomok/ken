@@ -18,7 +18,7 @@ object Integer extends Enum[Integer] with Integral[Integer] with Show[Integer] {
     // Overrides
     //
     // Enum
-    private[this] type a = BigInt // Integer alias make it crash.
+    private[this] type a = BigInt // Integer alias makes it crash.
     override val succ: a => a = x => x + 1
     override val pred: a => a = x => x - 1
     override val toEnum: Int => a = n => n
