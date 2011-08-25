@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-object Unit extends Bounded[Unit] with Enum[Unit] with Monoid[Unit] with Show[Unit] {
+object Unit extends Bounded[Unit] with Enum[Unit] with Monoid[Unit] with Ord[Unit] with Show[Unit] {
     // Overrides
     //
     // Bounded
@@ -22,16 +22,27 @@ object Unit extends Bounded[Unit] with Enum[Unit] with Monoid[Unit] with Show[Un
         if (x == 0) ()
         else error("Enum[Unit].toEnum: bad argument")
     }
-    override val fromEnum: a => Int = { case () => 0 }
-    override val enumFrom: a => List[a] = { case () => List(()) }
-    override def enumFromThen: a => a => List[a] = { case () => { case () => List.repeat(()) } }
-    override def enumFromTo: a => a => List[a] = { case () => { case () => List(()) } }
-    override def enumFromThenTo: a => a => a => List[a] = { case () => { case () => { case () => List.repeat(()) } } }
+    override val fromEnum: a => Int = _ => 0
+    override val enumFrom: a => List[a] = _ => List(())
+    override def enumFromThen: a => a => List[a] = _ => _ => List.repeat(())
+    override def enumFromTo: a => a => List[a] = _ => _ => List(())
+    override def enumFromThenTo: a => a => a => List[a] = _ => _ => _ => List.repeat(())
+    // Eq
+    override val op_=== : a => a => Bool = _ => _ => True
+    override val op_/== : a => a => Bool = _ => _ => False
+    // Ord
+    override val compare: a => a => Ordering = _ => _ => EQ
+    override val op_< : a => a => Bool = _ => _ => False
+    override val op_<= : a => a => Bool = _ => _ => True
+    override val op_> : a => a => Bool = _ => _ => False
+    override val op_>= : a => a => Bool = _ => _ => True
+    override val max: a => a => a = _ => _ => ()
+    override val min: a => a => a = _ => _ => ()
     // Monoid
     private type m = Unit
     override val mempty: m = ()
-    override val mappend: m => Lazy[m] => m = { _ => _ => () }
-    override val mconcat: List[m] => m = { _ => () }
+    override val mappend: m => Lazy[m] => m = _ => _ => ()
+    override val mconcat: List[m] => m = _ => ()
     // Show
     override val showsPrec: Int => a => ShowS = _ => a => Show.showString(a.toString)
 }
