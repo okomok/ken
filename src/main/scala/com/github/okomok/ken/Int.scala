@@ -21,7 +21,7 @@ object Int extends Bounded[Int] with Enum[Int] with Integral[Int] with Show[Int]
     // Overrides
     //
     // Bounded
-    private[this] type a = Int
+    private type a = Int
     override val minBound: a = JInt.MIN_VALUE
     override val maxBound: a = JInt.MAX_VALUE
     // Enum

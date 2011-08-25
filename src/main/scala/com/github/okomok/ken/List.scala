@@ -102,14 +102,14 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
     // Overrides
     //
     // Monad
-    private[this] type m[+a] = List[a]
+    private type m[+a] = List[a]
     override def `return`[a](x: Lazy[a]): m[a] = List(x)
     override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = concat(map(y)(x))
     // MonadPlus
     override def mzero: m[Nothing] = Nil
     override def mplus[a](x: m[a])(y: Lazy[m[a]]): m[a] = x ::: y.!
     // Foldable
-    private[this] type t[+a] = List[a]
+    private type t[+a] = List[a]
     override def toList[a](xs: t[a]): List[a]  = xs
     // Traversable
     override def traverse[f[+_], a, b](f: a => f[b])(t: t[a])(implicit i: Applicative[f]): f[t[b]] = {

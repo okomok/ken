@@ -21,11 +21,11 @@ object Function extends ArrowChoice[Function1] with ArrowApply[Function1] with A
     // Overrides
     //
     // Category
-    private[this] type cat[-a, +b] = a => b
+    private type cat[-a, +b] = a => b
     override def cid[a]: cat[a, a] = id[a]
     override def op_<<<[a, b, c](f: cat[b, c])(g: cat[a, b]): cat[a, c] = f.compose(g)
     // Arrow
-    private[this] type a[-a, +b] = cat[a, b]
+    private type a[-a, +b] = a => b
     override def arr[b, c](f: b => c): a[b, c] = f
     override def first[b, c, d](f: a[b, c]): a[(b, d), (c, d)] = f *** id[d]
     override def second[b, c, d](f: a[b, c]): a[(d, b), (d, c)] = id[d] *** f

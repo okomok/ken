@@ -21,7 +21,7 @@ object Char extends Bounded[Char] with Enum[Char] with Ord[Char] with Show[Char]
     // Overrides
     //
     // Bounded
-    private[this] type a = Char
+    private type a = Char
     override val minBound: a = JChar.MIN_VALUE
     override val maxBound: a = JChar.MAX_VALUE
     // Enum

@@ -20,13 +20,13 @@ object Maybe extends MonadPlus[Maybe] with Traversable[Maybe] with ThisIsInstanc
     // Overrides
     //
     // Functor
-    private[this] type f[+a] = Maybe[a]
+    private type f[+a] = Maybe[a]
     override def fmap[a, b](f: a => b)(x: f[a]): f[b] = x match {
         case Nothing => Nothing
         case Just(a) => Just(f(a))
     }
     // Monad
-    private[this] type m[+a] = f[a]
+    private type m[+a] = Maybe[a]
     override def `return`[a](x: Lazy[a]): m[a] = Just(x)
     override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = m match {
         case Just(x) => k(x)
@@ -43,7 +43,7 @@ object Maybe extends MonadPlus[Maybe] with Traversable[Maybe] with ThisIsInstanc
         case _ => xs
     }
     // Foldable
-    private[this] type t[+a] = Maybe[a]
+    private type t[+a] = Maybe[a]
     override def foldr[a, b](f: a => Lazy[b] => b)(z: b)(t: t[a]): b = t match {
         case Nothing => z
         case Just(x) => f(x)(z)

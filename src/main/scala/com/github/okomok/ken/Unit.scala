@@ -12,12 +12,12 @@ object Unit extends Monoid[Unit] with Bounded[Unit] {
     // Overrides
     //
     // Monoid
-    private[this] type m = Unit
+    private type m = Unit
     override val mempty: m = ()
     override val mappend: m => Lazy[m] => m = { _ => _ => () }
     override val mconcat: List[m] => m = { _ => () }
     // Bounded
-    private[this] type a = Unit
+    private type a = Unit
     override val minBound: a = ()
     override val maxBound: a = ()
 }

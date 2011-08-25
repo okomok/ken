@@ -25,7 +25,7 @@ object Ordering extends Bounded[Ordering] with Enum[Ordering] with Monoid[Orderi
     // Overrides
     //
     // Bounded
-    private[this] type a = Ordering
+    private type a = Ordering
     override val minBound: a = LT
     override val maxBound: a = GT
     // Enum
@@ -52,7 +52,7 @@ object Ordering extends Bounded[Ordering] with Enum[Ordering] with Monoid[Orderi
     override val enumFrom: a => List[a] = Bounded.boundedEnumFrom
     override val enumFromThen: a => a => List[a] = Bounded.boundedEnumFromThen
     // Monoid
-    private[this] type m = Ordering
+    private type m = Ordering
     override val mempty: m = EQ
     override val mappend: m => Lazy[m] => m = x => y => x match {
         case LT => LT
