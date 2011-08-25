@@ -21,11 +21,14 @@ case object EQ extends Ordering
 case object GT extends Ordering
 
 
-object Ordering extends Enum[Ordering] with Bounded[Ordering] with Monoid[Ordering] with ThisIsInstance {
+object Ordering extends Bounded[Ordering] with Enum[Ordering] with Monoid[Ordering] with Show[Ordering] with ThisIsInstance {
     // Overrides
     //
-    // Enum
+    // Bounded
     private[this] type a = Ordering
+    override val minBound: a = LT
+    override val maxBound: a = GT
+    // Enum
     override val succ: a => a = {
         case LT => EQ
         case EQ => GT
@@ -48,9 +51,6 @@ object Ordering extends Enum[Ordering] with Bounded[Ordering] with Monoid[Orderi
     }
     override val enumFrom: a => List[a] = Bounded.boundedEnumFrom
     override val enumFromThen: a => a => List[a] = Bounded.boundedEnumFromThen
-    // Bounded
-    override val minBound: a = LT
-    override val maxBound: a = GT
     // Monoid
     private[this] type m = Ordering
     override val mempty: m = EQ
@@ -59,4 +59,6 @@ object Ordering extends Enum[Ordering] with Bounded[Ordering] with Monoid[Orderi
         case EQ => y.!
         case GT => GT
     }
+    // Show
+    override val showsPrec: Int => a => ShowS = _ => a => Show.showString(a.toString)
 }

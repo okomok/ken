@@ -13,13 +13,13 @@ trait Ord[a] extends Eq[a] { outer =>
 
     // Core
     //
-    def compare: a => a => Ordering = { x => y => if (x === y) EQ else if (op_<=(x)(y)) LT else GT }
-    def op_< : a => a => Bool = { x => y => compare(x)(y) match { case LT => True; case _ => False } }
-    def op_<= : a => a => Bool = { x => y => compare(x)(y) match { case GT => False; case _ => True } }
-    def op_> : a => a => Bool = { x => y => compare(x)(y) match { case GT => True; case _ => False } }
-    def op_>= : a => a => Bool = { x => y => compare(x)(y) match { case LT => False; case _ => True } }
-    def max: a => a => a = { x => y => if (op_<=(x)(y)) y else x }
-    def min: a => a => a = { x => y => if (op_<=(x)(y)) x else y }
+    def compare: a => a => Ordering = x => y => if (x === y) EQ else if (op_<=(x)(y)) LT else GT
+    def op_< : a => a => Bool = x => y => compare(x)(y) match { case LT => True; case _ => False }
+    def op_<= : a => a => Bool = x => y => compare(x)(y) match { case GT => False; case _ => True }
+    def op_> : a => a => Bool = x => y => compare(x)(y) match { case GT => True; case _ => False }
+    def op_>= : a => a => Bool = x => y => compare(x)(y) match { case LT => False; case _ => True }
+    def max: a => a => a = x => y => if (op_<=(x)(y)) y else x
+    def min: a => a => a = x => y => if (op_<=(x)(y)) x else y
 
     // Operators
     //
@@ -79,6 +79,7 @@ object Ord extends OrdInstance {
 
 
 sealed trait OrdInstance { this: Ord.type =>
+    implicit val _ofChar: Ord[Char] = Char
     implicit val _ofInt: Ord[Int] = Int
 
     implicit def _ofScalaOrdering[a](implicit i: scala.Ordering[a]): Ord[a] = new Ord[a] with EqProxy[a] {

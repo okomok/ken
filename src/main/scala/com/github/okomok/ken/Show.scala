@@ -76,6 +76,9 @@ object Show extends ShowInstance {
 
 
 sealed trait ShowInstance { this: Show.type =>
+    implicit val _ofChar: Show[Char] = Char
+    implicit val _ofInt: Show[Int] = Int
+
     implicit def _ofAny[a]: Show[a] = new Show[a] {
         override val showsPrec: Int => a => ShowS = _ => x => showString(x.toString)
     }
@@ -84,8 +87,6 @@ sealed trait ShowInstance { this: Show.type =>
         private[this] type a = List[z]
         override val showsPrec: Int => a => ShowS = _ => x => i.showList(x)
     }
-
-    implicit val _ofInt: Show[Int] = Int
 
     // TODO
 }

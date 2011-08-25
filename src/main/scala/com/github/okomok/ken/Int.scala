@@ -26,18 +26,12 @@ object Int extends Bounded[Int] with Enum[Int] with Integral[Int] with Show[Int]
     // Enum
     private[this] type a = Int
     override val succ: a => a = x => {
-        if (x == maxBound) {
-            error("Enum[Int].succ: tried to take `succ` of maxBound")
-        } else {
-            x + 1
-        }
+        if (x == maxBound)  error("Enum[Int].succ: tried to take `succ` of maxBound")
+        else x + 1
     }
     override val pred: a => a = x => {
-        if (x == minBound) {
-            error("Enum[Int].pred: tried to take `pred` of minBound")
-        } else {
-            x + 1
-        }
+        if (x == minBound) error("Enum[Int].pred: tried to take `pred` of minBound")
+        else x + 1
     }
     override val toEnum: Int => a = x => x
     override val fromEnum: a => Int = x => x
@@ -49,26 +43,17 @@ object Int extends Bounded[Int] with Enum[Int] with Integral[Int] with Show[Int]
         e1 :: enumFromThen(e1 + i)(e2 + i)
     }
     override val enumFromTo: a => a => List[a] = e1 => e3 => { // inclusive
-        if (e1 > e3) {
-            Nil
-        } else {
-            e1 :: enumFromTo(e1 + 1)(e3)
-        }
+        if (e1 > e3) Nil
+        else e1 :: enumFromTo(e1 + 1)(e3)
     }
     override val enumFromThenTo: a => a => a => List[a] = e1 => e2 => e3 => {
         val i = e2 - e1
         if (i >= 0) {
-            if (e1 > e3) {
-                Nil
-            } else {
-                e1 :: enumFromThenTo(e1 + i)(e2 + i)(e3)
-            }
+            if (e1 > e3) Nil
+            else e1 :: enumFromThenTo(e1 + i)(e2 + i)(e3)
         } else {
-            if (e1 < e3) {
-                Nil
-            } else {
-                e1 :: enumFromThenTo(e1 + i)(e2 + i)(e3)
-            }
+            if (e1 < e3) Nil
+            else e1 :: enumFromThenTo(e1 + i)(e2 + i)(e3)
         }
     }
     // Eq
