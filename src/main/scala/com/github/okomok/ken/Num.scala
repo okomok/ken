@@ -78,6 +78,13 @@ object Num extends NumInstance {
 
 
 sealed trait NumInstance { this: Num.type =>
+    implicit val _ofInt: Num[Int] = Int
+    implicit val _ofInteger: Num[Integer] = Integer
+
+    // FIX ME
+    implicit val _RealFloat_ofFloat: RealFloat[Float] = Float._asRealFloat
+    implicit val _RealFloat_ofDouble: RealFloat[Double] = Double._asRealFloat
+
     implicit def _ofScalaNumeric[a](implicit i: scala.Numeric[a]): Num[a] = new Num[a] {
         override val op_+ : a => a => a = { x => y => i.plus(x, y) }
         override val op_- : a => a => a = { x => y => i.minus(x, y) }
@@ -87,12 +94,6 @@ sealed trait NumInstance { this: Num.type =>
         override val signum: a => a = { x => fromInteger(i.signum(x)) }
         override val fromInteger: Integer => a = { n => i.fromInt(n.toInt) }
     }
-
-    implicit val _ofInteger: Num[Integer] = new Num[Integer] with NumProxy[Integer] {
-        private[this] type a = Integer
-        override val selfNum = _ofScalaNumeric[Integer]
-        override val fromInteger: Integer => a = id
-    }
 /*
     implicit def _Fractional_ofScalaFractional[a](implicit i: scala.math.Fractional[a]): Fractional[a] = new Fractional[a] with NumProxy[a] {
         override val selfNum = _ofScalaNumeric[a]
@@ -100,7 +101,4 @@ sealed trait NumInstance { this: Num.type =>
         override lazy val fromRational: Rational => a = error("todo")
     }
 */
-    implicit val _ofInt: Num[Int] = Int
-    implicit val _RealFloat_ofFloat: RealFloat[Float] = Float._asRealFloat
-    implicit val _RealFloat_ofDouble: RealFloat[Double] = Double._asRealFloat
 }

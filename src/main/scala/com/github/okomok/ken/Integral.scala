@@ -87,6 +87,7 @@ object Integral extends IntegralInstance {
 
 sealed trait IntegralInstance { this: Integral.type =>
     implicit val _ofInt: Integral[Int] = Int
+    implicit val _ofInteger: Integral[Integer] = Integer
 
     implicit def _ofScalaIntegral[a](implicit i: scala.math.Integral[a]): Integral[a] = new Integral[a] with NumProxy[a] with OrdProxy[a] with EnumProxy[a] {
         override val selfNum = Num._ofScalaNumeric(i)

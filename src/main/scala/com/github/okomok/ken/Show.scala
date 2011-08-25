@@ -60,24 +60,13 @@ object Show extends ShowInstance {
     val showParen: Bool => ShowS => ShowS = b => p => if (b) showChar('(') compose p compose showChar(')') else p
 
     val showSpace: ShowS = { xs => ' ' :: xs }
-
-    private[ken] val showSignedInt: Int => Int => ShowS = p => n => r => {
-        if (n < 0 && p > 6) {
-            '(' :: itos(n)(')' :: r)
-        } else {
-            itos(n)(r)
-        }
-    }
-
-    private[ken] val itos: Int => String_ => String_ = n => cs => {
-        n.toString ::: cs
-    }
 }
 
 
 sealed trait ShowInstance { this: Show.type =>
     implicit val _ofChar: Show[Char] = Char
     implicit val _ofInt: Show[Int] = Int
+    implicit val _ofInteger: Show[Integer] = Integer
 
     implicit def _ofAny[a]: Show[a] = new Show[a] {
         override val showsPrec: Int => a => ShowS = _ => x => showString(x.toString)

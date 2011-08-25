@@ -57,6 +57,7 @@ sealed trait EnumInstance { this: Enum.type =>
     implicit val _ofBool: Enum[Bool] = Bool
     implicit val _ofChar: Enum[Char] = Char
     implicit val _ofInt: Enum[Int] = Int
+    implicit val _ofInteger: Enum[Integer] = Integer
 
     implicit def _ofScalaNumeric[a](implicit i: scala.math.Numeric[a]): Enum[a] = new Enum[a] {
         override val toEnum: Int => a = n => i.fromInt(n)

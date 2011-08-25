@@ -58,6 +58,7 @@ private[ken] trait EqInstance { this: Eq.type =>
     implicit val _ofBool: Eq[Bool] = Bool
     implicit val _ofChar: Eq[Char] = Char
     implicit val _ofInt: Eq[Int] = Int
+    implicit val _ofInteger: Eq[Integer] = Integer
 
     implicit def _ofScalaEquiv[a](implicit i: scala.Equiv[a]): _Eq[a] = new _Eq[a] {
         override val op_=== : a => a => Bool = x => y => i.equiv(x, y)

@@ -82,6 +82,7 @@ sealed trait OrdInstance { this: Ord.type =>
     implicit val _ofBool: Ord[Bool] = Bool
     implicit val _ofChar: Ord[Char] = Char
     implicit val _ofInt: Ord[Int] = Int
+    implicit val _ofInteger: Ord[Integer] = Integer
 
     implicit def _ofScalaOrdering[a](implicit i: scala.Ordering[a]): Ord[a] = new Ord[a] with EqProxy[a] {
         override val selfEq = Eq._ofScalaEquiv(i)

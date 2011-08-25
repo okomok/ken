@@ -14,27 +14,15 @@ package com.github.okomok
 package ken
 
 
-import java.lang.{Integer => JInt}
-
-
-object Int extends Bounded[Int] with Enum[Int] with Integral[Int] with Show[Int] {
+object Integer extends Enum[Integer] with Integral[Integer] with Show[Integer] {
     // Overrides
     //
-    // Bounded
-    private[this] type a = Int
-    override val minBound: a = JInt.MIN_VALUE
-    override val maxBound: a = JInt.MAX_VALUE
     // Enum
-    override val succ: a => a = x => {
-        if (x == maxBound)  error("Enum[Int].succ: tried to take `succ` of maxBound")
-        else x + 1
-    }
-    override val pred: a => a = x => {
-        if (x == minBound) error("Enum[Int].pred: tried to take `pred` of minBound")
-        else x - 1
-    }
-    override val toEnum: Int => a = x => x
-    override val fromEnum: a => Int = x => x
+    private[this] type a = BigInt // Integer alias make it crash.
+    override val succ: a => a = x => x + 1
+    override val pred: a => a = x => x - 1
+    override val toEnum: Int => a = n => n
+    override val fromEnum: a => Int = n => n.toInt
     override val enumFrom: a => List[a] = e1 => {
         e1 :: enumFrom(e1 + 1)
     }
@@ -69,34 +57,30 @@ object Int extends Bounded[Int] with Enum[Int] with Integral[Int] with Show[Int]
     override val op_<= : a => a => Bool = x => y => x <= y
     override val op_> : a => a => Bool = x => y => x > y
     override val op_>= : a => a => Bool = x => y => x >= y
+    override val max: a => a => a = x => y => x.max(y)
+    override val min: a => a => a = x => y => x.min(y)
     // Num
     override val op_+ : a => a => a = x => y => x + y
     override val op_- : a => a => a = x => y => x - y
     override val op_* : a => a => a = x => y => x * y
     override val negate: a => a = n => -n
-    override val abs: a => a = n => if (n > 0) n else -n
-    override val signum: a => a = n => {
-        if (n < 0) -1
-        else if (n == 0) 0
-        else 1
-    }
-    override val fromInteger: Integer => a = i => i.toInt
+    override val abs: a => a = n => n.abs
+    override val signum: a => a = n => n.signum
+    override val fromInteger: Integer => a = x => x
     // Real
-    override val toRational: a => Rational = x => Ratio(toInteger(x), 1)
+    override val toRational: a => Rational = x => Ratio(x, 1)
     // Integral
     override val quot: a => a => a = a => b => a / b
     override val rem: a => a => a = a => b => a % b
     override val quotRem: a => a => (a, a) = a => b => (a / b, a % b)
     override val toInteger: a => Integer = i => i
     // Show
-    override val showsPrec: Int => a => ShowS = showSignedInt
-
-    private lazy val showSignedInt: Int => Int => ShowS = p => n => r => {
-        if (n < 0 && p > 6) '(' :: itos(n)(')' :: r)
-        else itos(n)(r)
+    override val showsPrec: Int => a => ShowS = p => n => r => {
+        if (p > 6 && n < 0) '(' :: integerToString(n)(')' :: r)
+        else integerToString(n)(r)
     }
 
-    private lazy val itos: Int => String_ => String_ = n => cs => {
+    private lazy val integerToString: Integer => String_ => String_ = n => cs => {
         n.toString ::: cs
     }
 }
