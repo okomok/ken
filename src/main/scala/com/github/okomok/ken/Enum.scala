@@ -1,6 +1,12 @@
 
 
 // Copyright Shunsuke Sogame 2011.
+//
+// Copyright 2004, The University Court of the University of Glasgow.
+// All rights reserved.
+//
+// Copyright (c) 2002 Simon Peyton Jones
+//
 // Distributed under the New BSD license.
 
 
@@ -8,7 +14,7 @@ package com.github.okomok
 package ken
 
 
-trait Enum[a] extends Typeclass0[a] { outer =>
+trait Enum[a] extends Typeclass0[a] {
     final val asEnum: Enum[apply0] = this
 
     // Core
@@ -80,9 +86,10 @@ object Enum extends EnumInstance {
 }
 
 
-sealed trait EnumInstance { //this: Enum.type =>
+sealed trait EnumInstance { this: Enum.type =>
     implicit val _ofBool: Enum[Bool] = _Bool
     implicit val _ofChar: Enum[Char] = Char
+    implicit val _ofDouble: Enum[Double] = Double
     implicit val _ofFloat: Enum[Float] = Float
     implicit val _ofInt: Enum[Int] = Int
     implicit val _ofInteger: Enum[Integer] = _Integer

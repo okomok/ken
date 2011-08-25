@@ -65,6 +65,7 @@ object Show extends ShowInstance {
 
 sealed trait ShowInstance { this: Show.type =>
     implicit val _ofChar: Show[Char] = Char
+    implicit val _ofDouble: Show[Double] = Double
     implicit val _ofFloat: Show[Float] = Float
     implicit val _ofInt: Show[Int] = Int
     implicit val _ofInteger: Show[Integer] = _Integer

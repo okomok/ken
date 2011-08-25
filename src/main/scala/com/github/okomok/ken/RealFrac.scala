@@ -84,5 +84,6 @@ object RealFrac extends RealFracInstance {
 
 
 sealed trait RealFracInstance { this: RealFrac.type =>
+    implicit val _ofDouble: RealFrac[Double] = Double
     implicit val _ofFloat: RealFrac[Float] = Float
 }

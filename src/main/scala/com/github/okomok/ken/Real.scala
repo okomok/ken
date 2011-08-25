@@ -32,6 +32,7 @@ object Real extends RealInstance {
 
 
 sealed trait RealInstance { this: Real.type =>
+    implicit val _ofDouble: Real[Double] = Double
     implicit val _ofFloat: Real[Float] = Float
     implicit val _ofInt: Real[Int] = Int
     implicit val _ofInteger: Real[Integer] = _Integer

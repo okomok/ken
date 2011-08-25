@@ -84,5 +84,6 @@ object Floating {
 
 
 sealed trait FloatingInstance { this: Floating.type =>
+    implicit val _ofDouble: Floating[Double] = Double
     implicit val _ofFloat: Floating[Float] = Float
 }

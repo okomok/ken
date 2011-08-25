@@ -57,6 +57,7 @@ object _Eq extends EqInstance {
 sealed trait EqInstance { this: Eq.type =>
     implicit val _ofBool: Eq[Bool] = _Bool
     implicit val _ofChar: Eq[Char] = Char
+    implicit val _ofDouble: Eq[Double] = Double
     implicit val _ofFloat: Eq[Float] = Float
     implicit val _ofInt: Eq[Int] = Int
     implicit val _ofInteger: Eq[Integer] = _Integer

@@ -12,7 +12,7 @@ import java.lang.{Math => JMath}
 import java.lang.{Float => JFloat}
 
 
-object Float extends Enum[Float] with Show[Float] with RealFloat[Float] {
+object Float extends Enum[Float] with RealFloat[Float] with Show[Float] {
     // Overrides
     //
     // Eq
@@ -72,9 +72,6 @@ object Float extends Enum[Float] with Show[Float] with RealFloat[Float] {
     override lazy val asinh: a => a = error("todo")
     override lazy val acosh: a => a = error("todo")
     override lazy val atanh: a => a = error("todo")
-    // Show
-    override lazy val showsPrec: Int => a => ShowS = error("todo") // showSignedFloat(showFloat)(x)
-    override lazy val showList: List[a] => ShowS = showList__(showsPrec(0))
     // RealFloat
     override lazy val floatRadix: a => Integer = error("todo")
     override lazy val floatDigits: a => Int = error("todo")
@@ -90,6 +87,9 @@ object Float extends Enum[Float] with Show[Float] with RealFloat[Float] {
     override lazy val isNegativeZero: a => Bool = error("todo")
     override val isIEEE: a => Bool = const(True)
     override val atan2: a => a => a = x => y => JMath.atan2(x.toDouble, y.toDouble)
+    // Show
+    override lazy val showsPrec: Int => a => ShowS = error("todo") // showSignedFloat(showFloat)(x)
+    override lazy val showList: List[a] => ShowS = showList__(showsPrec(0))
 
     private def showSignedFloat[a](showPos: a => ShowS)(p: Int)(x: a)(implicit i: RealFloat[a]): ShowS = {
         error("todo")
