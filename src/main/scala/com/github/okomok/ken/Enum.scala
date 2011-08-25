@@ -50,14 +50,42 @@ trait EnumProxy[a] extends Enum[a] {
 
 object Enum extends EnumInstance {
     def apply[a <: Kind.Function0](implicit i: Enum[a#apply0]): Enum[a#apply0] = i
+
+    private[ken] def numericEnumFrom[a](n: a)(implicit i: Fractional[a]): List[a] = {
+        import i._
+        n :: numericEnumFrom(n + 1)
+    }
+
+    private[ken] def numericEnumFromThen[a](n: a)(m: a)(implicit i: Fractional[a]): List[a] = {
+        import i._
+        n :: numericEnumFromThen(m)(m+m-n)
+    }
+
+    private[ken] def numericEnumFromTo[a](n: a)(m: a)(implicit i: Ord[a], j: Fractional[a]): List[a] = {
+        import i._
+        import j._
+        List.takeWhile((_: a) <= m + 1/2)(numericEnumFrom(n))
+    }
+
+    private[ken] def numericEnumFromThenTo[a](e1: a)(e2: a)(e3: a)(implicit i: Ord[a], j: Fractional[a]): List[a] = {
+        import i._
+        import j._
+        val mid = (e2 - e1) / 2
+        val predicate: a => Bool = {
+            if (e2 >= e1) (_: a) <= e3 + mid
+            else (_: a) >= e3 + mid
+        }
+        List.takeWhile(predicate)(numericEnumFromThen(e1)(e2))
+    }
 }
 
 
-sealed trait EnumInstance { this: Enum.type =>
-    implicit val _ofBool: Enum[Bool] = Bool
+sealed trait EnumInstance { //this: Enum.type =>
+    implicit val _ofBool: Enum[Bool] = _Bool
     implicit val _ofChar: Enum[Char] = Char
+    implicit val _ofFloat: Enum[Float] = Float
     implicit val _ofInt: Enum[Int] = Int
-    implicit val _ofInteger: Enum[Integer] = Integer
+    implicit val _ofInteger: Enum[Integer] = _Integer
     implicit val _ofUnit: Enum[Unit] = Unit
 
     implicit def _ofScalaNumeric[a](implicit i: scala.math.Numeric[a]): Enum[a] = new Enum[a] {

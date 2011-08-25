@@ -14,12 +14,12 @@ package com.github.okomok
 package ken
 
 
-// Scalac is angry with the alias name.
-object Integer extends Enum[BigInt] with Integral[BigInt] with Show[BigInt] {
+// `object Integer` crashes scalac.
+private[ken] object _Integer extends Enum[Integer] with Integral[Integer] with Show[Integer] {
     // Overrides
     //
     // Enum
-    private type a = BigInt
+    private type a = Integer
     override val succ: a => a = x => x + 1
     override val pred: a => a = x => x - 1
     override val toEnum: Int => a = n => n
@@ -67,21 +67,21 @@ object Integer extends Enum[BigInt] with Integral[BigInt] with Show[BigInt] {
     override val negate: a => a = n => -n
     override val abs: a => a = n => n.abs
     override val signum: a => a = n => n.signum
-    override val fromInteger: BigInt => a = x => x
+    override val fromInteger: Integer => a = x => x
     // Real
     override val toRational: a => Rational = x => Ratio(x, 1)
     // Integral
     override val quot: a => a => a = a => b => a / b
     override val rem: a => a => a = a => b => a % b
     override val quotRem: a => a => (a, a) = a => b => (a / b, a % b)
-    override val toInteger: a => BigInt = i => i
+    override val toInteger: a => Integer = i => i
     // Show
     override val showsPrec: Int => a => ShowS = p => n => r => {
         if (p > 6 && n < 0) '(' :: integerToString(n)(')' :: r)
         else integerToString(n)(r)
     }
 
-    private lazy val integerToString: BigInt => String_ => String_ = n => cs => {
+    private lazy val integerToString: Integer => String_ => String_ = n => cs => {
         n.toString ::: cs
     }
 }

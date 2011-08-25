@@ -78,11 +78,11 @@ object Num extends NumInstance {
 
 
 sealed trait NumInstance { this: Num.type =>
+    implicit val _ofFloat: Num[Float] = Float
     implicit val _ofInt: Num[Int] = Int
-    implicit val _ofInteger: Num[Integer] = Integer
+    implicit val _ofInteger: Num[Integer] = _Integer
 
     // FIX ME
-    implicit val _RealFloat_ofFloat: RealFloat[Float] = Float._asRealFloat
     implicit val _RealFloat_ofDouble: RealFloat[Double] = Double._asRealFloat
 
     implicit def _ofScalaNumeric[a](implicit i: scala.Numeric[a]): Num[a] = new Num[a] {

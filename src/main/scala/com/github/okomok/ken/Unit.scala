@@ -1,6 +1,12 @@
 
 
 // Copyright Shunsuke Sogame 2011.
+//
+// Copyright 2004, The University Court of the University of Glasgow.
+// All rights reserved.
+//
+// Copyright (c) 2002 Simon Peyton Jones
+//
 // Distributed under the New BSD license.
 
 
@@ -24,9 +30,9 @@ object Unit extends Bounded[Unit] with Enum[Unit] with Monoid[Unit] with Ord[Uni
     }
     override val fromEnum: a => Int = _ => 0
     override val enumFrom: a => List[a] = _ => List(())
-    override def enumFromThen: a => a => List[a] = _ => _ => List.repeat(())
-    override def enumFromTo: a => a => List[a] = _ => _ => List(())
-    override def enumFromThenTo: a => a => a => List[a] = _ => _ => _ => List.repeat(())
+    override val enumFromThen: a => a => List[a] = _ => _ => List.repeat(())
+    override val enumFromTo: a => a => List[a] = _ => _ => List(())
+    override val enumFromThenTo: a => a => a => List[a] = _ => _ => _ => List.repeat(())
     // Eq
     override val op_=== : a => a => Bool = _ => _ => True
     override val op_/== : a => a => Bool = _ => _ => False

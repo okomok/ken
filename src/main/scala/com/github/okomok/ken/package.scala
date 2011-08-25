@@ -95,9 +95,11 @@ package object ken {
     //
     type String_ = List[Char]
     type Bool = Boolean
+    val Bool = _Bool
     final val True = true
     final val False = false
     type Integer = BigInt
+    val Integer = _Integer
     type Rational = Ratio[Integer]
     type ShowS = String_ => String_
     type IOError = java.io.IOException

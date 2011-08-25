@@ -78,6 +78,11 @@ trait RealFracProxy[a] extends RealFrac[a] with RealProxy[a] with FractionalProx
 }
 
 
-object RealFrac {
+object RealFrac extends RealFracInstance {
     def apply[a <: Kind.Function0](implicit i: RealFrac[a#apply0]): RealFrac[a#apply0] = i
+}
+
+
+sealed trait RealFracInstance { this: RealFrac.type =>
+    implicit val _ofFloat: RealFrac[Float] = Float
 }

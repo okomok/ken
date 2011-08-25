@@ -81,3 +81,8 @@ trait FloatingProxy[a] extends Floating[a] with FractionalProxy[a] {
 object Floating {
     def apply[a <: Kind.Function0](implicit i: Floating[a#apply0]): Floating[a#apply0] = i
 }
+
+
+sealed trait FloatingInstance { this: Floating.type =>
+    implicit val _ofFloat: Floating[Float] = Float
+}

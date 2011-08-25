@@ -104,3 +104,8 @@ trait RealFloatProxy[a] extends RealFloat[a] with RealFracProxy[a] with Floating
 object RealFloat {
     def apply[a <: Kind.Function0](implicit i: RealFloat[a#apply0]): RealFloat[a#apply0] = i
 }
+
+
+sealed trait RealFloatInstance { this: RealFloat.type =>
+    implicit val _ofFloat: RealFloat[Float] = Float
+}

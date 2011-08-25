@@ -42,6 +42,11 @@ trait FractionalProxy[a] extends Fractional[a] {
 }
 
 
-object Fractional {
+object Fractional extends FractionalInstance {
     def apply[a](implicit i: Fractional[a]): Fractional[a] = i
+}
+
+
+sealed trait FractionalInstance { this: Fractional.type =>
+    implicit val _ofFloat: Fractional[Float] = Float
 }

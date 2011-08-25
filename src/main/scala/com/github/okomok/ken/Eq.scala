@@ -54,11 +54,12 @@ object _Eq extends EqInstance {
 }
 
 
-private[ken] trait EqInstance { this: Eq.type =>
-    implicit val _ofBool: Eq[Bool] = Bool
+sealed trait EqInstance { this: Eq.type =>
+    implicit val _ofBool: Eq[Bool] = _Bool
     implicit val _ofChar: Eq[Char] = Char
+    implicit val _ofFloat: Eq[Float] = Float
     implicit val _ofInt: Eq[Int] = Int
-    implicit val _ofInteger: Eq[Integer] = Integer
+    implicit val _ofInteger: Eq[Integer] = _Integer
     implicit val _ofUnit: Eq[Unit] = Unit
 
     implicit def _ofScalaEquiv[a](implicit i: scala.Equiv[a]): _Eq[a] = new _Eq[a] {

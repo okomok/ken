@@ -14,12 +14,12 @@ package com.github.okomok
 package ken
 
 
-// Scalac is angry with the alias name.
-object Bool extends Bounded[Boolean] with Enum[Boolean] with Ord[Boolean] with Show[Boolean] {
+// `object Bool` crashes scalac.
+private[ken] object _Bool extends Bounded[Bool] with Enum[Bool] with Ord[Bool] with Show[Bool] {
     // Overrides
     //
     // Bounded
-    private type a = Boolean
+    private type a = Bool
     override val minBound: a = False
     override val maxBound: a = True
     // Enum
@@ -41,13 +41,13 @@ object Bool extends Bounded[Boolean] with Enum[Boolean] with Ord[Boolean] with S
         else 1
     }
     // Eq
-    override val op_=== : a => a => Boolean = b1 => b2 => b1 == b2
-    override val op_/== : a => a => Boolean = b1 => b2 => b1 != b2
+    override val op_=== : a => a => Bool = b1 => b2 => b1 == b2
+    override val op_/== : a => a => Bool = b1 => b2 => b1 != b2
     // Ord
-    override val op_< : a => a => Boolean = b1 => b2 => fromEnum(b1) < fromEnum(b2)
-    override val op_<= : a => a => Boolean = b1 => b2 => fromEnum(b1) <= fromEnum(b2)
-    override val op_> : a => a => Boolean = b1 => b2 => fromEnum(b1) > fromEnum(b2)
-    override val op_>= : a => a => Boolean = b1 => b2 => fromEnum(b1) >= fromEnum(b2)
+    override val op_< : a => a => Bool = b1 => b2 => fromEnum(b1) < fromEnum(b2)
+    override val op_<= : a => a => Bool = b1 => b2 => fromEnum(b1) <= fromEnum(b2)
+    override val op_> : a => a => Bool = b1 => b2 => fromEnum(b1) > fromEnum(b2)
+    override val op_>= : a => a => Bool = b1 => b2 => fromEnum(b1) >= fromEnum(b2)
     // Show
     override val showsPrec: Int => a => ShowS = _ => a => Show.showString(a.toString)
 }
