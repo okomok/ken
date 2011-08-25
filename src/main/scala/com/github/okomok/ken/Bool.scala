@@ -14,11 +14,12 @@ package com.github.okomok
 package ken
 
 
-object Bool extends Bounded[Bool] with Enum[Bool] with Ord[Bool] with Show[Bool] {
+// Scalac is angry with the alias name.
+object Bool extends Bounded[Boolean] with Enum[Boolean] with Ord[Boolean] with Show[Boolean] {
     // Overrides
     //
     // Bounded
-    private type a = Boolean // Bool alias makes it crash.
+    private type a = Boolean
     override val minBound: a = False
     override val maxBound: a = True
     // Enum

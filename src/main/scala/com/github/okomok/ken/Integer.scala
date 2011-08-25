@@ -14,11 +14,12 @@ package com.github.okomok
 package ken
 
 
-object Integer extends Enum[Integer] with Integral[Integer] with Show[Integer] {
+// Scalac is angry with the alias name.
+object Integer extends Enum[BigInt] with Integral[BigInt] with Show[BigInt] {
     // Overrides
     //
     // Enum
-    private type a = BigInt // Integer alias makes it crash.
+    private type a = BigInt
     override val succ: a => a = x => x + 1
     override val pred: a => a = x => x - 1
     override val toEnum: Int => a = n => n

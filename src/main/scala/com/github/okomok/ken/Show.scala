@@ -67,6 +67,7 @@ sealed trait ShowInstance { this: Show.type =>
     implicit val _ofChar: Show[Char] = Char
     implicit val _ofInt: Show[Int] = Int
     implicit val _ofInteger: Show[Integer] = Integer
+    implicit val _ofUnit: Show[Unit] = Unit
 
     implicit def _ofAny[a]: Show[a] = new Show[a] {
         override val showsPrec: Int => a => ShowS = _ => x => showString(x.toString)
