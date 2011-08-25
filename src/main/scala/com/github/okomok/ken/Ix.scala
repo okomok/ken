@@ -53,7 +53,7 @@ trait IxProxy[a] extends Ix[a] with OrdProxy[a] {
 }
 
 
-object Ix {
+object Ix extends IxInstance {
     def apply[a <: Kind.Function0](implicit i: Ix[a#apply0]): Ix[a#apply0] = i
 
     def deriving[nt <: Kind.Function0, ot <: Kind.Function0](implicit i: Ix[ot#apply0], j: Newtype0[nt#apply0, ot#apply0]): Ix[nt#apply0] = new Ix[nt#apply0] with OrdProxy[nt#apply0] {
@@ -68,8 +68,11 @@ object Ix {
     }
 
     def weak[nt <: Kind.Newtype0](implicit i: Ix[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Ix[nt#oldtype0] = deriving[Kind.const[nt#oldtype0], nt](i, j.dual)
+}
 
-    private[ken] def _ofScalaNumeric[a](implicit i: scala.Numeric[a]): Ix[a] = new Ix[a] with OrdProxy[a] {
+
+sealed trait IxInstance { this: Ix.type =>
+    implicit def _ofScalaNumeric[a](implicit i: scala.Numeric[a]): Ix[a] = new Ix[a] with OrdProxy[a] {
         override val selfOrd = Ord._ofScalaOrdering(i)
         override val range: Tuple2[a, a] => List[a] = { case (n, m) =>
             Predef.require(i.lteq(n, m))

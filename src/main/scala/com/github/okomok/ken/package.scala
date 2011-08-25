@@ -99,6 +99,8 @@ package object ken {
     final val False = false
     type Integer = BigInt
     type Rational = Ratio[Integer]
+    type ShowS = String_ => String_
+    type IOError = java.io.IOException
 
     // Scala specific utilities
     //

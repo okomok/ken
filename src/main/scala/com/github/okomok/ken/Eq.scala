@@ -54,15 +54,10 @@ object _Eq extends EqInstance {
 }
 
 
-private[ken] trait EqInstance0 { this: Eq.type =>
+private[ken] trait EqInstance { this: Eq.type =>
+    implicit val _ofInt: Eq[Int] = Int
+
     implicit def _ofScalaEquiv[a](implicit i: scala.Equiv[a]): _Eq[a] = new _Eq[a] {
         override val op_=== : a => a => Bool = x => y => i.equiv(x, y)
     }
-
-    implicit def _Ord_ofScalaOrdering[a](implicit i: scala.Ordering[a]): Ord[a] = Ord._ofScalaOrdering(i)
-    implicit def _Ix_ofScalaNumeric[a](implicit i: scala.Numeric[a]): Ix[a] = Ix._ofScalaNumeric(i)
-}
-
-sealed trait EqInstance extends EqInstance0 { this: Eq.type =>
-    implicit def _Integral_ofScalaIntegral[a](implicit i: scala.math.Integral[a]): Integral[a] = Integral._ofScalaIntegral(i)
 }

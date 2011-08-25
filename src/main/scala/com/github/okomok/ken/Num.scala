@@ -1,6 +1,12 @@
 
 
 // Copyright Shunsuke Sogame 2011.
+//
+// Copyright 2004, The University Court of the University of Glasgow.
+// All rights reserved.
+//
+// Copyright (c) 2002 Simon Peyton Jones
+//
 // Distributed under the New BSD license.
 
 
@@ -94,6 +100,7 @@ sealed trait NumInstance { this: Num.type =>
         override lazy val fromRational: Rational => a = error("todo")
     }
 */
+    implicit val _ofInt: Num[Int] = Int
     implicit val _RealFloat_ofFloat: RealFloat[Float] = Float._asRealFloat
     implicit val _RealFloat_ofDouble: RealFloat[Double] = Double._asRealFloat
 }

@@ -111,8 +111,6 @@ object IO extends MonadIO[IO] with ThisIsInstance {
 
     // Exception handling in the I/O asMonad
     //
-    type IOError = java.io.IOException
-
     val ioError: IOError => IO[Nothing] = err => IO { throw err }
 
     val userError: String_ => IOError = s => new java.io.IOException(s.toString)

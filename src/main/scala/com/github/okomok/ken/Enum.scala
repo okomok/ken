@@ -54,10 +54,10 @@ object Enum extends EnumInstance {
 
 
 sealed trait EnumInstance { this: Enum.type =>
+    implicit val _ofInt: Enum[Int] = Int
+
     implicit def _ofScalaNumeric[a](implicit i: scala.math.Numeric[a]): Enum[a] = new Enum[a] {
         override val toEnum: Int => a = n => i.fromInt(n)
         override val fromEnum: a => Int = x => i.toInt(x)
     }
-
-    implicit val _ofInt: Enum[Int] = Int
 }

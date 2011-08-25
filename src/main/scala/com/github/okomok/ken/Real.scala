@@ -26,6 +26,11 @@ trait RealProxy[a] extends Real[a] with NumProxy[a] with OrdProxy[a] {
 }
 
 
-object Real {
+object Real extends RealInstance {
     def apply[a <: Kind.Function0](implicit i: Real[a#apply0]): Real[a#apply0] = i
+}
+
+
+sealed trait RealInstance { this: Real.type =>
+    implicit val _ofInt: Real[Int] = Int
 }

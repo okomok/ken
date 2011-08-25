@@ -27,7 +27,8 @@ trait Integral[a] extends Real[a] with Enum[a] { outer =>
     def toInteger: a => Integer
 
     // Extra
-    def even: a => Bool = n => (n _rem_ 2) == 0
+    //
+    def even: a => Bool = n => (n _rem_ 2) === 0
     def odd: a => Bool = not compose even
 
     // Operators
@@ -79,10 +80,15 @@ trait IntegralProxy[a] extends Integral[a] with RealProxy[a] with EnumProxy[a] {
 }
 
 
-object Integral {
+object Integral extends IntegralInstance {
     def apply[a <: Kind.Function0](implicit i: Integral[a#apply0]): Integral[a#apply0] = i
+}
 
-    private[ken] def _ofScalaIntegral[a](implicit i: scala.math.Integral[a]): Integral[a] = new Integral[a] with NumProxy[a] with OrdProxy[a] with EnumProxy[a] {
+
+sealed trait IntegralInstance { this: Integral.type =>
+    implicit val _ofInt: Integral[Int] = Int
+
+    implicit def _ofScalaIntegral[a](implicit i: scala.math.Integral[a]): Integral[a] = new Integral[a] with NumProxy[a] with OrdProxy[a] with EnumProxy[a] {
         override val selfNum = Num._ofScalaNumeric(i)
         override val selfOrd = Ord._ofScalaOrdering(i)
         override val selfEnum = Enum._ofScalaNumeric(i)
@@ -91,7 +97,7 @@ object Integral {
         // Integral
         override val quot: a => a => a = x => y => i.quot(x, y)
         override val rem: a => a => a = x => y => i.rem(x, y)
-        override val quotRem: a => a => (a, a) = { x => y => (i.quot(x, y), i.rem(x, y)) }
+        override val quotRem: a => a => (a, a) = x => y => (i.quot(x, y), i.rem(x, y))
         override val toInteger: a => Integer = i.toInt
     }
 }

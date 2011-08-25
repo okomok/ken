@@ -37,7 +37,7 @@ sealed trait ErrorClassInstance { this: ErrorClass.type =>
         override val strMsg = id[String_]
     }
 
-    implicit val _ofIOError: ErrorClass[IO.IOError] = new ErrorClass[IO.IOError] {
+    implicit val _ofIOError: ErrorClass[IOError] = new ErrorClass[IOError] {
         override val strMsg = IO.userError
     }
 }

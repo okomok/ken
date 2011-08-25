@@ -52,6 +52,6 @@ object Bounded extends BoundedInstance {
 
 
 sealed trait BoundedInstance { this: Bounded.type =>
-    implicit val _ofUnit: Bounded[Unit] = Unit
     implicit val _ofInt: Bounded[Int] = Int
+    implicit val _ofUnit: Bounded[Unit] = Unit
 }

@@ -1,6 +1,12 @@
 
 
 // Copyright Shunsuke Sogame 2011.
+//
+// Copyright 2004, The University Court of the University of Glasgow.
+// All rights reserved.
+//
+// Copyright (c) 2002 Simon Peyton Jones
+//
 // Distributed under the New BSD license.
 
 
@@ -11,11 +17,12 @@ package ken
 import java.lang.{Integer => JInt}
 
 
-object Int extends IntegralProxy[Int] with Enum[Int] with Bounded[Int] {
+object Int extends Bounded[Int] with Enum[Int] with Integral[Int] with Show[Int] {
     // Overrides
     //
-    // Integral
-    override val selfIntegral = Integral._ofScalaIntegral[Int]
+    // Bounded
+    override val minBound: a = JInt.MIN_VALUE
+    override val maxBound: a = JInt.MAX_VALUE
     // Enum
     private[this] type a = Int
     override val succ: a => a = x => {
@@ -64,7 +71,38 @@ object Int extends IntegralProxy[Int] with Enum[Int] with Bounded[Int] {
             }
         }
     }
-    // Bounded
-    override val minBound: a = JInt.MIN_VALUE
-    override val maxBound: a = JInt.MAX_VALUE
+    // Eq
+    override val op_=== : a => a => Bool = x => y => x == y
+    override val op_/== : a => a => Bool = x => y => x != y
+    // Ord
+    override val compare: a => a => Ordering = x => y => {
+        if (x < y) LT
+        else if (x == y) EQ
+        else GT
+    }
+    override val op_< : a => a => Bool = x => y => x < y
+    override val op_<= : a => a => Bool = x => y => x <= y
+    override val op_> : a => a => Bool = x => y => x > y
+    override val op_>= : a => a => Bool = x => y => x >= y
+    // Num
+    override val op_+ : a => a => a = x => y => x + y
+    override val op_- : a => a => a = x => y => x - y
+    override val op_* : a => a => a = x => y => x * y
+    override val negate: a => a = n => -n
+    override val abs: a => a = n => if (n > 0) n else -n
+    override val signum: a => a = n => {
+        if (n < 0) -1
+        else if (n == 0) 0
+        else 1
+    }
+    override val fromInteger: Integer => a = i => i.toInt
+    // Real
+    override val toRational: a => Rational = x => Ratio(toInteger(x), 1)
+    // Integral
+    override val quot: a => a => a = a => b => a / b
+    override val rem: a => a => a = a => b => a % b
+    override val quotRem: a => a => (a, a) = a => b => (quot(a)(b), rem(a)(b))
+    override val toInteger: a => Integer = i => i
+    // Show
+    override val showsPrec: Int => a => ShowS = Show.showSignedInt
 }
