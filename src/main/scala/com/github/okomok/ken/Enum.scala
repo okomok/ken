@@ -54,6 +54,7 @@ object Enum extends EnumInstance {
 
 
 sealed trait EnumInstance { this: Enum.type =>
+    implicit val _ofBool: Enum[Bool] = Bool
     implicit val _ofChar: Enum[Char] = Char
     implicit val _ofInt: Enum[Int] = Int
 

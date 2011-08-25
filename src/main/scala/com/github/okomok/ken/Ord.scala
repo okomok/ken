@@ -79,6 +79,7 @@ object Ord extends OrdInstance {
 
 
 sealed trait OrdInstance { this: Ord.type =>
+    implicit val _ofBool: Ord[Bool] = Bool
     implicit val _ofChar: Ord[Char] = Char
     implicit val _ofInt: Ord[Int] = Int
 

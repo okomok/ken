@@ -55,6 +55,7 @@ object _Eq extends EqInstance {
 
 
 private[ken] trait EqInstance { this: Eq.type =>
+    implicit val _ofBool: Eq[Bool] = Bool
     implicit val _ofChar: Eq[Char] = Char
     implicit val _ofInt: Eq[Int] = Int
 
