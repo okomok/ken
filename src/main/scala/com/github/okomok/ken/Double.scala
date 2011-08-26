@@ -59,7 +59,7 @@ object Double extends Enum[Double] with RealFloat[Double] with Show[Double] {
     override val log: a => a = JMath.log(_)
     override val sqrt: a => a = JMath.sqrt(_)
     override val op_** : a => a => a = x => y => JMath.pow(x, y)
-    override lazy val logBase: a => a => a = error("todo")
+    override val logBase: a => a => a = x => y => log(y)/log(x)
     override val sin: a => a = JMath.sin(_)
     override val cos: a => a = JMath.cos(_)
     override val tan: a => a = JMath.tan(_)
@@ -69,13 +69,13 @@ object Double extends Enum[Double] with RealFloat[Double] with Show[Double] {
     override val sinh: a => a = JMath.sinh(_)
     override val cosh: a => a = JMath.cosh(_)
     override val tanh: a => a = JMath.tanh(_)
-    override lazy val asinh: a => a = error("todo")
-    override lazy val acosh: a => a = error("todo")
-    override lazy val atanh: a => a = error("todo")
+    override val asinh: a => a = x => log(x + sqrt(1.0D+x*x))
+    override val acosh: a => a = x => log(x + (x+1.0D) * sqrt((x-1.0D)/(x+1.0D)))
+    override val atanh: a => a = x => 0.5D * log((1.0D+x)/(1.0D-x))
     // RealFloat
-    override lazy val floatRadix: a => Integer = error("todo")
-    override lazy val floatDigits: a => Int = error("todo")
-    override lazy val floatRange: a => (Int, Int) = error("todo")
+    override val floatRadix: a => Integer = _ => 2
+    override val floatDigits: a => Int = _ => 53
+    override val floatRange: a => (Int, Int) = _ => (-1021, 1024)
     override lazy val decodeFloat: a => (Integer, Int) = error("todo")
     override lazy val encodeFloat: Integer => Int => a = error("todo")
     override val exponent: a => Int = JMath.getExponent(_)
@@ -85,7 +85,7 @@ object Double extends Enum[Double] with RealFloat[Double] with Show[Double] {
     override val isInfinite: a => Bool = JDouble.isInfinite(_)
     override lazy val isDenormalized: a => Bool = error("todo")
     override lazy val isNegativeZero: a => Bool = error("todo")
-    override val isIEEE: a => Bool = const(True)
+    override val isIEEE: a => Bool = _ => True
     override val atan2: a => a => a = x => y => JMath.atan2(x, y)
     // Show
     override lazy val showsPrec: Int => a => ShowS = error("todo") // showSignedFloat(showFloat)(x)
