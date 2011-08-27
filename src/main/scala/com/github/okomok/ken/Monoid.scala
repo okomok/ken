@@ -118,7 +118,6 @@ object Monoid extends MonoidInstance {
     // Sum
     //
     final case class Sum[a](override val get: a) extends NewtypeOf[a] with Kind.AbstractNewtype0 {
-        override type apply0 = Sum[a]
         override type oldtype0 = a
     }
 
@@ -141,7 +140,6 @@ object Monoid extends MonoidInstance {
     // Product
     //
     final case class Product[a](override val get: a) extends NewtypeOf[a] with Kind.AbstractNewtype0 {
-        override type apply0 = Product[a]
         override type oldtype0 = a
     }
 

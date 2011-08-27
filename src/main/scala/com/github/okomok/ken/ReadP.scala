@@ -17,7 +17,7 @@ package com.github.okomok
 package ken
 
 
-trait ReadP[+a] {
+trait ReadP[+a] extends Kind.constThis {
     def apply[b](k: a => ReadP.P[b]): ReadP.P[b]
 }
 
