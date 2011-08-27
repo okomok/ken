@@ -141,8 +141,8 @@ object ReadP extends MonadPlus[ReadP] with Traversable[ReadP] with ThisIsInstanc
             case (Result(_, _), _) => discard(n) >> new ReadP[a] {
                 override def apply[b](k: a => P[b]): P[b] = p >>= k
             }
-            case (Final(r), _) => new ReadP[a] {
-                override def apply[b](k: a => P[b]): P[b] = Final(r) >>= k
+            case (Final(_), _) => new ReadP[a] {
+                override def apply[b](k: a => P[b]): P[b] = p >>= k
             }
             case _ => q
         }
@@ -151,6 +151,11 @@ object ReadP extends MonadPlus[ReadP] with Traversable[ReadP] with ThisIsInstanc
             * <- probe(f(P.`return`[a]))(s)(0)
         } yield *
     }
+
+    sealed class Op_<++[a](f: ReadP[a]) {
+        def <++(q: Lazy[ReadP[a]]): ReadP[a] = op_<++(f)(q)
+    }
+    implicit def <++[a](f: ReadP[a]): Op_<++[a] = new Op_<++(f)
 
     def gather[a](m: ReadP[a]): ReadP[(String_, a)] = {
         def gath[b](l: String_ => String_)(p: P[String_ => P[b]]): P[b] = p match {
@@ -166,11 +171,6 @@ object ReadP extends MonadPlus[ReadP] with Traversable[ReadP] with ThisIsInstanc
             }
         }
     }
-
-    sealed class Op_<++[a](f: ReadP[a]) {
-        def <++(q: Lazy[ReadP[a]]): ReadP[a] = op_<++(f)(q)
-    }
-    implicit def <++[a](f: ReadP[a]): Op_<++[a] = new Op_<++(f)
 
     val satisfy: (Char => Bool) => ReadP[Char] = p => {
         for {
@@ -254,8 +254,8 @@ object ReadP extends MonadPlus[ReadP] with Traversable[ReadP] with ThisIsInstanc
     def sepBy[a, sep](p: ReadP[a])(sep: ReadP[sep]): ReadP[List[a]] = sepBy1(p)(sep) +++ `return`(Nil.of[a])
     def sepBy1[a, sep](p: ReadP[a])(sep: ReadP[sep]): ReadP[List[a]] = liftM2(List.op_!::[a])(p)(many(sep >> p))
 
-    def endBy[a, sep](p: ReadP[a])(sep: ReadP[sep]): ReadP[List[a]] = many { for { x <- p; * <- sep } yield x }
-    def endBy1[a, sep](p: ReadP[a])(sep: ReadP[sep]): ReadP[List[a]] = many1 { for { x <- p; * <- sep } yield x }
+    def endBy[a, sep](p: ReadP[a])(sep: ReadP[sep]): ReadP[List[a]] = many { for { x <- p; _ <- sep } yield x }
+    def endBy1[a, sep](p: ReadP[a])(sep: ReadP[sep]): ReadP[List[a]] = many1 { for { x <- p; _ <- sep } yield x }
 
     def chainr[a](p: ReadP[a])(op: ReadP[a => a => a])(x: a): ReadP[a] = chainr1(p)(op) +++ `return`(x)
     def chainl[a](p: ReadP[a])(op: ReadP[a => a => a])(x: a): ReadP[a] = chainl1(p)(op) +++ `return`(x)
