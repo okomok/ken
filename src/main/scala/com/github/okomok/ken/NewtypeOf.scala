@@ -14,6 +14,8 @@ trait NewtypeOf[+a] extends Up[NewtypeOf[a]] {
 
     final def run: a = get
     final def app: a = get
+
+    final def apply[b, c](x: b)(implicit ev: a <:< Function1[b, c]): c = ev(get)(x)
 }
 
 

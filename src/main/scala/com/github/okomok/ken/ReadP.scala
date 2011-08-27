@@ -22,7 +22,7 @@ trait ReadP[+a] {
 }
 
 
-object ReadP extends MonadPlus[ReadP] with Traversable[ReadP] with ThisIsInstance {
+object ReadP extends MonadPlus[ReadP] with ThisIsInstance {
     // The P type
     //
     sealed abstract class P[+a] extends Up[P[a]] with Kind.constThis
@@ -38,7 +38,7 @@ object ReadP extends MonadPlus[ReadP] with Traversable[ReadP] with ThisIsInstanc
     object Get extends ReadP[Char]
     object Look extends ReadP[String_]
 
-    object P extends MonadPlus[P] with Traversable[P] with ThisIsInstance {
+    object P extends MonadPlus[P] with ThisIsInstance {
         // Overrides
         //
         // Monad
