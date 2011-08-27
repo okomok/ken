@@ -44,7 +44,6 @@ object ReadP extends MonadPlus[ReadP] with Traversable[ReadP] with ThisIsInstanc
         // Monad
         private type m[+a] = P[a]
         override def `return`[a](x: Lazy[a]): m[a] = Result(x, Fail)
-        @deprecated("should not be used", "0.1.0")
         override def op_>>=[a, b](p: m[a])(k: a => m[b]): m[b] = p match {
             case Get(f) => Get(c => f(c) >>= k)
             case Look(f) => Look(s => f(s) >>= k)
@@ -122,12 +121,171 @@ object ReadP extends MonadPlus[ReadP] with Traversable[ReadP] with ThisIsInstanc
         override def apply[b](k: a => P[b]): P[b] = Fail
     }
 
-    def op_+++[a](f1: ReadP[a])(f2: ReadP[a]): ReadP[a] = new ReadP[a] {
+    def op_+++[a](f1: ReadP[a])(f2: Lazy[ReadP[a]]): ReadP[a] = new ReadP[a] {
         override def apply[b](k: a => P[b]): P[b] = f1(k) _mplus_ f2(k)
     }
 
     sealed class Op_+++[a](f1: ReadP[a]) {
-        def +++(f2: ReadP[a]): ReadP[a] = op_+++(f1)(f2)
+        def +++(f2: Lazy[ReadP[a]]): ReadP[a] = op_+++(f1)(f2)
     }
     implicit def +++[a](f1: ReadP[a]): Op_+++[a] = new Op_+++(f1)
+
+    def op_<++[a](f: ReadP[a])(q: Lazy[ReadP[a]]): ReadP[a] = {
+        def discard(n: Int): ReadP[Unit] = {
+            if (n == 0) `return`()
+            else get >> discard(n-1)
+        }
+        def probe(p: P[a])(s: String_)(n: Int): ReadP[a] = (p, s) match {
+            case (Get(f), c :: s) => probe(f(c))(s)(n+1)
+            case (Look(f), s) => probe(f(s))(s)(n)
+            case (Result(_, _), _) => discard(n) >> new ReadP[a] {
+                override def apply[b](k: a => P[b]): P[b] = p >>= k
+            }
+            case (Final(r), _) => new ReadP[a] {
+                override def apply[b](k: a => P[b]): P[b] = Final(r) >>= k
+            }
+            case _ => q
+        }
+        for {
+            s <- look
+            * <- probe(f(P.`return`[a]))(s)(0)
+        } yield *
+    }
+
+    def gather[a](m: ReadP[a]): ReadP[(String_, a)] = {
+        def gath[b](l: String_ => String_)(p: P[String_ => P[b]]): P[b] = p match {
+            case Get(f) => Get(c => gath(l compose List.op_::(c))(f(c)))
+            case Fail => Fail
+            case Look(f) => Look(s => gath(l)(f(s)))
+            case Result(k, p) => P.mplus(k(l(Nil)))(gath(l)(p))
+            case Final(_) => error("do not use readS_to_P in gather!")
+        }
+        new ReadP[(String_, a)] {
+            override def apply[b](k: Tuple2[String_, a] => P[b]): P[b] = {
+                gath(id)(m(a => P.`return`((s: String_) => k(s, a))))
+            }
+        }
+    }
+
+    sealed class Op_<++[a](f: ReadP[a]) {
+        def <++(q: Lazy[ReadP[a]]): ReadP[a] = op_<++(f)(q)
+    }
+    implicit def <++[a](f: ReadP[a]): Op_<++[a] = new Op_<++(f)
+
+    val satisfy: (Char => Bool) => ReadP[Char] = p => {
+        for {
+            c <- get
+            * <- if (p(c)) `return`(c) else pfail[Char]
+        } yield *
+    }
+
+    val char: Char => ReadP[Char] = c => satisfy(c == _)
+
+    val eof: ReadP[Unit] = {
+        for {
+            s <- look
+            * <- if (List.`null`(s)) `return`() else pfail[Unit]
+        } yield *
+    }
+
+    val string: String_ => ReadP[String_] = _this => {
+        def scan(xs: String_)(ys: String_): ReadP[String_] = (xs, ys) match {
+            case (Nil, _) => `return`(_this)
+            case (x :: xs, y :: ys) => for { _ <- get; * <- scan(xs)(ys) } yield *
+            case _ => pfail
+        }
+        for { s <- look; * <- scan(_this)(s) } yield *
+    }
+
+    val munch: (Char => Bool) => ReadP[String_] = p => {
+        def scan(s: String_): ReadP[String_] = s match {
+            case c :: cs if (p(c)) => for { _ <- get; s <- scan(cs) } yield (c :: s)
+            case _ => `return`(Nil)
+        }
+        for {
+            s <- look
+            * <- scan(s)
+        } yield *
+    }
+
+    val munch1: (Char => Bool) => ReadP[String_] = p => {
+        for {
+            c <- get
+            * <- if (p(c)) ( for { s <- munch(p) } yield (c :: s) ) else pfail
+        } yield *
+    }
+
+    def choice[a](ps: List[ReadP[a]]): ReadP[a] = ps match {
+        case Nil => pfail
+        case p !:: Nil => p
+        case p :: ps => p +++ choice(ps)
+    }
+
+    val skipSpaces: ReadP[Unit] = {
+        def skip(s: String_): ReadP[Unit] = s match {
+            case c :: s if Char.isSpace(c) => for { _ <- get; * <- skip(s) } yield *
+            case _ => `return`()
+        }
+        for {
+            s <- look
+            * <- skip(s)
+        } yield *
+    }
+
+    def count[a](n: Int)(p: ReadP[a]): ReadP[List[a]] = sequence(List.replicate(n)(p))
+
+    def between[open, close, a](open: ReadP[open])(close: ReadP[close])(p: ReadP[a]): ReadP[a] = {
+        for {
+            _ <- open
+            x <- p
+            _ <- close
+        } yield x
+    }
+
+    def option[a](x: a)(p: ReadP[a]): ReadP[a] = p +++ `return`(x)
+    def optional_[a](p: ReadP[a]): ReadP[Unit] = (p >> `return`()) +++ `return`()
+
+    override def many[a](p: ReadP[a]): ReadP[List[a]] = `return`(Nil.of[a]) +++ many1(p)
+    def many1[a](p: ReadP[a]): ReadP[List[a]] = liftM2(List.op_!::[a])(p)(many(p))
+
+    def skipMany[a](p: ReadP[a]): ReadP[Unit] = many(p) >> `return`()
+    def skipMany1[a](p: ReadP[a]): ReadP[Unit] = p >> skipMany(p)
+
+    def sepBy[a, sep](p: ReadP[a])(sep: ReadP[sep]): ReadP[List[a]] = sepBy1(p)(sep) +++ `return`(Nil.of[a])
+    def sepBy1[a, sep](p: ReadP[a])(sep: ReadP[sep]): ReadP[List[a]] = liftM2(List.op_!::[a])(p)(many(sep >> p))
+
+    def endBy[a, sep](p: ReadP[a])(sep: ReadP[sep]): ReadP[List[a]] = many { for { x <- p; * <- sep } yield x }
+    def endBy1[a, sep](p: ReadP[a])(sep: ReadP[sep]): ReadP[List[a]] = many1 { for { x <- p; * <- sep } yield x }
+
+    def chainr[a](p: ReadP[a])(op: ReadP[a => a => a])(x: a): ReadP[a] = chainr1(p)(op) +++ `return`(x)
+    def chainl[a](p: ReadP[a])(op: ReadP[a => a => a])(x: a): ReadP[a] = chainl1(p)(op) +++ `return`(x)
+
+    def chainr1[a](p: ReadP[a])(op: ReadP[a => a => a]): ReadP[a] = {
+        lazy val scan = p >>= rest
+        def rest(x: a): ReadP[a] = ( for { f <- op; y <- scan } yield f(x)(y) ) +++ `return`(x)
+        scan
+    }
+
+    def chainl1[a](p: ReadP[a])(op: ReadP[a => a => a]): ReadP[a] = {
+        def rest(x: a): ReadP[a] = ( for { f <- op; y <- p; * <- rest(f(x)(y)) } yield * ) +++ `return`(x)
+        p >>= rest
+    }
+
+    def manyTill[a, end](p: ReadP[a])(end: ReadP[end]): ReadP[List[a]] = {
+        lazy val scan: ReadP[List[a]] = (end >> `return`(Nil.of[a])) <++ liftM2(List.op_!::[a])(p)(scan)
+        scan
+    }
+
+    def readP_to_S[a](p: ReadP[a]): ReadS[a] = P.run(p(P.`return`[a]))
+
+    def readS_to_P[a](r: ReadS[a]): ReadP[a] = new ReadP[a] {
+        override def apply[b](k: a => P[b]): P[b] = Look { s =>
+            P.`final` {
+                for {
+                    (a, s_) <- r(s)
+                    bs__ <- P.run(k(a))(s_)
+                } yield bs__
+            }
+        }
+    }
 }
