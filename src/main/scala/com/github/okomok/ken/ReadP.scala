@@ -88,10 +88,6 @@ object ReadP extends MonadPlus[ReadP] with ThisIsInstance {
         }
     }
 
-    // ReadS
-    //
-    type ReadS[+a] = String_ => List[(a, String_)]
-
     // Overrides
     //
     // Functor

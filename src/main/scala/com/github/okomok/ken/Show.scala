@@ -8,9 +8,6 @@ package com.github.okomok
 package ken
 
 
-import Show._
-
-
 trait Show[a] extends Typeclass0[a] {
     final val asShow: Show[apply0] = this
 

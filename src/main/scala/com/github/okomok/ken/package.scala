@@ -16,11 +16,11 @@ package object ken {
 
     // Bools
     //
-    val not: Bool => Bool = { b => !b }
+    val not: Bool => Bool = b => !b
 
-    val op_&& : Bool => Lazy[Bool] => Bool = { b => c => b && c.! }
+    val op_&& : Bool => Lazy[Bool] => Bool = b => c => b && c.!
 
-    val op_|| : Bool => Lazy[Bool] => Bool = { b => c => b || c.! }
+    val op_|| : Bool => Lazy[Bool] => Bool = b => c => b || c.!
 
     final val otherwise = True
 
@@ -34,7 +34,7 @@ package object ken {
         case (_, y) => y
     }
 
-    def curry[a, b, c](f: Tuple2[a, b] => c): a => b => c = { x => y => f((x, y)) }
+    def curry[a, b, c](f: Tuple2[a, b] => c): a => b => c = x => y => f((x, y))
 
     def uncurry[a, b, c](f: a => b => c): Tuple2[a, b] => c = { case (x, y) => f(x)(y) }
 
@@ -46,11 +46,11 @@ package object ken {
     //
     def id[a]: a => a = x => x
 
-    def const[a](x: a): Any => a = { _ => x }
+    def const[a](x: a): Any => a = _ => x
 
-    def op_compose[a, b, c](f: b => c)(g: a => b): a => c = { x => f(g(x)) }
+    def op_compose[a, b, c](f: b => c)(g: a => b): a => c = x => f(g(x))
 
-    def flip[a, b, c](f: a => b => c): b => a => c = { x => y => f(y)(x) }
+    def flip[a, b, c](f: a => b => c): b => a => c = x => y => f(y)(x)
 
     def op_@[a, b](f: a => b)(x: a): b = f(x)
 
@@ -94,19 +94,27 @@ package object ken {
     // Aliases
     //
     type String_ = List[Char]
+
     type Bool = Boolean
     val Bool = _Bool
+
     final val True = true
     final val False = false
+
     type Integer = BigInt
     val Integer = _Integer
+
     type Rational = Ratio[Integer]
+
+    type ReadS[+a] = String_ => List[(a, String_)]
+
     type ShowS = String_ => String_
+
     type IOError = java.io.IOException
 
     // Scala specific utilities
     //
-    val ignore: (=> Any) => Unit = { _ => () }
+    val ignore: (=> Any) => Unit = _ => ()
 
     def instance[a](implicit i: a): a = i
 }

@@ -80,10 +80,6 @@ object ReadPrec extends Newtype1[ReadPrec, ({type ot[+a] = Int => ReadP[a]})#ot]
 
     def choice[a](ps: List[ReadPrec[a]]): ReadPrec[a] = List.foldr(op_+++[a])(pfail)(ps)
 
-    // ReadS
-    //
-    type ReadS[+a] = ReadP.ReadS[a]
-
     // Conversion between ReadPrec and ReadP
     //
     def readPrec_to_P[a](f: ReadPrec[a]): Int => ReadP[a] = n => f(n)
