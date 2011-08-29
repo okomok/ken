@@ -25,7 +25,7 @@ trait Show[a] extends Typeclass0[a] {
 
     // Extra
     //
-    final def showList__(showx: a => ShowS)(xs: List[a]): ShowS = { s =>
+    final def showList__(showx: a => ShowS)(xs: List[a]): ShowS = s => {
         xs match {
             case Nil => "Nil" ::: s
             case x :: xs => {
@@ -62,23 +62,23 @@ object Show extends ShowInstance {
 
     val showParen: Bool => ShowS => ShowS = b => p => if (b) showChar('(') compose p compose showChar(')') else p
 
-    val showSpace: ShowS = { xs => ' ' :: xs }
+    val showSpace: ShowS = xs => ' ' :: xs
 }
 
 
 sealed trait ShowInstance { this: Show.type =>
-    implicit val _ofChar: Show[Char] = Char
-    implicit val _ofDouble: Show[Double] = Double
-    implicit val _ofFloat: Show[Float] = Float
-    implicit val _ofInt: Show[Int] = Int
-    implicit val _ofInteger: Show[Integer] = _Integer
-    implicit val _ofUnit: Show[Unit] = Unit
+    implicit val ofChar: Show[Char] = Char
+    implicit val ofDouble: Show[Double] = Double
+    implicit val ofFloat: Show[Float] = Float
+    implicit val ofInt: Show[Int] = Int
+    implicit val ofInteger: Show[Integer] = _Integer
+    implicit val ofUnit: Show[Unit] = Unit
 
-    implicit def _ofAny[a]: Show[a] = new Show[a] {
+    implicit def of[a]: Show[a] = new Show[a] {
         override val showsPrec: Int => a => ShowS = _ => x => showString(x.toString)
     }
 
-    implicit def _ofList[z](implicit i: Show[z]): Show[List[z]] = new Show[List[z]] {
+    implicit def ofList[z](implicit i: Show[z]): Show[List[z]] = new Show[List[z]] {
         private[this] type a = List[z]
         override val showsPrec: Int => a => ShowS = _ => x => i.showList(x)
     }

@@ -162,7 +162,7 @@ object ReadP extends MonadPlus[ReadP] with ThisIsInstance {
             case Final(_) => error("do not use readS_to_P in gather!")
         }
         new ReadP[(String_, a)] {
-            override def apply[b](k: Tuple2[String_, a] => P[b]): P[b] = {
+            override def apply[b](k: Pair[String_, a] => P[b]): P[b] = {
                 gath(id)(m(a => P.`return`((s: String_) => k(s, a))))
             }
         }

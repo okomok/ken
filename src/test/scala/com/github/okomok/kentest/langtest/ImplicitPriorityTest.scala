@@ -38,5 +38,14 @@ class ImplicitPriorityTest extends org.scalatest.junit.JUnit3Suite {
         import _Implicit3._
         assert(implicitly[A].isInstanceOf[D])
     }
+
+    def testPartialOrdering {
+        class Z[a](val b: Boolean)
+
+        implicit def of1[a]: Z[a] = new Z[a](false)
+        implicit def of2[a]: Z[List[a]] = new Z[List[a]](true)
+
+        assert(implicitly[Z[List[Int]]].b)
+    }
 }
 

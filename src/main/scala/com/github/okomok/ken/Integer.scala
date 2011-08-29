@@ -15,7 +15,7 @@ package ken
 
 
 // `object Integer` crashes scalac.
-private[ken] object _Integer extends Enum[Integer] with Integral[Integer] with Show[Integer] {
+private[ken] object _Integer extends Enum[Integer] with Eq.Of[Integer] with Integral[Integer] with Show[Integer] {
     // Overrides
     //
     // Enum
@@ -45,9 +45,6 @@ private[ken] object _Integer extends Enum[Integer] with Integral[Integer] with S
             else e1 :: enumFromThenTo(e1 + i)(e2 + i)(e3)
         }
     }
-    // Eq
-    override val op_=== : a => a => Bool = x => y => x == y
-    override val op_/== : a => a => Bool = x => y => x != y
     // Ord
     override val compare: a => a => Ordering = x => y => {
         if (x < y) LT

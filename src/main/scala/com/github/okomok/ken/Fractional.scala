@@ -48,6 +48,6 @@ object Fractional extends FractionalInstance {
 
 
 sealed trait FractionalInstance { this: Fractional.type =>
-    implicit val _ofDouble: Fractional[Double] = Double
-    implicit val _ofFloat: Fractional[Float] = Float
+    implicit val ofDouble: Fractional[Double] = Double
+    implicit val ofFloat: Fractional[Float] = Float
 }

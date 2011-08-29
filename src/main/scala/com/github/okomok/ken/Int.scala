@@ -17,7 +17,7 @@ package ken
 import java.lang.{Integer => JInt}
 
 
-object Int extends Bounded[Int] with Enum[Int] with Integral[Int] with Show[Int] {
+object Int extends Bounded[Int] with Enum[Int] with Eq.Of[Int] with Integral[Int] with Show[Int] {
     // Overrides
     //
     // Bounded
@@ -56,9 +56,6 @@ object Int extends Bounded[Int] with Enum[Int] with Integral[Int] with Show[Int]
             else e1 :: enumFromThenTo(e1 + i)(e2 + i)(e3)
         }
     }
-    // Eq
-    override val op_=== : a => a => Bool = x => y => x == y
-    override val op_/== : a => a => Bool = x => y => x != y
     // Ord
     override val compare: a => a => Ordering = x => y => {
         if (x < y) LT

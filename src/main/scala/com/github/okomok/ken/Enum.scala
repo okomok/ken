@@ -87,15 +87,15 @@ object Enum extends EnumInstance {
 
 
 sealed trait EnumInstance { this: Enum.type =>
-    implicit val _ofBool: Enum[Bool] = _Bool
-    implicit val _ofChar: Enum[Char] = Char
-    implicit val _ofDouble: Enum[Double] = Double
-    implicit val _ofFloat: Enum[Float] = Float
-    implicit val _ofInt: Enum[Int] = Int
-    implicit val _ofInteger: Enum[Integer] = _Integer
-    implicit val _ofUnit: Enum[Unit] = Unit
+    implicit val ofBool: Enum[Bool] = _Bool
+    implicit val ofChar: Enum[Char] = Char
+    implicit val ofDouble: Enum[Double] = Double
+    implicit val ofFloat: Enum[Float] = Float
+    implicit val ofInt: Enum[Int] = Int
+    implicit val ofInteger: Enum[Integer] = _Integer
+    implicit val ofUnit: Enum[Unit] = Unit
 
-    implicit def _ofScalaNumeric[a](implicit i: scala.math.Numeric[a]): Enum[a] = new Enum[a] {
+    implicit def ofScalaNumeric[a](implicit i: scala.math.Numeric[a]): Enum[a] = new Enum[a] {
         override val toEnum: Int => a = n => i.fromInt(n)
         override val fromEnum: a => Int = x => i.toInt(x)
     }

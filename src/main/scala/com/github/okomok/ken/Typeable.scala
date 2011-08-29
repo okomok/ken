@@ -64,7 +64,7 @@ object Typeable extends TypeableInstance {
 
 
 sealed trait TypeableInstance { this: Typeable.type =>
-    implicit def _ofAny[a](implicit i: ClassManifest[a]): Typeable[a] = new Typeable[a] {
+    implicit def of[a](implicit i: ClassManifest[a]): Typeable[a] = new Typeable[a] {
         override def typeOf(x: => a): ClassManifest[a] = i
     }
 }

@@ -51,19 +51,26 @@ object _Eq extends EqInstance {
     }
 
     def weak[nt <: Kind.Newtype0](implicit i: _Eq[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): _Eq[nt#oldtype0] = deriving[Kind.const[nt#oldtype0], nt](i, j.dual)
+
+    trait Of[a] extends _Eq[a] {
+        override val op_=== : a => a => Bool = x => y => x == y
+        override val op_/== : a => a => Bool = x => y => x != y
+    }
+
+    def of[a]: _Eq[a] = new Of[a] {}
+
+    def byRef[a <: AnyRef]: _Eq[a] = new _Eq[a] {
+        override val op_=== : a => a => Bool = x => y => x eq y
+    }
+
+    def byPredicate[a](f: Pair[a, a] => Bool): _Eq[a] = new _Eq[a] {
+        override val op_=== : a => a => Bool = x => y => f(x, y)
+    }
 }
 
 
-sealed trait EqInstance { this: Eq.type =>
-    implicit val _ofBool: Eq[Bool] = _Bool
-    implicit val _ofChar: Eq[Char] = Char
-    implicit val _ofDouble: Eq[Double] = Double
-    implicit val _ofFloat: Eq[Float] = Float
-    implicit val _ofInt: Eq[Int] = Int
-    implicit val _ofInteger: Eq[Integer] = _Integer
-    implicit val _ofUnit: Eq[Unit] = Unit
-
-    implicit def _ofScalaEquiv[a](implicit i: scala.Equiv[a]): _Eq[a] = new _Eq[a] {
+sealed trait EqInstance { this: _Eq.type =>
+    implicit def ofScalaEquiv[a](implicit i: scala.Equiv[a]): _Eq[a] = new _Eq[a] {
         override val op_=== : a => a => Bool = x => y => i.equiv(x, y)
     }
 }

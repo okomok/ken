@@ -103,7 +103,7 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
         def ::(x: a): List[a] = op_::(x)(xs)
         def :::(ys: List[a]): List[a] = op_:::(ys)(xs)
     }
-    implicit def _ofName[a](xs: => List[a]): _OfName[a] = new _OfName(xs)
+    implicit def ofName[a](xs: => List[a]): _OfName[a] = new _OfName(xs)
 
     // Overrides
     //
@@ -134,7 +134,7 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
     }
 
     implicit def _asOrd[a](implicit i: Ord[a]): Ord[List[a]] = new Ord[List[a]] with EqProxy[List[a]] {
-        override val selfEq = Eq._ofScalaEquiv[List[a]]
+        override val selfEq = Eq.of[List[a]]
         override val compare: List[a] => List[a] => Ordering = {
             @tailrec
             def impl(x: List[a])(y: List[a]): Ordering = (x, y) match {
@@ -702,7 +702,7 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
 
     // Misc
     //
-    val range: Tuple2[Int, Int] => List[Int] = { case (n, m) =>
+    val range: Pair[Int, Int] => List[Int] = { case (n, m) =>
         Predef.require(n <= m)
         if (n == m) {
             Nil

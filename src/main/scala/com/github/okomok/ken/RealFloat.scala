@@ -107,6 +107,6 @@ object RealFloat {
 
 
 sealed trait RealFloatInstance { this: RealFloat.type =>
-    implicit val _ofDouble: RealFloat[Double] = Double
-    implicit val _ofFloat: RealFloat[Float] = Float
+    implicit val ofDouble: RealFloat[Double] = Double
+    implicit val ofFloat: RealFloat[Float] = Float
 }

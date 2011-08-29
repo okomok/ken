@@ -68,7 +68,7 @@ trait Traversable[t[+_]] extends Functor[t] with Foldable[t] { outer =>
         final def `for`[a, b](t: t[a])(f: a => f[b])(implicit i: Applicative[f]): f[t[b]] = outer.`for`(t)(f)(i)
         final def forM[a, b](t: t[a])(f: a => m[b])(implicit i: Monad[m]): m[t[b]] = outer.forM(t)(f)
     }
-    override def pull[f_ <: Kind.Function1]: TraversablePull[f_] = new TraversablePull[f_]{}
+    override def pull[f_ <: Kind.Function1]: TraversablePull[f_] = new TraversablePull[f_] {}
 }
 
 

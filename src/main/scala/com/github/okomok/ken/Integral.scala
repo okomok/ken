@@ -92,13 +92,13 @@ object Integral extends IntegralInstance {
 
 
 sealed trait IntegralInstance { this: Integral.type =>
-    implicit val _ofInt: Integral[Int] = Int
-    implicit val _ofInteger: Integral[Integer] = _Integer
+    implicit val ofInt: Integral[Int] = Int
+    implicit val ofInteger: Integral[Integer] = _Integer
 
-    implicit def _ofScalaIntegral[a](implicit i: scala.math.Integral[a]): Integral[a] = new Integral[a] with NumProxy[a] with OrdProxy[a] with EnumProxy[a] {
-        override val selfNum = Num._ofScalaNumeric(i)
-        override val selfOrd = Ord._ofScalaOrdering(i)
-        override val selfEnum = Enum._ofScalaNumeric(i)
+    implicit def ofScalaIntegral[a](implicit i: scala.math.Integral[a]): Integral[a] = new Integral[a] with NumProxy[a] with OrdProxy[a] with EnumProxy[a] {
+        override val selfNum = Num.ofScalaNumeric(i)
+        override val selfOrd = Ord.ofScalaOrdering(i)
+        override val selfEnum = Enum.ofScalaNumeric(i)
         // Real
         override val toRational: a => Rational = x => Ratio(toInteger(x), 1)
         // Integral

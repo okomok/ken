@@ -19,7 +19,7 @@ private[ken] final class _WriterTs[n[+_]](val inner: Monad[n]) {
 
     final case class _WriterT[w, +a](override val get: n[(a, w)]) extends NewtypeOf[n[(a, w)]]
 
-    object _WriterT extends _WriterT_as with Kind.FunctionLike {
+    object _WriterT extends _WriterT_ with Kind.FunctionLike {
         sealed trait apply[w] extends Kind.AbstractMonadTrans {
             override type apply1[+a] = _WriterT[w, a]
             override type oldtype1[+a] = n[(a, w)]
@@ -35,7 +35,7 @@ private[ken] final class _WriterTs[n[+_]](val inner: Monad[n]) {
         def map[w, w_, m[+_], a, b](f: n[(a, w)] => m[(b, w_)])(n: _WriterT[w, a]): NewtypeOf[m[(b, w_)]] = NewtypeOf { f(run(n)) }
     }
 
-    private[ken] trait _WriterT_as0 { this: _WriterT.type =>
+    private[ken] trait _WriterT_0 { this: _WriterT.type =>
         implicit def _asNewtype1[w]: Newtype1[({type nt[+a] = _WriterT[w, a]})#nt, ({type ot[+a] = n[(a, w)]})#ot] = new Newtype1[({type nt[+a] = _WriterT[w, a]})#nt, ({type ot[+a] = n[(a, w)]})#ot] {
             private[this] type nt[+a] = _WriterT[w, a]
             private[this] type ot[+a] = n[(a, w)]
@@ -74,7 +74,7 @@ private[ken] final class _WriterTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    private[ken] trait _WriterT_as1 extends _WriterT_as0 { this: _WriterT.type =>
+    private[ken] trait _WriterT_1 extends _WriterT_0 { this: _WriterT.type =>
         implicit def _asMonadPlus[w](implicit i: MonadPlus[n], j: Monoid[w]): MonadPlus[({type m[+a] = _WriterT[w, a]})#m] = new MonadPlus[({type m[+a] = _WriterT[w, a]})#m] with MonadProxy[({type m[+a] = _WriterT[w, a]})#m] {
             private[this] type m[+a] = _WriterT[w, a]
             override val selfMonad = _asMonadWriter[w]
@@ -83,7 +83,7 @@ private[ken] final class _WriterTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    private[ken] trait _WriterT_as2 extends _WriterT_as1 { this: _WriterT.type =>
+    private[ken] trait _WriterT_2 extends _WriterT_1 { this: _WriterT.type =>
         implicit def _asMonadFix[w](implicit i: MonadFix[n], j: Monoid[w]): MonadFix[({type m[+a] = _WriterT[w, a]})#m] = new MonadFix[({type m[+a] = _WriterT[w, a]})#m] with MonadProxy[({type m[+a] = _WriterT[w, a]})#m] {
             private[this] type m[+a] = _WriterT[w, a]
             override val selfMonad = _asMonadWriter[w]
@@ -94,7 +94,7 @@ private[ken] final class _WriterTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    private[ken] trait _WriterT_as3 extends _WriterT_as2 { this: _WriterT.type =>
+    private[ken] trait _WriterT_3 extends _WriterT_2 { this: _WriterT.type =>
         implicit def _asMonadIO[w](implicit i: MonadIO[n], j: Monoid[w]): MonadIO[({type m[+a] = _WriterT[w, a]})#m] = new MonadIO[({type m[+a] = _WriterT[w, a]})#m] with MonadProxy[({type m[+a] = _WriterT[w, a]})#m] {
             private[this] type m[+a] = _WriterT[w, a]
             override val selfMonad = _asMonadWriter[w]
@@ -102,7 +102,7 @@ private[ken] final class _WriterTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    private[ken] trait _WriterT_as4 extends _WriterT_as3 { this: _WriterT.type =>
+    private[ken] trait _WriterT_4 extends _WriterT_3 { this: _WriterT.type =>
         implicit def _asMonadCont[w](implicit i: MonadCont[n], j: Monoid[w]): MonadCont[({type m[+a] = _WriterT[w, a]})#m] = new MonadCont[({type m[+a] = _WriterT[w, a]})#m] with MonadProxy[({type m[+a] = _WriterT[w, a]})#m] {
             private[this] type m[+a] = _WriterT[w, a]
             override val selfMonad = _asMonadWriter[w]
@@ -114,7 +114,7 @@ private[ken] final class _WriterTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    private[ken] trait _WriterT_as5 extends _WriterT_as4 { this: _WriterT.type =>
+    private[ken] trait _WriterT_5 extends _WriterT_4 { this: _WriterT.type =>
         implicit def _asMonadError[w, e](implicit i: MonadError[e, n], j: Monoid[w]): MonadError[e, ({type m[+a] = _WriterT[w, a]})#m] = new MonadError[e, ({type m[+a] = _WriterT[w, a]})#m] with MonadProxy[({type m[+a] = _WriterT[w, a]})#m] {
             private[this] type m[+a] = _WriterT[w, a]
             override val selfMonad = _asMonadWriter[w]
@@ -128,7 +128,7 @@ private[ken] final class _WriterTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    private[ken] trait _WriterT_as6 extends _WriterT_as5 { this: _WriterT.type =>
+    private[ken] trait _WriterT_6 extends _WriterT_5 { this: _WriterT.type =>
         implicit def _asMonadReader[w, r](implicit i: MonadReader[r, n], j: Monoid[w]): MonadReader[r, ({type m[+a] = _WriterT[w, a]})#m] = new MonadReader[r, ({type m[+a] = _WriterT[w, a]})#m] with MonadProxy[({type m[+a] = _WriterT[w, a]})#m] {
             private[this] type m[+a] = _WriterT[w, a]
             override val selfMonad = _asMonadWriter[w]
@@ -137,7 +137,7 @@ private[ken] final class _WriterTs[n[+_]](val inner: Monad[n]) {
         }
     }
 
-    private[ken] trait _WriterT_as extends _WriterT_as6 { this: _WriterT.type =>
+    private[ken] trait _WriterT_ extends _WriterT_6 { this: _WriterT.type =>
         implicit def _asMonadState[w, s](implicit i: MonadState[s, n], j: Monoid[w]): MonadState[s, ({type m[+a] = _WriterT[w, a]})#m] = new MonadState[s, ({type m[+a] = _WriterT[w, a]})#m] with MonadProxy[({type m[+a] = _WriterT[w, a]})#m] {
             private[this] type m[+a] = _WriterT[w, a]
             override val selfMonad = _asMonadWriter[w]

@@ -78,12 +78,12 @@ object Num extends NumInstance {
 
 
 sealed trait NumInstance { this: Num.type =>
-    implicit val _ofDouble: Num[Double] = Double
-    implicit val _ofFloat: Num[Float] = Float
-    implicit val _ofInt: Num[Int] = Int
-    implicit val _ofInteger: Num[Integer] = _Integer
+    implicit val ofDouble: Num[Double] = Double
+    implicit val ofFloat: Num[Float] = Float
+    implicit val ofInt: Num[Int] = Int
+    implicit val ofInteger: Num[Integer] = _Integer
 
-    implicit def _ofScalaNumeric[a](implicit i: scala.Numeric[a]): Num[a] = new Num[a] {
+    implicit def ofScalaNumeric[a](implicit i: scala.Numeric[a]): Num[a] = new Num[a] {
         override val op_+ : a => a => a = { x => y => i.plus(x, y) }
         override val op_- : a => a => a = { x => y => i.minus(x, y) }
         override val op_* : a => a => a = { x => y => i.times(x, y) }
@@ -94,7 +94,7 @@ sealed trait NumInstance { this: Num.type =>
     }
 /*
     implicit def _Fractional_ofScalaFractional[a](implicit i: scala.math.Fractional[a]): Fractional[a] = new Fractional[a] with NumProxy[a] {
-        override val selfNum = _ofScalaNumeric[a]
+        override val selfNum = ofScalaNumeric[a]
         override val op_/ : a => a => a = x => y => i.div(x, y)
         override lazy val fromRational: Rational => a = error("todo")
     }

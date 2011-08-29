@@ -89,8 +89,8 @@ object Monoid extends MonoidInstance {
         // Overrides
         //
         // Newtype0
-        private[this] type nt = All
-        private[this] type ot = Bool
+        private type nt = All
+        private type ot = Bool
         override def newOf(ot: Lazy[ot]): nt = All(ot)
         override def oldOf(nt: Lazy[nt]): ot = nt.get
 
@@ -109,8 +109,8 @@ object Monoid extends MonoidInstance {
         // Overrrides
         //
         // Newtype0
-        private[this] type nt = Any_
-        private[this] type ot = Bool
+        private type nt = Any_
+        private type ot = Bool
         override def newOf(ot: Lazy[ot]): nt = Any_(ot)
         override def oldOf(nt: Lazy[nt]): ot = nt.get
 
@@ -168,7 +168,7 @@ object Monoid extends MonoidInstance {
 
 
 trait MonoidInstance {
-    implicit val _ofUnit: Monoid[Unit] = Unit
-    implicit def _ofFunction1[z, b](implicit mb: Monoid[b]): Monoid[z => b] = Function._asMonoid[z, b]
-    implicit def _ofPair[a, b](implicit ma: Monoid[a], mb: Monoid[b]): Monoid[(a, b)] = Pair._asMonoid[a, b]
+    implicit val ofUnit: Monoid[Unit] = Unit
+    implicit def ofFunction1[z, b](implicit mb: Monoid[b]): Monoid[z => b] = Function._asMonoid[z, b]
+    implicit def ofPair[a, b](implicit ma: Monoid[a], mb: Monoid[b]): Monoid[(a, b)] = Pair._asMonoid[a, b]
 }

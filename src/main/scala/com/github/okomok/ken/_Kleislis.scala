@@ -17,7 +17,7 @@ package ken
 private[ken] final class _Kleislis[m[+_]](val monad: Monad[m]) {
     final case class _Kleisli[-a, +b](override val get: a => m[b]) extends NewtypeOf[a => m[b]]
 
-    object _Kleisli extends _Kleisli_as with Kind.AbstractNewtype2 {
+    object _Kleisli extends _Kleisli_ with Kind.AbstractNewtype2 {
         override type apply2[-a, +b] = _Kleisli[a, b]
         override type oldtype2[-a, +b] = a => m[b]
 
@@ -26,7 +26,7 @@ private[ken] final class _Kleislis[m[+_]](val monad: Monad[m]) {
         def run[a, b](f: _Kleisli[a, b]): a => m[b] = f.run
     }
 
-    private[ken] trait _Kleisli_as0 { this: _Kleisli.type =>
+    private[ken] trait _Kleisli_0 { this: _Kleisli.type =>
         implicit val _asNewtype2: Newtype2[_Kleisli, ({type ot[-a, +b] = a => m[b]})#ot] = new Newtype2[_Kleisli, ({type ot[-a, +b] = a => m[b]})#ot] {
             private[this] type nt[-a, +b] = _Kleisli[a, b]
             private[this] type ot[-a, +b] = a => m[b]
@@ -64,7 +64,7 @@ private[ken] final class _Kleislis[m[+_]](val monad: Monad[m]) {
         }
     }
 
-    private[ken] trait _Kleisli_as1 extends _Kleisli_as0 { this: _Kleisli.type =>
+    private[ken] trait _Kleisli_1 extends _Kleisli_0 { this: _Kleisli.type =>
         implicit val _asArrowChoice: ArrowChoice[_Kleisli] = new ArrowChoice[_Kleisli] with ArrowProxy[_Kleisli] {
             private[this] type a[-a, +b] = _Kleisli[a, b]
             override def selfArrow = _asArrow
@@ -75,7 +75,7 @@ private[ken] final class _Kleislis[m[+_]](val monad: Monad[m]) {
         }
     }
 
-    private[ken] trait _Kleisli_as2 extends _Kleisli_as1 { this: _Kleisli.type =>
+    private[ken] trait _Kleisli_2 extends _Kleisli_1 { this: _Kleisli.type =>
         implicit val _asArrowApply: ArrowApply[_Kleisli] = new ArrowApply[_Kleisli] with ArrowProxy[_Kleisli] {
             private[this] type a[-a, +b] = _Kleisli[a, b]
             override def selfArrow = _asArrow
@@ -83,7 +83,7 @@ private[ken] final class _Kleislis[m[+_]](val monad: Monad[m]) {
         }
     }
 
-    private[ken] trait _Kleisli_as extends _Kleisli_as2 { this: _Kleisli.type =>
+    private[ken] trait _Kleisli_ extends _Kleisli_2 { this: _Kleisli.type =>
         implicit def _asArrowLoop(implicit i: MonadFix[m]): ArrowLoop[_Kleisli] = new ArrowLoop[_Kleisli] with ArrowProxy[_Kleisli] {
             private[this] type a[-a, +b] = _Kleisli[a, b]
             override def selfArrow = _asArrow

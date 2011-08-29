@@ -37,7 +37,7 @@ trait Typeclass1[f[+_]] extends Typeclass with Kind.AbstractFunction1 {
         protected[this] type f[+a] = f_ #apply[a]
         protected[this] type m[+a] = f[a]
     }
-    def pull[f_ <: Kind.Function1]: Pull[f_] = new Pull[f_]{}
+    def pull[f_ <: Kind.Function1]: Pull[f_] = new Pull[f_] {}
 }
 
 

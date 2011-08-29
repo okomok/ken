@@ -151,7 +151,7 @@ trait Foldable[t[+_]] extends Typeclass1[t] { outer =>
         final def asum[a](xs: t[f[a]])(implicit i: Alternative[f]): f[a] = outer.asum(xs)(i)
         final def msum[a](xs: t[m[a]])(implicit i: MonadPlus[m]): m[a] = outer.msum(xs)(i)
     }
-    override def pull[f_ <: Kind.Function1]: FoldablePull[f_] = new FoldablePull[f_]{}
+    override def pull[f_ <: Kind.Function1]: FoldablePull[f_] = new FoldablePull[f_] {}
 }
 
 
@@ -201,6 +201,6 @@ object Foldable extends FoldableInstance {
 
 
 sealed trait FoldableInstance { this: Foldable.type =>
-    implicit def _ofScalaTraversable[CC[+X] <: scala.collection.GenTraversableLike[X, CC[X]]](implicit mf: Scala.CanMapFrom[CC]): Traversable[CC] = Scala.Traversable._asTraversable(mf)
-    implicit val _ofScalaOption: Traversable[Option] = Scala.Option
+    implicit def ofScalaTraversable[CC[+X] <: scala.collection.GenTraversableLike[X, CC[X]]](implicit mf: Scala.CanMapFrom[CC]): Traversable[CC] = Scala.Traversable._asTraversable(mf)
+    implicit val ofScalaOption: Traversable[Option] = Scala.Option
 }

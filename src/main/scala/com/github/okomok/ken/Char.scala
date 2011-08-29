@@ -17,7 +17,7 @@ package ken
 import java.lang.{Character => JChar}
 
 
-object Char extends Bounded[Char] with Enum[Char] with Ord[Char] with Show[Char] {
+object Char extends Bounded[Char] with Enum[Char] with Eq.Of[Char] with Ord[Char] with Show[Char] {
     // Overrides
     //
     // Bounded
@@ -35,9 +35,6 @@ object Char extends Bounded[Char] with Enum[Char] with Ord[Char] with Show[Char]
     }
     override val toEnum: Int => a = chr
     override val fromEnum: a => Int = ord
-    // Eq
-    override val op_=== : a => a => Bool = c1 => c2 => c1 == c2
-    override val op_/== : a => a => Bool = c1 => c2 => c1 != c2
     // Ord
     override val op_< : a => a => Bool = c1 => c2 => c1 < c2
     override val op_<= : a => a => Bool = c1 => c2 => c1 <= c2

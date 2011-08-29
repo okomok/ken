@@ -18,13 +18,11 @@ import java.lang.{Math => JMath}
 import java.lang.{Double => JDouble}
 
 
-object Double extends Enum[Double] with RealFloat[Double] with Show[Double] {
+object Double extends Enum[Double] with Eq.Of[Double] with RealFloat[Double] with Show[Double] {
     // Overrides
     //
-    // Eq
-    private type a = Double
-    override val op_=== : a => a => Bool = x => y => x == y
     // Ord
+    private type a = Double
     override val compare: a => a => Ordering = x => y => {
         if (x < y) LT
         else if (x == y) EQ

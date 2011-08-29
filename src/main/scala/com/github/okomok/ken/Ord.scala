@@ -85,15 +85,15 @@ object Ord extends OrdInstance {
 
 
 sealed trait OrdInstance { this: Ord.type =>
-    implicit val _ofBool: Ord[Bool] = _Bool
-    implicit val _ofChar: Ord[Char] = Char
-    implicit val _ofDouble: Ord[Double] = Double
-    implicit val _ofFloat: Ord[Float] = Float
-    implicit val _ofInt: Ord[Int] = Int
-    implicit val _ofInteger: Ord[Integer] = _Integer
+    implicit val ofBool: Ord[Bool] = _Bool
+    implicit val ofChar: Ord[Char] = Char
+    implicit val ofDouble: Ord[Double] = Double
+    implicit val ofFloat: Ord[Float] = Float
+    implicit val ofInt: Ord[Int] = Int
+    implicit val ofInteger: Ord[Integer] = _Integer
 
-    implicit def _ofScalaOrdering[a](implicit i: scala.Ordering[a]): Ord[a] = new Ord[a] with EqProxy[a] {
-        override val selfEq = Eq._ofScalaEquiv(i)
+    implicit def ofScalaOrdering[a](implicit i: scala.Ordering[a]): Ord[a] = new Ord[a] with EqProxy[a] {
+        override val selfEq = Eq.ofScalaEquiv(i)
         override val compare: a => a => Ordering = x => y => i.compare(x, y) match {
             case 0 => EQ
             case s if s < 0 => LT

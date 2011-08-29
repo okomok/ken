@@ -15,7 +15,7 @@ package ken
 
 
 // `object Bool` crashes scalac.
-private[ken] object _Bool extends Bounded[Bool] with Enum[Bool] with Ord[Bool] with Show[Bool] {
+private[ken] object _Bool extends Bounded[Bool] with Enum[Bool] with Eq.Of[Bool] with Ord[Bool] with Show[Bool] {
     // Overrides
     //
     // Bounded
@@ -40,9 +40,6 @@ private[ken] object _Bool extends Bounded[Bool] with Enum[Bool] with Ord[Bool] w
         if (b == False) 0
         else 1
     }
-    // Eq
-    override val op_=== : a => a => Bool = b1 => b2 => b1 == b2
-    override val op_/== : a => a => Bool = b1 => b2 => b1 != b2
     // Ord
     override val op_< : a => a => Bool = b1 => b2 => fromEnum(b1) < fromEnum(b2)
     override val op_<= : a => a => Bool = b1 => b2 => fromEnum(b1) <= fromEnum(b2)
