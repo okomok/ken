@@ -12,7 +12,7 @@ package ken
 package enumerator
 
 
-private[ken] trait _Types[n[+_]] { this: _Enumerators[n] =>
+private[ken] trait Types[n[+_]] { this: _Enumerators[n] =>
     val inner: Monad[n]
 
     // Stream
@@ -58,7 +58,7 @@ private[ken] trait _Types[n[+_]] { this: _Enumerators[n] =>
         def >>==[a_, b_](f: Step[a, b] => Iteratee[a_, b_]): Iteratee[a_, b_] = op_>>==(this)(f)
     }
 
-    object Iteratee extends IterateeAs with Kind.FunctionLike {
+    object Iteratee extends Iteratee_as with Kind.FunctionLike {
         sealed trait apply[z] extends Kind.AbstractMonadTrans {
             override type apply1[+a] = Iteratee[z, a]
             override type oldtype1[+a] = n[Step[z, a]]
@@ -86,7 +86,7 @@ private[ken] trait _Types[n[+_]] { this: _Enumerators[n] =>
     //
     type Enumeratee[ao, ai, b] = Step[ai, b] => Iteratee[ao, Step[ai, b]]
 
-    private[ken] trait IterateeAs0 { this: Iteratee.type =>
+    private[ken] trait Iteratee_as0 { this: Iteratee.type =>
         implicit def _asNewtype1[z]: Newtype1[({type nt[+a] = Iteratee[z, a]})#nt, ({type ot[+a] = n[Step[z, a]]})#ot] = new Newtype1[({type nt[+a] = Iteratee[z, a]})#nt, ({type ot[+a] = n[Step[z, a]]})#ot] {
             private[this] type nt[+a] = Iteratee[z, a]
             private[this] type ot[+a] = n[Step[z, a]]
@@ -123,7 +123,7 @@ private[ken] trait _Types[n[+_]] { this: _Enumerators[n] =>
         }
     }
 
-    private[ken] trait IterateeAs extends IterateeAs0 { this: Iteratee.type =>
+    private[ken] trait Iteratee_as extends Iteratee_as0 { this: Iteratee.type =>
         implicit def _asMonadIO[z](implicit i: MonadIO[n]): MonadIO[({type m[+a] = Iteratee[z, a]})#m] = new MonadIO[({type m[+a] = Iteratee[z, a]})#m] with MonadProxy[({type m[+a] = Iteratee[z, a]})#m] {
             private[this] type m[+a] = Iteratee[z, a]
             override val selfMonad = _asMonad[z]

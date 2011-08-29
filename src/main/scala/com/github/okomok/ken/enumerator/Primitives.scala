@@ -12,7 +12,7 @@ package ken
 package enumerator
 
 
-private[ken] trait _Primitives[n[+_]] { this: _Enumerators[n] =>
+private[ken] trait Primitives[n[+_]] { this: _Enumerators[n] =>
     // Iteratee Operators
     //
     def op_>>==[a, b, a_, b_](i: Iteratee[a, b])(f: Step[a, b] => Iteratee[a_, b_]): Iteratee[a_, b_] = {

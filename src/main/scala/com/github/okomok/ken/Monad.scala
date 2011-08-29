@@ -130,39 +130,39 @@ trait Monad[m[+_]] extends Applicative[m] {
 
     // Transformers
     //
-    final lazy val _maybeTs = new _MaybeTs[m](this)
-    type MaybeT[+a] = _maybeTs._MaybeT[a]
-    lazy val MaybeT = _maybeTs._MaybeT
+    final lazy val _inMaybeTs = new _MaybeTs[m](this)
+    type MaybeT[+a] = _inMaybeTs._MaybeT[a]
+    final lazy val MaybeT = _inMaybeTs._MaybeT
 
-    final lazy val _errorTs = new _ErrorTs[m](this)
-    type ErrorT[e, +a] = _errorTs._ErrorT[e, a]
-    final lazy val ErrorT = _errorTs._ErrorT
+    final lazy val _inErrorTs = new _ErrorTs[m](this)
+    type ErrorT[e, +a] = _inErrorTs._ErrorT[e, a]
+    final lazy val ErrorT = _inErrorTs._ErrorT
 
-    final lazy val _stateTs = new _StateTs[m](this)
-    type StateT[s, +a] = _stateTs._StateT[s, a]
-    final lazy val StateT = _stateTs._StateT
+    final lazy val _inStateTs = new _StateTs[m](this)
+    type StateT[s, +a] = _inStateTs._StateT[s, a]
+    final lazy val StateT = _inStateTs._StateT
 
-    final lazy val _readerTs = new _ReaderTs[m](this)
-    type ReaderT[r, +a] = _readerTs._ReaderT[r, a]
-    final lazy val ReaderT = _readerTs._ReaderT
+    final lazy val _inReaderTs = new _ReaderTs[m](this)
+    type ReaderT[r, +a] = _inReaderTs._ReaderT[r, a]
+    final lazy val ReaderT = _inReaderTs._ReaderT
 
-    final lazy val _writerTs = new _WriterTs[m](this)
-    type WriterT[w, +a] = _writerTs._WriterT[w, a]
-    final lazy val WriterT = _writerTs._WriterT
+    final lazy val _inWriterTs = new _WriterTs[m](this)
+    type WriterT[w, +a] = _inWriterTs._WriterT[w, a]
+    final lazy val WriterT = _inWriterTs._WriterT
 
-    final lazy val _listTs = new _ListTs[m](this)
-    type ListT[+a] = _listTs._ListT[a]
-    final lazy val ListT = _listTs._ListT
+    final lazy val _inListTs = new _ListTs[m](this)
+    type ListT[+a] = _inListTs._ListT[a]
+    final lazy val ListT = _inListTs._ListT
 
-    final lazy val _lazyTs = new _LazyTs[m](this)
-    type LazyT[+a] = _lazyTs._LazyT[a]
-    final lazy val LazyT = _lazyTs._LazyT
+    final lazy val _inLazyTs = new _LazyTs[m](this)
+    type LazyT[+a] = _inLazyTs._LazyT[a]
+    final lazy val LazyT = _inLazyTs._LazyT
 
     // Arrows
     //
-    final lazy val _kleislis = new _Kleislis[m](this)
-    type Kleisli[-a, +b] = _kleislis._Kleisli[a, b]
-    final lazy val Kleisli = _kleislis._Kleisli
+    final lazy val _inKleislis = new _Kleislis[m](this)
+    type Kleisli[-a, +b] = _inKleislis._Kleisli[a, b]
+    final lazy val Kleisli = _inKleislis._Kleisli
 }
 
 
