@@ -25,7 +25,7 @@ trait ReadP[+a] extends Kind.constThis {
 object ReadP extends MonadPlus[ReadP] with ThisIsInstance {
     // The P type
     //
-    sealed abstract class P[+a] extends Up[P[a]] with Kind.constThis
+    sealed abstract class P[+a] extends Up[P[a]]
 
     final case class Get[a](_1: Char => P[a]) extends P[a]
     final case class Look[a](_2: String_ => P[a]) extends P[a]

@@ -11,6 +11,6 @@ package ken
 /**
  * Works around that case class constructors return concrete types.
  */
-trait Up[+a] { self: a =>
+trait Up[+a] extends Kind.constThis { self: a =>
     def up: a = self
 }

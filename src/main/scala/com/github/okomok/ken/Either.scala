@@ -1,6 +1,12 @@
 
 
 // Copyright Shunsuke Sogame 2011.
+//
+// Copyright 2004, The University Court of the University of Glasgow.
+// All rights reserved.
+//
+// Copyright (c) 2002 Simon Peyton Jones
+//
 // Distributed under the New BSD license.
 
 
@@ -8,7 +14,7 @@ package com.github.okomok
 package ken
 
 
-sealed abstract class Either[+a, +b] extends Up[Either[a, b]] with Kind.constThis {
+sealed abstract class Either[+a, +b] extends Up[Either[a, b]] {
     final def of[a_ >: a, b_ >: b]: Either[a_, b_] = this
 }
 

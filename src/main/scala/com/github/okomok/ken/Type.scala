@@ -9,7 +9,7 @@ package ken
 
 
 /**
- * Trival type envelope for type-parameter inference
+ * Trivial type envelope for type-parameter inference
  */
 sealed class Type[a] extends Kind.const[a]
 
