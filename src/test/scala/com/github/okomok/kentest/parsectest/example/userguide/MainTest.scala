@@ -9,7 +9,7 @@ package parsectest.example.userguide
 
 
 import com.github.okomok.ken._
-import Parsec._
+import Parsec2._
 
 
 class MainTezt {

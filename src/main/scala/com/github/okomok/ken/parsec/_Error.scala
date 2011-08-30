@@ -12,7 +12,7 @@ package ken
 package parsec
 
 
-private[ken] trait _Error[n[+_]] { this: _Parsecs[n] =>
+private[ken] trait _Error[n[+_]] { this: _Parsec[n] =>
     // Message
     //
     sealed abstract class Message_ extends Up[Message_] {

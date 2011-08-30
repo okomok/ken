@@ -12,7 +12,7 @@ package ken
 package parsec
 
 
-private[ken] trait _Pos[n[+_]] { this: _Parsecs[n] =>
+private[ken] trait _Pos[n[+_]] { this: _Parsec[n] =>
     // Source positions
     //
     type SourceName = String

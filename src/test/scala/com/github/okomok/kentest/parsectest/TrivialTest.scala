@@ -14,12 +14,12 @@ import com.github.okomok.ken._
 class TrivialTest extends org.scalatest.junit.JUnit3Suite {
 
     def teztTrivial: Unit = {
-        val p = Parsec.many(Parsec.char[Unit]('a'))
+        val p = Parsec2.many(Parsec2.char[Unit]('a'))
         println {
-            Parsec.parse(p)("trivial")(List.from("aaaba"))
+            Parsec2.parse(p)("trivial")(List.from("aaaba"))
         }
         println {
-            Parsec.runP(p)(Parsec.State(List.from("aaabb"), Parsec.initialPos("trivial"), ()))
+            Parsec2.runP(p)(Parsec2.State(List.from("aaabb"), Parsec2.initialPos("trivial"), ()))
         }
     }
 
