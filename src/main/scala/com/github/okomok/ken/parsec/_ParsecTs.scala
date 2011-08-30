@@ -113,12 +113,6 @@ private[ken] final class _ParsecTs[n[+_]](val inner: Monad[n]) {
                 m.accept(s) {
                     new Visitor[s, u, a, b] {
                         override val cok: cok = x => s => err => {
-                            val pcok = v.cok
-                            val pcerr = v.cerr
-                            val peok: v.eok = x => s => err_ => v.cok(x)(s)(mergeError(err)(err_))
-                            val peerr: v.eerr = err_ => v.cerr(mergeError(err)(err_))
-                            unParser(k(x))(s)(pcok)(pcerr)(peok)(peerr)
-                            /*
                             k(x).accept(s) {
                                 new Visitor[s, u, z, b] {
                                     override val cok = v.cok
@@ -127,7 +121,6 @@ private[ken] final class _ParsecTs[n[+_]](val inner: Monad[n]) {
                                     override val eerr: eerr = err_ => v.cerr(mergeError(err)(err_))
                                 }
                             }
-                            */
                         }
                         override val cerr = v.cerr
                         override val eok: eok = x => s => err => {
