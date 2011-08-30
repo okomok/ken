@@ -15,7 +15,7 @@ package ken
 
 
 private[ken] final class _ErrorTs[n[+_]](val inner: Monad[n]) {
-    private[this] implicit def innerForComp[a](x: n[a]): inner.ForComp[a] = inner.forComp(x)
+    private[this] implicit def innerFor[a](x: n[a]): inner.For[a] = inner.`for`(x)
 
     final case class _ErrorT[e, +a](override val get: n[Either[e, a]]) extends NewtypeOf[n[Either[e, a]]]
 

@@ -77,7 +77,7 @@ private[ken] final class _ParsecTs[n[+_]](val inner: Monad[n]) {
 
         def mkPT[s, u, a](k: State[s, u] => n[Consumed_[n[Reply[s, u, a]]]]): _ParsecT[s, u, a] = new _ParsecT[s, u, a] {
             override def accept[b](s: State[s, u])(v: _Visitor[s, u, a, b]): n[b] = {
-                import inner.forComp
+                import inner.`for`
                 for {
                     cons <- k(s)
                     * <- cons match {
@@ -178,7 +178,7 @@ private[ken] final class _ParsecTs[n[+_]](val inner: Monad[n]) {
             private[this] type m[+a] = _ParsecT[s, u, a]
             override def lift[a](amb: n[a]): m[a] = new _ParsecT[s, u, a] {
                 override def accept[b](s: State[s, u])(v: _Visitor[s, u, a, b]): n[b] = {
-                    import inner.forComp
+                    import inner.`for`
                     for {
                         a <- amb
                         * <- v.eok(a)(s) { unknownError(s) }

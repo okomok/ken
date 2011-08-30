@@ -34,7 +34,7 @@ trait Traversable[t[+_]] extends Functor[t] with Foldable[t] { outer =>
 
     // Extra
     //
-    def `for`[f[+_], a, b](t: t[a])(f: a => f[b])(implicit i: Applicative[f]): f[t[b]] = traverse(f)(t)
+    def tfor[f[+_], a, b](t: t[a])(f: a => f[b])(implicit i: Applicative[f]): f[t[b]] = traverse(f)(t)
     def forM[m[+_], a, b](t: t[a])(f: a => m[b])(implicit i: Monad[m]): m[t[b]] = mapM(f)(t)
 
     def mapAccumL[a, b, c](f: a => b => (a, c))(s: a)(t: t[b]): (a, t[c]) = {
@@ -65,7 +65,7 @@ trait Traversable[t[+_]] extends Functor[t] with Foldable[t] { outer =>
         final def sequenceA[a](t: t[f[a]])(implicit i: Applicative[f]): f[t[a]] = outer.sequenceA(t)(i)
         final def mapM[a, b](f: a => m[b])(t: t[a])(implicit i: Monad[m]): m[t[b]] = outer.mapM(f)(t)(i)
         final def sequence[a](t: t[m[a]])(implicit i: Monad[m]): m[t[a]] = outer.sequence(t)(i)
-        final def `for`[a, b](t: t[a])(f: a => f[b])(implicit i: Applicative[f]): f[t[b]] = outer.`for`(t)(f)(i)
+        final def tfor[a, b](t: t[a])(f: a => f[b])(implicit i: Applicative[f]): f[t[b]] = outer.tfor(t)(f)(i)
         final def forM[a, b](t: t[a])(f: a => m[b])(implicit i: Monad[m]): m[t[b]] = outer.forM(t)(f)
     }
     override def pull[f_ <: Kind.Function1]: TraversablePull[f_] = new TraversablePull[f_] {}
@@ -82,7 +82,7 @@ trait TraversableProxy[t[+_]] extends Traversable[t] with FunctorProxy[t] with F
     override def mapM[m[+_], a, b](f: a => m[b])(t: t[a])(implicit i: Monad[m]): m[t[b]] = selfTraversable.mapM(f)(t)(i)
     override def sequence[m[+_], a](t: t[m[a]])(implicit i: Monad[m]): m[t[a]] = selfTraversable.sequence(t)(i)
 
-    override def `for`[f[+_], a, b](t: t[a])(f: a => f[b])(implicit i: Applicative[f]): f[t[b]] = selfTraversable.`for`(t)(f)(i)
+    override def tfor[f[+_], a, b](t: t[a])(f: a => f[b])(implicit i: Applicative[f]): f[t[b]] = selfTraversable.tfor(t)(f)(i)
     override def forM[m[+_], a, b](t: t[a])(f: a => m[b])(implicit i: Monad[m]): m[t[b]] = selfTraversable.forM(t)(f)(i)
     override def mapAccumL[a, b, c](f: a => b => (a, c))(s: a)(t: t[b]): (a, t[c]) = selfTraversable.mapAccumL(f)(s)(t)
     override def mapAccumR[a, b, c](f: Lazy[a] => b => (a, c))(s: a)(t: t[b]): (a, t[c]) = selfTraversable.mapAccumR(f)(s)(t)

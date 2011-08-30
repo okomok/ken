@@ -89,7 +89,7 @@ private[ken] final class _Kleislis[m[+_]](val monad: Monad[m]) {
             override def selfArrow = _asArrow
             override def loop[b, c, d](f: a[(b, Lazy[d]), (Lazy[c], Lazy[d])]): a[b, c] = {
                 def f_(x: b)(y: Lazy[(c, d)]): m[(c, d)] = {
-                    import i.forComp
+                    import i.`for`
                     for { (c, d) <- f.run(x, Lazy(snd(y))) } yield (c.!, d.!)
                 }
                 _Kleisli { i.liftM[(c, d), c](fst)_ compose i.mfix[(c, d)] compose f_ }

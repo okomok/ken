@@ -54,7 +54,7 @@ private[ken] trait _Primitives[n[+_]] { this: _Enumerators[n] =>
     // Primitives
     //
     def run[a, b](i: Iteratee[a, b]): n[Either[Throwable, b]] = {
-        import inner.{forComp, `return`}
+        import inner.{`for`, `return`}
         for {
             mStep <- runIteratee { enumEOF[a, b] ==<< i }
             * <- mStep match {

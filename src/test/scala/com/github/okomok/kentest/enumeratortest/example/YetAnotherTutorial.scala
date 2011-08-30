@@ -16,7 +16,7 @@ class YetAnotherTutorialTest extends org.scalatest.junit.JUnit3Suite {
         val im = Monad[Iteratee.apply[Int]]
 
         def sum6: Iteratee[Int, Int] = {
-            import im.forComp
+            import im.`for`
             for {
                 maybeNum <- head[Int]
                 * <- maybeNum match {
@@ -30,7 +30,7 @@ class YetAnotherTutorialTest extends org.scalatest.junit.JUnit3Suite {
         }
 
         def sum8: Iteratee[Int, Int] = Iteratee {
-            import inner.forComp
+            import inner.`for`
             for {
                 step <- runIteratee(sum6)
                 * <- step match {

@@ -9,7 +9,7 @@ package ken
 
 
 private[ken] final class _MaybeTs[n[+_]](val inner: Monad[n]) {
-    private[this] implicit def innerForComp[a](x: n[a]): inner.ForComp[a] = inner.forComp(x)
+    private[this] implicit def innerFor[a](x: n[a]): inner.For[a] = inner.`for`(x)
     private[this] implicit def innerOp_>>=[a](x: n[a]): inner.Op_>>=[a] = inner.>>=(x)
 
     final case class _MaybeT[+a](override val get: n[Maybe[a]]) extends NewtypeOf[n[Maybe[a]]]

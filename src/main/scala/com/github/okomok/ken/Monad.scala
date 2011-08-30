@@ -105,13 +105,13 @@ trait Monad[m[+_]] extends Applicative[m] {
     }
     final implicit def >>(x: m[_]): Op_>> = new Op_>>(x)
 
-    sealed class ForComp[a](x: m[a]) {
+    sealed class For[a](x: m[a]) {
         def flatMap[b](y: a => m[b]): m[b] = op_>>=(x)(y)
         def map[b](y: a => b): m[b] = op_>>=(x)(_x => `return`(y(_x)))
         def filter(y: a => Bool): m[a] = map(_x => seq(Predef.require(y(_x)))(_x))
         def withFilter(y: a => Bool): m[a] = filter(y)
     }
-    final implicit def forComp[a](x: m[a]): ForComp[a] = new ForComp(x)
+    final implicit def `for`[a](x: m[a]): For[a] = new For(x)
 
     sealed class Op_=<<[a, b](f: a => m[b]) {
         def =<<(x: m[a]): m[b] = op_=<<(f)(x)
