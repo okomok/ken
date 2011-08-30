@@ -12,7 +12,7 @@ package ken
 package enumerator
 
 
-private[ken] trait Types[n[+_]] { this: _Enumerators[n] =>
+private[ken] trait _Types[n[+_]] { this: _Enumerators[n] =>
     val inner: Monad[n]
 
     // Stream

@@ -38,9 +38,9 @@ trait Ix[a] extends Ord[a] {
     final val indexError: Pair[a, a] => a => String_ => Nothing = rng => i => tp => {
         import Show._
         error( (showString("Ix{") compose showString(tp) compose showString("}.index: Index ") compose
-            showParen(True)(Show[a].showsPrec(0)(i)) compose
+            showParen(True)(Show[Kind.const[a]].showsPrec(0)(i)) compose
             showString(" out of range ")) {
-                showParen(True)(Show[(a, a)].showsPrec(0)(rng))("")
+                showParen(True)(Show[Kind.const[(a, a)]].showsPrec(0)(rng))("")
             } )
     }
 }

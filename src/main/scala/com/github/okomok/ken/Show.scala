@@ -19,7 +19,7 @@ trait Show[a] extends Typeclass0[a] {
 
     // Core
     //
-    def showsPrec: Int => a => ShowS
+    def showsPrec: Int => a => ShowS = _ => x => s => show(x) ::: s
     def show: a => String_ = x => shows(x)("")
     def showList: List[a] => ShowS = ls => s => showList__(shows)(ls)(s)
 
@@ -54,7 +54,7 @@ trait ShowProxy[a] extends Show[a] {
 
 
 object Show extends ShowInstance {
-    def apply[a](implicit i: Show[a]): Show[a] = i
+    def apply[a <: Kind.Function0](implicit i: Show[a#apply0]): Show[a#apply0] = i
 
     val showChar: Char => ShowS = List.op_!::
 
@@ -63,6 +63,10 @@ object Show extends ShowInstance {
     val showParen: Bool => ShowS => ShowS = b => p => if (b) showChar('(') compose p compose showChar(')') else p
 
     val showSpace: ShowS = xs => ' ' :: xs
+
+    trait Of[a] extends Show[a] {
+        override val show: a => String_ = x => x.toString
+    }
 }
 
 
@@ -74,9 +78,7 @@ sealed trait ShowInstance { this: Show.type =>
     implicit val ofInteger: Show[Integer] = _Integer
     implicit val ofUnit: Show[Unit] = Unit
 
-    implicit def of[a]: Show[a] = new Show[a] {
-        override val showsPrec: Int => a => ShowS = _ => x => showString(x.toString)
-    }
+    implicit def of[a]: Show[a] = new Of[a] {}
 
     implicit def ofList[z](implicit i: Show[z]): Show[List[z]] = new Show[List[z]] {
         private[this] type a = List[z]

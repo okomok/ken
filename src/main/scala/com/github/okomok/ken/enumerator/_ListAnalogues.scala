@@ -12,7 +12,7 @@ package ken
 package enumerator
 
 
-private[ken] trait ListAnalogues[n[+_]] { this: _Enumerators[n] =>
+private[ken] trait _ListAnalogues[n[+_]] { this: _Enumerators[n] =>
     def head[a]: Iteratee[a, Maybe[a]] = {
         def loop(in: Stream[a]): Iteratee[a, Maybe[a]] = in match {
             case Chunks(Nil) => head

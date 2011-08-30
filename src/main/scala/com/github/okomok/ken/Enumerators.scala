@@ -20,7 +20,7 @@ trait EnumeratorsOf[n <: Kind.Function1] extends _Enumerators[n#apply]
 
 
 private[ken] trait _Enumerators[n[+_]]
-    extends ListAnalogues[n] with Primitives[n] with Types[n] with Utilities[n]
+    extends _ListAnalogues[n] with _Primitives[n] with _Types[n] with _Utilities[n]
 {
     val inner: Monad[n]
 }
