@@ -15,6 +15,13 @@ package object parsec {
 
     // Error
     //
+    val messageString: Message_ => String_ = {
+        case SysUnExpect(s) => s
+        case UnExpect(s) => s
+        case Expect(s) => s
+        case Message(s) => s
+    }
+
     val errorPos: ParseError => SourcePos = err => err.pos
     val errorMessages: ParseError => List[Message_] = err => List.sort(err.msgs)
     val errorIsUnknown: ParseError => Bool = err => List.`null`(err.msgs)
@@ -28,7 +35,7 @@ package object parsec {
 
     // Pos
     //
-    type SourceName = String_
+    type SourceName = String
     type Line = Int
     type Column = Int
 
@@ -72,5 +79,5 @@ package object parsec {
     def statePos[s, u](state: State[s, u]): SourcePos = state.pos
     def stateUser[s, u](state: State[s,u]): u = state.user
 
-    val unexpectError: Message_ => SourcePos => ParseError = newErrorMessage(SysUnExpect(msg))(pos)
+    val unexpectError: String_ => SourcePos => ParseError = msg => pos => newErrorMessage(SysUnExpect(msg))(pos)
 }

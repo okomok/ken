@@ -30,7 +30,7 @@ object SourcePos extends Eq.Of[SourcePos] with Ord[SourcePos] with Show[SourcePo
     override val show: a => String_ = { case SourcePos(n, l, c) => showSourcePos(n, l, c) }
 
     private def showSourcePos(name: SourceName, line: Line, column: Column): String_ = {
-        def showLineColumn: String_ = "(line " ::: show(line) ::: ", column " ::: show(column) ::: List.from(")")
+        def showLineColumn: String_ = "(line " ::: ken.show(line) ::: ", column " ::: ken.show(column) ::: List.from(")")
         if (name == "") {
             showLineColumn
         } else {

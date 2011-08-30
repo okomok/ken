@@ -18,12 +18,12 @@ final case class Ok[+s, +u, +a](x: a, state: State[s, u], err: ParseError) exten
 final case class Error(err: ParseError) extends Reply[Nothing, Nothing, Nothing]
 
 
-object Reply extends FunctionLike {
+object Reply extends Kind.FunctionLike {
     sealed trait apply[s, u] extends Kind.AbstractFunction1 {
         override type apply1[+a] = Reply[s, u, a]
     }
 
-    implicit def _asFunctor[s, u]: Functor[({type f[+a] = Reply[s, u, a]})] = new Functor[({type f[+a] = Reply[s, u, a]})] {
+    implicit def _asFunctor[s, u]: Functor[({type f[+a] = Reply[s, u, a]})#f] = new Functor[({type f[+a] = Reply[s, u, a]})#f] {
         private[this] type f[+a] = Reply[s, u, a]
         override def fmap[a, b](f: a => b)(x: f[a]): f[b] = x match {
             case Ok(x, s, e) => Ok(f(x), s, e)
