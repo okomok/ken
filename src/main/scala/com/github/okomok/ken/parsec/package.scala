@@ -80,4 +80,8 @@ package object parsec {
     def stateUser[s, u](state: State[s,u]): u = state.user
 
     val unexpectError: String_ => SourcePos => ParseError = msg => pos => newErrorMessage(SysUnExpect(msg))(pos)
+
+    private[ken] val _idParsecTs = new _ParsecTs[WeakIdentity.apply](WeakIdentity)
+    type Parsec[s, u, a] = _idParsecTs._ParsecT[s, u, a]
+    val Parsec = _idParsecTs._ParsecT
 }

@@ -16,8 +16,8 @@ private[ken] final class _ParsecTs[n[+_]](val inner: Monad[n]) {
 
     // ParsecT
     //
-    trait _ParsecT[s, u, +a] extends Kind.constThis {
-        def accept[b](s: State[s, u])(v: _ParsecT.Visitor[s, u, a, b]): n[b]
+    final case class _ParsecT[s, u, +a](override val get: UnParser[s, u, n, a]) extends NewtypeOf[UnParser[s, u, n, a]] {
+        def apply[b](v: UnParserParam[s, u, n, a, b]): n[b] = get(v)
 
         final def <#>(msg: String_): _ParsecT[s, u, a] = _ParsecT.label(this)(msg)
     }
@@ -25,38 +25,23 @@ private[ken] final class _ParsecTs[n[+_]](val inner: Monad[n]) {
     object _ParsecT extends _ParsecT_ with Kind.FunctionLike {
         sealed trait apply[s, u] extends Kind.AbstractMonadTrans {
             override type apply1[+a] = _ParsecT[s, u, a]
-            override type oldtype1[+a] = Nothing
+            override type oldtype1[+a] = UnParser[s, u, n, a]
             override type innerMonad[+a] = n[a]
         }
 
-        trait Visitor[s, u, -a, +b] {
-            // type-ascription can avoid "missing parameter type".
-            type cok = a => State[s, u] => ParseError => n[b]
-            type cerr = ParseError => n[b]
-            type eok = a => State[s, u] => ParseError => n[b]
-            type eerr = ParseError => n[b]
-            def cok: cok
-            def cerr: cerr
-            def eok: eok
-            def eerr: eerr
-        }
+        implicit def dependent[s, u, a](n: NewtypeOf[UnParser[s, u, n, a]]): _ParsecT[s, u, a] = _ParsecT { n.get }
 
-        trait VisitorProxy[s, u, -a, +b] extends Proxy with Visitor[s, u, a, b] {
-            override def self: Visitor[s, u, a, b]
-            override def cok: cok = self.cok
-            override def cerr: cerr = self.cerr
-            override def eok: eok = self.eok
-            override def eerr: eerr = self.eerr
-        }
-
+        // Primitives
+        //
         def unParser[s, u, a, b](p: _ParsecT[s, u, a])(s: State[s, u])
             (cok_ : a => State[s, u] => ParseError => n[b])
             (cerr_ : ParseError => n[b])
             (eok_ : a => State[s, u] => ParseError => n[b])
             (eerr_ : ParseError => n[b]): n[b] =
         {
-            p.accept(s) {
-                new Visitor[s, u, a, b] {
+            p {
+                new UnParserParam[s, u, n, a, b] {
+                    override val state = s
                     override val cok = cok_
                     override val cerr = cerr_
                     override val eok = eok_
@@ -67,21 +52,18 @@ private[ken] final class _ParsecTs[n[+_]](val inner: Monad[n]) {
 
         def runParsecT[s, u, a](p: _ParsecT[s, u, a])(s: State[s, u]): n[Consumed_[n[Reply[s, u, a]]]] = {
             import inner.`return`
-            p.accept(s) {
-                new Visitor[s, u, a, Consumed_[n[Reply[s, u, a]]]] {
-                    override val cok: cok = a => s_ => err => `return`(Consumed(`return`(Ok(a, s_, err).up)).up)
-                    override val cerr: cerr = err => `return`(Consumed(`return`(Error(err).up)).up)
-                    override val eok: eok = a => s_ => err => `return`(Empty(`return`(Ok(a, s_, err).up)).up)
-                    override val eerr: eerr = err => `return`(Empty(`return`(Error(err).up)).up)
-                }
-            }
+            def cok(a: a)(s_ : State[s, u])(err: ParseError) = `return`(Consumed(`return`(Ok(a, s_, err).up)).up)
+            def cerr(err: ParseError) = `return`(Consumed(`return`(Error(err).up)).up)
+            def eok(a: a)(s_ : State[s, u])(err: ParseError) = `return`(Empty(`return`(Ok(a, s_, err).up)).up)
+            def eerr(err: ParseError) = `return`(Empty(`return`(Error(err).up)).up)
+            unParser(p)(s)(cok)(cerr)(eok)(eerr)
         }
 
-        def mkPT[s, u, a](k: State[s, u] => n[Consumed_[n[Reply[s, u, a]]]]): _ParsecT[s, u, a] = new _ParsecT[s, u, a] {
-            override def accept[b](s: State[s, u])(v: Visitor[s, u, a, b]): n[b] = {
+        def mkPT[s, u, a](k: State[s, u] => n[Consumed_[n[Reply[s, u, a]]]]): _ParsecT[s, u, a] = _ParsecT { new UnParser[s, u, n, a] {
+            override def apply[b](v: UnParserParam[s, u, n, a, b]): n[b] = {
                 import inner.`for`
                 for {
-                    cons <- k(s)
+                    cons <- k(v.state)
                     * <- cons match {
                         case Consumed(mrep) => for {
                             rep <- mrep
@@ -100,94 +82,79 @@ private[ken] final class _ParsecTs[n[+_]](val inner: Monad[n]) {
                     }
                 } yield *
             }
-        }
+        } }
 
-        // epsilon
-        def parserReturn[s, u, a, c](x: a): _ParsecT[s, u, a] = new _ParsecT[s, u, a] {
-            override def accept[b](s: State[s, u])(v: Visitor[s, u, a, b]): n[b] = v.eok(x)(s)(unknownError(s))
-        }
+        // Epsilon
+        //
+        def parserReturn[s, u, a, c](x: a): _ParsecT[s, u, a] = _ParsecT { new UnParser[s, u, n, a] {
+            override def apply[b](v: UnParserParam[s, u, n, a, b]): n[b] = v.eok(x)(v.state)(unknownError(v.state))
+        } }
 
-        // sequence
-        def parserBind[s, u, a, z](m: _ParsecT[s, u, a])(k: a => _ParsecT[s, u, z]): _ParsecT[s, u, z] = new _ParsecT[s, u, z] {
-            override def accept[b](s: State[s, u])(v: Visitor[s, u, z, b]): n[b] = {
-                m.accept(s) {
-                    new Visitor[s, u, a, b] {
-                        override val cok: cok = x => s => err => {
-                            k(x).accept(s) {
-                                new Visitor[s, u, z, b] {
-                                    override val cok = v.cok
-                                    override val cerr = v.cerr
-                                    override val eok: eok = x => s => err_ => v.cok(x)(s)(mergeError(err)(err_))
-                                    override val eerr: eerr = err_ => v.cerr(mergeError(err)(err_))
-                                }
-                            }
-                        }
-                        override val cerr = v.cerr
-                        override val eok: eok = x => s => err => {
-                            k(x).accept(s) {
-                                new Visitor[s, u, z, b] {
-                                    override val cok = v.cok
-                                    override val eok: eok = x => s => err_ => v.eok(x)(s)(mergeError(err)(err_))
-                                    override val cerr = v.cerr
-                                    override val eerr: eerr = err_ => v.eerr(mergeError(err)(err_))
-                                }
-                            }
-                        }
-                        override val eerr = v.eerr
-                    }
+        // Sequence
+        //
+        def parserBind[s, u, a, z](m: _ParsecT[s, u, a])(k: a => _ParsecT[s, u, z]): _ParsecT[s, u, z] = _ParsecT { new UnParser[s, u, n, z] {
+            override def apply[b](v: UnParserParam[s, u, n, z, b]): n[b] = {
+                def mcok(x: a)(s: State[s, u])(err: ParseError): n[b] = {
+                    val pcok = v.cok
+                    val pcerr = v.cerr
+                    val peok: v.eok = x => s => err_ => v.cok(x)(s)(mergeError(err)(err_))
+                    val peerr: v.eerr = err_ => v.cerr(mergeError(err)(err_))
+                    unParser(k(x))(s)(pcok)(pcerr)(peok)(peerr)
                 }
-            }
-        }
-
-        // always-fail
-        def parserZero[s, u]: _ParsecT[s, u, Nothing] = new _ParsecT[s, u, Nothing] {
-            override def accept[b](s: State[s, u])(v: Visitor[s, u, Nothing, b]): n[b] = v.eerr { unknownError(s) }
-        }
-
-        // alternative
-        def parserPlus[s, u, a](m: _ParsecT[s, u, a])(n: _ParsecT[s, u, a]): _ParsecT[s, u, a] = new _ParsecT[s, u, a] {
-            override def accept[b](s: State[s, u])(v: Visitor[s, u, a, b]): n[b] = {
-                m.accept(s) {
-                    new VisitorProxy[s, u, a, b] {
-                        override val self = v
-                        override val eerr: eerr = err => {
-                            n.accept(s) {
-                                new VisitorProxy[s, u, a, b] {
-                                    override val self = v
-                                    override val eok: eok = y => s_ => err_ => eok(y)(s_)(mergeError(err)(err_))
-                                    override val eerr: eerr = err_ => eerr { mergeError(err)(err_) }
-                                }
-                            }
-                        }
-                    }
+                def meok(x: a)(s: State[s, u])(err: ParseError): n[b] = {
+                    val pcok = v.cok
+                    val peok: v.eok = x => s => err_ => v.eok(x)(s)(mergeError(err)(err_))
+                    val pcerr = v.cerr
+                    val peerr: v.eerr = err_ => v.eerr(mergeError(err)(err_))
+                    unParser(k(x))(s)(pcok)(pcerr)(peok)(peerr)
                 }
+                val mcerr = v.cerr
+                val meerr = v.eerr
+                unParser(m)(v.state)(mcok)(mcerr)(meok)(meerr)
             }
-        }
+        } }
 
+        // Always-fail
+        //
+        def parserZero[s, u]: _ParsecT[s, u, Nothing] = _ParsecT { new UnParser[s, u, n, Nothing] {
+            override def apply[b](v: UnParserParam[s, u, n, Nothing, b]): n[b] = v.eerr { unknownError(v.state) }
+        } }
+
+        // Alternative
+        //
+        def parserPlus[s, u, a](m: _ParsecT[s, u, a])(n: _ParsecT[s, u, a]): _ParsecT[s, u, a] = _ParsecT { new UnParser[s, u, n, a] {
+            override def apply[b](v: UnParserParam[s, u, n, a, b]): n[b] = {
+                val meerr: v.eerr = err => {
+                    val neok: v.eok = y => s_ => err_ => v.eok(y)(s_)(mergeError(err)(err_))
+                    val neerr: v.eerr = err_ => v.eerr { mergeError(err)(err_) }
+                    unParser(n)(v.state)(v.cok)(v.cerr)(neok)(neerr)
+                }
+                unParser(m)(v.state)(v.cok)(v.cerr)(v.eok)(meerr)
+            }
+        } }
+
+        // Label
+        //
         def label[s, u, a](p: _ParsecT[s, u, a])(msg: String_): _ParsecT[s, u, a] = labels(p)(List(msg))
 
-        def labels[s, u, a](p: _ParsecT[s, u, a])(msgs: List[String_]): _ParsecT[s, u, a] = new _ParsecT[s, u, a] {
-            override def accept[b](s: State[s, u])(v: Visitor[s, u, a, b]): n[b] = {
+        def labels[s, u, a](p: _ParsecT[s, u, a])(msgs: List[String_]): _ParsecT[s, u, a] = _ParsecT { new UnParser[s, u, n, a] {
+            override def apply[b](v: UnParserParam[s, u, n, a, b]): n[b] = {
                 def setExpectErrors(err: ParseError)(msgs: List[String_]): ParseError = msgs match {
                     case Nil => setErrorMessage(Expect(""))(err)
                     case msg !:: Nil => setErrorMessage(Expect(msg))(err)
                     case msg :: msgs => List.foldr[String_, ParseError](msg => err => addErrorMessage(Expect(msg))(err))(setErrorMessage(Expect(msg))(err))(msgs.!)
                 }
 
-                p.accept(s) {
-                    new VisitorProxy[s, u, a, b] {
-                        override val self = v
-                        override val eok: eok = x => s_ => error => v.eok(x)(s_) {
-                            if (errorIsUnknown(error)) error
-                            else setExpectErrors(error)(msgs)
-                        }
-                        override val eerr: eerr = err => v.eerr { setExpectErrors(err)(msgs) }
-                    }
+                val eok_ : v.eok = x => s_ => error => v.eok(x)(s_) {
+                    if (errorIsUnknown(error)) error
+                    else setExpectErrors(error)(msgs)
                 }
+                val eerr_ : v.eerr = err => v.eerr { setExpectErrors(err)(msgs) }
+                unParser(p)(v.state)(v.cok)(v.cerr)(eok_)(eerr_)
             }
-        }
+        } }
 
-        // Tokens
+        // Token
         //
         trait Stream[s, t] {
             def uncons: s => n[Maybe[(t, s)]]
@@ -198,11 +165,11 @@ private[ken] final class _ParsecTs[n[+_]](val inner: Monad[n]) {
             (tts: List[t])
             (implicit i: Stream[s, t], j: Eq[t]): _ParsecT[s, u, List[t]] = tts match
         {
-            case Nil => new _ParsecT[s, u, List[t]] {
-                override def accept[b](s: State[s, u])(v: Visitor[s, u, List[t], b]): n[b] = v.eok(Nil)(s) { unknownError(s) }
-            }
-            case tts @ (tok :: toks) =>  new _ParsecT[s, u, List[t]] {
-                override def accept[b](s: State[s, u])(v: Visitor[s, u, List[t], b]): n[b] = s match {
+            case Nil => _ParsecT { new UnParser[s, u, n, List[t]] {
+                override def apply[b](v: UnParserParam[s, u, n, List[t], b]): n[b] = v.eok(Nil)(v.state) { unknownError(v.state) }
+            } }
+            case tts @ (tok :: toks) => _ParsecT { new UnParser[s, u, n, List[t]] {
+                override def apply[b](v: UnParserParam[s, u, n, List[t], b]): n[b] = v.state match {
                     case state @ State(input, pos, u) => {
                         val errEof = setErrorMessage(Expect(showTokens(tts)))(newErrorMessage(SysUnExpect(""))(pos))
                         def errExpect(x: t) = setErrorMessage(Expect(showTokens(tts)))(newErrorMessage(SysUnExpect(showTokens(List(x))))(pos))
@@ -242,23 +209,28 @@ private[ken] final class _ParsecTs[n[+_]](val inner: Monad[n]) {
                         } yield *
                     }
                 }
-            }
+            } }
         }
 
-        def `try`[s, u, a](p: _ParsecT[s, u, a]): _ParsecT[s, u, a] = new _ParsecT[s, u, a] {
-            override def accept[b](s: State[s, u])(v: Visitor[s, u, a, b]): n[b] = s match {
+        def `try`[s, u, a](p: _ParsecT[s, u, a]): _ParsecT[s, u, a] = _ParsecT { new UnParser[s, u, n, a] {
+            override def apply[b](v: UnParserParam[s, u, n, a, b]): n[b] = v.state match {
                 case s @ State(_, pos, _) => {
-                    p.accept(s) {
-                        new VisitorProxy[s, u, a, b] {
-                            override val self = v
-                            override val cerr: cerr = parseError => v.eerr { setErrorPos(pos)(parseError) }
-                        }
-                    }
+                    val pcerr: v.cerr = parseError => v.eerr { setErrorPos(pos)(parseError) }
+                    unParser(p)(s)(v.cok)(pcerr)(v.eok)(v.eerr)
                 }
             }
-        }
+        } }
 
-        // def token?
+        def token[s, u, a, t](showToken: t => String_)
+            (tokpos: t => SourcePos)
+            (test: t => Maybe[a])(implicit i: Stream[s, t], ev: n[Maybe[(t, s)]] =:= Maybe[(t, s)]): UnParser[s, u, n, a] =
+        {
+            def nextpos(* : SourcePos)(tok: t)(ts: s): SourcePos = ev(i.uncons(ts)) match {
+                case Nothing => tokpos(tok)
+                case Just((tok_, _)) => tokpos(tok_)
+            }
+            tokenPrim(showToken)(nextpos)(test).get
+        }
 
         def tokenPrim[s, u, a, t](showToken: t => String_)
             (nextpos: SourcePos => t => s => SourcePos)
@@ -277,8 +249,8 @@ private[ken] final class _ParsecTs[n[+_]](val inner: Monad[n]) {
             import inner.`for`
 
             nextstate match {
-                case Nothing => new _ParsecT[s, u, a] {
-                    override def accept[b](s: State[s, u])(v: Visitor[s, u, a, b]): n[b] = s match {
+                case Nothing => _ParsecT { new UnParser[s, u, n, a] {
+                    override def apply[b](v: UnParserParam[s, u, n, a, b]): n[b] = v.state match {
                         case State(input, pos, user) => for {
                             r <- i.uncons(input)
                             * <- r match {
@@ -294,9 +266,9 @@ private[ken] final class _ParsecTs[n[+_]](val inner: Monad[n]) {
                             }
                         } yield *
                     }
-                }
-                case Just(nextState) => new _ParsecT[s, u, a] {
-                    override def accept[b](s: State[s, u])(v: Visitor[s, u, a, b]): n[b] = s match {
+                } }
+                case Just(nextState) => _ParsecT { new UnParser[s, u, n, a] {
+                    override def apply[b](v: UnParserParam[s, u, n, a, b]): n[b] = v.state match {
                         case State(input, pos, user) => for {
                             r <- i.uncons(input)
                             * <- r match {
@@ -313,11 +285,11 @@ private[ken] final class _ParsecTs[n[+_]](val inner: Monad[n]) {
                             }
                         } yield *
                     }
-                }
+                } }
             }
         }
 
-        // star
+        // Star
         //
         def many[s, u, a](p: _ParsecT[s, u, a]): _ParsecT[s, u, List[a]] = {
             val i = Monad[_ParsecT.apply[s, u]]
@@ -331,14 +303,14 @@ private[ken] final class _ParsecTs[n[+_]](val inner: Monad[n]) {
             for { _ <- manyAccum[s, u, Any](_ => _ => Nil)(p) } yield ()
         }
 
-        def manyAccum[s, u, a](acc: a => Lazy[List[a]] => List[a])(p: _ParsecT[s, u, a]): _ParsecT[s, u, List[a]] = new _ParsecT[s, u, List[a]] {
-            override def accept[b](s: State[s, u])(v: Visitor[s, u, List[a], b]): n[b] = {
+        def manyAccum[s, u, a](acc: a => Lazy[List[a]] => List[a])(p: _ParsecT[s, u, a]): _ParsecT[s, u, List[a]] = _ParsecT { new UnParser[s, u, n, List[a]] {
+            override def apply[b](v: UnParserParam[s, u, n, List[a], b]): n[b] = {
                 def walk(xs: List[a])(x: a)(s_ : State[s, u])(err: ParseError): n[b] = {
                     unParser(p)(s_)(walk { acc(x)(xs) })(v.cerr)(manyErr)(e => v.cok(acc(x)(xs))(s_)(e))
                 }
-                unParser(p)(s)(walk(Nil))(v.cerr)(manyErr)(e => v.eok(Nil)(s)(e))
+                unParser(p)(v.state)(walk(Nil))(v.cerr)(manyErr)(e => v.eok(Nil)(v.state)(e))
             }
-        }
+        } }
 
         def manyErr: Nothing = error("ParsecT.many: : combinator 'many' is applied to a parser that accepts an empty string.")
 
@@ -357,15 +329,15 @@ private[ken] final class _ParsecTs[n[+_]](val inner: Monad[n]) {
 
         implicit def _asMonadTrans[s, u]: MonadTrans[n, ({type m[+a] = _ParsecT[s, u, a]})#m] = new MonadTrans[n, ({type m[+a] = _ParsecT[s, u, a]})#m] {
             private[this] type m[+a] = _ParsecT[s, u, a]
-            override def lift[a](amb: n[a]): m[a] = new _ParsecT[s, u, a] {
-                override def accept[b](s: State[s, u])(v: Visitor[s, u, a, b]): n[b] = {
+            override def lift[a](amb: n[a]): m[a] = _ParsecT { new UnParser[s, u, n, a] {
+                override def apply[b](v: UnParserParam[s, u, n, a, b]): n[b] = {
                     import inner.`for`
                     for {
                         a <- amb
-                        * <- v.eok(a)(s) { unknownError(s) }
+                        * <- v.eok(a)(v.state) { unknownError(v.state) }
                     } yield *
                 }
-            }
+            } }
         }
     }
 
