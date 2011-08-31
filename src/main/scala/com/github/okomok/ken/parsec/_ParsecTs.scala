@@ -293,7 +293,7 @@ private[ken] final class _ParsecTs[n[+_]](val inner: Monad[n]) {
         //
         def many[s, u, a](p: _ParsecT[s, u, a]): _ParsecT[s, u, List[a]] = {
             val i = Monad[_ParsecT.apply[s, u]]
-            import i._
+            import i.`for`
             for { xs <- manyAccum(List.op_::[a])(p) } yield List.reverse(xs)
         }
 
@@ -312,8 +312,102 @@ private[ken] final class _ParsecTs[n[+_]](val inner: Monad[n]) {
             }
         } }
 
-        def manyErr: Nothing = error("ParsecT.many: : combinator 'many' is applied to a parser that accepts an empty string.")
+        def manyErr: Nothing = error("ParsecT.many: combinator 'many' is applied to a parser that accepts an empty string.")
 
+        // Run
+        //   (runParserT is equivalent to runParser by the power of Scala)
+        //
+        def runParser[s, u, a](p: _ParsecT[s, u, a])(u: u)(name: SourceName)(s: s): n[Either[ParseError, a]] = {
+            def parserReply(res: Consumed_[n[Reply[s, u, a]]]): n[Reply[s, u, a]] = res match {
+                case Consumed(r) => r
+                case Empty(r) => r
+            }
+
+            import inner._
+            for {
+                res <- runParsecT(p)(State(s, initialPos(name), u))
+                r <- parserReply(res)
+                * <- r match {
+                    case Ok(x, _, _) => `return`(Right(x))
+                    case Error(err) => `return`(Left(err))
+                }
+            } yield *
+        }
+
+        // Parse
+        //
+        def parse[s, u, a](p: _ParsecT[s, Unit, a])(name: SourceName)(s: s): n[Either[ParseError, a]] = runParser(p)(())(name)(s)
+
+        def parseTest[s, u, a](p: _ParsecT[s, Unit, a])(input: s): IO[Unit] = {
+            import IO.`for`
+            parse(p)("")(input) match {
+                case Left(err) => for { _ <- IO.putStr("parse error at "); * <- IO.print(err) } yield *
+                case Right(x) => IO.print(x)
+            }
+        }
+
+        // Getter/Setter
+        //
+        def getPosition[s, u]: _ParsecT[s, u, SourcePos] = {
+            val i = Monad[_ParsecT.apply[s, u]]
+            import i.`for`
+            for { state <- getParserState[s, u] } yield statePos(state)
+        }
+
+        def getInput[s, u]: _ParsecT[s, u, s] = {
+            val i = Monad[_ParsecT.apply[s, u]]
+            import i.`for`
+            for { state <- getParserState[s, u] } yield stateInput(state)
+        }
+
+        def setPosition[s, u](pos: SourcePos): _ParsecT[s, u, Unit] = {
+            val i = Monad[_ParsecT.apply[s, u]]
+            import i.`for`
+            for { _ <- updateParserState[s, u] {
+                    case State(input, _, user) => State(input, pos, user)
+                }
+            } yield ()
+        }
+
+        def setInput[s, u](input: s, * : Type[u] = null): _ParsecT[s, u, Unit] = {
+            val i = Monad[_ParsecT.apply[s, u]]
+            import i.`for`
+            for { _ <- updateParserState[s, u] {
+                    case State(_, pos, user) => State(input, pos, user)
+                }
+            } yield ()
+        }
+
+        def getParserState[s, u]: _ParsecT[s, u, State[s, u]] = updateParserState(id)
+
+        def setParserState[s, u](st: State[s, u]): _ParsecT[s, u, State[s, u]] = updateParserState(const(st))
+
+        def updateParserState[s, u](f: State[s, u] => State[s, u]): _ParsecT[s, u, State[s, u]] = _ParsecT { new UnParser[s, u, n, State[s, u]] {
+            override def apply[b](v: UnParserParam[s, u, n, State[s, u], b]): n[b] = {
+                val s_ = f(v.state)
+                v.eok(s_)(s_) { unknownError(s_) }
+            }
+        } }
+
+        def getState[s, u]: _ParsecT[s, u, u] = {
+            val i = Monad[_ParsecT.apply[s, u]]
+            i.liftM[State[s, u], u](stateUser)(getParserState)
+        }
+
+        def putState[s, u](u: u): _ParsecT[s, u, Unit] = {
+            val i = Monad[_ParsecT.apply[s, u]]
+            import i.`for`
+            for { _ <- updateParserState { (s: State[s, u]) => s.copy(user = u) } } yield ()
+        }
+
+        def modifyState[s, u](f: u => u, * : Type[s] = null): _ParsecT[s, u, Unit] = {
+            val i = Monad[_ParsecT.apply[s, u]]
+            import i.`for`
+            for { _ <- updateParserState { (s: State[s, u]) => s.copy(user = f(stateUser(s))) } } yield ()
+        }
+
+        def setState[s, u](u: u): _ParsecT[s, u, Unit] = putState(u)
+        def updateState[s, u](f: u => u, * : Type[s] = null): _ParsecT[s, u, Unit] = modifyState(f, *)
     }
 
     private[ken] trait _ParsecT_0 { this: _ParsecT.type =>

@@ -77,7 +77,7 @@ package object parsec {
 
     def stateInput[s, u](state: State[s, u]): s = state.input
     def statePos[s, u](state: State[s, u]): SourcePos = state.pos
-    def stateUser[s, u](state: State[s,u]): u = state.user
+    def stateUser[s, u](state: State[s, u]): u = state.user
 
     val unexpectError: String_ => SourcePos => ParseError = msg => pos => newErrorMessage(SysUnExpect(msg))(pos)
 
