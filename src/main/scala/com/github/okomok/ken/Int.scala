@@ -103,6 +103,6 @@ object Int extends Bounded[Int] with Enum[Int] with Eq.Of[Int]
     }
 
     private lazy val itos: Int => String_ => String_ = n => cs => {
-        n.toString ::: cs
+        n.toString ++: cs
     }
 }

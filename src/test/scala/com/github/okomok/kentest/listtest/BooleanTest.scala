@@ -13,7 +13,7 @@ import com.github.okomok.ken._
 
 class BooleanTest extends org.scalatest.junit.JUnit3Suite {
     def testShortCircuit: Unit = {
-        val L = (true !:: true !:: false !:: true !:: Nil) ::: List.cycle(true !:: Nil)
+        val L = (true !:: true !:: false !:: true !:: Nil) ++: List.cycle(true !:: Nil)
         expect(false)(List.and(L))
         assert(List.or(L))
     }

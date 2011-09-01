@@ -37,7 +37,7 @@ final class World {
     def writeSTRef[a](ref: STRef[a])(v: a): ST[Unit] = ST { ref.mutvar = v; () }
 
     def modifySTRef[a](ref: STRef[a])(f: a => a): ST[Unit] = {
-        import ST._asMonadState.=<<
-        (writeSTRef(ref)_ compose f) =<< readSTRef(ref)
+        import ST._asMonadState.=<<:
+        (writeSTRef(ref)_ compose f) =<<: readSTRef(ref)
     }
 }

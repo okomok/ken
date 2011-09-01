@@ -31,7 +31,7 @@ trait Monad[m[+_]] extends Applicative[m] {
 
     // Extra
     //
-    def op_=<<[a, b](f: a => m[b])(x: m[a]): m[b] = x >>= f
+    def op_=<<:[a, b](f: a => m[b])(x: m[a]): m[b] = x >>= f
 
     def sequence[a](ms: List[m[a]]): m[List[a]] = {
         def k(m: m[a])(_m: Lazy[m[List[a]]]): m[List[a]] = for { x <- m; xs <- _m.! } yield (x :: xs)
@@ -56,8 +56,8 @@ trait Monad[m[+_]] extends Applicative[m] {
     def forM[a, b](xs: List[a])(f: a => m[b]): m[List[b]] = mapM(f)(xs)
     def forM_[a, b](xs: List[a])(f: a => m[b]): m[Unit] = mapM_(f)(xs)
 
-    def op_>=>[a, b, c](f: a => m[b])(g: b => m[c]): a => m[c] = { x => f(x) >>= g }
-    def op_<=<[a, b, c](g: b => m[c])(f: a => m[b]): a => m[c] = op_>=>(f)(g)
+    def op_>=>:[a, b, c](f: a => m[b])(g: b => m[c]): a => m[c] = { x => f(x) >>= g }
+    def op_<=<:[a, b, c](g: b => m[c])(f: a => m[b]): a => m[c] = op_>=>:(f)(g)
 
     def forever[a](a: m[a]): m[a] = a >>= (_ => forever(a))
 
@@ -113,20 +113,20 @@ trait Monad[m[+_]] extends Applicative[m] {
     }
     final implicit def `for`[a](x: m[a]): For[a] = new For(x)
 
-    sealed class Op_=<<[a, b](f: a => m[b]) {
-        def =<<(x: m[a]): m[b] = op_=<<(f)(x)
+    sealed class Op_=<<:[a](x: m[a]) {
+        def =<<:[b](f: a => m[b]): m[b] = op_=<<:(f)(x)
     }
-    final implicit def =<<[a, b](f: a => m[b]): Op_=<<[a, b] = new Op_=<<[a, b](f)
+    final implicit def =<<:[a](x: m[a]): Op_=<<:[a] = new Op_=<<:(x)
 
-    sealed class Op_>=>[a, b](f: a => m[b]) {
-        def >=>[c](g: b => m[c]): a => m[c] = op_>=>(f)(g)
+    sealed class Op_>=>:[b, c](g: b => m[c]) {
+        def >=>:[a](f: a => m[b]): a => m[c] = op_>=>:(f)(g)
     }
-    final implicit def >=>[a, b](f: a => m[b]): Op_>=>[a, b] = new Op_>=>[a, b](f)
+    final implicit def >=>:[b, c](g: b => m[c]): Op_>=>:[b, c] = new Op_>=>:(g)
 
-    sealed class Op_<=<[b, c](g: b => m[c]) {
-        def <=<[a](f: a => m[b]): a => m[c] = op_<=<(g)(f)
+    sealed class Op_<=<:[a, b](f: a => m[b]) {
+        def <=<:[c](g: b => m[c]): a => m[c] = op_<=<:(g)(f)
     }
-    final implicit def <=<[b, c](g: b => m[c]): Op_<=<[b, c] = new Op_<=<[b, c](g)
+    final implicit def <=<:[a, b](f: a => m[b]): Op_<=<:[a, b] = new Op_<=<:(f)
 
     // Transformers
     //
@@ -174,7 +174,7 @@ trait MonadProxy[m[+_]] extends Monad[m] with ApplicativeProxy[m] {
     override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = selfMonad.op_>>=(x)(y)
     override def op_>>[b](x: m[_])(y: Lazy[m[b]]): m[b] = selfMonad.op_>>(x)(y)
 
-    override def op_=<<[a, b](f: a => m[b])(x: m[a]): m[b] = selfMonad.op_=<<(f)(x)
+    override def op_=<<:[a, b](f: a => m[b])(x: m[a]): m[b] = selfMonad.op_=<<:(f)(x)
     override def sequence[a](ms: List[m[a]]): m[List[a]] = selfMonad.sequence(ms)
     override def sequence_[a](ms: List[m[a]]): m[Unit] = selfMonad.sequence_(ms)
     override def mapM[a, b](f: a => m[b])(as: List[a]): m[List[b]] = selfMonad.mapM(f)(as)
@@ -182,8 +182,8 @@ trait MonadProxy[m[+_]] extends Monad[m] with ApplicativeProxy[m] {
     override def filterM[a](p: a => m[Bool])(xs: List[a]): m[List[a]] = selfMonad.filterM(p)(xs)
     override def forM[a, b](xs: List[a])(f: a => m[b]): m[List[b]] = selfMonad.forM(xs)(f)
     override def forM_[a, b](xs: List[a])(f: a => m[b]): m[Unit] = selfMonad.forM_(xs)(f)
-    override def op_>=>[a, b, c](f: a => m[b])(g: b => m[c]): a => m[c] = selfMonad.op_>=>(f)(g)
-    override def op_<=<[a, b, c](g: b => m[c])(f: a => m[b]): a => m[c] = selfMonad.op_<=<(g)(f)
+    override def op_>=>:[a, b, c](f: a => m[b])(g: b => m[c]): a => m[c] = selfMonad.op_>=>:(f)(g)
+    override def op_<=<:[a, b, c](g: b => m[c])(f: a => m[b]): a => m[c] = selfMonad.op_<=<:(g)(f)
     override def forever[a](a: m[a]): m[a] = selfMonad.forever(a)
     override def join[a](x: m[m[a]]): m[a] = selfMonad.join(x)
     override def mapAndUnzipM[a, b, c](f: a => m[(b, c)])(xs: List[a]): m[(List[b], List[c])] = selfMonad.mapAndUnzipM(f)(xs)

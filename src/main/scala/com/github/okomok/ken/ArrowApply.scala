@@ -25,11 +25,11 @@ trait ArrowApply[a[-_, +_]] extends Arrow[a] {
     //
     def leftApp[b, c, d](f: a[b, c]): a[Either[b, d], Either[c, d]] = {
         val j = ArrowChoice[Function.type]
-        import j.|||
+        import j.|||:
         arr {
-            ((b: b) => (arr((_: Unit) => b) >>> f >>> arr(Left(_).of[c, d]), ())) |||
-            ((d: d) => (arr((_: Unit) => d) >>> arr(Right(_).of[c, d]), ()))
-        } >>> app
+            ((b: b) => (arr((_: Unit) => b) >>>: f >>>: arr(Left(_: c).of[c, d]), ())) |||:
+            ((d: d) => (arr((_: Unit) => d) >>>: arr(Right(_: d).of[c, d]), ()))
+        } >>>: app
     }
 
     // Monads
@@ -57,7 +57,7 @@ object ArrowApply {
         private[this] type a[-a, +b] = nt#apply2[a, b]
         override val selfArrow = Arrow.deriving[nt, ot](i, j)
 
-        override def app[b, c]: a[(a[b, c], b), c] = j.newOf(i.op_^>>( (n: (nt#apply2[b, c], b)) => (j.oldOf(n._1), n._2) )(i.app[b, c]))
+        override def app[b, c]: a[(a[b, c], b), c] = j.newOf(i.op_^>>:( (n: (nt#apply2[b, c], b)) => (j.oldOf(n._1), n._2) )(i.app[b, c]))
 
         override def leftApp[b, c, d](f: a[b, c]): a[Either[b, d], Either[c, d]] = j.newOf(Lazy(i.leftApp(j.oldOf(Lazy(f)))))
     }

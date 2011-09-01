@@ -33,11 +33,11 @@ class ArrowLoopTest extends org.scalatest.junit.JUnit3Suite {
     def testRepeat {
         // See: http://d.hatena.ne.jp/MaD/20070818
 
-        import fa.&&&
+        import fa.&&&:
         type r[x] = Tuple2[Int, Lazy[List[Int]]] => Lazy[List[Int]]
         val x: r[Int] = snd[Lazy[List[Int]]]_
         val y: r[Int] = uncurry(List.op_::[Int])
-        val r = fa.loop(x &&& y)
+        val r = fa.loop(x &&&: y)
         expect(List(1,1,1,1,1))(List.take(5)(r(1)))
     }
 }

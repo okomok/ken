@@ -101,7 +101,7 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
 
     sealed class _OfName[a](xs: Lazy[List[a]]) {
         def ::(x: a): List[a] = op_::(x)(xs)
-        def :::(ys: List[a]): List[a] = op_:::(ys)(xs)
+        def ++:(ys: List[a]): List[a] = op_++:(ys)(xs)
     }
     implicit def ofName[a](xs: => List[a]): _OfName[a] = new _OfName(xs)
 
@@ -113,7 +113,7 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
     override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = concat(map(y)(x))
     // MonadPlus
     override def mzero: m[Nothing] = Nil
-    override def mplus[a](x: m[a])(y: Lazy[m[a]]): m[a] = x ::: y.!
+    override def mplus[a](x: m[a])(y: Lazy[m[a]]): m[a] = x ++: y.!
     // Foldable
     private type t[+a] = List[a]
     override def toList[a](xs: t[a]): List[a]  = xs
@@ -130,7 +130,7 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
     implicit def _asMonoid[a]: Monoid[List[a]] = new Monoid[List[a]] {
         private[this] type m = List[a]
         override val mempty: m = Nil
-        override val mappend: m => Lazy[m] => m = op_:::[a]
+        override val mappend: m => Lazy[m] => m = op_++:[a]
     }
 
     implicit def _asOrd[a](implicit i: Ord[a]): Ord[List[a]] = new Ord[List[a]] with EqProxy[List[a]] {
@@ -172,12 +172,12 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
 
     // Basic functions
     //
-    def op_:::[a](xs: List[a])(ys: Lazy[List[a]]): List[a] = xs match {
+    def op_++:[a](xs: List[a])(ys: Lazy[List[a]]): List[a] = xs match {
         case Nil => ys
-        case x :: xs => x :: op_:::(xs.!)(ys)
+        case x :: xs => x :: op_++:(xs.!)(ys)
     }
 
-    def op_!:::[a](xs: List[a])(ys: List[a]): List[a] = op_:::(xs)(ys)
+    def op_!++:[a](xs: List[a])(ys: List[a]): List[a] = op_++:(xs)(ys)
 
     def head[a](xs: List[a]): a = xs match {
         case Nil => error("empty List")
@@ -296,9 +296,9 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
 
     // Special folds
     //
-    override def concat[a](xs: List[List[a]]): List[a] = foldr(op_:::[a])(Nil)(xs)
+    override def concat[a](xs: List[List[a]]): List[a] = foldr(op_++:[a])(Nil)(xs)
 
-    override def concatMap[a, b](f: a => List[b])(xs: List[a]): List[b] = foldr[a, List[b]](x => y => f(x) ::: y.!)(Nil)(xs)
+    override def concatMap[a, b](f: a => List[b])(xs: List[a]): List[b] = foldr[a, List[b]](x => y => f(x) ++: y.!)(Nil)(xs)
 
     override def and(xs: List[Bool]): Bool = foldr(op_&&)(True)(xs)
 
@@ -389,7 +389,7 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
     def cycle[a](xs: List[a]): List[a] = xs match {
         case Nil => error("empty List")
         case xs => {
-            lazy val xs_ : List[a] = xs ::: xs_
+            lazy val xs_ : List[a] = xs ++: xs_
             xs_
         }
     }
@@ -454,7 +454,7 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
 
     def inits[a](xs: List[a]): List[List[a]] = xs match {
         case Nil => List(Nil)
-        case x :: xs => List(Nil) ::: map(op_!::(x))(inits(xs.!))
+        case x :: xs => List(Nil) ++: map(op_!::(x))(inits(xs.!))
     }
 
     def tails[a](xxs: List[a]): List[List[a]] = xxs match {
@@ -553,14 +553,14 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
 
     def lines(s: String_): List[String_] = map(fromString)(from(stringize(s).split("\\r?\\n")))
 
-    def unlines(ls: List[String_]): String_ = concatMap(op_!:::("\n"))(ls)
+    def unlines(ls: List[String_]): String_ = concatMap(op_!++:("\n"))(ls)
 
     def words(s: String_): List[String_] = map(fromString)(from(stringize(s).split("\\W+")))
 
     def unwords(ws: List[String_]): String_ = ws match {
         case Nil => ""
         case w !:: Nil => w
-        case w :: ws => w ::: (' ' :: unwords(ws.!))
+        case w :: ws => w ++: (' ' :: unwords(ws.!))
     }
 
     // Set operations
@@ -598,7 +598,7 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
     }
 
     def unionBy[a](eq: a => a => Bool)(xs: List[a])(ys: List[a]): List[a] = {
-        xs ::: foldl(flip(deleteBy(eq)))(nubBy(eq)(ys))(xs)
+        xs ++: foldl(flip(deleteBy(eq)))(nubBy(eq)(ys))(xs)
     }
 
     def intersectBy[a](eq: a => a => Bool)(xs: List[a])(ys: List[a]): List[a] = {

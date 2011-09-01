@@ -76,7 +76,7 @@ object IO extends MonadIO[IO] with ThisIsInstance {
     }
 
     val getContents: IO[String_] = {
-        for { s <- getLine } yield (s ::: getContents.unIO)
+        for { s <- getLine } yield (s ++: getContents.unIO)
     }
 
     val interact: (String_ => String_) => IO[Unit] = f => {

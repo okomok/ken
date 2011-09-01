@@ -62,11 +62,11 @@ object ReadP extends MonadPlus[ReadP] with ThisIsInstance {
             case (p, Result(x, q)) => Result(x, p _mplus_ q)
             case (Fail, p) => p
             case (p, Fail) => p
-            case (Final(r), Final(t)) => Final(r ::: t)
-            case (Final(r), Look(f)) => Look(s => Final(r ::: run(f(s))(s)))
-            case (Final(r), p) => Look(s => Final(r ::: run(p)(s)))
-            case (Look(f), Final(r)) => Look(s => Final(run(f(s))(s) ::: r))
-            case (p, Final(r)) => Look(s => Final(run(p)(s) ::: r))
+            case (Final(r), Final(t)) => Final(r ++: t)
+            case (Final(r), Look(f)) => Look(s => Final(r ++: run(f(s))(s)))
+            case (Final(r), p) => Look(s => Final(r ++: run(p)(s)))
+            case (Look(f), Final(r)) => Look(s => Final(run(f(s))(s) ++: r))
+            case (p, Final(r)) => Look(s => Final(run(p)(s) ++: r))
             case (Look(f), Look(g)) => Look(s => f(s) _mplus_ g(s))
             case (Look(f), p) => Look(s => f(s) _mplus_ p)
             case (p, Look(f)) => Look(s => p _mplus_ f(s))

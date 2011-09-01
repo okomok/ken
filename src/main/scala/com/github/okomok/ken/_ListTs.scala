@@ -54,7 +54,7 @@ private[ken] final class _ListTs[n[+_]](val inner: Monad[n]) {
             // MonadPlus
             override def mzero: m[Nothing] = _ListT { inner.`return`(Nil) }
             override def mplus[a](m: m[a])(n: Lazy[m[a]]): m[a] = _ListT {
-                for { a <- run(m); b <- run(n) } yield a ::: b
+                for { a <- run(m); b <- run(n) } yield a ++: b
             }
         }
 

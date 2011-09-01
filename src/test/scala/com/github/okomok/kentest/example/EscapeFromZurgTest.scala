@@ -20,8 +20,8 @@ class EscapeFromZurgTest extends org.scalatest.junit.JUnit3Suite {
 
         def space(s: s): Space[m, s] = {
             val step: Space[m, s] = for { (m, t) <- trans(s) } yield (m :: Nil, t)
-            def expand(ss: Space[m, s]): Space[m, s] = for { (ms, s) <- ss; (ns, t) <- space(s) } yield (ms ::: ns, t)
-            step ::: expand(step)
+            def expand(ss: Space[m, s]): Space[m, s] = for { (ms, s) <- ss; (ns, t) <- space(s) } yield (ms ++: ns, t)
+            step ++: expand(step)
         }
         def solutions(s: s): Space[m, s] = List.filter(isSolution)(space(s))
     }

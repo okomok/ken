@@ -529,7 +529,7 @@ object Parsec2 {
     def addErrorMessage(msg: Message_)(err: ParseError): ParseError = err.copy(msgs = msg :: err.msgs)
     def setErrorPos(pos: SourcePos)(err: ParseError): ParseError = err.copy(pos = pos)
     def setErrorMessage(msg: Message_)(err: ParseError): ParseError = err.copy(msgs = msg :: List.filter(not compose messageEq(msg))(err.msgs))
-    def mergeError(err1: ParseError)(err2: ParseError): ParseError = ParseError(err1.pos, err1.msgs ::: err2.msgs)
+    def mergeError(err1: ParseError)(err2: ParseError): ParseError = ParseError(err1.pos, err1.msgs ++: err2.msgs)
 
     // Show ParseErrors
 
@@ -551,13 +551,13 @@ object Parsec2 {
         def separate(sep: String_)(ms: List[String_]): String_ = ms match {
             case Nil => Nil
             case m !:: Nil => m
-            case m :: ms => m ::: sep ::: separate(sep)(ms.!)
+            case m :: ms => m ++: sep ++: separate(sep)(ms.!)
         }
 
         def commasOr(s: List[String_]): String_ = s match {
             case Nil => Nil
             case m !:: Nil => m
-            case ms => commaSep(List.init(ms)) ::: " " ::: msgOr ::: " " ::: List.last(ms)
+            case ms => commaSep(List.init(ms)) ++: " " ++: msgOr ++: " " ++: List.last(ms)
         }
 
         def commaSep(ms: List[String_]): String_ = separate(", ")(clean(ms))
@@ -570,7 +570,7 @@ object Parsec2 {
                     if (List.`null`(pre)) {
                         commasOr(ms)
                     } else {
-                        pre ::: " " ::: commasOr(ms)
+                        pre ++: " " ++: commasOr(ms)
                     }
                 }
             }
@@ -584,9 +584,9 @@ object Parsec2 {
             if (not(List.`null`(unExpect)) || List.`null`(sysUnExpect)) {
                 ""
             } else if (List.`null`(firstMsg)) {
-                msgUnExpected ::: " " ::: msgEndOfInput
+                msgUnExpected ++: " " ++: msgEndOfInput
             } else {
-                msgUnExpected ::: " " ::: firstMsg
+                msgUnExpected ++: " " ++: firstMsg
             }
         }
         def showMessages: String_ = showMany("")(messages)
@@ -594,7 +594,7 @@ object Parsec2 {
         val r = if (List.`null`(msgs)) {
             msgUnknown
         } else {
-            List.concat { List.map((m: String_) => "\n" ::: m) { clean {
+            List.concat { List.map((m: String_) => "\n" ++: m) { clean {
                 List(showSysUnExpect, showUnExpect, showExpect, showMessages)
             } } }
         }

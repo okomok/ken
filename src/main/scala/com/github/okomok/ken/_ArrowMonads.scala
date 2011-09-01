@@ -28,11 +28,11 @@ private[ken] final class _ArrowMonads[k[-_, +_]](val arrow: ArrowApply[k]) {
         override def newOf[a](ot: Lazy[ot[a]]): nt[a] = _ArrowMonad(ot)
         override def oldOf[a](nt: Lazy[nt[a]]): ot[a] = nt.run
         // Monad
-        import arrow.{>>>, arr}
+        import arrow.{>>>:, arr}
         private[this] type m[+a] = _ArrowMonad[a]
         override def `return`[a](x: Lazy[a]): m[a] = _ArrowMonad { arr(_ => x) }
         override def op_>>=[a, b](m: m[a])(f: a => m[b]): m[b] = _ArrowMonad {
-            m.run >>> arr(x => (f(x).run, ())) >>> arrow.app
+            m.run >>>: arr((x: a) => (f(x).run, ())) >>>: arrow.app
         }
     }
 }

@@ -20,7 +20,7 @@ trait Show[a] extends Typeclass0[a] {
     // Core
     //
     type showsPrec = Int => a => ShowS
-    def showsPrec: showsPrec = _ => x => s => show(x) ::: s
+    def showsPrec: showsPrec = _ => x => s => show(x) ++: s
 
     type show = a => String_
     def show: show = x => shows(x)("")
@@ -32,13 +32,13 @@ trait Show[a] extends Typeclass0[a] {
     //
     final def showList__(showx: a => ShowS)(xs: List[a]): ShowS = s => {
         xs match {
-            case Nil => "Nil" ::: s
+            case Nil => "Nil" ++: s
             case x :: xs => {
                 def showl(ys: List[a]): String_ = ys match {
                     case Nil => ')' :: s
                     case y :: ys => ',' :: showx(y)(showl(ys.!))
                 }
-                "List(" ::: showx(x)(showl(xs.!))
+                "List(" ++: showx(x)(showl(xs.!))
             }
         }
     }
@@ -64,7 +64,7 @@ object Show extends ShowInstance {
 
     val showChar: Char => ShowS = List.op_!::
 
-    val showString: String_ => ShowS = List.op_!:::
+    val showString: String_ => ShowS = List.op_!++:
 
     val showParen: Bool => ShowS => ShowS = b => p => if (b) showChar('(') compose p compose showChar(')') else p
 

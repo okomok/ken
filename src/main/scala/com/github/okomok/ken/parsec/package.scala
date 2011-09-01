@@ -31,7 +31,7 @@ package object parsec {
     val addErrorMessage: Message_ => ParseError => ParseError = msg => err => err.copy(msgs = msg :: err.msgs)
     val setErrorPos: SourcePos => ParseError => ParseError = pos => err => err.copy(pos = pos)
     val setErrorMessage: Message_ => ParseError => ParseError = msg => err => err.copy(msgs = msg :: List.filter(msg /== (_: Message_))(err.msgs))
-    val mergeError: ParseError => ParseError => ParseError = err1 => err2 => ParseError(err1.pos, err1.msgs ::: err2.msgs)
+    val mergeError: ParseError => ParseError => ParseError = err1 => err2 => ParseError(err1.pos, err1.msgs ++: err2.msgs)
 
     // Pos
     //

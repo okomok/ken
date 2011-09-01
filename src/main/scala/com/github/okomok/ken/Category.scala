@@ -14,23 +14,23 @@ trait Category[cat[-_, +_]] extends Typeclass2[cat] {
     // Core
     //
     def cid[a]: cat[a, a]
-    def op_<<<[a, b, c](f: cat[b, c])(g: cat[a, b]): cat[a, c]
+    def op_<<<:[a, b, c](f: cat[b, c])(g: cat[a, b]): cat[a, c]
 
     // Extra
     //
-    def op_>>>[a, b, c](f: cat[a, b])(g: cat[b, c]): cat[a, c] = op_<<<(g)(f)
+    def op_>>>:[a, b, c](f: cat[a, b])(g: cat[b, c]): cat[a, c] = op_<<<:(g)(f)
 
     // Operators
     //
-    sealed class Op_<<<[b, c](f: cat[b, c]) {
-        def <<<[a](g: cat[a, b]): cat[a, c] = op_<<<(f)(g)
+    sealed class Op_<<<:[a, b](g: cat[a, b]) {
+        def <<<:[c](f: cat[b, c]): cat[a, c] = op_<<<:(f)(g)
     }
-    final implicit def <<<[b, c](f: cat[b, c]): Op_<<<[b, c] = new Op_<<<[b, c](f)
+    final implicit def <<<:[a, b](g: cat[a, b]): Op_<<<:[a, b] = new Op_<<<:(g)
 
-    sealed class Op_>>>[a, b](f: cat[a, b]) {
-        def >>>[c](g: cat[b, c]): cat[a, c] = op_>>>(f)(g)
+    sealed class Op_>>>:[b, c](g: cat[b, c]) {
+        def >>>:[a](f: cat[a, b]): cat[a, c] = op_>>>:(f)(g)
     }
-    final implicit def >>>[a, b](f: cat[a, b]): Op_>>>[a, b] = new Op_>>>[a, b](f)
+    final implicit def >>>:[b, c](g: cat[b, c]): Op_>>>:[b, c] = new Op_>>>:(g)
 }
 
 
@@ -38,9 +38,9 @@ trait CategoryProxy[cat[-_, +_]] extends Category[cat] {
     def selfCategory: Category[cat]
 
     override def cid[a]: cat[a, a] = selfCategory.cid[a]
-    override def op_<<<[a, b, c](f: cat[b, c])(g: cat[a, b]): cat[a, c] = selfCategory.op_<<<(f)(g)
+    override def op_<<<:[a, b, c](f: cat[b, c])(g: cat[a, b]): cat[a, c] = selfCategory.op_<<<:(f)(g)
 
-    override def op_>>>[a, b, c](f: cat[a, b])(g: cat[b, c]): cat[a, c] = selfCategory.op_>>>(f)(g)
+    override def op_>>>:[a, b, c](f: cat[a, b])(g: cat[b, c]): cat[a, c] = selfCategory.op_>>>:(f)(g)
 }
 
 
@@ -51,9 +51,9 @@ object Category extends CategoryInstance {
         private[this] type cat[-a, +b] = nt#apply2[a, b]
 
         override def cid[a]: cat[a, a] = j.newOf(i.cid[a])
-        override def op_<<<[a, b, c](f: cat[b, c])(g: cat[a, b]): cat[a, c] = j.newOf(i.op_<<<(j.oldOf(f))(j.oldOf(g)))
+        override def op_<<<:[a, b, c](f: cat[b, c])(g: cat[a, b]): cat[a, c] = j.newOf(i.op_<<<:(j.oldOf(f))(j.oldOf(g)))
 
-        override def op_>>>[a, b, c](f: cat[a, b])(g: cat[b, c]): cat[a, c] = j.newOf(i.op_>>>(j.oldOf(f))(j.oldOf(g)))
+        override def op_>>>:[a, b, c](f: cat[a, b])(g: cat[b, c]): cat[a, c] = j.newOf(i.op_>>>:(j.oldOf(f))(j.oldOf(g)))
     }
 
     def weak[nt <: Kind.Newtype2](implicit i: Category[nt#apply2], j: Newtype2[nt#apply2, nt#oldtype2]): Category[nt#oldtype2] = deriving[Kind.quote2[nt#oldtype2], nt](i, j.dual)

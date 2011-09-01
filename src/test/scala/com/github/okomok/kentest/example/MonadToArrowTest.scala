@@ -15,7 +15,7 @@ class MonadToArrowTest extends org.scalatest.junit.JUnit3Suite {
 
     def liftA2[a[-_, +_], b, c, d, e](op: b => c => d)(f: a[e, b])(g: a[e, c])(implicit i: Arrow[a]): a[e, d] = {
         import i._
-        (f &&& g) >>> arr{case (b, c) => op(b)(c)}
+        (f &&&: g) >>>: arr((bc: Pair[b, c]) => op(bc._1)(bc._2))
     }
 
     /*sealed*/ abstract class Exp
@@ -65,9 +65,9 @@ class MonadToArrowTest extends org.scalatest.junit.JUnit3Suite {
                 case Var(s) => arr(lookup(s))
                 case Add(e1, e2) => liftA2(add)(eval(e1))(eval(e2))
                 case If(e1, e2, e3) => {
-                    (eval(e1) &&& arr(id[Env])) >>>
-                    arr{ case (Bl(b), env) => if (b) Left(env).up else Right(env).up } >>>
-                    (eval(e2) ||| eval(e3))
+                    (eval(e1) &&&: arr(id[Env])) >>>:
+                    arr((ble: Pair[Val, Env]) => ble match { case (Bl(b), env) => if (b) Left(env).up else Right(env).up }) >>>:
+                    (eval(e2) |||: eval(e3))
                 }
             }
         }

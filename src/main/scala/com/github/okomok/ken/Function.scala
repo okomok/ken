@@ -23,18 +23,18 @@ object Function extends ArrowChoice[Function1] with ArrowApply[Function1] with A
     // Category
     private type cat[-a, +b] = a => b
     override def cid[a]: cat[a, a] = id[a]
-    override def op_<<<[a, b, c](f: cat[b, c])(g: cat[a, b]): cat[a, c] = f.compose(g)
+    override def op_<<<:[a, b, c](f: cat[b, c])(g: cat[a, b]): cat[a, c] = f.compose(g)
     // Arrow
     private type a[-a, +b] = a => b
     override def arr[b, c](f: b => c): a[b, c] = f
-    override def first[b, c, d](f: a[b, c]): a[(b, d), (c, d)] = f *** id[d]
-    override def second[b, c, d](f: a[b, c]): a[(d, b), (d, c)] = id[d] *** f
-    override def op_***[b, c, b_, c_](f: a[b, c])(g: a[b_, c_]): a[(b, b_), (c, c_)] = { case (x, y) => (f(x), g(y)) }
+    override def first[b, c, d](f: a[b, c], * : Type[d] = null): a[(b, d), (c, d)] = f ***: id[d]
+    override def second[b, c, d](f: a[b, c]): a[(d, b), (d, c)] = id[d] ***: f
+    override def op_***:[b, c, b_, c_](f: a[b, c])(g: a[b_, c_]): a[(b, b_), (c, c_)] = { case (x, y) => (f(x), g(y)) }
     // ArrowChoice
-    override def left[b, c, d](f: a[b, c]): a[Either[b, d], Either[c, d]] = f +++ id[d]
-    override def right[b, c, d](f: a[b, c]): a[Either[d, b], Either[d, c]] = id[d] +++ f
-    override def op_+++[b, c, b_, c_](f: a[b, c])(g: a[b_, c_]): a[Either[b, b_], Either[c, c_]] = ((x: b) => Left(f(x)).of[c, c_]) ||| ((x: b_) => Right(g(x)).of[c, c_])
-    override def op_|||[b, c, d](f: a[b, d])(g: a[c, d]): a[Either[b, c], d] = Either.either(f)(g)
+    override def left[b, c, d](f: a[b, c], * : Type[d] = null): a[Either[b, d], Either[c, d]] = f +++: id[d]
+    override def right[b, c, d](f: a[b, c], * : Type[d] = null): a[Either[d, b], Either[d, c]] = id[d] +++: f
+    override def op_+++:[b, c, b_, c_](f: a[b, c])(g: a[b_, c_]): a[Either[b, b_], Either[c, c_]] = ((x: b) => Left(f(x)).of[c, c_]) |||: ((x: b_) => Right(g(x)).of[c, c_])
+    override def op_|||:[b, c, d](f: a[b, d])(g: a[c, d]): a[Either[b, c], d] = Either.either(f)(g)
     // ArrowApply
     override def app[b, c]: a[(a[b, c], b), c] = { case (f, x) => f(x) }
     // ArrowLoop

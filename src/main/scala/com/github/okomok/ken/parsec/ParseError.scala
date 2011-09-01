@@ -22,7 +22,7 @@ object ParseError extends Eq.Of[ParseError] with Show[ParseError] with ThisIsIns
     //
     // Show
     override val show: show = err => {
-        ken.show(errorPos(err)) ::: ":" :::
+        ken.show(errorPos(err)) ++: ":" ++:
             showErrorMessages("or")("unknown parse error")("expecting")("unexpected")("end of input")(errorMessages(err))
     }
 
@@ -41,13 +41,13 @@ object ParseError extends Eq.Of[ParseError] with Show[ParseError] with ThisIsIns
         def separate(sep: String_)(ms: List[String_]): String_ = ms match {
             case Nil => Nil
             case m !:: Nil => m
-            case m :: ms => m ::: sep ::: separate(sep)(ms.!)
+            case m :: ms => m ++: sep ++: separate(sep)(ms.!)
         }
 
         def commasOr(s: List[String_]): String_ = s match {
             case Nil => Nil
             case m !:: Nil => m
-            case ms => commaSep(List.init(ms)) ::: " " ::: msgOr ::: " " ::: List.last(ms)
+            case ms => commaSep(List.init(ms)) ++: " " ++: msgOr ++: " " ++: List.last(ms)
         }
 
         def commaSep(ms: List[String_]): String_ = separate(", ")(clean(ms))
@@ -58,7 +58,7 @@ object ParseError extends Eq.Of[ParseError] with Show[ParseError] with ThisIsIns
                 case Nil => ""
                 case ms => {
                     if (List.`null`(pre)) commasOr(ms)
-                    else pre ::: " " ::: commasOr(ms)
+                    else pre ++: " " ++: commasOr(ms)
                  }
             }
         }
@@ -69,15 +69,15 @@ object ParseError extends Eq.Of[ParseError] with Show[ParseError] with ThisIsIns
             def firstMsg: String_ = messageString(List.head(sysUnExpect))
 
             if (not(List.`null`(unExpect)) || List.`null`(sysUnExpect)) ""
-            else if (List.`null`(firstMsg)) msgUnExpected ::: " " ::: msgEndOfInput
-            else msgUnExpected ::: " " ::: firstMsg
+            else if (List.`null`(firstMsg)) msgUnExpected ++: " " ++: msgEndOfInput
+            else msgUnExpected ++: " " ++: firstMsg
         }
         def showMessages: String_ = showMany("")(messages)
 
         if (List.`null`(msgs)) {
             msgUnknown
         } else {
-            List.concat { List.map((m: String_) => "\n" ::: m) { clean {
+            List.concat { List.map((m: String_) => "\n" ++: m) { clean {
                 List(showSysUnExpect, showUnExpect, showExpect, showMessages)
             } } }
         }

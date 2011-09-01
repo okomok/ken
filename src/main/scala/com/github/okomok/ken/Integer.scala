@@ -88,6 +88,6 @@ private[ken] object _Integer extends Enum[Integer] with Eq.Of[Integer]
     }
 
     private lazy val integerToString: Integer => String_ => String_ = n => cs => {
-        n.toString ::: cs
+        n.toString ++: cs
     }
 }
