@@ -156,14 +156,10 @@ private[ken] final class _ParsecTs[n[+_]](val inner: Monad[n]) {
 
         // Token
         //
-        trait Stream[s, t] {
-            def uncons: s => n[Maybe[(t, s)]]
-        }
-
         def tokens[s, u, t](showTokens: List[t] => String_)
             (nextposs: SourcePos => List[t] => SourcePos)
             (tts: List[t])
-            (implicit i: Stream[s, t], j: Eq[t]): _ParsecT[s, u, List[t]] = tts match
+            (implicit i: Stream[s, n, t], j: Eq[t]): _ParsecT[s, u, List[t]] = tts match
         {
             case Nil => _ParsecT { new UnParser[s, u, n, List[t]] {
                 override def apply[b](v: UnParserParam[s, u, n, List[t], b]): n[b] = v.eok(Nil)(v.state) { unknownError(v.state) }
@@ -221,9 +217,10 @@ private[ken] final class _ParsecTs[n[+_]](val inner: Monad[n]) {
             }
         } }
 
+        // Better evidence possible?
         def token[s, u, a, t](showToken: t => String_)
             (tokpos: t => SourcePos)
-            (test: t => Maybe[a])(implicit i: Stream[s, t], ev: n[Maybe[(t, s)]] =:= Maybe[(t, s)]): UnParser[s, u, n, a] =
+            (test: t => Maybe[a])(implicit i: Stream[s, n, t], ev: n[Maybe[(t, s)]] =:= Maybe[(t, s)]): UnParser[s, u, n, a] =
         {
             def nextpos(* : SourcePos)(tok: t)(ts: s): SourcePos = ev(i.uncons(ts)) match {
                 case Nothing => tokpos(tok)
@@ -235,7 +232,7 @@ private[ken] final class _ParsecTs[n[+_]](val inner: Monad[n]) {
         def tokenPrim[s, u, a, t](showToken: t => String_)
             (nextpos: SourcePos => t => s => SourcePos)
             (test: t => Maybe[a])
-            (implicit i: Stream[s, t]): _ParsecT[s, u, a] =
+            (implicit i: Stream[s, n, t]): _ParsecT[s, u, a] =
         {
             tokenPrimEx(showToken)(nextpos)(Nothing)(test)(i)
         }
@@ -244,7 +241,7 @@ private[ken] final class _ParsecTs[n[+_]](val inner: Monad[n]) {
             (nextpos: SourcePos => t => s => SourcePos)
             (nextstate: Maybe[SourcePos => t => s => u => u])
             (test: t => Maybe[a])
-            (implicit i: Stream[s, t]): _ParsecT[s, u, a] =
+            (implicit i: Stream[s, n, t]): _ParsecT[s, u, a] =
         {
             import inner.`for`
 
