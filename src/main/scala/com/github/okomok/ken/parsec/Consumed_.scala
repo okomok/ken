@@ -14,8 +14,8 @@ package parsec
 
 sealed abstract class Consumed_[+a] extends Up[Consumed_[a]]
 
-final case class Consumed[+a](_1: a) extends Consumed_[a]
-final case class Empty[+a](_2: a) extends Consumed_[a]
+final case class Consumed[+a](reply: a) extends Consumed_[a]
+final case class Empty[+a](reply: a) extends Consumed_[a]
 
 
 object Consumed_ extends Functor[Consumed_] {
