@@ -9,16 +9,17 @@ package parsectest.example.userguide
 
 
 import com.github.okomok.ken._
+import parsec.Parsers._
 
 
-class MainTest extends org.scalatest.junit.JUnit3Suite {
+class MainTezt {
+//class MainTest extends org.scalatest.junit.JUnit3Suite {
 
     // 2.1
 
     val simple: Parser[Char] = letter
     val pm = MonadPlus[Parser.type]
     import pm._
-    val char_ = char[Unit]_
 
     def run[a](p: Parser[a])(input: String_): IO[Unit] = {
         val io = parse(p)("")(input) match {
@@ -45,15 +46,15 @@ class MainTest extends org.scalatest.junit.JUnit3Suite {
     // 2.2
 
     val openClose: Parser[Char] = for {
-        _ <- char_('(')
-        c <- char_(')')
+        _ <- char('(')
+        c <- char(')')
     } yield c
 
     val parens: Parser[Unit] = {
         ( for {
-            _ <- char_('(')
+            _ <- char('(')
             _ <- parens
-            _ <- char_(')')
+            _ <- char(')')
             _ <- parens
         } yield () ) <|> `return`()
     }
@@ -66,23 +67,22 @@ class MainTest extends org.scalatest.junit.JUnit3Suite {
 
     // 2.3
 
-    val testOr = string[Unit]("(a)") <|> string[Unit]("(b)")
+    val testOr = string("(a)") <|> string("(b)")
 
     val _testOr: Parser[Unit] = {
-        val char_ = char[Unit] _
-        (for { _ <- char_('('); _ <- char_('a'); _ <- char_(')') } yield () ) <|>
-        (for { _ <- char_('('); _ <- char_('a'); _ <- char_(')') } yield () )
+        (for { _ <- char('('); _ <- char('a'); _ <- char(')') } yield () ) <|>
+        (for { _ <- char('('); _ <- char('a'); _ <- char(')') } yield () )
     }
 
     val testOr1: Parser[Unit] = {
         for {
-            _ <- char_('(')
-            _ <- char_('a') <|> char_('b')
-            _ <- char_(')')
+            _ <- char('(')
+            _ <- char('a') <|> char('b')
+            _ <- char(')')
         } yield ()
     }
 
-    val testOr2 = `try`(string[Unit]("(a)")) <|> string[Unit]("(b)")
+    val testOr2 = `try`(string("(a)")) <|> string("(b)")
 
     def testTestOr {
         println("---run testOr---")
@@ -92,11 +92,11 @@ class MainTest extends org.scalatest.junit.JUnit3Suite {
     // 2.4
 
     lazy val nesting: Parser[Int] = {
-        val j = implicitly[Ord[Int]]
+        val j = instance[Ord[Int]]
         ( for {
-            _ <- char_('(')
+            _ <- char('(')
             n <- nesting
-            _ <- char_(')')
+            _ <- char(')')
             m <- nesting
         } yield (j.max(n+1)(m)) ) <|> `return`(0)
     }
@@ -111,11 +111,11 @@ class MainTest extends org.scalatest.junit.JUnit3Suite {
     // 2.5 and 2.6
 
     lazy val _word: Parser[String_] = for {
-        c <- letter[Unit]
+        c <- letter
         d <- ( for { cs <- _word } yield  c :: cs ) <|> `return`(List(c))
     } yield d
 
-    val word: Parser[String_] = many1(letter[Unit] <#> "") <#> "word"
+    val word: Parser[String_] = many1(letter <#> "") <#> "word"
 
     def testWord {
         println("---run word---")
@@ -124,10 +124,10 @@ class MainTest extends org.scalatest.junit.JUnit3Suite {
 
     lazy val sentence: Parser[List[String_]] = for {
         words <- sepBy1(word)(separator)
-        _ <- oneOf[Unit](".?!") <#> "end of sentence"
+        _ <- oneOf(".?!") <#> "end of sentence"
     } yield words
 
-    lazy val separator: Parser[Unit] = skipMany1(space[Unit] <|> char_(',') <#> "")
+    lazy val separator: Parser[Unit] = skipMany1(space <|> char(',') <#> "")
 
     def testSentence {
         println("---run sentence---")
