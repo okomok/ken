@@ -15,7 +15,9 @@ package ken
 
 
 // `object Integer` crashes scalac.
-private[ken] object _Integer extends Enum[Integer] with Eq.Of[Integer] with Integral[Integer] with Show[Integer] {
+private[ken] object _Integer extends Enum[Integer] with Eq.Of[Integer]
+    with Integral[Integer] with Ix[Integer] with Show[Integer]
+{
     // Overrides
     //
     // Enum
@@ -71,6 +73,14 @@ private[ken] object _Integer extends Enum[Integer] with Eq.Of[Integer] with Inte
     override val rem: rem = a => b => a % b
     override val quotRem: quotRem = a => b => (a / b, a % b)
     override val toInteger: toInteger = i => i
+    // Ix
+    override val range: range = { case (m, n) => enumFromTo(m)(n) }
+    override val unsafeIndex: unsafeIndex = { case (m, _n) => i => Int.fromInteger(i - m) }
+    override val index: index = b => i => {
+        if (inRange(b)(i)) unsafeIndex(b)(i)
+        else indexError(b)(i)("Integer")
+    }
+    override val inRange: inRange = { case (m, n) => i => m <= i && i <= n }
     // Show
     override val showsPrec: showsPrec = p => n => r => {
         if (p > 6 && n < 0) '(' :: integerToString(n)(')' :: r)

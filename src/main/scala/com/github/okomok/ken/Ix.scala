@@ -35,12 +35,12 @@ trait Ix[a] extends Ord[a] {
 
     type rangeSize = Pair[a, a] => Int
     def rangeSize: rangeSize = {
-        case b@(_l, h) => if (inRange(b)(h)) (unsafeIndex(b)(h) + 1) else 0
+        case b @ (_l, h) => if (inRange(b)(h)) (unsafeIndex(b)(h) + 1) else 0
     }
 
     type unsafeRangeSize = Pair[a, a] => Int
     def unsafeRangeSize: unsafeRangeSize = {
-        case b@(_l, h) => unsafeIndex(b)(h) + 1
+        case b @ (_l, h) => unsafeIndex(b)(h) + 1
     }
 
     // Extra
@@ -89,6 +89,12 @@ object Ix extends IxInstance {
 
 
 sealed trait IxInstance { this: Ix.type =>
+    implicit val ofBool: Ix[Bool] = _Bool
+    implicit val ofInt: Ix[Int] = Int
+    implicit val ofInteger: Ix[Integer] = _Integer
+    implicit val ofOrdering: Ix[Ordering] = Ordering
+    implicit val ofUnit: Ix[Unit] = Unit
+
     implicit def ofScalaNumeric[a](implicit i: scala.Numeric[a]): Ix[a] = new Ix[a] with OrdProxy[a] {
         override val selfOrd = Ord.ofScalaOrdering(i)
         override val range: range = { case (n, m) =>

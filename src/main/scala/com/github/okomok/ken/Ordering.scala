@@ -21,7 +21,9 @@ case object EQ extends Ordering
 case object GT extends Ordering
 
 
-object Ordering extends Bounded[Ordering] with Enum[Ordering] with Monoid[Ordering] with Show[Ordering] with ThisIsInstance {
+object Ordering extends Bounded[Ordering] with Enum[Ordering] with Ix[Ordering]
+    with Monoid[Ordering] with Show[Ordering] with ThisIsInstance
+{
     // Overrides
     //
     // Bounded
@@ -50,6 +52,14 @@ object Ordering extends Bounded[Ordering] with Enum[Ordering] with Monoid[Orderi
     }
     override val enumFrom: enumFrom = Bounded.boundedEnumFrom
     override val enumFromThen: enumFromThen = Bounded.boundedEnumFromThen
+    // Ix
+    override val range: range = { case (m, n) => enumFromTo(m)(n) }
+    override val unsafeIndex: unsafeIndex = { case (l, _) => i => fromEnum(i) - fromEnum(l) }
+    override val index: index = b => i => {
+        if (inRange(b)(i)) unsafeIndex(b)(i)
+        else indexError(b)(i)("Bool")
+    }
+    override val inRange: inRange = { case (l, u) => i => fromEnum(i) >= fromEnum(l) && fromEnum(i) <= fromEnum(u) }
     // Monoid
     override val mempty: mempty = EQ
     override val mappend: mappend = x => y => x match {

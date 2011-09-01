@@ -15,7 +15,9 @@ package ken
 
 
 // `object Bool` crashes scalac.
-private[ken] object _Bool extends Bounded[Bool] with Enum[Bool] with Eq.Of[Bool] with Ord[Bool] with Show[Bool] {
+private[ken] object _Bool extends Bounded[Bool] with Enum[Bool] with Eq.Of[Bool]
+    with Ord[Bool] with Ix[Bool] with Show[Bool]
+{
     // Overrides
     //
     // Bounded
@@ -44,6 +46,14 @@ private[ken] object _Bool extends Bounded[Bool] with Enum[Bool] with Eq.Of[Bool]
     override val op_<= : op_<= = b1 => b2 => fromEnum(b1) <= fromEnum(b2)
     override val op_> : op_> = b1 => b2 => fromEnum(b1) > fromEnum(b2)
     override val op_>= : op_>= = b1 => b2 => fromEnum(b1) >= fromEnum(b2)
+    // Ix
+    override val range: range = { case (m, n) => enumFromTo(m)(n) }
+    override val unsafeIndex: unsafeIndex = { case (l, _) => i => fromEnum(i) - fromEnum(l) }
+    override val index: index = b => i => {
+        if (inRange(b)(i)) unsafeIndex(b)(i)
+        else indexError(b)(i)("Bool")
+    }
+    override val inRange: inRange = { case (l, u) => i => fromEnum(i) >= fromEnum(l) && fromEnum(i) <= fromEnum(u) }
     // Show
     override val showsPrec: showsPrec = _ => a => Show.showString(a.toString)
 }

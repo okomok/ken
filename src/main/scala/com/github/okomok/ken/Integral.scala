@@ -36,7 +36,7 @@ trait Integral[a] extends Real[a] with Enum[a] { outer =>
 
     type divMod = a => a => (a, a)
     def divMod: divMod = n => d => {
-        val qr@(q, r) = quotRem(n)(d)
+        val qr @ (q, r) = quotRem(n)(d)
         if (signum(r) === negate(signum(d))) (q-1, r+d) else qr
     }
 

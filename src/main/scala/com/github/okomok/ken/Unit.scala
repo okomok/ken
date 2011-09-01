@@ -14,7 +14,9 @@ package com.github.okomok
 package ken
 
 
-object Unit extends Bounded[Unit] with Enum[Unit] with Eq.Of[Unit] with Monoid[Unit] with Ord[Unit] with Show[Unit] {
+object Unit extends Bounded[Unit] with Enum[Unit] with Eq.Of[Unit]
+    with Ix[Unit] with Monoid[Unit] with Ord[Unit] with Show[Unit]
+{
     // Overrides
     //
     // Bounded
@@ -32,6 +34,11 @@ object Unit extends Bounded[Unit] with Enum[Unit] with Eq.Of[Unit] with Monoid[U
     override val enumFromThen: enumFromThen = _ => _ => List.repeat(())
     override val enumFromTo: enumFromTo = _ => _ => List(())
     override val enumFromThenTo: enumFromThenTo = _ => _ => _ => List.repeat(())
+    // Ix
+    override val range: range = _ => List(())
+    override val unsafeIndex: unsafeIndex = _ => _ => 0
+    override val inRange: inRange = _ => _ => True
+    override val index: index = unsafeIndex
     // Ord
     override val compare: compare = _ => _ => EQ
     override val op_< : op_< = _ => _ => False
