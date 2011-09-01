@@ -73,10 +73,8 @@ object Monoid extends MonoidInstance {
 
     object Dual {
         implicit def _asNewtype0[a]: Newtype0[Dual[a], a] = new Newtype0[Dual[a], a] {
-            private[this] type nt = Dual[a]
-            private[this] type ot = a
-            override def newOf(ot: Lazy[ot]): nt = Dual(ot)
-            override def oldOf(nt: Lazy[nt]): ot = nt.get
+            override val newOf: newOf = ot => Dual(ot)
+            override val oldOf: oldOf = nt => nt.get
         }
 
         implicit def _asMonoid[a](implicit i: Monoid[a]): Monoid[Dual[a]] = new Monoid[Dual[a]] {
@@ -93,10 +91,8 @@ object Monoid extends MonoidInstance {
         // Overrides
         //
         // Newtype0
-        private type nt = All
-        private type ot = Bool
-        override def newOf(ot: Lazy[ot]): nt = All(ot)
-        override def oldOf(nt: Lazy[nt]): ot = nt.get
+        override val newOf: newOf = ot => All(ot)
+        override val oldOf: oldOf = nt => nt.get
 
         implicit val _asMonoid: Monoid[All] = new Monoid[All] {
             override val mempty: mempty = All(True)
@@ -112,10 +108,8 @@ object Monoid extends MonoidInstance {
         // Overrrides
         //
         // Newtype0
-        private type nt = Any_
-        private type ot = Bool
-        override def newOf(ot: Lazy[ot]): nt = Any_(ot)
-        override def oldOf(nt: Lazy[nt]): ot = nt.get
+        override val newOf: newOf = ot => Any_(ot)
+        override val oldOf: oldOf = nt => nt.get
 
         implicit val _asMonoid: Monoid[Any_] = new Monoid[Any_] {
             override val mempty: mempty = Any_(False)
@@ -131,10 +125,8 @@ object Monoid extends MonoidInstance {
 
     object Sum {
         implicit def _asNewtype0[a]: Newtype0[Sum[a], a] = new Newtype0[Sum[a], a] {
-            private[this] type nt = Sum[a]
-            private[this] type ot = a
-            override def newOf(ot: Lazy[ot]): nt = Sum(ot)
-            override def oldOf(nt: Lazy[nt]): ot = nt.get
+            override val newOf: newOf = ot => Sum(ot)
+            override val oldOf: oldOf = nt => nt.get
         }
 
         implicit def _asMonoid[a](implicit i: Num[a]): Monoid[Sum[a]] = new Monoid[Sum[a]] {
@@ -152,10 +144,8 @@ object Monoid extends MonoidInstance {
 
     object Product {
         implicit def _asNewtype0[a]: Newtype0[Product[a], a] = new Newtype0[Product[a], a] {
-            private[this] type nt = Product[a]
-            private[this] type ot = a
-            override def newOf(ot: Lazy[ot]): nt = Product(ot)
-            override def oldOf(nt: Lazy[nt]): ot = nt.get
+            override val newOf: newOf = ot => Product(ot)
+            override val oldOf: oldOf = nt => nt.get
         }
 
         implicit def _asMonoid[a](implicit i: Num[a]): Monoid[Product[a]] = new Monoid[Product[a]] {
@@ -167,7 +157,7 @@ object Monoid extends MonoidInstance {
 }
 
 
-trait MonoidInstance {
+trait MonoidInstance { this: Monoid.type =>
     implicit val ofUnit: Monoid[Unit] = Unit
     implicit def ofFunction1[z, b](implicit mb: Monoid[b]): Monoid[z => b] = Function._asMonoid[z, b]
     implicit def ofPair[a, b](implicit ma: Monoid[a], mb: Monoid[b]): Monoid[(a, b)] = Pair._asMonoid[a, b]

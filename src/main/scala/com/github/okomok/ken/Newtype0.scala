@@ -16,16 +16,20 @@ trait Newtype0[nt, ot] extends Typeclass with Kind.AbstractNewtype0 { outer =>
 
     // Core
     //
-    def newOf(ot: Lazy[ot]): nt
-    def oldOf(nt: Lazy[nt]): ot
+    type newOf = Lazy[ot] => nt
+    def newOf: newOf
+
+    type oldOf = Lazy[nt] => ot
+    def oldOf: oldOf
 
     // Extra
     //
     final def run(nt: nt): ot = oldOf(nt)
 
-    def dual: Newtype0[ot, nt] = new Newtype0[ot, nt] {
-        override def oldOf(ot: Lazy[ot]): nt = outer.newOf(ot)
-        override def newOf(nt: Lazy[nt]): ot = outer.oldOf(nt)
+    type dual = Newtype0[ot, nt]
+    def dual: dual = new Newtype0[ot, nt] {
+        override val oldOf: oldOf = ot => outer.newOf(ot)
+        override val newOf: newOf = nt => outer.oldOf(nt)
     }
 }
 
@@ -33,8 +37,8 @@ trait Newtype0[nt, ot] extends Typeclass with Kind.AbstractNewtype0 { outer =>
 trait Newtype0Proxy[nt, ot] extends Newtype0[nt, ot] {
     def selfNewtype0: Newtype0[nt, ot]
 
-    override def newOf(ot: Lazy[ot]): nt = selfNewtype0.newOf(ot)
-    override def oldOf(nt: Lazy[nt]): ot = selfNewtype0.oldOf(nt)
+    override def newOf: newOf = selfNewtype0.newOf
+    override def oldOf: oldOf = selfNewtype0.oldOf
 
     override def dual: Newtype0[ot, nt] = selfNewtype0.dual
 }
