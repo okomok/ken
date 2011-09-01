@@ -405,8 +405,205 @@ private[ken] final class _ParsecTs[n[+_]](val inner: Monad[n]) {
 
         def setState[s, u](u: u): _ParsecT[s, u, Unit] = putState(u)
         def updateState[s, u](f: u => u, * : Type[s] = null): _ParsecT[s, u, Unit] = modifyState(f, *)
+
+        // Combinator
+        //
+        def choice[s, u, a](ps: List[_ParsecT[s, u, a]]): _ParsecT[s, u, a] = {
+            val i = MonadPlus[_ParsecT.apply[s, u]]
+            import i._
+            List.foldr[apply1[a], i.apply1[a]](op_<|>)(mzero)(ps)
+        }
+
+        def option[s, u, a](x: a)(p: _ParsecT[s, u, a]): _ParsecT[s, u, a] = {
+            val i = MonadPlus[_ParsecT.apply[s, u]]
+            import i.<|>
+            p <|> i.`return`(x)
+        }
+
+        def optionMaybe[s, u, a](x: a)(p: _ParsecT[s, u, a]): _ParsecT[s, u, Maybe[a]] = {
+            val i = Monad[_ParsecT.apply[s, u]]
+            option[s, u, Maybe[a]](Nothing)(i.liftM(Just(_: a))(p))
+        }
+
+        def optional[s, u](p: _ParsecT[s, u, _]): _ParsecT[s, u, Unit] = {
+            val i = MonadPlus[_ParsecT.apply[s, u]]
+            import i.{<|>, `for`}
+            ( for { _ <- p } yield () ) <|> i.`return`()
+        }
+
+        // open p close
+        def between[s, u, a](open: _ParsecT[s, u, _])(close: _ParsecT[s, u, _])(p: _ParsecT[s, u, a]): _ParsecT[s, u, a] = {
+            val i = Monad[_ParsecT.apply[s, u]]
+            import i.`for`
+            for { _ <- open; x <- p; _ <- close } yield x
+        }
+
+        // p+ (result abandoned)
+        def skipMany1[s, u](p: _ParsecT[s, u, _]): _ParsecT[s, u, Unit] = {
+            val i = Monad[_ParsecT.apply[s, u]]
+            import i.`for`
+            for { _ <- p; * <- skipMany(p) } yield *
+        }
+
+        // p+
+        def many1[s, u, a](p: _ParsecT[s, u, a]): _ParsecT[s, u, List[a]] = {
+            val i = Monad[_ParsecT.apply[s, u]]
+            import i.`for`
+            for { x <- p; xs <- many(p) } yield (x :: xs)
+        }
+
+        // p (sep p)
+        def sepBy1[s, u, a](p: _ParsecT[s, u, a])(sep: _ParsecT[s, u, _]): _ParsecT[s, u, List[a]] = {
+            val i = Monad[_ParsecT.apply[s, u]]
+            import i.{>>, `for`}
+            for { x <- p; xs <- many(sep >> p) } yield (x :: xs)
+        }
+
+        def sepBy[s, u, a](p: _ParsecT[s, u, a])(sep: _ParsecT[s, u, _]): _ParsecT[s, u, List[a]] = {
+            val i = MonadPlus[_ParsecT.apply[s, u]]
+            import i.<|>
+            sepBy1(p)(sep) <|> i.`return`(Nil)
+        }
+
+        def sepEndBy1[s, u, a](p: _ParsecT[s, u, a])(sep: _ParsecT[s, u, _]): _ParsecT[s, u, List[a]] = {
+            val i = MonadPlus[_ParsecT.apply[s, u]]
+            import i.{<|>, `for`}
+            for {
+                x <- p
+                * <- ( for { _ <- sep; xs <- sepEndBy(p)(sep) } yield (x :: xs) ) <|> i.`return`(List(x))
+            } yield *
+        }
+
+        def sepEndBy[s, u, a](p: _ParsecT[s, u, a])(sep: _ParsecT[s, u, _]): _ParsecT[s, u, List[a]] = {
+            val i = MonadPlus[_ParsecT.apply[s, u]]
+            import i.<|>
+            sepEndBy1(p)(sep) <|> i.`return`(Nil)
+        }
+
+        // (p sep)+
+        def endBy1[s, u, a](p: _ParsecT[s, u, a])(sep: _ParsecT[s, u, _]): _ParsecT[s, u, List[a]] = {
+            val i = Monad[_ParsecT.apply[s, u]]
+            import i.`for`
+            many1 { for { x <- p; _ <- sep } yield x }
+        }
+
+        // (p sep)*
+        def endBy[s, u, a](p: _ParsecT[s, u, a])(sep: _ParsecT[s, u, _]): _ParsecT[s, u, List[a]] = {
+            val i = Monad[_ParsecT.apply[s, u]]
+            import i.`for`
+            many { for { x <- p; _ <- sep } yield x }
+        }
+
+        // p{n}
+        def count[s, u, a](n: Int)(p: _ParsecT[s, u, a]): _ParsecT[s, u, List[a]] = {
+            val i = Monad[_ParsecT.apply[s, u]]
+            if (n <= 0) i.`return`(Nil)
+            else i.sequence(List.replicate(n)(p))
+        }
+
+        // folding with seed
+        def chainr[s, u, a](p: _ParsecT[s, u, a])(op: _ParsecT[s, u, a => a => a])(x: a): _ParsecT[s, u, a] = {
+            val i = MonadPlus[_ParsecT.apply[s, u]]
+            import i.<|>
+            chainr1(p)(op) <|> i.`return`(x)
+        }
+
+        // folding with seed
+        def chainl[s, u, a](p: _ParsecT[s, u, a])(op: _ParsecT[s, u, a => a => a])(x: a): _ParsecT[s, u, a] = {
+            val i = MonadPlus[_ParsecT.apply[s, u]]
+            import i.<|>
+            chainl1(p)(op) <|> i.`return`(x)
+        }
+
+        // folding without seed
+        def chainr1[s, u, a](p: _ParsecT[s, u, a])(op: _ParsecT[s, u, a => a => a]): _ParsecT[s, u, a] = {
+            val i = MonadPlus[_ParsecT.apply[s, u]]
+            import i.{<|>, `for`}
+            def rest(x: a): _ParsecT[s, u, a] = ( for { f <- op; y <- scan } yield f(x)(y) ) <|> i.`return`(x)
+            lazy val scan: _ParsecT[s, u, a] = for { x <- p; * <- rest(x) } yield *
+            scan
+        }
+
+        // folding without seed
+        def chainl1[s, u, a](p: _ParsecT[s, u, a])(op: _ParsecT[s, u, a => a => a]): _ParsecT[s, u, a] = {
+            val i = MonadPlus[_ParsecT.apply[s, u]]
+            import i.{<|>, `for`}
+            def rest(x: a): _ParsecT[s, u, a] = ( for { f <- op; y <- p; z <- rest(f(x)(y)) } yield z ) <|> i.`return`(x)
+            for { x <- p; * <- rest(x) } yield *
+        }
+
+        def anyToken[s, u, t](implicit si: Stream[s, n, t], sj: Show[t]): _ParsecT[s, u, t] = {
+            tokenPrim[s, u, t, t](sj.show)(pos => _tok => _toks => pos)(Just(_))
+        }
+
+        def eof[s, u, t](implicit si: Stream[s, n, t], sj: Show[t]): _ParsecT[s, u, Unit] = {
+            notFollowedBy(anyToken[s, u, t]) <#> "end of input"
+        }
+
+        // negative lookahead
+        def notFollowedBy[s, u, a](p: _ParsecT[s, u, a])(implicit sj: Show[a]): _ParsecT[s, u, Unit] = {
+            val i = MonadPlus[_ParsecT.apply[s, u]]
+            import i.{<|>, `for`}
+            `try` {
+                ( for { c <- p; _ <- unexpected[s, u](sj.show(c)) } yield () ) <|> i.`return`()
+            }
+        }
+
+        // star-until
+        def manyTill[s, u, a](p: _ParsecT[s, u, a])(end: _ParsecT[s, u, _]): _ParsecT[s, u, List[a]] = {
+            lazy val scan: _ParsecT[s, u, List[a]] = {
+                val i = MonadPlus[_ParsecT.apply[s, u]]
+                import i.{`for`, <|>}
+                ( for { _ <- end } yield Nil.of[a] ) <|> ( for { x <- p; xs <- scan } yield (x :: xs) )
+            }
+            scan
+        }
+
+        // positive lookahead
+        def lookAhead[s, u, a](p: _ParsecT[s, u, a]): _ParsecT[s, u, a] = {
+            val i = Monad[_ParsecT.apply[s, u]]
+            import i.`for`
+            for { state <- getParserState[s, u]; x <- p; _ <- setParserState(state) } yield x
+        }
+
+        def unexpected[s, u](msg: String_): _ParsecT[s, u, Nothing] = _ParsecT { new UnParser[s, u, n, Nothing] {
+            override def apply[b](v: UnParserParam[s, u, n, Nothing, b]): n[b] = {
+                v.eerr { newErrorMessage(UnExpect(msg))(statePos(v.state)) }
+            }
+        } }
+
+        // Char
+        //
+        def oneOf[s, u](cs: String_)(implicit si: Stream[s, n, Char]): _ParsecT[s, u, Char] = satisfy(c => List.elem(c)(cs))
+        def noneOf[s, u](cs: String_)(implicit si: Stream[s, n, Char]): _ParsecT[s, u, Char] = satisfy(c => not(List.elem(c)(cs)))
+
+        def spaces[s, u](implicit si: Stream[s, n, Char]): _ParsecT[s, u, Unit] = skipMany(space[s, u]) <#> "white space"
+
+        def space[s, u](implicit si: Stream[s, n, Char]): _ParsecT[s, u, Char] = satisfy(Char.isSpace) <#> "space"
+        def newline[s, u](implicit si: Stream[s, n, Char]): _ParsecT[s, u, Char] = char('\n') <#> "new-line"
+        def tab[s, u](implicit si: Stream[s, n, Char]): _ParsecT[s, u, Char] = char('\t') <#> "tab"
+
+        def upper[s, u](implicit si: Stream[s, n, Char]): _ParsecT[s, u, Char] = satisfy(Char.isUpper) <#> "uppercase letter"
+        def lower[s, u](implicit si: Stream[s, n, Char]): _ParsecT[s, u, Char] = satisfy(Char.isLower) <#> "lowercase letter"
+        def alphaNum[s, u](implicit si: Stream[s, n, Char]): _ParsecT[s, u, Char] = satisfy(Char.isAlphaNum) <#> "letter or digit"
+        def letter[s, u](implicit si: Stream[s, n, Char]): _ParsecT[s, u, Char] = satisfy(Char.isAlpha) <#> "letter"
+        def digit[s, u](implicit si: Stream[s, n, Char]): _ParsecT[s, u, Char] = satisfy(Char.isDigit) <#> "digit"
+        def hexDigit[s, u](implicit si: Stream[s, n, Char]): _ParsecT[s, u, Char] = satisfy(Char.isHexDigit) <#> "hexadecimal digit"
+        def octDigit[s, u](implicit si: Stream[s, n, Char]): _ParsecT[s, u, Char] = satisfy(Char.isOctDigit) <#> "octal digit"
+
+        def char[s, u](c: Char)(implicit si: Stream[s, n, Char]): _ParsecT[s, u, Char] = satisfy(_ == c) <#> show(List(c))
+
+        def anyChar[s, u](implicit si: Stream[s, n, Char]): _ParsecT[s, u, Char] = satisfy(const(True))
+
+        def satisfy[s, u](f: Char => Bool)(implicit si: Stream[s, n, Char]): _ParsecT[s, u, Char] = {
+            tokenPrim[s, u, Char, Char](c => show(List(c)))(pos => c => _cs => updatePosChar(pos)(c))(c => if (f(c)) Just(c) else Nothing)
+        }
+
+        def string[s, u](s: String_)(implicit si: Stream[s, n, Char]): _ParsecT[s, u, String_] = tokens[s, u, Char](show)(updatePosString)(s)
     }
 
+    // Instances
+    //
     private[ken] trait _ParsecT_0 { this: _ParsecT.type =>
         implicit def _asMonadPlus[s, u]: MonadPlus[({type m[+a] = _ParsecT[s, u, a]})#m] = new MonadPlus[({type m[+a] = _ParsecT[s, u, a]})#m] {
             // Monad
