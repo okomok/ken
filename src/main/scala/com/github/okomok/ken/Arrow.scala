@@ -21,7 +21,7 @@ trait Arrow[a[-_, +_]] extends Category[a] {
     //
     def arr[b, c](f: b => c): a[b, c]
     def first[b, c, d](f: a[b, c], * : Type[d] = null): a[(b, d), (c, d)]
-    def second[b, c, d](f: a[b, c]): a[(d, b), (d, c)] = {
+    def second[b, c, d](f: a[b, c], * : Type[d] = null): a[(d, b), (d, c)] = {
         def swap[x, y](v: (x, y)): (y, x) = (v._2, v._1)
         arr(swap[d, b]) >>>: first(f, Type[d]) >>>: arr(swap[c, d])
     }
@@ -83,7 +83,7 @@ trait ArrowProxy[a[-_, +_]] extends Arrow[a] with CategoryProxy[a] {
 
     override def arr[b, c](f: b => c): a[b, c] = selfArrow.arr(f)
     override def first[b, c, d](f: a[b, c], * : Type[d] = null): a[(b, d), (c, d)] = selfArrow.first(f)
-    override def second[b, c, d](f: a[b, c]): a[(d, b), (d, c)] = selfArrow.second(f)
+    override def second[b, c, d](f: a[b, c], * : Type[d] = null): a[(d, b), (d, c)] = selfArrow.second(f)
 
     override def op_***:[b, c, b_, c_](f: a[b, c])(g: a[b_, c_]): a[(b, b_), (c, c_)] = selfArrow.op_***:(f)(g)
     override def op_&&&:[b, c, c_](f: a[b, c])(g: a[b, c_]): a[b, (c, c_)] = selfArrow.op_&&&:(f)(g)
@@ -104,7 +104,7 @@ object Arrow {
 
         override def arr[b, c](f: b => c): a[b, c] = j.newOf(i.arr(f))
         override def first[b, c, d](f: a[b, c], * : Type[d] = null): a[(b, d), (c, d)] = j.newOf(Lazy(i.first(j.oldOf(Lazy(f)))))
-        override def second[b, c, d](f: a[b, c]): a[(d, b), (d, c)] = j.newOf(Lazy(i.second(j.oldOf(Lazy(f)))))
+        override def second[b, c, d](f: a[b, c], * : Type[d] = null): a[(d, b), (d, c)] = j.newOf(Lazy(i.second(j.oldOf(Lazy(f)))))
 
         override def op_***:[b, c, b_, c_](f: a[b, c])(g: a[b_, c_]): a[(b, b_), (c, c_)] = j.newOf(i.op_***:(j.oldOf(f))(j.oldOf(g)))
         override def op_&&&:[b, c, c_](f: a[b, c])(g: a[b, c_]): a[b, (c, c_)] = j.newOf(i.op_&&&:(j.oldOf(f))(j.oldOf(g)))

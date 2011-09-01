@@ -23,7 +23,7 @@ trait ArrowApply[a[-_, +_]] extends Arrow[a] {
 
     // Extra
     //
-    def leftApp[b, c, d](f: a[b, c]): a[Either[b, d], Either[c, d]] = {
+    def leftApp[b, c, d](f: a[b, c], * : Type[d] = null): a[Either[b, d], Either[c, d]] = {
         val j = ArrowChoice[Function.type]
         import j.|||:
         arr {
@@ -46,7 +46,7 @@ trait ArrowApplyProxy[a[-_, +_]] extends ArrowApply[a] with ArrowProxy[a] {
 
     override def app[b, c]: a[(a[b, c], b), c] = selfArrowApply.app[b, c]
 
-    override def leftApp[b, c, d](f: a[b, c]): a[Either[b, d], Either[c, d]] = selfArrowApply.leftApp(f)
+    override def leftApp[b, c, d](f: a[b, c], * : Type[d] = null): a[Either[b, d], Either[c, d]] = selfArrowApply.leftApp(f)
 }
 
 
@@ -59,7 +59,7 @@ object ArrowApply {
 
         override def app[b, c]: a[(a[b, c], b), c] = j.newOf(i.op_^>>:( (n: (nt#apply2[b, c], b)) => (j.oldOf(n._1), n._2) )(i.app[b, c]))
 
-        override def leftApp[b, c, d](f: a[b, c]): a[Either[b, d], Either[c, d]] = j.newOf(Lazy(i.leftApp(j.oldOf(Lazy(f)))))
+        override def leftApp[b, c, d](f: a[b, c], * : Type[d] = null): a[Either[b, d], Either[c, d]] = j.newOf(Lazy(i.leftApp(j.oldOf(Lazy(f)))))
     }
 
     def weak[nt <: Kind.Newtype2](implicit i: ArrowApply[nt#apply2], j: Newtype2[nt#apply2, nt#oldtype2]): ArrowApply[nt#oldtype2] = deriving[Kind.quote2[nt#oldtype2], nt](i, j.dual)

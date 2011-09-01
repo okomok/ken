@@ -48,7 +48,7 @@ private[ken] final class _Kleislis[m[+_]](val monad: Monad[m]) {
             override def first[b, c, d](f: a[b, c], * : Type[d] = null): a[(b, d), (c, d)] = _Kleisli { case (b, d) =>
                 f.run(b) >>= (c => `return`(c, d))
             }
-            override def second[b, c, d](f: a[b, c]): a[(d, b), (d, c)] = _Kleisli { case (d, b) =>
+            override def second[b, c, d](f: a[b, c], * : Type[d] = null): a[(d, b), (d, c)] = _Kleisli { case (d, b) =>
                 f.run(b) >>= (c => `return`(d, c))
             }
         }

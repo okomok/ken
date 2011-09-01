@@ -28,7 +28,7 @@ object Function extends ArrowChoice[Function1] with ArrowApply[Function1] with A
     private type a[-a, +b] = a => b
     override def arr[b, c](f: b => c): a[b, c] = f
     override def first[b, c, d](f: a[b, c], * : Type[d] = null): a[(b, d), (c, d)] = f ***: id[d]
-    override def second[b, c, d](f: a[b, c]): a[(d, b), (d, c)] = id[d] ***: f
+    override def second[b, c, d](f: a[b, c], * : Type[d] = null): a[(d, b), (d, c)] = id[d] ***: f
     override def op_***:[b, c, b_, c_](f: a[b, c])(g: a[b_, c_]): a[(b, b_), (c, c_)] = { case (x, y) => (f(x), g(y)) }
     // ArrowChoice
     override def left[b, c, d](f: a[b, c], * : Type[d] = null): a[Either[b, d], Either[c, d]] = f +++: id[d]
