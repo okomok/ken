@@ -80,29 +80,4 @@ package object parsec {
     def stateUser[s, u](state: State[s, u]): u = state.user
 
     val unexpectError: String_ => SourcePos => ParseError = msg => pos => newErrorMessage(SysUnExpect(msg))(pos)
-
-    private[ken] val _idParsecTs = new _ParsecTs[WeakIdentity.apply](WeakIdentity)
-    type Parsec[s, u, +a] = _idParsecTs._ParsecT[s, u, a]
-    val Parsec = _idParsecTs._ParsecT
-
-    // String
-    //
-    type Parser[+a] = Parsec[String_, Unit, a]
-
-    object Parser extends Kind.AbstractFunction1 {
-        override type apply1[+a] = Parser[a]
-    }
-
-    type GenParser[tok, st, +a] = Parsec[List[tok], st, a]
-
-    object GenParser extends Kind.FunctionLike {
-        sealed trait apply[tok, st] extends Kind.AbstractFunction1 {
-            override type apply1[+a] = GenParser[tok, st, a]
-        }
-    }
-
-    def parseFromFile[a](p: Parser[a]): IO.FilePath => IO[Either[ParseError, a]] = fname => {
-        import IO.`for`
-        for { input <- IO.readFile(fname) } yield Parsec.runParser(p)(())(fname)(input)
-    }
 }

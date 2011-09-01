@@ -13,21 +13,21 @@ import com.github.okomok.ken._
 
 class TrivialTest extends org.scalatest.junit.JUnit3Suite {
 
-    import parsec.Parsec
+    import parsec.Parsers._
 
     def testTrivial {
-        val p: parsec.Parser[Char] = Parsec.char[List[Char], Unit]('a')
+        val p: Parser[Char] = char('a')
         expect(Right('a')) {
-            Parsec.parse(p)("trivial")(List.from("a"))
+            parse(p)("trivial")(List.from("a"))
         }
 
-        Parsec.parse(p)("trivial")(Nil.of[Char]) match {
+        parse(p)("trivial")(Nil.of[Char]) match {
             case Left(_) => ()
             case Right(_) => fail("doh")
         }
 
         expect(Right(List.from("aaaaa"))) {
-            Parsec.parse(Parsec.many(p))("trivial")(List.from("aaaaabb"))
+            parse(many(p))("trivial")(List.from("aaaaabb"))
         }
 
     }
