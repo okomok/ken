@@ -19,16 +19,19 @@ trait Bounded[a] extends Typeclass0[a] {
 
     // Core
     //
-    def minBound: a
-    def maxBound: a
+    type minBound = a
+    def minBound: minBound
+
+    type maxBound = a
+    def maxBound: maxBound
 }
 
 
 trait BoundedProxy[a] extends Bounded[a] {
     def selfBounded: Bounded[a]
 
-    override def minBound: a = selfBounded.minBound
-    override def maxBound: a = selfBounded.maxBound
+    override def minBound: minBound = selfBounded.minBound
+    override def maxBound: maxBound = selfBounded.maxBound
 }
 
 

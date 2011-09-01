@@ -13,9 +13,14 @@ trait Fractional[a] extends Num[a] {
 
     // Core
     //
-    def op_/ : a => a => a = x => y => x * recip(y)
-    def recip: a => a = x => fromIntegral(1) / x
-    def fromRational: Rational => a
+    type op_/ = a => a => a
+    def op_/ : op_/ = x => y => x * recip(y)
+
+    type recip = a => a
+    def recip: recip = x => fromIntegral(1) / x
+
+    type fromRational = Rational => a
+    def fromRational: fromRational
 
     // Extra
     //
@@ -34,9 +39,9 @@ trait Fractional[a] extends Num[a] {
 trait FractionalProxy[a] extends Fractional[a] {
     def selfFractional: Fractional[a]
 
-    override def op_/ : a => a => a = selfFractional.op_/
-    override def recip: a => a = selfFractional.recip
-    override def fromRational: Rational => a = selfFractional.fromRational
+    override def op_/ : op_/ = selfFractional.op_/
+    override def recip: recip = selfFractional.recip
+    override def fromRational: fromRational = selfFractional.fromRational
 
     override def realToFrac[z](x: z)(implicit i: Real[z]): a = selfFractional.realToFrac(x)(i)
 }

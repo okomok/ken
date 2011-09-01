@@ -16,8 +16,11 @@ trait _Eq[a] extends Typeclass0[a] {
 
     // Core
     //
-    def op_=== : a => a => Bool = x => y => not(op_/==(x)(y))
-    def op_/== : a => a => Bool = x => y => not(op_===(x)(y))
+    type op_=== = a => a => Bool
+    def op_=== : op_=== = x => y => not(op_/==(x)(y))
+
+    type op_/== = a => a => Bool
+    def op_/== : op_/== = x => y => not(op_===(x)(y))
 
     // Operators
     //
@@ -36,8 +39,8 @@ trait _Eq[a] extends Typeclass0[a] {
 trait EqProxy[a] extends _Eq[a] {
     def selfEq: _Eq[a]
 
-    override def op_=== : a => a => Bool = selfEq.op_===
-    override def op_/== : a => a => Bool = selfEq.op_/==
+    override def op_=== : op_=== = selfEq.op_===
+    override def op_/== : op_/== = selfEq.op_/==
 }
 
 
@@ -46,31 +49,31 @@ object _Eq extends EqInstance {
 
     def deriving[nt <: Kind.Function0, ot <: Kind.Function0](implicit i: _Eq[ot#apply0], j: Newtype0[nt#apply0, ot#apply0]): _Eq[nt#apply0] = new _Eq[nt#apply0] {
         private[this] type a = nt#apply0
-        override val op_=== : a => a => Bool = x => y => i.op_===(j.oldOf(x))(j.oldOf(y))
-        override val op_/== : a => a => Bool = x => y => i.op_/==(j.oldOf(x))(j.oldOf(y))
+        override val op_=== : op_=== = x => y => i.op_===(j.oldOf(x))(j.oldOf(y))
+        override val op_/== : op_/== = x => y => i.op_/==(j.oldOf(x))(j.oldOf(y))
     }
 
     def weak[nt <: Kind.Newtype0](implicit i: _Eq[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): _Eq[nt#oldtype0] = deriving[Kind.const[nt#oldtype0], nt](i, j.dual)
 
     trait Of[a] extends _Eq[a] {
-        override val op_=== : a => a => Bool = x => y => x == y
-        override val op_/== : a => a => Bool = x => y => x != y
+        override val op_=== : op_=== = x => y => x == y
+        override val op_/== : op_/== = x => y => x != y
     }
 
     def of[a]: _Eq[a] = new Of[a] {}
 
     def byRef[a <: AnyRef]: _Eq[a] = new _Eq[a] {
-        override val op_=== : a => a => Bool = x => y => x eq y
+        override val op_=== : op_=== = x => y => x eq y
     }
 
     def byPredicate[a](f: Pair[a, a] => Bool): _Eq[a] = new _Eq[a] {
-        override val op_=== : a => a => Bool = x => y => f(x, y)
+        override val op_=== : op_=== = x => y => f(x, y)
     }
 }
 
 
 sealed trait EqInstance { this: _Eq.type =>
     implicit def ofScalaEquiv[a](implicit i: scala.Equiv[a]): _Eq[a] = new _Eq[a] {
-        override val op_=== : a => a => Bool = x => y => i.equiv(x, y)
+        override val op_=== : op_=== = x => y => i.equiv(x, y)
     }
 }

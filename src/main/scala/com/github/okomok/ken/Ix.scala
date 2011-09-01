@@ -19,23 +19,34 @@ trait Ix[a] extends Ord[a] {
 
     // Core
     //
-    def range: Pair[a, a] => List[a]
-    def index: Pair[a, a] => a => Int = b => i => {
+    type range = Pair[a, a] => List[a]
+    def range: range
+
+    type index = Pair[a, a] => a => Int
+    def index: index = b => i => {
         if (inRange(b)(i)) unsafeIndex(b)(i) else error("Error in array index")
     }
 
-    def unsafeIndex: Pair[a, a] => a => Int
-    def inRange: Pair[a, a] => a => Bool
-    def rangeSize: Pair[a, a] => Int = {
+    type unsafeIndex = Pair[a, a] => a => Int
+    def unsafeIndex: unsafeIndex
+
+    type inRange = Pair[a, a] => a => Bool
+    def inRange: inRange
+
+    type rangeSize = Pair[a, a] => Int
+    def rangeSize: rangeSize = {
         case b@(_l, h) => if (inRange(b)(h)) (unsafeIndex(b)(h) + 1) else 0
     }
-    def unsafeRangeSize: Pair[a, a] => Int = {
+
+    type unsafeRangeSize = Pair[a, a] => Int
+    def unsafeRangeSize: unsafeRangeSize = {
         case b@(_l, h) => unsafeIndex(b)(h) + 1
     }
 
     // Extra
     //
-    final val indexError: Pair[a, a] => a => String_ => Nothing = rng => i => tp => {
+    type indexError = Pair[a, a] => a => String_ => Nothing
+    final val indexError: indexError = rng => i => tp => {
         import Show._
         error( (showString("Ix{") compose showString(tp) compose showString("}.index: Index ") compose
             showParen(True)(Show[Kind.const[a]].showsPrec(0)(i)) compose
@@ -50,12 +61,12 @@ trait IxProxy[a] extends Ix[a] with OrdProxy[a] {
     def selfIx: Ix[a]
     override def selfOrd: Ord[a] = selfIx
 
-    override def range: Pair[a, a] => List[a] = selfIx.range
-    override def index: Pair[a, a] => a => Int = selfIx.index
-    override def unsafeIndex: Pair[a, a] => a => Int = selfIx.unsafeIndex
-    override def inRange: Pair[a, a] => a => Bool = selfIx.inRange
-    override def rangeSize: Pair[a, a] => Int = selfIx.rangeSize
-    override def unsafeRangeSize: Pair[a, a] => Int = selfIx.unsafeRangeSize
+    override def range: range = selfIx.range
+    override def index: index = selfIx.index
+    override def unsafeIndex: unsafeIndex = selfIx.unsafeIndex
+    override def inRange: inRange = selfIx.inRange
+    override def rangeSize: rangeSize = selfIx.rangeSize
+    override def unsafeRangeSize: unsafeRangeSize = selfIx.unsafeRangeSize
 }
 
 
@@ -65,12 +76,12 @@ object Ix extends IxInstance {
     def deriving[nt <: Kind.Function0, ot <: Kind.Function0](implicit i: Ix[ot#apply0], j: Newtype0[nt#apply0, ot#apply0]): Ix[nt#apply0] = new Ix[nt#apply0] with OrdProxy[nt#apply0] {
         private[this] type a = nt#apply0
         override val selfOrd = Ord.deriving[nt, ot](i, j)
-        override val range: Pair[a, a] => List[a] = t => List.map[ot#apply0, a](j.newOf)(i.range(j.oldOf(t._1), j.oldOf(t._2)))
-        override val index: Pair[a, a] => a => Int = t => x => i.index(j.oldOf(t._1), j.oldOf(t._2))(j.oldOf(x))
-        override val unsafeIndex: Pair[a, a] => a => Int = t => x => i.unsafeIndex(j.oldOf(t._1), j.oldOf(t._2))(j.oldOf(x))
-        override val inRange: Pair[a, a] => a => Bool = t => x => i.inRange(j.oldOf(t._1), j.oldOf(t._2))(j.oldOf(x))
-        override val rangeSize: Pair[a, a] => Int = t => i.rangeSize(j.oldOf(t._1), j.oldOf(t._2))
-        override val unsafeRangeSize: Pair[a, a] => Int = t => i.unsafeRangeSize(j.oldOf(t._1), j.oldOf(t._2))
+        override val range: range = t => List.map[ot#apply0, a](j.newOf)(i.range(j.oldOf(t._1), j.oldOf(t._2)))
+        override val index: index = t => x => i.index(j.oldOf(t._1), j.oldOf(t._2))(j.oldOf(x))
+        override val unsafeIndex: unsafeIndex = t => x => i.unsafeIndex(j.oldOf(t._1), j.oldOf(t._2))(j.oldOf(x))
+        override val inRange: inRange = t => x => i.inRange(j.oldOf(t._1), j.oldOf(t._2))(j.oldOf(x))
+        override val rangeSize: rangeSize = t => i.rangeSize(j.oldOf(t._1), j.oldOf(t._2))
+        override val unsafeRangeSize: unsafeRangeSize = t => i.unsafeRangeSize(j.oldOf(t._1), j.oldOf(t._2))
     }
 
     def weak[nt <: Kind.Newtype0](implicit i: Ix[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Ix[nt#oldtype0] = deriving[Kind.const[nt#oldtype0], nt](i, j.dual)
@@ -80,14 +91,14 @@ object Ix extends IxInstance {
 sealed trait IxInstance { this: Ix.type =>
     implicit def ofScalaNumeric[a](implicit i: scala.Numeric[a]): Ix[a] = new Ix[a] with OrdProxy[a] {
         override val selfOrd = Ord.ofScalaOrdering(i)
-        override val range: Pair[a, a] => List[a] = { case (n, m) =>
+        override val range: range = { case (n, m) =>
             Predef.require(i.lteq(n, m))
             if (i.equiv(n, m)) Nil else n :: range(i.plus(n, i.one), m)
         }
-        override val unsafeIndex: Pair[a, a] => a => Int = { case (n, _) => k => i.toInt(i.minus(k, n)) }
-        override val index: Pair[a, a] => a => Int = b => i => {
+        override val unsafeIndex: unsafeIndex = { case (n, _) => k => i.toInt(i.minus(k, n)) }
+        override val index: index = b => i => {
             if (inRange(b)(i)) unsafeIndex(b)(i) else indexError(b)(i)("Integer")
         }
-        override val inRange: Pair[a, a] => a => Bool = { case (n, m) => k => i.lteq(n, k) && i.lteq(k, m) }
+        override val inRange: inRange = { case (n, m) => k => i.lteq(n, k) && i.lteq(k, m) }
     }
 }

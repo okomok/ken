@@ -19,23 +19,22 @@ private[ken] object _Integer extends Enum[Integer] with Eq.Of[Integer] with Inte
     // Overrides
     //
     // Enum
-    private type a = Integer
-    override val succ: a => a = x => x + 1
-    override val pred: a => a = x => x - 1
-    override val toEnum: Int => a = n => n
-    override val fromEnum: a => Int = n => n.toInt
-    override val enumFrom: a => List[a] = e1 => {
+    override val succ: succ = x => x + 1
+    override val pred: pred = x => x - 1
+    override val toEnum: toEnum = n => n
+    override val fromEnum: fromEnum = n => n.toInt
+    override val enumFrom: enumFrom = e1 => {
         e1 :: enumFrom(e1 + 1)
     }
-    override val enumFromThen: a => a => List[a] = e1 => e2 => {
+    override val enumFromThen: enumFromThen = e1 => e2 => {
         val i = e2 - e1
         e1 :: enumFromThen(e1 + i)(e2 + i)
     }
-    override val enumFromTo: a => a => List[a] = e1 => e3 => { // inclusive
+    override val enumFromTo: enumFromTo = e1 => e3 => { // inclusive
         if (e1 > e3) Nil
         else e1 :: enumFromTo(e1 + 1)(e3)
     }
-    override val enumFromThenTo: a => a => a => List[a] = e1 => e2 => e3 => {
+    override val enumFromThenTo: enumFromThenTo = e1 => e2 => e3 => {
         val i = e2 - e1
         if (i >= 0) {
             if (e1 > e3) Nil
@@ -46,34 +45,34 @@ private[ken] object _Integer extends Enum[Integer] with Eq.Of[Integer] with Inte
         }
     }
     // Ord
-    override val compare: a => a => Ordering = x => y => {
+    override val compare: compare = x => y => {
         if (x < y) LT
         else if (x == y) EQ
         else GT
     }
-    override val op_< : a => a => Bool = x => y => x < y
-    override val op_<= : a => a => Bool = x => y => x <= y
-    override val op_> : a => a => Bool = x => y => x > y
-    override val op_>= : a => a => Bool = x => y => x >= y
-    override val max: a => a => a = x => y => x.max(y)
-    override val min: a => a => a = x => y => x.min(y)
+    override val op_< : op_< = x => y => x < y
+    override val op_<= : op_<= = x => y => x <= y
+    override val op_> : op_> = x => y => x > y
+    override val op_>= : op_>= = x => y => x >= y
+    override val max: max = x => y => x.max(y)
+    override val min: min = x => y => x.min(y)
     // Num
-    override val op_+ : a => a => a = x => y => x + y
-    override val op_- : a => a => a = x => y => x - y
-    override val op_* : a => a => a = x => y => x * y
-    override val negate: a => a = n => -n
-    override val abs: a => a = n => n.abs
-    override val signum: a => a = n => n.signum
-    override val fromInteger: Integer => a = x => x
+    override val op_+ : op_+ = x => y => x + y
+    override val op_- : op_- = x => y => x - y
+    override val op_* : op_* = x => y => x * y
+    override val negate: negate = n => -n
+    override val abs: abs = n => n.abs
+    override val signum: signum = n => n.signum
+    override val fromInteger: fromInteger = x => x
     // Real
-    override val toRational: a => Rational = x => Ratio(x, 1)
+    override val toRational: toRational = x => Ratio(x, 1)
     // Integral
-    override val quot: a => a => a = a => b => a / b
-    override val rem: a => a => a = a => b => a % b
-    override val quotRem: a => a => (a, a) = a => b => (a / b, a % b)
-    override val toInteger: a => Integer = i => i
+    override val quot: quot = a => b => a / b
+    override val rem: rem = a => b => a % b
+    override val quotRem: quotRem = a => b => (a / b, a % b)
+    override val toInteger: toInteger = i => i
     // Show
-    override val showsPrec: Int => a => ShowS = p => n => r => {
+    override val showsPrec: showsPrec = p => n => r => {
         if (p > 6 && n < 0) '(' :: integerToString(n)(')' :: r)
         else integerToString(n)(r)
     }

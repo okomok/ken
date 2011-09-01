@@ -13,16 +13,19 @@ trait ErrorClass[a] extends Typeclass0[a] {
 
     // Core
     //
+    type noMsg = a
     def noMsg: a = strMsg("")
-    def strMsg: String_ => a = { _ => noMsg }
+
+    type strMsg = String_ => a
+    def strMsg: strMsg = { _ => noMsg }
 }
 
 
 trait ErrorClassProxy[a] extends ErrorClass[a] {
     def selfErrorClass: ErrorClass[a]
 
-    override def noMsg: a = selfErrorClass.noMsg
-    override def strMsg: String_ => a = selfErrorClass.strMsg
+    override def noMsg: noMsg = selfErrorClass.noMsg
+    override def strMsg: strMsg = selfErrorClass.strMsg
 }
 
 

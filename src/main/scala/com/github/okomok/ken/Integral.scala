@@ -19,23 +19,37 @@ trait Integral[a] extends Real[a] with Enum[a] { outer =>
 
     // Core
     //
-    def quot: a => a => a = n => d => { val (q, _) = quotRem(n)(d); q }
-    def rem: a => a => a = n => d => { val (_, r) = quotRem(n)(d); r }
-    def div: a => a => a = n => d => { val (q, _) = divMod(n)(d); q }
-    def mod: a => a => a = n => d => { val (_, r) = divMod(n)(d); r }
+    type quot = a => a => a
+    def quot: quot = n => d => { val (q, _) = quotRem(n)(d); q }
 
-    def quotRem: a => a => (a, a)
-    def divMod: a => a => (a, a) = n => d => {
+    type rem = a => a => a
+    def rem: rem = n => d => { val (_, r) = quotRem(n)(d); r }
+
+    type div = a => a => a
+    def div: div = n => d => { val (q, _) = divMod(n)(d); q }
+
+    type mod = a => a => a
+    def mod: mod = n => d => { val (_, r) = divMod(n)(d); r }
+
+    type quotRem = a => a => (a, a)
+    def quotRem: quotRem
+
+    type divMod = a => a => (a, a)
+    def divMod: divMod = n => d => {
         val qr@(q, r) = quotRem(n)(d)
         if (signum(r) === negate(signum(d))) (q-1, r+d) else qr
     }
 
-    def toInteger: a => Integer
+    type toInteger = a => Integer
+    def toInteger: toInteger
 
     // Extra
     //
-    def even: a => Bool = n => (n _rem_ 2) === 0
-    def odd: a => Bool = not compose even
+    type even = a => Bool
+    def even: even = n => (n _rem_ 2) === 0
+
+    type odd = a => Bool
+    def odd: odd = not compose even
 
     // Operators
     //
@@ -74,15 +88,15 @@ trait IntegralProxy[a] extends Integral[a] with RealProxy[a] with EnumProxy[a] {
     override def selfReal: Real[a] = selfIntegral
     override def selfEnum: Enum[a] = selfIntegral
 
-    override def quot: a => a => a = selfIntegral.quot
-    override def rem: a => a => a = selfIntegral.rem
-    override def div: a => a => a = selfIntegral.div
-    override def mod: a => a => a = selfIntegral.mod
+    override def quot: quot = selfIntegral.quot
+    override def rem: rem = selfIntegral.rem
+    override def div: div = selfIntegral.div
+    override def mod: mod = selfIntegral.mod
 
-    override def quotRem: a => a => (a, a) = selfIntegral.quotRem
-    override def divMod: a => a => (a, a) = selfIntegral.divMod
+    override def quotRem: quotRem = selfIntegral.quotRem
+    override def divMod: divMod = selfIntegral.divMod
 
-    override def toInteger: a => Integer = selfIntegral.toInteger
+    override def toInteger: toInteger = selfIntegral.toInteger
 }
 
 
@@ -100,11 +114,11 @@ sealed trait IntegralInstance { this: Integral.type =>
         override val selfOrd = Ord.ofScalaOrdering(i)
         override val selfEnum = Enum.ofScalaNumeric(i)
         // Real
-        override val toRational: a => Rational = x => Ratio(toInteger(x), 1)
+        override val toRational: toRational = x => Ratio(toInteger(x), 1)
         // Integral
-        override val quot: a => a => a = x => y => i.quot(x, y)
-        override val rem: a => a => a = x => y => i.rem(x, y)
-        override val quotRem: a => a => (a, a) = x => y => (i.quot(x, y), i.rem(x, y))
-        override val toInteger: a => Integer = i.toInt
+        override val quot: quot = x => y => i.quot(x, y)
+        override val rem: rem = x => y => i.rem(x, y)
+        override val quotRem: quotRem = x => y => (i.quot(x, y), i.rem(x, y))
+        override val toInteger: toInteger = i.toInt
     }
 }

@@ -19,30 +19,59 @@ trait Floating[a] extends Fractional[a] {
 
     // Core
     //
-    def pi: a
+    type pi = a
+    def pi: pi
 
-    def exp: a => a
-    def log: a => a
-    def sqrt: a => a = x => x ** 0.5
+    type exp = a => a
+    def exp: exp
 
-    def op_** : a => a => a = x => y => exp(log(x) * y)
-    def logBase: a => a => a = x => y => log(y) / log(x)
+    type log = a => a
+    def log: log
 
-    def sin: a => a
-    def cos: a => a
-    def tan: a => a = x => sin(x) / cos(x)
+    type sqrt = a => a
+    def sqrt: sqrt = x => x ** 0.5
 
-    def asin: a => a
-    def acos: a => a
-    def atan: a => a
+    type op_** = a => a => a
+    def op_** : op_** = x => y => exp(log(x) * y)
 
-    def sinh: a => a
-    def cosh: a => a
-    def tanh: a => a = x => sinh(x) / cosh(x)
+    type logBase = a => a => a
+    def logBase: logBase = x => y => log(y) / log(x)
 
-    def asinh: a => a
-    def acosh: a => a
-    def atanh: a => a
+    type sin = a => a
+    def sin: sin
+
+    type cos = a => a
+    def cos: cos
+
+    type tan = a => a
+    def tan: tan = x => sin(x) / cos(x)
+
+    type asin = a => a
+    def asin: asin
+
+    type acos = a => a
+    def acos: acos
+
+    type atan = a => a
+    def atan: atan
+
+    type sinh = a => a
+    def sinh: sinh
+
+    type cosh = a => a
+    def cosh: cosh
+
+    type tanh = a => a
+    def tanh: tanh = x => sinh(x) / cosh(x)
+
+    type asinh = a => a
+    def asinh: asinh
+
+    type acosh = a => a
+    def acosh: acosh
+
+    type atanh = a => a
+    def atanh: atanh
 
     // Operators
     //
@@ -57,30 +86,30 @@ trait FloatingProxy[a] extends Floating[a] with FractionalProxy[a] {
     def selfFloating: Floating[a]
     override def selfFractional: Fractional[a] = selfFloating
 
-    override def pi: a = selfFloating.pi
+    override def pi: pi = selfFloating.pi
 
-    override def exp: a => a = selfFloating.exp
-    override def log: a => a = selfFloating.log
-    override def sqrt: a => a = selfFloating.sqrt
+    override def exp: exp = selfFloating.exp
+    override def log: log = selfFloating.log
+    override def sqrt: sqrt = selfFloating.sqrt
 
-    override def op_** : a => a => a = selfFloating.op_**
-    override def logBase: a => a => a = selfFloating.logBase
+    override def op_** : op_** = selfFloating.op_**
+    override def logBase: logBase = selfFloating.logBase
 
-    override def sin: a => a = selfFloating.sin
-    override def cos: a => a = selfFloating.cos
-    override def tan: a => a = selfFloating.tan
+    override def sin: sin = selfFloating.sin
+    override def cos: cos = selfFloating.cos
+    override def tan: tan = selfFloating.tan
 
-    override def asin: a => a = selfFloating.asin
-    override def acos: a => a = selfFloating.acos
-    override def atan: a => a = selfFloating.atan
+    override def asin: asin = selfFloating.asin
+    override def acos: acos = selfFloating.acos
+    override def atan: atan = selfFloating.atan
 
-    override def sinh: a => a = selfFloating.sinh
-    override def cosh: a => a = selfFloating.cosh
-    override def tanh: a => a = selfFloating.tanh
+    override def sinh: sinh = selfFloating.sinh
+    override def cosh: cosh = selfFloating.cosh
+    override def tanh: tanh = selfFloating.tanh
 
-    override def asinh: a => a = selfFloating.asinh
-    override def acosh: a => a = selfFloating.acosh
-    override def atanh: a => a = selfFloating.atanh
+    override def asinh: asinh = selfFloating.asinh
+    override def acosh: acosh = selfFloating.acosh
+    override def atanh: atanh = selfFloating.atanh
 }
 
 

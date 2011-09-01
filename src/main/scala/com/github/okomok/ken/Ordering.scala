@@ -25,40 +25,38 @@ object Ordering extends Bounded[Ordering] with Enum[Ordering] with Monoid[Orderi
     // Overrides
     //
     // Bounded
-    private type a = Ordering
-    override val minBound: a = LT
-    override val maxBound: a = GT
+    override val minBound: minBound = LT
+    override val maxBound: maxBound = GT
     // Enum
-    override val succ: a => a = {
+    override val succ: succ = {
         case LT => EQ
         case EQ => GT
         case GT => error("Enum[Ordering].succ: bad argument")
     }
-    override val pred: a => a = {
+    override val pred: pred = {
         case GT => EQ
         case EQ => LT
         case LT => error("Enum[Ordering].pred: bad argument")
     }
-    override val toEnum: Int => a = {
+    override val toEnum: toEnum = {
         case 0 => LT
         case 1 => EQ
         case 2 => GT
     }
-    override val fromEnum: a => Int = {
+    override val fromEnum: fromEnum = {
         case LT => 0
         case EQ => 1
         case GT => 2
     }
-    override val enumFrom: a => List[a] = Bounded.boundedEnumFrom
-    override val enumFromThen: a => a => List[a] = Bounded.boundedEnumFromThen
+    override val enumFrom: enumFrom = Bounded.boundedEnumFrom
+    override val enumFromThen: enumFromThen = Bounded.boundedEnumFromThen
     // Monoid
-    private type m = Ordering
-    override val mempty: m = EQ
-    override val mappend: m => Lazy[m] => m = x => y => x match {
+    override val mempty: mempty = EQ
+    override val mappend: mappend = x => y => x match {
         case LT => LT
         case EQ => y.!
         case GT => GT
     }
     // Show
-    override val showsPrec: Int => a => ShowS = _ => a => Show.showString(a.toString)
+    override val showsPrec: showsPrec = _ => a => Show.showString(a.toString)
 }

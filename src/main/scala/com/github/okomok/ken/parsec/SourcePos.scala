@@ -21,13 +21,12 @@ object SourcePos extends Eq.Of[SourcePos] with Ord[SourcePos] with Show[SourcePo
     // Overrides
     //
     // Ord
-    private type a = SourcePos
-    override val compare: a => a => Ordering = { case SourcePos(n1, l1, c1) => { case SourcePos(n2, l2, c2) => {
+    override val compare: compare = { case SourcePos(n1, l1, c1) => { case SourcePos(n2, l2, c2) => {
         val i = Ord.ofScalaOrdering[(SourceName, Line, Column)]
         i.compare((n1, l1, c1))((n2, l2, c2))
     } } }
     // Show
-    override val show: a => String_ = { case SourcePos(n, l, c) => showSourcePos(n, l, c) }
+    override val show: show = { case SourcePos(n, l, c) => showSourcePos(n, l, c) }
 
     private def showSourcePos(name: SourceName, line: Line, column: Column): String_ = {
         def showLineColumn: String_ = "(line " ::: ken.show(line) ::: ", column " ::: ken.show(column) ::: List.from(")")

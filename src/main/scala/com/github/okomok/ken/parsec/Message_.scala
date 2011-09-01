@@ -29,16 +29,15 @@ object Message_ extends Enum[Message_] with Eq.Of[Message_] with Ord[Message_] w
     // Overrides
     //
     // Enum
-    private type a = Message_
-    override val fromEnum: a => Int = {
+    override val fromEnum: fromEnum = {
         case SysUnExpect(_) => 0
         case UnExpect(_) => 1
         case Expect(_) => 2
         case Message(_) => 3
     }
-    override val toEnum: Int => a = _ => error("toEnum is undefined for Message")
+    override val toEnum: toEnum = _ => error("toEnum is undefined for Message")
     // Ord
-    override val compare: a => a => Ordering = m1 => m2 => {
-        Ord[Kind.const[Int]].compare(fromEnum(m1))(fromEnum(m2))
+    override val compare: compare = m1 => m2 => {
+        Int.compare(fromEnum(m1))(fromEnum(m2))
     }
 }

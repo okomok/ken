@@ -21,27 +21,26 @@ object Char extends Bounded[Char] with Enum[Char] with Eq.Of[Char] with Ord[Char
     // Overrides
     //
     // Bounded
-    private type a = Char
-    override val minBound: a = JChar.MIN_VALUE
-    override val maxBound: a = JChar.MAX_VALUE
+    override val minBound: minBound = JChar.MIN_VALUE
+    override val maxBound: maxBound = JChar.MAX_VALUE
     // Enum
-    override val succ: a => a = c => {
+    override val succ: succ = c => {
         if (not(ord(c) == maxBound)) chr(ord(c) + 1)
         else error("Enum[Char].succ: bad argument")
     }
-    override val pred: a => a = c => {
+    override val pred: pred = c => {
         if (not(ord(c) == minBound)) chr(ord(c) - 1)
         else error("Enum[Char].pred: bad argument")
     }
-    override val toEnum: Int => a = chr
-    override val fromEnum: a => Int = ord
+    override val toEnum: toEnum = chr
+    override val fromEnum: fromEnum = ord
     // Ord
-    override val op_< : a => a => Bool = c1 => c2 => c1 < c2
-    override val op_<= : a => a => Bool = c1 => c2 => c1 <= c2
-    override val op_> : a => a => Bool = c1 => c2 => c1 > c2
-    override val op_>= : a => a => Bool = c1 => c2 => c1 >= c2
+    override val op_< : op_< = c1 => c2 => c1 < c2
+    override val op_<= : op_<= = c1 => c2 => c1 <= c2
+    override val op_> : op_> = c1 => c2 => c1 > c2
+    override val op_>= : op_>= = c1 => c2 => c1 >= c2
     // Show
-    override val showsPrec: Int => a => ShowS = _ => a => Show.showString(a.toString)
+    override val showsPrec: showsPrec = _ => a => Show.showString(a.toString)
 
     // Utilities
     //

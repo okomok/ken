@@ -19,9 +19,14 @@ trait Show[a] extends Typeclass0[a] {
 
     // Core
     //
-    def showsPrec: Int => a => ShowS = _ => x => s => show(x) ::: s
-    def show: a => String_ = x => shows(x)("")
-    def showList: List[a] => ShowS = ls => s => showList__(shows)(ls)(s)
+    type showsPrec = Int => a => ShowS
+    def showsPrec: showsPrec = _ => x => s => show(x) ::: s
+
+    type show = a => String_
+    def show: show = x => shows(x)("")
+
+    type showList = List[a] => ShowS
+    def showList: showList = ls => s => showList__(shows)(ls)(s)
 
     // Extra
     //
@@ -38,18 +43,19 @@ trait Show[a] extends Typeclass0[a] {
         }
     }
 
-    def shows: a => ShowS = x => showsPrec(0)(x)
+    type shows = a => ShowS
+    def shows: shows = x => showsPrec(0)(x)
 }
 
 
 trait ShowProxy[a] extends Show[a] {
     def selfShow: Show[a]
 
-    override val showsPrec: Int => a => ShowS = selfShow.showsPrec
-    override val show: a => String_ =  selfShow.show
-    override val showList: List[a] => ShowS = selfShow.showList
+    override val showsPrec: showsPrec = selfShow.showsPrec
+    override val show: show = selfShow.show
+    override val showList: showList = selfShow.showList
 
-    override val shows: a => ShowS = selfShow.shows
+    override val shows: shows = selfShow.shows
 }
 
 
@@ -82,7 +88,7 @@ sealed trait ShowInstance { this: Show.type =>
 
     implicit def ofList[z](implicit i: Show[z]): Show[List[z]] = new Show[List[z]] {
         private[this] type a = List[z]
-        override val showsPrec: Int => a => ShowS = _ => x => i.showList(x)
+        override val showsPrec: showsPrec = _ => x => i.showList(x)
     }
 
     // TODO

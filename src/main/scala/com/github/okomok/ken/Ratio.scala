@@ -68,30 +68,30 @@ object Ratio {
     }
 
     implicit def _asRealFrac[z](implicit i: Integral[z]): RealFrac[Ratio[z]] = new RealFrac[Ratio[z]] {
-        private[this] type a = Ratio[z]
         // Num
-        override val op_+ : a => a => a = { case Ratio(x, y) => { case Ratio(x_, y_) => {
+        override val op_+ : op_+ = { case Ratio(x, y) => { case Ratio(x_, y_) => {
             reduce(i.op_+(i.op_*(x)(y_))(i.op_*(x_)(y)))(i.op_*(y)(y_))
         } } }
-        override val op_- : a => a => a = { case Ratio(x, y) => { case Ratio(x_, y_) => {
+        override val op_- : op_- = { case Ratio(x, y) => { case Ratio(x_, y_) => {
             reduce(i.op_-(i.op_*(x)(y_))(i.op_*(x_)(y)))(i.op_*(y)(y_))
         } } }
-        override val op_* : a => a => a = { case Ratio(x, y) => { case Ratio(x_, y_) => {
+        override val op_* : op_* = { case Ratio(x, y) => { case Ratio(x_, y_) => {
             reduce(i.op_*(x)(x_))(i.op_*(y)(y_))
         } } }
-        override val negate: a => a = { case Ratio(x, y) => new Ratio(i.negate(x), y) }
-        override val abs: a => a = { case Ratio(x, y) => new Ratio(i.abs(x), y) }
-        override val signum: a => a = { case Ratio(x, _) => new Ratio(i.signum(x), i.fromIntegral(1))  }
-        override val fromInteger: Integer => a = x => new Ratio(i.fromInteger(x), i.fromIntegral(1))
+        override val negate: negate = { case Ratio(x, y) => new Ratio(i.negate(x), y) }
+        override val abs: abs = { case Ratio(x, y) => new Ratio(i.abs(x), y) }
+        override val signum: signum = { case Ratio(x, _) => new Ratio(i.signum(x), i.fromIntegral(1))  }
+        override val fromInteger: fromInteger = x => new Ratio(i.fromInteger(x), i.fromIntegral(1))
         // Fractional
-        override val op_/ : a => a => a = { case Ratio(x, y) => { case Ratio(x_, y_) => {
+        override val op_/ : op_/ = { case Ratio(x, y) => { case Ratio(x_, y_) => {
             Ratio(i.op_*(x)(y), i.op_*(x_)(y_))
         } } }
-        override val recip: a => a = { case Ratio(x, y) => Ratio(y, x) }
-        override val fromRational: Rational => a = { case Ratio(x, y) => new Ratio(i.fromInteger(x), i.fromInteger(y)) }
+        override val recip: recip = { case Ratio(x, y) => Ratio(y, x) }
+        override val fromRational: fromRational = { case Ratio(x, y) => new Ratio(i.fromInteger(x), i.fromInteger(y)) }
         // Real
-        override val toRational: a => Rational = { case Ratio(x, y) => new Ratio(i.toInteger(x), i.toInteger(y)) }
+        override val toRational: toRational = { case Ratio(x, y) => new Ratio(i.toInteger(x), i.toInteger(y)) }
         // RealFrac
+        private type a = Ratio[z]
         override def properFraction[b](r: a)(implicit j : Integral[b]): (b, a) = r match {
             case Ratio(x, y) => {
                 val (q, r) = i.quotRem(x)(y)

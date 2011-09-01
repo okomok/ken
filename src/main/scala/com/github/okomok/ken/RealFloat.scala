@@ -19,24 +19,35 @@ trait RealFloat[a] extends RealFrac[a] with Floating[a] {
 
     // Core
     //
-    def floatRadix: a => Integer
-    def floatDigits: a => Int
-    def floatRange: a => (Int, Int)
+    type floatRadix = a => Integer
+    def floatRadix: floatRadix
 
-    def decodeFloat: a => (Integer, Int)
-    def encodeFloat: Integer => Int => a
+    type floatDigits = a => Int
+    def floatDigits: floatDigits
 
-    def exponent: a => Int = x => {
+    type floatRange = a => (Int, Int)
+    def floatRange: floatRange
+
+    type decodeFloat = a => (Integer, Int)
+    def decodeFloat: decodeFloat
+
+    type encodeFloat = Integer => Int => a
+    def encodeFloat: encodeFloat
+
+    type exponent = a => Int
+    def exponent: exponent = x => {
         val (m, n) = decodeFloat(x)
         if (m == 0) 0 else n + floatDigits(x)
     }
 
-    def significand: a => a = x => {
+    type significand = a => a
+    def significand: significand = x => {
         val (m, _) = decodeFloat(x)
         encodeFloat(m)(-floatDigits(x))
     }
 
-    def scaleFloat: Int => a => a = k => x => {
+    type scaleFloat = Int => a => a
+    def scaleFloat: scaleFloat = k => x => {
         val (m, n) = decodeFloat(x)
         val (l, h) = floatRange(x)
         val d = floatDigits(x)
@@ -44,13 +55,23 @@ trait RealFloat[a] extends RealFrac[a] with Floating[a] {
         encodeFloat(m)(n + clamp(b)(k))
     }
 
-    def isNaN: a => Bool
-    def isInfinite: a => Bool
-    def isDenormalized: a => Bool
-    def isNegativeZero: a => Bool
-    def isIEEE: a => Bool
+    type isNaN = a => Bool
+    def isNaN: isNaN
 
-    def atan2: a => a => a = y => x => {
+    type isInfinite = a => Bool
+    def isInfinite: isInfinite
+
+    type isDenormalized = a => Bool
+    def isDenormalized: isDenormalized
+
+    type isNegativeZero = a => Bool
+    def isNegativeZero: isNegativeZero
+
+    type isIEEE = a => Bool
+    def isIEEE: isIEEE
+
+    type atan2 = a => a => a
+    def atan2: atan2 = y => x => {
         if (x > 0) {
             atan(y/x)
         } else if (x === 0 && y > 0) {
@@ -80,24 +101,24 @@ trait RealFloatProxy[a] extends RealFloat[a] with RealFracProxy[a] with Floating
     override def selfRealFrac: RealFrac[a] = selfRealFloat
     override def selfFloating: Floating[a] = selfRealFloat
 
-    override def floatRadix: a => Integer = selfRealFloat.floatRadix
-    override def floatDigits: a => Int = selfRealFloat.floatDigits
-    override def floatRange: a => (Int, Int) = selfRealFloat.floatRange
+    override def floatRadix: floatRadix = selfRealFloat.floatRadix
+    override def floatDigits: floatDigits = selfRealFloat.floatDigits
+    override def floatRange: floatRange = selfRealFloat.floatRange
 
-    override def decodeFloat: a => (Integer, Int) = selfRealFloat.decodeFloat
-    override def encodeFloat: Integer => Int => a = selfRealFloat.encodeFloat
+    override def decodeFloat: decodeFloat = selfRealFloat.decodeFloat
+    override def encodeFloat: encodeFloat = selfRealFloat.encodeFloat
 
-    override def exponent: a => Int = selfRealFloat.exponent
-    override def significand: a => a = selfRealFloat.significand
-    override def scaleFloat: Int => a => a = selfRealFloat.scaleFloat
+    override def exponent: exponent = selfRealFloat.exponent
+    override def significand: significand = selfRealFloat.significand
+    override def scaleFloat: scaleFloat = selfRealFloat.scaleFloat
 
-    override def isNaN: a => Bool = selfRealFloat.isNaN
-    override def isInfinite: a => Bool = selfRealFloat.isInfinite
-    override def isDenormalized: a => Bool = selfRealFloat.isDenormalized
-    override def isNegativeZero: a => Bool = selfRealFloat.isNegativeZero
-    override def isIEEE: a => Bool = selfRealFloat.isIEEE
+    override def isNaN: isNaN = selfRealFloat.isNaN
+    override def isInfinite: isInfinite = selfRealFloat.isInfinite
+    override def isDenormalized: isDenormalized = selfRealFloat.isDenormalized
+    override def isNegativeZero: isNegativeZero = selfRealFloat.isNegativeZero
+    override def isIEEE: isIEEE = selfRealFloat.isIEEE
 
-    override def atan2: a => a => a = selfRealFloat.atan2
+    override def atan2: atan2 = selfRealFloat.atan2
 }
 
 

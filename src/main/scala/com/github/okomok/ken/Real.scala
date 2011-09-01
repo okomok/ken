@@ -13,7 +13,8 @@ trait Real[a] extends Num[a] with Ord[a] {
 
     // Core
     //
-    def toRational: a => Rational
+    type toRational = a => Rational
+    def toRational: toRational
 }
 
 
@@ -22,7 +23,7 @@ trait RealProxy[a] extends Real[a] with NumProxy[a] with OrdProxy[a] {
     override def selfNum: Num[a] = selfReal
     override def selfOrd: Ord[a] = selfReal
 
-    override def toRational: a => Rational = selfReal.toRational
+    override def toRational: toRational = selfReal.toRational
 }
 
 

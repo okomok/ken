@@ -19,21 +19,35 @@ trait Enum[a] extends Typeclass0[a] {
 
     // Core
     //
-    def succ: a => a = toEnum compose ((_: Int) + 1) compose fromEnum
-    def pred: a => a = toEnum compose ((_: Int) - 1) compose fromEnum
-    def toEnum: Int => a
-    def fromEnum: a => Int
+    type succ = a => a
+    def succ: succ = toEnum compose ((_: Int) + 1) compose fromEnum
 
-    def enumFrom: a => List[a] = x => {
+    type pred = a => a
+    def pred: pred = toEnum compose ((_: Int) - 1) compose fromEnum
+
+    type toEnum = Int => a
+    def toEnum: toEnum
+
+    type fromEnum = a => Int
+    def fromEnum: fromEnum
+
+    type enumFrom = a => List[a]
+    def enumFrom: enumFrom = x => {
         List.map(toEnum)(Int.enumFrom(fromEnum(x)))
     }
-    def enumFromThen: a => a => List[a] = x => y => {
+
+    type enumFromThen = a => a => List[a]
+    def enumFromThen: enumFromThen = x => y => {
         List.map(toEnum)(Int.enumFromThen(fromEnum(x))(fromEnum(y)))
     }
-    def enumFromTo: a => a => List[a] = x => y => {
+
+    type enumFromTo = a => a => List[a]
+    def enumFromTo: enumFromTo = x => y => {
         List.map(toEnum)(Int.enumFromTo(fromEnum(x))(fromEnum(y)))
     }
-    def enumFromThenTo: a => a => a => List[a] = x1 => x2 => y => {
+
+    type enumFromThenTo = a => a => a => List[a]
+    def enumFromThenTo: enumFromThenTo = x1 => x2 => y => {
         List.map(toEnum)(Int.enumFromThenTo(fromEnum(x1))(fromEnum(x2))(fromEnum(y)))
     }
 }
@@ -42,15 +56,15 @@ trait Enum[a] extends Typeclass0[a] {
 trait EnumProxy[a] extends Enum[a] {
     def selfEnum: Enum[a]
 
-    override def succ: a => a = selfEnum.succ
-    override def pred: a => a = selfEnum.pred
-    override def toEnum: Int => a = selfEnum.toEnum
-    override def fromEnum: a => Int = selfEnum.fromEnum
+    override def succ: succ = selfEnum.succ
+    override def pred: pred = selfEnum.pred
+    override def toEnum: toEnum = selfEnum.toEnum
+    override def fromEnum:fromEnum = selfEnum.fromEnum
 
-    override def enumFrom: a => List[a] = selfEnum.enumFrom
-    override def enumFromThen: a => a => List[a] = selfEnum.enumFromThen
-    override def enumFromTo: a => a => List[a] = selfEnum.enumFromTo
-    override def enumFromThenTo: a => a => a => List[a] = selfEnum.enumFromThenTo
+    override def enumFrom: enumFrom = selfEnum.enumFrom
+    override def enumFromThen: enumFromThen = selfEnum.enumFromThen
+    override def enumFromTo: enumFromTo = selfEnum.enumFromTo
+    override def enumFromThenTo: enumFromThenTo = selfEnum.enumFromThenTo
 }
 
 
@@ -96,7 +110,7 @@ sealed trait EnumInstance { this: Enum.type =>
     implicit val ofUnit: Enum[Unit] = Unit
 
     implicit def ofScalaNumeric[a](implicit i: scala.math.Numeric[a]): Enum[a] = new Enum[a] {
-        override val toEnum: Int => a = n => i.fromInt(n)
-        override val fromEnum: a => Int = x => i.toInt(x)
+        override val toEnum: toEnum = n => i.fromInt(n)
+        override val fromEnum: fromEnum = x => i.toInt(x)
     }
 }

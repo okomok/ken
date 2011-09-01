@@ -19,13 +19,19 @@ trait Monoid[m] extends Typeclass0[m] { outer =>
 
     // Core
     //
-    def mempty: m
-    def mappend: m => Lazy[m] => m
-    def mconcat: List[m] => m = { x => List.foldr(mappend)(mempty)(x) }
+    type mempty = m
+    def mempty: mempty
+
+    type mappend = m => Lazy[m] => m
+    def mappend: mappend
+
+    type mconcat = List[m] => m
+    def mconcat: mconcat = { x => List.foldr(mappend)(mempty)(x) }
 
     // Extra
     //
-    def dual: Monoid[m] = new Monoid[m] {
+    type dual = Monoid[m]
+    def dual: dual = new Monoid[m] {
         override val mempty: m = outer.mempty
         override val mappend: m => Lazy[m] => m = x => y => outer.mappend(y.!)(x)
     }
@@ -42,11 +48,11 @@ trait Monoid[m] extends Typeclass0[m] { outer =>
 trait MonoidProxy[m] extends Monoid[m] {
     def selfMonoid: Monoid[m]
 
-    override def mempty: m = selfMonoid.mempty
-    override def mappend: m => Lazy[m] => m = selfMonoid.mappend
-    override def mconcat: List[m] => m = selfMonoid.mconcat
+    override def mempty: mempty = selfMonoid.mempty
+    override def mappend: mappend = selfMonoid.mappend
+    override def mconcat: mconcat = selfMonoid.mconcat
 
-    override def dual: Monoid[m] = selfMonoid.dual
+    override def dual: dual = selfMonoid.dual
 }
 
 
@@ -54,10 +60,9 @@ object Monoid extends MonoidInstance {
     def apply[m <: Kind.Function0](implicit i: Monoid[m#apply0]): Monoid[m#apply0] = i
 
     def deriving[nt <: Kind.Function0, ot <: Kind.Function0](implicit i: Monoid[ot#apply0], j: Newtype0[nt#apply0, ot#apply0]): Monoid[nt#apply0] = new Monoid[nt#apply0] {
-        private[this] type m = nt#apply0
-        override val mempty: m = j.newOf(i.mempty)
-        override val mappend: m => Lazy[m] => m = x => y => j.newOf(i.mappend(j.oldOf(x))(j.oldOf(y)))
-        override val mconcat: List[m] => m = xs => j.newOf(i.mconcat(List.map[m, ot#apply0](j.oldOf)(xs)))
+        override val mempty: mempty = j.newOf(i.mempty)
+        override val mappend: mappend = x => y => j.newOf(i.mappend(j.oldOf(x))(j.oldOf(y)))
+        override val mconcat: mconcat = xs => j.newOf(i.mconcat(List.map[nt#apply0, ot#apply0](j.oldOf)(xs)))
     }
 
     def weak[nt <: Kind.Newtype0](implicit i: Monoid[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Monoid[nt#oldtype0] = deriving[Kind.const[nt#oldtype0], nt](i, j.dual)
@@ -75,9 +80,8 @@ object Monoid extends MonoidInstance {
         }
 
         implicit def _asMonoid[a](implicit i: Monoid[a]): Monoid[Dual[a]] = new Monoid[Dual[a]] {
-            private[this] type m = Dual[a]
-            override val mempty: m = Dual(i.mempty)
-            override val mappend: m => Lazy[m] => m = x => y => Dual(i.mappend(y.get)(x.get))
+            override val mempty: mempty = Dual(i.mempty)
+            override val mappend: mappend = x => y => Dual(i.mappend(y.get)(x.get))
         }
     }
 
@@ -95,9 +99,8 @@ object Monoid extends MonoidInstance {
         override def oldOf(nt: Lazy[nt]): ot = nt.get
 
         implicit val _asMonoid: Monoid[All] = new Monoid[All] {
-            private[this] type m = All
-            override val mempty: m = All(True)
-            override val mappend: m => Lazy[m] => m = x => y => All(x.get && y.get)
+            override val mempty: mempty = All(True)
+            override val mappend: mappend = x => y => All(x.get && y.get)
         }
     }
 
@@ -115,9 +118,8 @@ object Monoid extends MonoidInstance {
         override def oldOf(nt: Lazy[nt]): ot = nt.get
 
         implicit val _asMonoid: Monoid[Any_] = new Monoid[Any_] {
-            private[this] type m = Any_
-            override val mempty: m = Any_(False)
-            override val mappend: m => Lazy[m] => m = x => y => Any_(x.get || y.get)
+            override val mempty: mempty = Any_(False)
+            override val mappend: mappend = x => y => Any_(x.get || y.get)
         }
     }
 
@@ -137,9 +139,8 @@ object Monoid extends MonoidInstance {
 
         implicit def _asMonoid[a](implicit i: Num[a]): Monoid[Sum[a]] = new Monoid[Sum[a]] {
             import i.+
-            private[this] type m = Sum[a]
-            override val mempty: m = Sum(i.fromIntegral(0))
-            override val mappend: m => Lazy[m] => m = x => y => Sum(x.get + y.get)
+            override val mempty: mempty = Sum(i.fromIntegral(0))
+            override val mappend: mappend = x => y => Sum(x.get + y.get)
         }
     }
 
@@ -159,9 +160,8 @@ object Monoid extends MonoidInstance {
 
         implicit def _asMonoid[a](implicit i: Num[a]): Monoid[Product[a]] = new Monoid[Product[a]] {
             import i.*
-            private[this] type m = Product[a]
-            override val mempty: m = Product(i.fromIntegral(1))
-            override val mappend: m => Lazy[m] => m = x => y => Product(x.get * y.get)
+            override val mempty: mempty = Product(i.fromIntegral(1))
+            override val mappend: mappend = x => y => Product(x.get * y.get)
         }
     }
 }
