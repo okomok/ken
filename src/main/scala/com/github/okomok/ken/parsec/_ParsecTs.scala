@@ -305,11 +305,13 @@ private[ken] final class _ParsecTs[n[+_]](val inner: Monad[n]) {
                 def walk(xs: List[a])(x: a)(s_ : State[s, u])(err: ParseError): n[b] = {
                     unParser(p)(s_)(walk { acc(x)(xs) })(v.cerr)(manyErr)(e => v.cok(acc(x)(xs))(s_)(e))
                 }
+                def manyErr(x: a)(s_ : State[s, u])(err: ParseError): n[b] = {
+                    error("ParsecT.many: combinator 'many' is applied to a parser that accepts an empty string.")
+                }
                 unParser(p)(v.state)(walk(Nil))(v.cerr)(manyErr)(e => v.eok(Nil)(v.state)(e))
             }
         } }
 
-        def manyErr: Nothing = error("ParsecT.many: combinator 'many' is applied to a parser that accepts an empty string.")
 
         // Run
         //   (runParserT is equivalent to runParser by the power of Scala)

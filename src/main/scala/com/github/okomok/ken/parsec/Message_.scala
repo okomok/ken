@@ -36,7 +36,7 @@ object Message_ extends Enum[Message_] with Eq.Of[Message_] with Ord[Message_] w
         case Expect(_) => 2
         case Message(_) => 3
     }
-    override val toEnum: Int => a = error("toEnum is undefined for Message")
+    override val toEnum: Int => a = _ => error("toEnum is undefined for Message")
     // Ord
     override val compare: a => a => Ordering = m1 => m2 => {
         Ord[Kind.const[Int]].compare(fromEnum(m1))(fromEnum(m2))

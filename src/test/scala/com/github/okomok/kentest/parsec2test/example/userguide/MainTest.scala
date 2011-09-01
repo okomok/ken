@@ -5,7 +5,7 @@
 
 
 package com.github.okomok.kentest
-package parsectest.example.userguide
+package parsec2test.example.userguide
 
 
 import com.github.okomok.ken._

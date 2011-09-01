@@ -24,7 +24,7 @@ object ParseError extends Eq.Of[ParseError] with Show[ParseError] with ThisIsIns
     private type a = ParseError
     override val show: a => String_ = err => {
         ken.show(errorPos(err)) ::: ":" :::
-        showErrorMessages("or")("unknown parse error")("expecting")("unexpected")("end of input")(errorMessages(err))
+            showErrorMessages("or")("unknown parse error")("expecting")("unexpected")("end of input")(errorMessages(err))
     }
 
     // Language independent show function
