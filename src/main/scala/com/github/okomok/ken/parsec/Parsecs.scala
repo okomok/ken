@@ -20,6 +20,7 @@ trait ParsecsBase[s, u] extends ParsecTsBase[s, u, WeakIdentity.type] {
     type Parsec[+a] = ParsecT[a]
     final val Parsec = ParsecT
 
+    // Should be moved into ParsecTs somehow.
     def token[a, t](showToken: t => String_)
         (tokpos: t => SourcePos)
         (test: t => Maybe[a])(implicit i: Stream[s, WeakIdentity.apply, t]): Parsec[a] =

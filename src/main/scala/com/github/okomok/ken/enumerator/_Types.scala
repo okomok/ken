@@ -53,7 +53,7 @@ private[enumerator] trait _Types[n[+_]] { this: _Enumerators[n] =>
     //
     type Enumeratee[ao, ai, b] = Step[ai, b] => Iteratee[ao, Step[ai, b]]
 
-    // Instance
+    // Instances
     //
     private[enumerator] trait Iteratee_0 { this: Iteratee.type =>
         implicit def _asNewtype1[z]: Newtype1[({type nt[+a] = Iteratee[z, a]})#nt, ({type ot[+a] = n[Step[z, a]]})#ot] = new Newtype1[({type nt[+a] = Iteratee[z, a]})#nt, ({type ot[+a] = n[Step[z, a]]})#ot] {
