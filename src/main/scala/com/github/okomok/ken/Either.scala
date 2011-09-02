@@ -39,13 +39,13 @@ object Either extends Kind.qcurry2[Either] {
 
     implicit def _asMonadFix[e]: MonadFix[({type m[+a] = Either[e, a]})#m] = new MonadFix[({type m[+a] = Either[e, a]})#m] {
         // Functor
-        private[this] type f[+a] = Either[e, a]
+        private type f[+a] = Either[e, a]
         override def fmap[a, b](f: a => b)(e: f[a]): f[b] = e match {
             case Left(l) => Left(l)
             case Right(r) => Right(f(r))
         }
         // Monad
-        private[this] type m[+a] = f[a]
+        private type m[+a] = f[a]
         override def `return`[a](x: Lazy[a]): m[a] = Right(x.!)
         override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = m match {
             case Left(l) => Left(l)

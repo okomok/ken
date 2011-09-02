@@ -33,7 +33,7 @@ object MonadError {
     def apply[e, m <: Kind.Function1](implicit i: MonadError[e, m#apply]): MonadError[e, m#apply] = i
 
     def deriving[e, nt <: Kind.Function1, ot <: Kind.Function1](implicit i: MonadError[e, ot#apply], j: Newtype1[nt#apply, ot#apply]): MonadError[e, nt#apply] = new MonadError[e, nt#apply] with MonadProxy[nt#apply] {
-        private[this] type m[+a] = nt#apply[a]
+        private type m[+a] = nt#apply[a]
         override val selfMonad = Monad.deriving[nt, ot](i, j)
         override def errorClass: ErrorClass[e] = i.errorClass
         override def throwError[a](e: e): m[a] = j.newOf { i.throwError(e) }

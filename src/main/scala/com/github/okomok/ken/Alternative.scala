@@ -64,7 +64,7 @@ object Alternative {
     def apply[f <: Kind.Function1](implicit i: Alternative[f#apply]): Alternative[f#apply] = i
 
     def deriving[nt <: Kind.Function1, ot <: Kind.Function1](implicit i: Alternative[ot#apply], j: Newtype1[nt#apply, ot#apply]): Alternative[nt#apply] = new Alternative[nt#apply] with ApplicativeProxy[nt#apply] {
-        private[this] type f[+a] = nt#apply[a]
+        private type f[+a] = nt#apply[a]
         override val selfApplicative = Applicative.deriving[nt, ot](i, j)
         override def empty: f[Nothing] = j.newOf(i.empty)
         override def op_<|>[a](x: f[a])(y: Lazy[f[a]]): f[a] = j.newOf(i.op_<|>(j.oldOf(x))(j.oldOf(y)))

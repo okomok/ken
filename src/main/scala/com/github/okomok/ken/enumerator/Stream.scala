@@ -22,7 +22,7 @@ object Stream extends Monad[Stream] with ThisIsInstance {
     // Overrides
     //
     // Monad
-    private[this] type m[+a] = Stream[a]
+    private type m[+a] = Stream[a]
     override def `return`[a](a: Lazy[a]): m[a] = Chunks(List.`return`(a))
     override def op_>>=[a, b](m: m[a])(f: a => m[b]): m[b] = m match {
         case Chunks(xs) => _asMonoid[b].mconcat(List.fmap(f)(xs))
@@ -32,10 +32,9 @@ object Stream extends Monad[Stream] with ThisIsInstance {
     // Instances
     //
     implicit def _asMonoid[a]: Monoid[Stream[a]] = new Monoid[Stream[a]] {
-        private[this] type m = Stream[a]
-        val i = Monoid[List[a]]
-        override def mempty: m = Chunks(i.mempty)
-        override def mappend: m => Lazy[m] => m = x => y => (x, y.!) match {
+        private val i = Monoid[List[a]]
+        override def mempty: mempty = Chunks(i.mempty)
+        override def mappend: mappend = x => y => (x, y.!) match {
             case (Chunks(xs), Chunks(ys)) => Chunks(i.mappend(xs)(ys))
             case _ => EOF
         }

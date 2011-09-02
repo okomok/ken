@@ -54,7 +54,7 @@ object ArrowApply {
     def apply[a <: Kind.Function2](implicit i: ArrowApply[a#apply2]): ArrowApply[a#apply2] = i
 
     def deriving[nt <: Kind.Function2, ot <: Kind.Function2](implicit i: ArrowApply[ot#apply2], j: Newtype2[nt#apply2, ot#apply2]): ArrowApply[nt#apply2] = new ArrowApply[nt#apply2] with ArrowProxy[nt#apply2] {
-        private[this] type a[-a, +b] = nt#apply2[a, b]
+        private type a[-a, +b] = nt#apply2[a, b]
         override val selfArrow = Arrow.deriving[nt, ot](i, j)
 
         override def app[b, c]: a[(a[b, c], b), c] = j.newOf(i.op_^>>:( (n: (nt#apply2[b, c], b)) => (j.oldOf(n._1), n._2) )(i.app[b, c]))

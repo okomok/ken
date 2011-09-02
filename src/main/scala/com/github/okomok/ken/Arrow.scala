@@ -99,7 +99,7 @@ object Arrow {
     def apply[a <: Kind.Function2](implicit i: Arrow[a#apply2]): Arrow[a#apply2] = i
 
     def deriving[nt <: Kind.Function2, ot <: Kind.Function2](implicit i: Arrow[ot#apply2], j: Newtype2[nt#apply2, ot#apply2]): Arrow[nt#apply2] = new Arrow[nt#apply2] with CategoryProxy[nt#apply2] {
-        private[this] type a[-a, +b] = nt#apply2[a, b]
+        private type a[-a, +b] = nt#apply2[a, b]
         override val selfCategory = Category.deriving[nt, ot](i, j)
 
         override def arr[b, c](f: b => c): a[b, c] = j.newOf(i.arr(f))

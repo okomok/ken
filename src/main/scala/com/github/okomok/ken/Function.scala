@@ -48,13 +48,13 @@ object Function extends ArrowChoice[Function1] with ArrowApply[Function1] with A
     //
     private[ken] def _asMonadReader[z]: MonadReader[z, ({type m[+a] = z => a})#m] = new MonadReader[z, ({type m[+a] = z => a})#m] {
         // Functor
-        private[this] type f[+a] = z => a
+        private type f[+a] = z => a
         override def fmap[a, b](x: a => b)(y: f[a]): f[b] = x compose y
         // Applicative
         override def pure[a](x: Lazy[a]): f[a] = const(x)
         override def op_<*>[a, b](x: f[a => b])(y: f[a]): f[b] = { z => x(z)(y(z)) }
         // Monad
-        private[this] type m[+a] = f[a]
+        private type m[+a] = f[a]
         override def `return`[a](x: Lazy[a]): m[a] = const(x)
         override def op_>>=[a, b](f: m[a])(k: a => m[b]): m[b] = { z => k(f(z))(z) }
         // MonadReader
@@ -63,7 +63,7 @@ object Function extends ArrowChoice[Function1] with ArrowApply[Function1] with A
     }
 
     private[ken] def _asMonoid[z, b](implicit mb: Monoid[b]): Monoid[z => b] = new Monoid[z => b] {
-        private[this] type m = z => b
+        private type m = z => b
         override val mempty: m = _ => mb.mempty
         override val mappend: m => Lazy[m] => m = { x => y =>
             val y_ = y // scalac mistery

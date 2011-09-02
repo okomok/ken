@@ -43,7 +43,7 @@ object MonadReader {
     def apply[r, m <: Kind.Function1](implicit i: MonadReader[r, m#apply]): MonadReader[r, m#apply] = i
 
     def deriving[r, nt <: Kind.Function1, ot <: Kind.Function1](implicit i: MonadReader[r, ot#apply], j: Newtype1[nt#apply, ot#apply]): MonadReader[r, nt#apply] = new MonadReader[r, nt#apply] with MonadProxy[nt#apply] {
-        private[this] type m[+a] = nt#apply[a]
+        private type m[+a] = nt#apply[a]
         override val selfMonad = Monad.deriving[nt, ot](i, j)
         override def ask: m[r] = j.newOf { i.ask }
         override def local[a](f: r => r)(m: m[a]): m[a] = j.newOf { i.local(f)(j.oldOf(m)) }

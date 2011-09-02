@@ -101,8 +101,8 @@ object Ratio {
     }
 
     implicit def _asEnum[z](implicit i: Integral[z]): Enum[Ratio[z]] = new Enum[Ratio[z]] {
-        private[this] val j = _asRealFrac[z]
-        private[this] type a = Ratio[z]
+        private val j = _asRealFrac[z]
+        private type a = Ratio[z]
         override val succ: a => a = x => j.op_+(x)(j.fromIntegral(1))
         override val pred: a => a = x => j.op_-(x)(j.fromIntegral(1))
         override val toEnum: Int => a = n => new Ratio(i.fromIntegral(n), i.fromIntegral(1))

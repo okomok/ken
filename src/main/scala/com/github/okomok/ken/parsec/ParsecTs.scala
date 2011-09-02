@@ -51,7 +51,7 @@ private[parsec] trait _ParsecTs[s, u, n[+_]] extends MonadTs[n]
         implicit val _asMonadPlus: MonadPlus[ParsecT] = this
 
         implicit val _asMonadTrans: MonadTrans[n, ParsecT] = new MonadTrans[n, ParsecT] {
-            private[this] type m[+a] = ParsecT[a]
+            private type m[+a] = ParsecT[a]
             override def lift[a](amb: n[a]): m[a] = ParsecT { new UnParser[s, u, n, a] {
                 override def apply[b](v: UnParserParam[s, u, n, a, b]): n[b] = {
                     for {
@@ -65,7 +65,7 @@ private[parsec] trait _ParsecTs[s, u, n[+_]] extends MonadTs[n]
 
     private[parsec] trait ParsecT_1 extends ParsecT_0 { this: ParsecT.type =>
         implicit def _asMonadIO(implicit i: MonadIO[n]): MonadIO[ParsecT] = new MonadIO[ParsecT] with MonadProxy[ParsecT] {
-            private[this] type m[+a] = ParsecT[a]
+            private type m[+a] = ParsecT[a]
             override def selfMonad = _asMonadPlus
             override def liftIO[a](io: IO[a]): m[a] = _asMonadTrans.lift(i.liftIO(io))
         }
@@ -73,7 +73,7 @@ private[parsec] trait _ParsecTs[s, u, n[+_]] extends MonadTs[n]
 
     private[parsec] trait ParsecT_2 extends ParsecT_1 { this: ParsecT.type =>
         implicit def _asMonadReader[r](implicit i: MonadReader[r, n]): MonadReader[r, ParsecT] = new MonadReader[r, ParsecT] with MonadProxy[ParsecT] {
-            private[this] type m[+a] = ParsecT[a]
+            private type m[+a] = ParsecT[a]
             override def selfMonad = _asMonadPlus
             override def ask: m[r] = _asMonadTrans.lift(i.ask)
             override def local[a](f: r => r)(p: m[a]): m[a] = mkPT { s => i.local(f)(runParsecT(p)(s)) }
@@ -82,7 +82,7 @@ private[parsec] trait _ParsecTs[s, u, n[+_]] extends MonadTs[n]
 
     private[parsec] trait ParsecT_3 extends ParsecT_2 { this: ParsecT.type =>
         implicit def _asMonadState[s_](implicit i: MonadState[s_, n]): MonadState[s_, ParsecT] = new MonadState[s_, ParsecT] with MonadProxy[ParsecT] {
-            private[this] type m[+a] = ParsecT[a]
+            private type m[+a] = ParsecT[a]
             override def selfMonad = _asMonadPlus
             override def get: m[s_] = _asMonadTrans.lift(i.get)
             override def put(s: s_): m[Unit] = _asMonadTrans.lift(i.put(s))
@@ -91,7 +91,7 @@ private[parsec] trait _ParsecTs[s, u, n[+_]] extends MonadTs[n]
 
     private[parsec] trait ParsecT_4 extends ParsecT_3 { this: ParsecT.type =>
         implicit def _asMonadCont(implicit i: MonadCont[n]): MonadCont[ParsecT] = new MonadCont[ParsecT] with MonadProxy[ParsecT] {
-            private[this] type m[+a] = ParsecT[a]
+            private type m[+a] = ParsecT[a]
             override def selfMonad = _asMonadPlus
             override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = mkPT { s =>
                 def pack(s: State[s, u])(a: a): Consumed_[n[Reply[s, u, a]]] = Empty(inner.`return`(Ok(a, s, unknownError(s)).up)).up
@@ -104,7 +104,7 @@ private[parsec] trait _ParsecTs[s, u, n[+_]] extends MonadTs[n]
 
     private[parsec] trait ParsecT_ extends ParsecT_4 { this: ParsecT.type =>
         implicit def _asMonadError[e](implicit i: MonadError[e, n]): MonadError[e, ParsecT] = new MonadError[e, ParsecT] with MonadProxy[ParsecT] {
-            private[this] type m[+a] = ParsecT[a]
+            private type m[+a] = ParsecT[a]
             override def selfMonad = _asMonadPlus
             override def errorClass: ErrorClass[e] = i.errorClass
             override def throwError[a](e: e): m[a] = _asMonadTrans.lift(i.throwError(e))

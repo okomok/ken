@@ -51,7 +51,7 @@ object Parsec2 {
 
     def forcePos(pos: SourcePos): SourcePos = seq(pos.line)(seq(pos.column)(pos)) // no effects
 
-    private[this] def showSourcePos(name: SourceName, line: Line, column: Column): String = {
+    private def showSourcePos(name: SourceName, line: Line, column: Column): String = {
         def showLineColumn: String = "(line " + _show(line) + ", column " + _show(column) + ")"
         if (name == "") {
             showLineColumn
@@ -135,7 +135,7 @@ object Parsec2 {
 
     /** For recursive grammer **/
     final class GenRule[tok, st, a] extends GenParser[tok, st, a] {
-        @volatile private[this] var p: Lazy[GenParser[tok, st, a]] = null
+        @volatile private var p: Lazy[GenParser[tok, st, a]] = null
         def ::=(that: => GenParser[tok, st, a]): Unit = { p = Lazy(that) }
         override def parse(st: State[tok, st]): ConsumedT[Reply[tok, st, a]] = p.!.parse(st)
     }
@@ -162,7 +162,7 @@ object Parsec2 {
         }
 
         implicit def _asMonadPlus[tok, st]: MonadPlus[({type m[+x] = GenParser[tok, st, x]})#m] = new MonadPlus[({type m[+x] = GenParser[tok, st, x]})#m] {
-            private[this] type m[+x] = GenParser[tok, st, x]
+            private type m[+x] = GenParser[tok, st, x]
             // Functor
             override def fmap[a, b](x: a => b)(y: m[a]): m[b] = parsecMap(x)(y)
             // Monad
@@ -533,7 +533,7 @@ object Parsec2 {
 
     // Show ParseErrors
 
-    private[this] def showParseError(err: ParseError): String = {
+    private def showParseError(err: ParseError): String = {
         _show(errorPos(err)) + ":" +
             showErrorMessages("or")("unknown parse error")("expecting")("unexpected")("end of input")(errorMessages(err))
     }

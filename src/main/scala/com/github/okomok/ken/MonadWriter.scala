@@ -49,7 +49,7 @@ object MonadWriter {
     def apply[w, m[+_]](implicit i: MonadWriter[w, m]) = i
 
     def deriving[w, nt <: Kind.Function1, ot <: Kind.Function1](implicit i: MonadWriter[w, ot#apply], j: Newtype1[nt#apply, ot#apply]): MonadWriter[w, nt#apply] = new MonadWriter[w, nt#apply] with MonadProxy[nt#apply] {
-        private[this] type m[+a] = nt#apply[a]
+        private type m[+a] = nt#apply[a]
         override val selfMonad = Monad.deriving[nt, ot](i, j)
         override def monoid: Monoid[w] = i.monoid
         override def tell(x: w): m[Unit] = j.newOf { i.tell(x) }

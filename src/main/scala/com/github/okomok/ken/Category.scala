@@ -48,7 +48,7 @@ object Category extends CategoryInstance {
     def apply[cat <: Kind.Function2](implicit i: Category[cat#apply2]): Category[cat#apply2] = i
 
     def deriving[nt <: Kind.Function2, ot <: Kind.Function2](implicit i: Category[ot#apply2], j: Newtype2[nt#apply2, ot#apply2]): Category[nt#apply2] = new Category[nt#apply2] {
-        private[this] type cat[-a, +b] = nt#apply2[a, b]
+        private type cat[-a, +b] = nt#apply2[a, b]
 
         override def cid[a]: cat[a, a] = j.newOf(i.cid[a])
         override def op_<<<:[a, b, c](f: cat[b, c])(g: cat[a, b]): cat[a, c] = j.newOf(i.op_<<<:(j.oldOf(f))(j.oldOf(g)))

@@ -63,7 +63,7 @@ object MonadPlus {
     def apply[m <: Kind.Function1](implicit i: MonadPlus[m#apply]): MonadPlus[m#apply] = i
 
     def deriving[nt <: Kind.Function1, ot <: Kind.Function1](implicit i: MonadPlus[ot#apply], j: Newtype1[nt#apply, ot#apply]): MonadPlus[nt#apply] = new MonadPlus[nt#apply] with MonadProxy[nt#apply] {
-        private[this] type m[+a] = nt#apply[a]
+        private type m[+a] = nt#apply[a]
         override val selfMonad = Monad.deriving[nt, ot](i, j)
         override def mzero: m[Nothing] = j.newOf { i.mzero }
         override def mplus[a](x: m[a])(y: Lazy[m[a]]): m[a] = j.newOf { i.mplus(j.oldOf(x))(j.oldOf(y)) }

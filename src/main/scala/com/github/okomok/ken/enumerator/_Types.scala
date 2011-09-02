@@ -59,14 +59,14 @@ private[enumerator] trait _Types[n[+_]] { this: _Enumerators[n] =>
     //
     private[enumerator] trait Iteratee_0 { this: Iteratee.type =>
         implicit def _asNewtype1[z]: Newtype1[({type nt[+a] = Iteratee[z, a]})#nt, ({type ot[+a] = n[Step[z, a]]})#ot] = new Newtype1[({type nt[+a] = Iteratee[z, a]})#nt, ({type ot[+a] = n[Step[z, a]]})#ot] {
-            private[this] type nt[+a] = Iteratee[z, a]
-            private[this] type ot[+a] = n[Step[z, a]]
+            private type nt[+a] = Iteratee[z, a]
+            private type ot[+a] = n[Step[z, a]]
             override def newOf[a](ot: Lazy[ot[a]]): nt[a] = Iteratee(ot)
             override def oldOf[a](nt: Lazy[nt[a]]): ot[a] = nt.run
         }
 
         implicit def _asMonad[z]: Monad[({type m[+a] = Iteratee[z, a]})#m] = new Monad[({type m[+a] = Iteratee[z, a]})#m] {
-            private[this] type m[+a] = Iteratee[z, a]
+            private type m[+a] = Iteratee[z, a]
             override def `return`[a](x: Lazy[a]): m[a] = `yield`(x.!)(Chunks(Nil.of[a]).up)
             override def op_>>=[a, b](m0: m[a])(f: a => m[b]): m[b] = Function.fix {
                 (bind: Lazy[m[a] => m[b]]) => (m: m[a]) => Iteratee {
@@ -85,7 +85,7 @@ private[enumerator] trait _Types[n[+_]] { this: _Enumerators[n] =>
         }
 
         implicit def _asMonadTrans[z]: MonadTrans[n, ({type m[+a] = Iteratee[z, a]})#m] = new MonadTrans[n, ({type m[+a] = Iteratee[z, a]})#m] {
-            private[this] type m[+a] = Iteratee[z, a]
+            private type m[+a] = Iteratee[z, a]
             override def lift[a](n: n[a]): m[a] = Iteratee {
                 n >>= { runIteratee[z, a]_ compose _asMonad[z].`return`[a] }
             }
@@ -94,7 +94,7 @@ private[enumerator] trait _Types[n[+_]] { this: _Enumerators[n] =>
 
     private[enumerator] trait Iteratee_ extends Iteratee_0 { this: Iteratee.type =>
         implicit def _asMonadIO[z](implicit i: MonadIO[n]): MonadIO[({type m[+a] = Iteratee[z, a]})#m] = new MonadIO[({type m[+a] = Iteratee[z, a]})#m] with MonadProxy[({type m[+a] = Iteratee[z, a]})#m] {
-            private[this] type m[+a] = Iteratee[z, a]
+            private type m[+a] = Iteratee[z, a]
             override val selfMonad = _asMonad[z]
             override def liftIO[a](io: IO[a]): m[a] = _asMonadTrans.lift(i.liftIO(io))
         }

@@ -27,8 +27,8 @@ object MonadTrans {
     def apply[m <: Kind.MonadTrans](implicit i: MonadTrans[m#innerMonad, m#apply]): MonadTrans[m#innerMonad, m#apply] = i
 
     def deriving[nt <: Kind.Function1, ot <: Kind.MonadTrans](implicit i: MonadTrans[ot#innerMonad, ot#apply], j: Newtype1[nt#apply, ot#apply]): MonadTrans[ot#innerMonad, nt#apply] = new MonadTrans[ot#innerMonad, nt#apply] {
-        private[this] type n[+a] = ot#innerMonad[a]
-        private[this] type m[+a] = nt#apply[a]
+        private type n[+a] = ot#innerMonad[a]
+        private type m[+a] = nt#apply[a]
         override def lift[a](n: n[a]): m[a] = j.newOf { i.lift(n) }
     }
 

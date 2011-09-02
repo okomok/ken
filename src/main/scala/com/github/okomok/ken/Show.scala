@@ -87,7 +87,7 @@ sealed trait ShowInstance { this: Show.type =>
     implicit def of[a]: Show[a] = new Of[a] {}
 
     implicit def ofList[z](implicit i: Show[z]): Show[List[z]] = new Show[List[z]] {
-        private[this] type a = List[z]
+        private type a = List[z]
         override val showsPrec: showsPrec = _ => x => i.showList(x)
     }
 

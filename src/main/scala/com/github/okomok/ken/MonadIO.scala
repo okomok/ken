@@ -29,7 +29,7 @@ object MonadIO {
     def apply[m <: Kind.Function1](implicit i: MonadIO[m#apply]): MonadIO[m#apply] = i
 
     def deriving[nt <: Kind.Function1, ot <: Kind.Function1](implicit i: MonadIO[ot#apply], j: Newtype1[nt#apply, ot#apply]): MonadIO[nt#apply] = new MonadIO[nt#apply] with MonadProxy[nt#apply] {
-        private[this] type m[+a] = nt#apply[a]
+        private type m[+a] = nt#apply[a]
         override val selfMonad = Monad.deriving[nt, ot](i, j)
         override def liftIO[a](io: IO[a]): m[a] = j.newOf { i.liftIO(io) }
     }

@@ -208,7 +208,7 @@ object Monad {
     def apply[m <: Kind.Function1](implicit i: Monad[m#apply]): Monad[m#apply] = i
 
     def deriving[nt <: Kind.Function1, ot <: Kind.Function1](implicit i: Monad[ot#apply], j: Newtype1[nt#apply, ot#apply]): Monad[nt#apply] = new Monad[nt#apply] with ApplicativeProxy[nt#apply] {
-        private[this] type m[+a] = nt#apply[a]
+        private type m[+a] = nt#apply[a]
         override val selfApplicative = Applicative.deriving[nt, ot](i, j)
         override def `return`[a](x: Lazy[a]): m[a] = j.newOf { i.`return`(x) }
         override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = j.newOf { i.op_>>=(j.oldOf(x))(a => j.oldOf(y(a))) }

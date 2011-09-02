@@ -48,7 +48,7 @@ object Functor extends FunctorInstance {
     def apply[f <: Kind.Function1](implicit i: Functor[f#apply]): Functor[f#apply] = i
 
     def deriving[nt <: Kind.Function1, ot <: Kind.Function1](implicit i: Functor[ot#apply], j: Newtype1[nt#apply, ot#apply]): Functor[nt#apply] = new Functor[nt#apply] {
-        private[this] type f[+a] = nt#apply[a]
+        private type f[+a] = nt#apply[a]
         override def fmap[a, b](f: a => b)(m: f[a]): f[b] = j.newOf { i.fmap(f)(j.oldOf(m)) }
     }
 

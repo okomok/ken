@@ -28,8 +28,8 @@ private[ken] final class _Kleislis[m[+_]](val monad: Monad[m]) {
 
     private[ken] trait _Kleisli_0 { this: _Kleisli.type =>
         implicit val _asNewtype2: Newtype2[_Kleisli, ({type ot[-a, +b] = a => m[b]})#ot] = new Newtype2[_Kleisli, ({type ot[-a, +b] = a => m[b]})#ot] {
-            private[this] type nt[-a, +b] = _Kleisli[a, b]
-            private[this] type ot[-a, +b] = a => m[b]
+            private type nt[-a, +b] = _Kleisli[a, b]
+            private type ot[-a, +b] = a => m[b]
             override def newOf[a, b](ot: Lazy[ot[a, b]]): nt[a, b] = _Kleisli(ot)
             override def oldOf[a, b](nt: Lazy[nt[a, b]]): ot[a, b] = nt.run
         }
@@ -37,13 +37,13 @@ private[ken] final class _Kleislis[m[+_]](val monad: Monad[m]) {
         implicit val _asArrow: Arrow[_Kleisli] = new Arrow[_Kleisli] {
             import monad.{>>=, `return`}
             // Category
-            private[this] type cat[-a, +b] = _Kleisli[a, b]
+            private type cat[-a, +b] = _Kleisli[a, b]
             override def cid[a]: cat[a, a] = _Kleisli { a => `return`(a) }
             override def op_<<<:[a, b, c](f: cat[b, c])(g: cat[a, b]): cat[a, c] = _Kleisli { b =>
                 g.run(b) >>= f.run
             }
             // Arrow
-            private[this] type a[-a, +b] = _Kleisli[a, b]
+            private type a[-a, +b] = _Kleisli[a, b]
             override def arr[b, c](f: b => c): a[b, c] = _Kleisli { b => `return`(f(b)) }
             override def first[b, c, d](f: a[b, c], * : Type[d] = null): a[(b, d), (c, d)] = _Kleisli { case (b, d) =>
                 f.run(b) >>= (c => `return`(c, d))
@@ -54,7 +54,7 @@ private[ken] final class _Kleislis[m[+_]](val monad: Monad[m]) {
         }
 
         implicit def _asArrowPlus(implicit i: MonadPlus[m]): ArrowPlus[_Kleisli] = new ArrowPlus[_Kleisli] with ArrowProxy[_Kleisli] {
-            private[this] type a[-a, +b] = _Kleisli[a, b]
+            private type a[-a, +b] = _Kleisli[a, b]
             override def selfArrow = _asArrow
             override def zeroArrow[b, c]: a[b, c] = _Kleisli { _ => i.mzero }
             override def op_<+>:[b, c](f: a[b, c])(g: Lazy[a[b, c]]): a[b, c] = _Kleisli { x =>
@@ -66,7 +66,7 @@ private[ken] final class _Kleislis[m[+_]](val monad: Monad[m]) {
 
     private[ken] trait _Kleisli_1 extends _Kleisli_0 { this: _Kleisli.type =>
         implicit val _asArrowChoice: ArrowChoice[_Kleisli] = new ArrowChoice[_Kleisli] with ArrowProxy[_Kleisli] {
-            private[this] type a[-a, +b] = _Kleisli[a, b]
+            private type a[-a, +b] = _Kleisli[a, b]
             override def selfArrow = _asArrow
             override def left[b, c, d](f: a[b, c], * : Type[d] = null): a[Either[b, d], Either[c, d]] = f +++: arr(id[d])
             override def right[b, c, d](f: a[b, c], * : Type[d] = null): a[Either[d, b], Either[d, c]] = arr(id[d]) +++: f
@@ -77,7 +77,7 @@ private[ken] final class _Kleislis[m[+_]](val monad: Monad[m]) {
 
     private[ken] trait _Kleisli_2 extends _Kleisli_1 { this: _Kleisli.type =>
         implicit val _asArrowApply: ArrowApply[_Kleisli] = new ArrowApply[_Kleisli] with ArrowProxy[_Kleisli] {
-            private[this] type a[-a, +b] = _Kleisli[a, b]
+            private type a[-a, +b] = _Kleisli[a, b]
             override def selfArrow = _asArrow
             override def app[b, c]: a[(a[b, c], b), c] = _Kleisli { case (f, x) => f.run(x) }
         }
@@ -85,7 +85,7 @@ private[ken] final class _Kleislis[m[+_]](val monad: Monad[m]) {
 
     private[ken] trait _Kleisli_ extends _Kleisli_2 { this: _Kleisli.type =>
         implicit def _asArrowLoop(implicit i: MonadFix[m]): ArrowLoop[_Kleisli] = new ArrowLoop[_Kleisli] with ArrowProxy[_Kleisli] {
-            private[this] type a[-a, +b] = _Kleisli[a, b]
+            private type a[-a, +b] = _Kleisli[a, b]
             override def selfArrow = _asArrow
             override def loop[b, c, d](f: a[(b, Lazy[d]), (Lazy[c], Lazy[d])]): a[b, c] = {
                 def f_(x: b)(y: Lazy[(c, d)]): m[(c, d)] = {

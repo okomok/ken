@@ -29,7 +29,7 @@ object MonadCont {
     def apply[m <: Kind.Function1](implicit i: MonadCont[m#apply]): MonadCont[m#apply] = i
 
     def deriving[nt <: Kind.Function1, ot <: Kind.Function1](implicit i: MonadCont[ot#apply], j: Newtype1[nt#apply, ot#apply]): MonadCont[nt#apply] = new MonadCont[nt#apply] with MonadProxy[nt#apply] {
-        private[this] type m[+a] = nt#apply[a]
+        private type m[+a] = nt#apply[a]
         override val selfMonad = Monad.deriving[nt, ot](i, j)
         override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = j.newOf {
             i.callCC { (c: a => ot#apply[b]) =>

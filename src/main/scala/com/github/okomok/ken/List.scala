@@ -128,7 +128,7 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
     // Instances
     //
     implicit def _asMonoid[a]: Monoid[List[a]] = new Monoid[List[a]] {
-        private[this] type m = List[a]
+        private type m = List[a]
         override val mempty: m = Nil
         override val mappend: m => Lazy[m] => m = op_++:[a]
     }

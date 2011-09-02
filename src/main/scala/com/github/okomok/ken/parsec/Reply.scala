@@ -24,7 +24,7 @@ object Reply extends Kind.FunctionLike {
     }
 
     implicit def _asFunctor[s, u]: Functor[({type f[+a] = Reply[s, u, a]})#f] = new Functor[({type f[+a] = Reply[s, u, a]})#f] {
-        private[this] type f[+a] = Reply[s, u, a]
+        private type f[+a] = Reply[s, u, a]
         override def fmap[a, b](f: a => b)(x: f[a]): f[b] = x match {
             case Ok(x, s, e) => Ok(f(x), s, e)
             case Error(e) => Error(e)
