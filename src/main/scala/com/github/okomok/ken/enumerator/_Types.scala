@@ -23,9 +23,7 @@ private[enumerator] trait _Types[n[+_]] { this: _Enumerators[n] =>
 
     // Iteratee
     //
-    final case class Iteratee[-a, +b](override val get: n[Step[a, b]]) extends NewtypeOf[n[Step[a, b]]] {
-        def >>==[a_, b_](f: Step[a, b] => Iteratee[a_, b_]): Iteratee[a_, b_] = op_>>==(this)(f)
-    }
+    final case class Iteratee[-a, +b](override val get: n[Step[a, b]]) extends NewtypeOf[n[Step[a, b]]]
 
     object Iteratee extends Iteratee_ with Kind.FunctionLike {
         sealed trait apply[z] extends Kind.AbstractMonadTrans {
