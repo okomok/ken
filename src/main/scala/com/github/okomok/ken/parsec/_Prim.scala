@@ -193,6 +193,17 @@ private[parsec] trait _Prim[s, u, n[+_]] { this: _ParsecTs[s, u, n] =>
         }
     } }
 
+    def token[a, t](showToken: t => String_)
+        (tokpos: t => SourcePos)
+        (test: t => Maybe[a])(implicit i: Stream[s, n, t], ev: Iso[n, WeakIdentity.apply]): ParsecT[a] =
+    {
+        def nextpos(* : SourcePos)(tok: t)(ts: s): SourcePos = ev.imply(i.uncons(ts)) match {
+            case Nothing => tokpos(tok)
+            case Just((tok_, _)) => tokpos(tok_)
+        }
+        tokenPrim(showToken)(nextpos)(test)
+    }
+
     def tokenPrim[a, t](showToken: t => String_)
         (nextpos: SourcePos => t => s => SourcePos)
         (test: t => Maybe[a])

@@ -20,15 +20,8 @@ trait ParsecsBase[s, u] extends ParsecTsBase[s, u, WeakIdentity.type] {
     type Parsec[+a] = ParsecT[a]
     final val Parsec = ParsecT
 
-    // Should be moved into ParsecTs somehow.
-    def token[a, t](showToken: t => String_)
+    // test-compile :)
+    private def _token[a, t](showToken: t => String_)
         (tokpos: t => SourcePos)
-        (test: t => Maybe[a])(implicit i: Stream[s, WeakIdentity.apply, t]): Parsec[a] =
-    {
-        def nextpos(* : SourcePos)(tok: t)(ts: s): SourcePos = i.uncons(ts) match {
-            case Nothing => tokpos(tok)
-            case Just((tok_, _)) => tokpos(tok_)
-        }
-        tokenPrim(showToken)(nextpos)(test)
-    }
+        (test: t => Maybe[a])(implicit i: Stream[s, WeakIdentity.apply, t]): Parsec[a] = token(showToken)(tokpos)(test)
 }
