@@ -21,7 +21,7 @@ trait Monad[m[+_]] extends Applicative[m] {
     //
     def `return`[a](x: Lazy[a]): m[a]
     def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b]
-    def op_>>[b](x: m[_])(y: Lazy[m[b]]): m[b] = { lazy val _y = y; x >>= (_ => _y) }
+    def op_>>[b](x: m[_])(y: Lazy[m[b]]): m[b] = x >>= (_ => y)
 
     // Overrides
     //

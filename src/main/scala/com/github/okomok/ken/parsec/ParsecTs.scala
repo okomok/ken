@@ -49,7 +49,7 @@ private[parsec] trait _ParsecTs[s, u, n[+_]] extends
 
     // Instances
     //
-    private[ken] trait ParsecT_0 { this: ParsecT.type =>
+    private[parsec] trait ParsecT_0 { this: ParsecT.type =>
         implicit val _asMonadPlus: MonadPlus[ParsecT] = this
 
         implicit val _asMonadTrans: MonadTrans[n, ParsecT] = new MonadTrans[n, ParsecT] {
@@ -66,7 +66,7 @@ private[parsec] trait _ParsecTs[s, u, n[+_]] extends
         }
     }
 
-    private[ken] trait ParsecT_1 extends ParsecT_0 { this: ParsecT.type =>
+    private[parsec] trait ParsecT_1 extends ParsecT_0 { this: ParsecT.type =>
         implicit def _asMonadIO(implicit i: MonadIO[n]): MonadIO[ParsecT] = new MonadIO[ParsecT] with MonadProxy[ParsecT] {
             private[this] type m[+a] = ParsecT[a]
             override def selfMonad = _asMonadPlus
@@ -74,7 +74,7 @@ private[parsec] trait _ParsecTs[s, u, n[+_]] extends
         }
     }
 
-    private[ken] trait ParsecT_2 extends ParsecT_1 { this: ParsecT.type =>
+    private[parsec] trait ParsecT_2 extends ParsecT_1 { this: ParsecT.type =>
         implicit def _asMonadReader[r](implicit i: MonadReader[r, n]): MonadReader[r, ParsecT] = new MonadReader[r, ParsecT] with MonadProxy[ParsecT] {
             private[this] type m[+a] = ParsecT[a]
             override def selfMonad = _asMonadPlus
@@ -83,7 +83,7 @@ private[parsec] trait _ParsecTs[s, u, n[+_]] extends
         }
     }
 
-    private[ken] trait ParsecT_3 extends ParsecT_2 { this: ParsecT.type =>
+    private[parsec] trait ParsecT_3 extends ParsecT_2 { this: ParsecT.type =>
         implicit def _asMonadState[s_](implicit i: MonadState[s_, n]): MonadState[s_, ParsecT] = new MonadState[s_, ParsecT] with MonadProxy[ParsecT] {
             private[this] type m[+a] = ParsecT[a]
             override def selfMonad = _asMonadPlus
@@ -92,7 +92,7 @@ private[parsec] trait _ParsecTs[s, u, n[+_]] extends
         }
     }
 
-    private[ken] trait ParsecT_4 extends ParsecT_3 { this: ParsecT.type =>
+    private[parsec] trait ParsecT_4 extends ParsecT_3 { this: ParsecT.type =>
         implicit def _asMonadCont(implicit i: MonadCont[n]): MonadCont[ParsecT] = new MonadCont[ParsecT] with MonadProxy[ParsecT] {
             private[this] type m[+a] = ParsecT[a]
             override def selfMonad = _asMonadPlus
@@ -105,7 +105,7 @@ private[parsec] trait _ParsecTs[s, u, n[+_]] extends
         }
     }
 
-    private[ken] trait ParsecT_ extends ParsecT_4 { this: ParsecT.type =>
+    private[parsec] trait ParsecT_ extends ParsecT_4 { this: ParsecT.type =>
         implicit def _asMonadError[e](implicit i: MonadError[e, n]): MonadError[e, ParsecT] = new MonadError[e, ParsecT] with MonadProxy[ParsecT] {
             private[this] type m[+a] = ParsecT[a]
             override def selfMonad = _asMonadPlus

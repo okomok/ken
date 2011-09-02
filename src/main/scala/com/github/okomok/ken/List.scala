@@ -544,7 +544,7 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
     }
 
     def unzip[a, b](xs: List[(a, b)]): (List[a], List[b]) = {
-        foldr[(a, b), (List[a], List[b])](ab => abs => { lazy val _abs = abs; (ab._1 :: _abs._1, ab._2 :: _abs._2) })((Nil, Nil))(xs)
+        foldr[(a, b), (List[a], List[b])](ab => abs => (ab._1 :: abs._1, ab._2 :: abs._2))((Nil, Nil))(xs)
     }
 
     // Functions on strings
