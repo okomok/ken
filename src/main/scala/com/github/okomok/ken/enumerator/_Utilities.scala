@@ -12,7 +12,7 @@ package ken
 package enumerator
 
 
-private[ken] trait _Utilities[n[+_]] { this: _Enumerators[n] =>
+private[enumerator] trait _Utilities[n[+_]] { this: _Enumerators[n] =>
     // Unsorted Utilities
     //
     def enumEOF[a, b]: Enumerator[a, b] = {

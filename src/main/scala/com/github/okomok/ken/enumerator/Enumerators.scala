@@ -9,13 +9,10 @@ package ken
 package enumerator
 
 
-import enumerator._
-
-
 final class Enumerators[n <: Kind.Function1](override implicit val inner: Monad[n#apply]) extends EnumeratorsBase[n]
 
 trait EnumeratorsBase[n <: Kind.Function1] extends _Enumerators[n#apply]
 
 
-private[ken] trait _Enumerators[n[+_]] extends MonadTs[n]
+private[enumerator] trait _Enumerators[n[+_]] extends MonadTs[n]
     with _Primitives[n] with _ListAnalogues[n] with _Types[n] with _Utilities[n]

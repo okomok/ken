@@ -12,7 +12,7 @@ package ken
 package enumerator
 
 
-private[ken] trait _Types[n[+_]] { this: _Enumerators[n] =>
+private[enumerator] trait _Types[n[+_]] { this: _Enumerators[n] =>
 
     // Step
     //
@@ -23,7 +23,7 @@ private[ken] trait _Types[n[+_]] { this: _Enumerators[n] =>
 
     // Iteratee
     //
-    final case class Iteratee[-a, +b](override val get: n[Step[a, b]]) extends NewtypeOf[n[Step[a, b]]] with Kind.constThis {
+    final case class Iteratee[-a, +b](override val get: n[Step[a, b]]) extends NewtypeOf[n[Step[a, b]]] {
         def >>==[a_, b_](f: Step[a, b] => Iteratee[a_, b_]): Iteratee[a_, b_] = op_>>==(this)(f)
     }
 
@@ -34,7 +34,7 @@ private[ken] trait _Types[n[+_]] { this: _Enumerators[n] =>
             override type innerMonad[+a] = n[a]
         }
 
-        implicit def dependent[a, b](n: NewtypeOf[n[Step[a, b]]]): Iteratee[a, b] = Iteratee { n.run }
+        //implicit def dependent[a, b](n: NewtypeOf[n[Step[a, b]]]): Iteratee[a, b] = Iteratee { n.run }
 
         def run[a, b](n: Iteratee[a, b]): n[Step[a, b]] = n.run
 
