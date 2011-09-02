@@ -47,7 +47,6 @@ private[parsec] trait _Prim[s, u, n[+_]] { this: _ParsecTs[s, u, n] =>
 
     def mkPT[a](k: State[s, u] => n[Consumed_[n[Reply[s, u, a]]]]): ParsecT[a] = ParsecT { new UnParser[s, u, n, a] {
         override def apply[b](v: UnParserParam[s, u, n, a, b]): n[b] = {
-            import inner.`for`
             for {
                 cons <- k(v.state)
                 * <- cons match {
@@ -154,7 +153,6 @@ private[parsec] trait _Prim[s, u, n[+_]] { this: _ParsecTs[s, u, n] =>
                         v.cok(tts)(s_)(newErrorUnknown(pos_))
                     }
 
-                    import inner.`for`
                     import j.===
 
                     def walk(ts: List[t])(rs: s): n[b] = (ts, rs) match {
@@ -209,8 +207,6 @@ private[parsec] trait _Prim[s, u, n[+_]] { this: _ParsecTs[s, u, n] =>
         (test: t => Maybe[a])
         (implicit i: Stream[s, n, t]): ParsecT[a] =
     {
-        import inner.`for`
-
         nextstate match {
             case Nothing => ParsecT { new UnParser[s, u, n, a] {
                 override def apply[b](v: UnParserParam[s, u, n, a, b]): n[b] = v.state match {
@@ -281,7 +277,7 @@ private[parsec] trait _Prim[s, u, n[+_]] { this: _ParsecTs[s, u, n] =>
             case Empty(r) => r
         }
 
-        import inner._
+        import inner.`return`
         for {
             res <- runParsecT(p)(State(s, initialPos(name), u))
             r <- parserReply(res)

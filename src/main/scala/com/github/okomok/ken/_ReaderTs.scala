@@ -14,8 +14,7 @@ package com.github.okomok
 package ken
 
 
-private[ken] final class _ReaderTs[n[+_]](val inner: Monad[n]) {
-    private[this] implicit def innerFor[a](x: n[a]): inner.For[a] = inner.`for`(x)
+private[ken] final class _ReaderTs[n[+_]](override val inner: Monad[n]) extends MonadTs[n] {
 
     final case class _ReaderT[r, +a](override val get: r => n[a]) extends NewtypeOf[r => n[a]]
 

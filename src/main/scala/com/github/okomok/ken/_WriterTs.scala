@@ -14,8 +14,7 @@ package com.github.okomok
 package ken
 
 
-private[ken] final class _WriterTs[n[+_]](val inner: Monad[n]) {
-    private[this] implicit def innerFor[a](x: n[a]): inner.For[a] = inner.`for`(x)
+private[ken] final class _WriterTs[n[+_]](override val inner: Monad[n]) extends MonadTs[n] {
 
     final case class _WriterT[w, +a](override val get: n[(a, w)]) extends NewtypeOf[n[(a, w)]]
 

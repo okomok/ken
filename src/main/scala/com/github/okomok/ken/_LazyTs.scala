@@ -8,8 +8,7 @@ package com.github.okomok
 package ken
 
 
-private[ken] final class _LazyTs[n[+_]](val inner: Monad[n]) {
-    private[this] implicit def innerFor[a](x: n[a]): inner.For[a] = inner.`for`(x)
+private[ken] final class _LazyTs[n[+_]](override val inner: Monad[n]) extends MonadTs[n] {
 
     final case class _LazyT[+a](override val get: n[Lazy[a]]) extends NewtypeOf[n[Lazy[a]]]
 

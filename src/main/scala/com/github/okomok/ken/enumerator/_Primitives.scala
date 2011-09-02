@@ -16,7 +16,6 @@ private[ken] trait _Primitives[n[+_]] { this: _Enumerators[n] =>
     // Iteratee Operators
     //
     def op_>>==[a, b, a_, b_](i: Iteratee[a, b])(f: Step[a, b] => Iteratee[a_, b_]): Iteratee[a_, b_] = {
-        import inner.>>=
         Iteratee { runIteratee(i) >>= (runIteratee[a_, b_]_ compose f) }
     }
 
@@ -54,7 +53,7 @@ private[ken] trait _Primitives[n[+_]] { this: _Enumerators[n] =>
     // Primitives
     //
     def run[a, b](i: Iteratee[a, b]): n[Either[Throwable, b]] = {
-        import inner.{`for`, `return`}
+        import inner.`return`
         for {
             mStep <- runIteratee { enumEOF[a, b] ==<< i }
             * <- mStep match {
@@ -66,7 +65,6 @@ private[ken] trait _Primitives[n[+_]] { this: _Enumerators[n] =>
     }
 
     def run_[b](i: Iteratee[_, b]): n[b] = {
-        import inner.>>=
         run(i) >>= Either.either((x: Throwable) => throw x)(inner.`return`[b])
     }
 

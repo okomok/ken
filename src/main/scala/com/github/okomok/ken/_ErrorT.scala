@@ -14,8 +14,7 @@ package com.github.okomok
 package ken
 
 
-private[ken] final class _ErrorTs[n[+_]](val inner: Monad[n]) {
-    private[this] implicit def innerFor[a](x: n[a]): inner.For[a] = inner.`for`(x)
+private[ken] final class _ErrorTs[n[+_]](override val inner: Monad[n]) extends MonadTs[n] {
 
     final case class _ErrorT[e, +a](override val get: n[Either[e, a]]) extends NewtypeOf[n[Either[e, a]]]
 

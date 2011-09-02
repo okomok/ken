@@ -17,11 +17,9 @@ final class ParsecTs[s, u, n <: Kind.Function1](override implicit val inner: Mon
 trait ParsecTsBase[s, u, n <: Kind.Function1] extends _ParsecTs[s, u, n#apply]
 
 
-private[parsec] trait _ParsecTs[s, u, n[+_]] extends
-    _Prim[s, u, n] with _Combinators[s, u, n] with _Char[s, u, n]
+private[parsec] trait _ParsecTs[s, u, n[+_]] extends MonadTs[n]
+    with _Prim[s, u, n] with _Combinators[s, u, n] with _Char[s, u, n]
 {
-    val inner: Monad[n]
-
     // ParsecT
     //
     final case class ParsecT[+a](override val get: UnParser[s, u, n, a]) extends NewtypeOf[UnParser[s, u, n, a]] {
@@ -56,7 +54,6 @@ private[parsec] trait _ParsecTs[s, u, n[+_]] extends
             private[this] type m[+a] = ParsecT[a]
             override def lift[a](amb: n[a]): m[a] = ParsecT { new UnParser[s, u, n, a] {
                 override def apply[b](v: UnParserParam[s, u, n, a, b]): n[b] = {
-                    import inner.`for`
                     for {
                         a <- amb
                         * <- v.eok(a)(v.state) { unknownError(v.state) }

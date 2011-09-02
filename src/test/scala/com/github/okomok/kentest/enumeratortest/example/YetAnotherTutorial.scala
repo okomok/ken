@@ -8,11 +8,12 @@ package com.github.okomok.kentest.enumeratortest.example
 
 
 import com.github.okomok.ken._
+import enumerator._
 
 
 class YetAnotherTutorialTest extends org.scalatest.junit.JUnit3Suite {
 
-    final class My[m <: Kind.Function1](override implicit val inner: Monad[m#apply]) extends EnumeratorsOf[m] {
+    final class My[m <: Kind.Function1](override implicit val inner: Monad[m#apply]) extends EnumeratorsBase[m] {
         val im = Monad[Iteratee.apply[Int]]
 
         def sum6: Iteratee[Int, Int] = {
@@ -30,7 +31,6 @@ class YetAnotherTutorialTest extends org.scalatest.junit.JUnit3Suite {
         }
 
         def sum8: Iteratee[Int, Int] = Iteratee {
-            import inner.`for`
             for {
                 step <- runIteratee(sum6)
                 * <- step match {
