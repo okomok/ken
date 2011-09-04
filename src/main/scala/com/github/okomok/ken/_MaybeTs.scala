@@ -48,7 +48,10 @@ private[ken] final class _MaybeTs[n[+_]](override val inner: Monad[n]) extends M
                 val runx = run(x)
                 runx >>= {
                     case Nothing => run(y)
-                    case Just(_) => runx
+                    case j @ Just(_) => {
+                        if (runx.isInstanceOf[IO[_]]) inner.`return`(j)
+                        else runx
+                    }
                 }
             }
         }

@@ -7,8 +7,7 @@
 package com.github.okomok.kentest.example
 
 
-class MonadTransformerTezt // extends org.scalatest.junit.JUnit3Suite {
-{
+class MonadTransformerTezt { // extends org.scalatest.junit.JUnit3Suite {
 
     // From: http://en.wikibooks.org/wiki/Haskell/Monad_transformers
 
@@ -45,7 +44,7 @@ class MonadTransformerTezt // extends org.scalatest.junit.JUnit3Suite {
     }
 
     // Weakly-typed monad; Power of Scala (any pitfall?)
-    def teztWeakMonadT {
+    def testWeakMonadT {
         import IO.MaybeT
 
         val wm = MonadPlus.weak[MaybeT.type]
