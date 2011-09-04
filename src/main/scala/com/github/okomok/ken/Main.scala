@@ -9,9 +9,9 @@ package ken
 
 
 trait Main {
-    def main_ : IO[Unit]
+    def main_ : IO[Any]
 
-    protected def getArgs: IO[List[String]] = IO { _args }
+    protected def getArgs: IO[List[String]] = IO.unsafeIO(_args)
 
     private[this] var _args: List[String] = null
 

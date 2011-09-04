@@ -1,6 +1,12 @@
 
 
 // Copyright Shunsuke Sogame 2011.
+//
+// Copyright 2004, The University Court of the University of Glasgow.
+// All rights reserved.
+//
+// Copyright (c) 2002 Simon Peyton Jones
+//
 // Distributed under the New BSD license.
 
 
@@ -8,49 +14,68 @@ package com.github.okomok
 package ken
 
 
-trait IO[+a] {
-    def unIO(): a
-}
-
-
-trait IOProxy[+a] extends IO[a] {
-    def selfIO: IO[a]
-
-    override def unIO(): a = selfIO.unIO()
+// type IO[+a] = RealWorld.ST[a]
+final case class IO[+a](override val get: RealWorld.type => (a, RealWorld.type)) extends
+    NewtypeOf[RealWorld.type => (a, RealWorld.type)]
+{
+    final def ! : a = get(RealWorld)._1
+    final def unIO(): a = this.!
 }
 
 
 object IO extends MonadIO[IO] with ThisIsInstance {
-    def apply[a](x: => a): IO[a] = new IO[a] {
-        override def unIO = x
-    }
-
     // Overrides
     //
     private type m[+a] = IO[a]
     // Monad
-    override def `return`[a](x: Lazy[a]): m[a] = IO { x }
-    override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = IO {
-        // Probably broken patchwork...
-        val e = x.unIO()
-        val io = y(e)
-        if (io ne x) {
-            io.unIO()
-        } else {
-            e.asInstanceOf[b]
-        }
-        // y(x.unIO()).unIO()
-    }
+    override def `return`[a](x: Lazy[a]): m[a] = returnIO(x)
+    override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = bindIO(m)(k)
     // MonadIO
     def liftIO[a](io: IO[a]): m[a] = io
 
+    private def returnIO[a](x: Lazy[a]): IO[a] = IO { s => (x, s) }
+
+    private def bindIO[a, b](m: IO[a])(k: a => IO[b]): IO[b] = IO { s =>
+        unIO(m)(s) match {
+            case (a, new_s) => unIO(k(a))(new_s)
+        }
+    }
+
+    // UnsafeIO operations
+    //
+    def unsafeIO[a](x: => a): IO[a] = IO { s => (x, s) }
+
+    def unIO[a](io: IO[a]): RealWorld.type => (a, RealWorld.type) = io.get
+
+    def unsafePerformIO[a](io: IO[a]): a = unsafeDupablePerformIO(noDuplicate(io))
+
+    def unsafeDupablePerformIO[a](io: IO[a]): a = unIO(io)(RealWorld) match {
+        case (r, _) => r
+    }
+
+    def noDuplicate[a](io: IO[a]): IO[a] = IO { s =>
+        s.synchronized {
+            unIO(io)(s)
+        }
+    }
+
+    // Coercions between IO and ST
+    //
+    def stToIO[a](st: RealWorld.ST[a]): IO[a] = st match {
+        case RealWorld.ST(m) => IO(m)
+    }
+
+    def ioToST[a](io: IO[a]): RealWorld.ST[a] = io match {
+        case IO(m) => RealWorld.ST(m)
+    }
+
     // Output functions
     //
-    val putChar: Char => IO[Unit] = c => IO {
+    val putChar: Char => IO[Unit] = c => unsafeIO {
         Predef.print(c)
     }
 
-    val putStr: String_ => IO[Unit] = s => IO {
+    val putStr: String_ => IO[Unit] = s => unsafeIO {
         s.foreach(Predef.print)
     }
 
@@ -62,11 +87,11 @@ object IO extends MonadIO[IO] with ThisIsInstance {
 
     // Input functions
     //
-    val getChar: IO[Char] = IO {
+    val getChar: IO[Char] = unsafeIO {
         Predef.readChar()
     }
 
-    val getLine: IO[String_] = IO {
+    val getLine: IO[String_] = unsafeIO {
         val str = Predef.readLine()
         if (str == null) {
             throw new java.io.EOFException("getLine")
@@ -76,7 +101,7 @@ object IO extends MonadIO[IO] with ThisIsInstance {
     }
 
     val getContents: IO[String_] = {
-        for { s <- getLine } yield (s ++: getContents.unIO)
+        for { s <- getLine } yield (s ++: getContents.!)
     }
 
     val interact: (String_ => String_) => IO[Unit] = f => {
@@ -87,11 +112,11 @@ object IO extends MonadIO[IO] with ThisIsInstance {
     //
     type FilePath = String
 
-    val readFile: FilePath => IO[String_] = f => IO {
+    val readFile: FilePath => IO[String_] = f => unsafeIO {
         scala.io.Source.fromFile(f)
     }
 
-    val writeFile: FilePath => String_ => IO[Unit] = f => txt => IO {
+    val writeFile: FilePath => String_ => IO[Unit] = f => txt => unsafeIO {
         val fw = new java.io.FileWriter(f)
         try {
             fw.write(List.stringize(txt))
@@ -100,7 +125,7 @@ object IO extends MonadIO[IO] with ThisIsInstance {
         }
     }
 
-    val appendFile: FilePath => String_ => IO[Unit] = f => txt => IO {
+    val appendFile: FilePath => String_ => IO[Unit] = f => txt => unsafeIO {
         val fw = new java.io.FileWriter(f, True)
         try {
             fw.write(List.stringize(txt))
@@ -111,15 +136,15 @@ object IO extends MonadIO[IO] with ThisIsInstance {
 
     // Exception handling in the I/O asMonad
     //
-    val ioError: IOError => IO[Nothing] = err => IO { throw err }
+    val ioError: IOError => IO[Nothing] = err => unsafeIO { throw err }
 
     val userError: String_ => IOError = s => new java.io.IOException(s.toString)
 
-    def `catch`[a](io: IO[a])(h: IOError => IO[a]): IO[a] = IO {
+    def `catch`[a](io: IO[a])(h: IOError => IO[a]): IO[a] = unsafeIO {
         try {
-            io.unIO()
+            io.!
         } catch {
-            case err: IOError => h(err).unIO()
+            case err: IOError => h(err).!
         }
     }
 }
