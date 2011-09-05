@@ -8,6 +8,9 @@ package com.github.okomok
 package ken
 
 
+// This is ErrorT, doh!
+
+
 private[ken] final class _MaybeTs[n[+_]](override val inner: Monad[n]) extends MonadTs[n] {
 
     final case class _MaybeT[+a](override val get: n[Maybe[a]]) extends NewtypeOf[n[Maybe[a]]]
