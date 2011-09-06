@@ -9,7 +9,7 @@ package ken
 
 
 // Up is workaround: https://issues.scala-lang.org/browse/SI-4225
-trait NewtypeOf[+a] extends Up[NewtypeOf[a]] {
+trait Strong[+a] extends Up[Strong[a]] {
     def get: a
 
     final def run: a = get
@@ -19,15 +19,15 @@ trait NewtypeOf[+a] extends Up[NewtypeOf[a]] {
 }
 
 
-trait NewtypeOfProxy[+a] extends NewtypeOf[a] {
-    def selfNewtypeOf: NewtypeOf[a]
+trait StrongProxy[+a] extends Strong[a] {
+    def selfStrong: Strong[a]
 
-    override def get: a = selfNewtypeOf.run
+    override def get: a = selfStrong.run
 }
 
 
-object NewtypeOf {
-    def apply[a](a: a): NewtypeOf[a] = new NewtypeOf[a] {
+object Strong {
+    def apply[a](a: a): Strong[a] = new Strong[a] {
         override def get: a = a
     }
 }

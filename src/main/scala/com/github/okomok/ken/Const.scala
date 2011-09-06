@@ -14,7 +14,7 @@ package com.github.okomok
 package ken
 
 
-final case class Const[a, +b](override val get: a) extends NewtypeOf[a]
+final case class Const[a, +b](override val get: a) extends Strong[a]
 
 
 object Const extends Kind.FunctionLike {

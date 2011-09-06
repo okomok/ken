@@ -14,7 +14,7 @@ package com.github.okomok
 package ken
 
 
-final case class ZipList[+a](override val get: List[a]) extends NewtypeOf[List[a]]
+final case class ZipList[+a](override val get: List[a]) extends Strong[List[a]]
 
 
 object ZipList extends Newtype1[ZipList, List] with Applicative[ZipList] with ThisIsInstance {

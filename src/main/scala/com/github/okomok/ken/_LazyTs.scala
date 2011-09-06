@@ -10,18 +10,18 @@ package ken
 
 private[ken] final class _LazyTs[n[+_]](override val inner: Monad[n]) extends MonadTs[n] {
 
-    final case class _LazyT[+a](override val get: n[Lazy[a]]) extends NewtypeOf[n[Lazy[a]]]
+    final case class _LazyT[+a](override val get: n[Lazy[a]]) extends Strong[n[Lazy[a]]]
 
     object _LazyT extends _LazyT_ with Kind.AbstractMonadTrans {
         override type apply1[+a] = _LazyT[a]
         override type oldtype1[+a] = n[Lazy[a]]
         override type innerMonad[+a] = n[a]
 
-        implicit def dependent[a](n: NewtypeOf[n[Lazy[a]]]): _LazyT[a] = _LazyT { n.run }
+        implicit def dependent[a](n: Strong[n[Lazy[a]]]): _LazyT[a] = _LazyT { n.run }
 
         def run[a](n: _LazyT[a]): n[Lazy[a]] = n.run
 
-        def map[m[+_], a, b](f: n[Lazy[a]] => m[Lazy[b]])(n: _LazyT[a]): NewtypeOf[m[Lazy[b]]] = NewtypeOf { f(run(n)) }
+        def map[m[+_], a, b](f: n[Lazy[a]] => m[Lazy[b]])(n: _LazyT[a]): Strong[m[Lazy[b]]] = Strong { f(run(n)) }
     }
 
     private[ken] trait _LazyT_0 { this: _LazyT.type =>

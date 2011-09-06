@@ -35,7 +35,7 @@ trait Traversable[t[+_]] extends Functor[t] with Foldable[t] { outer =>
     // Extra
     //
     def tfor[f[+_], a, b](t: t[a])(f: a => f[b])(implicit i: Applicative[f]): f[t[b]] = traverse(f)(t)
-    def forM[m[+_], a, b](t: t[a])(f: a => m[b])(implicit i: Monad[m]): m[t[b]] = mapM(f)(t)
+    def tforM[m[+_], a, b](t: t[a])(f: a => m[b])(implicit i: Monad[m]): m[t[b]] = mapM(f)(t)
 
     def mapAccumL[a, b, c](f: a => b => (a, c))(s: a)(t: t[b]): (a, t[c]) = {
         //implicit val j = Applicative[StateL.apply[a]]
@@ -66,7 +66,7 @@ trait Traversable[t[+_]] extends Functor[t] with Foldable[t] { outer =>
         final def mapM[a, b](f: a => m[b])(t: t[a])(implicit i: Monad[m]): m[t[b]] = outer.mapM(f)(t)(i)
         final def sequence[a](t: t[m[a]])(implicit i: Monad[m]): m[t[a]] = outer.sequence(t)(i)
         final def tfor[a, b](t: t[a])(f: a => f[b])(implicit i: Applicative[f]): f[t[b]] = outer.tfor(t)(f)(i)
-        final def forM[a, b](t: t[a])(f: a => m[b])(implicit i: Monad[m]): m[t[b]] = outer.forM(t)(f)
+        final def tforM[a, b](t: t[a])(f: a => m[b])(implicit i: Monad[m]): m[t[b]] = outer.tforM(t)(f)
     }
     override def pull[f_ <: Kind.Function1]: TraversablePull[f_] = new TraversablePull[f_] {}
 }
@@ -83,7 +83,7 @@ trait TraversableProxy[t[+_]] extends Traversable[t] with FunctorProxy[t] with F
     override def sequence[m[+_], a](t: t[m[a]])(implicit i: Monad[m]): m[t[a]] = selfTraversable.sequence(t)(i)
 
     override def tfor[f[+_], a, b](t: t[a])(f: a => f[b])(implicit i: Applicative[f]): f[t[b]] = selfTraversable.tfor(t)(f)(i)
-    override def forM[m[+_], a, b](t: t[a])(f: a => m[b])(implicit i: Monad[m]): m[t[b]] = selfTraversable.forM(t)(f)(i)
+    override def tforM[m[+_], a, b](t: t[a])(f: a => m[b])(implicit i: Monad[m]): m[t[b]] = selfTraversable.tforM(t)(f)(i)
     override def mapAccumL[a, b, c](f: a => b => (a, c))(s: a)(t: t[b]): (a, t[c]) = selfTraversable.mapAccumL(f)(s)(t)
     override def mapAccumR[a, b, c](f: Lazy[a] => b => (a, c))(s: a)(t: t[b]): (a, t[c]) = selfTraversable.mapAccumR(f)(s)(t)
     override def fmapDefault[a, b](f: a => b)(t: t[a]): t[b] = selfTraversable.fmapDefault(f)(t)
@@ -98,7 +98,7 @@ object Traversable {
 
 // StateL
 //
-private[ken] final case class StateL[s, +a](override val get: s => (s, a)) extends NewtypeOf[s => (s, a)]
+private[ken] final case class StateL[s, +a](override val get: s => (s, a)) extends Strong[s => (s, a)]
 
 private[ken] object StateL extends Kind.FunctionLike {
     sealed trait apply[s] extends Kind.AbstractNewtype1 {
@@ -126,7 +126,7 @@ private[ken] object StateL extends Kind.FunctionLike {
 
 // StateR
 //
-private[ken] final case class StateR[s, +a](override val get: Lazy[s] => (s, a)) extends NewtypeOf[Lazy[s] => (s, a)]
+private[ken] final case class StateR[s, +a](override val get: Lazy[s] => (s, a)) extends Strong[Lazy[s] => (s, a)]
 
 private[ken] object StateR extends Kind.FunctionLike {
     sealed trait apply[s] extends Kind.AbstractNewtype1 {

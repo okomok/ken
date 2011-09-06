@@ -69,7 +69,7 @@ object Monoid extends MonoidInstance {
 
     // Dual
     //
-    final case class Dual[+a](override val get: a) extends NewtypeOf[a]
+    final case class Dual[+a](override val get: a) extends Strong[a]
 
     object Dual {
         implicit def _asNewtype0[a]: Newtype0[Dual[a], a] = new Newtype0[Dual[a], a] {
@@ -85,7 +85,7 @@ object Monoid extends MonoidInstance {
 
     // All
     //
-    final case class All(override val get: Bool) extends NewtypeOf[Bool]
+    final case class All(override val get: Bool) extends Strong[Bool]
 
     object All extends Newtype0[All, Bool] with ThisIsInstance {
         // Overrides
@@ -102,7 +102,7 @@ object Monoid extends MonoidInstance {
 
     // Any_
     //
-    final case class Any_(override val get: Bool) extends NewtypeOf[Bool]
+    final case class Any_(override val get: Bool) extends Strong[Bool]
 
     object Any_  extends Newtype0[Any_, Bool] with ThisIsInstance {
         // Overrrides
@@ -119,7 +119,7 @@ object Monoid extends MonoidInstance {
 
     // Sum
     //
-    final case class Sum[a](override val get: a) extends NewtypeOf[a] with Kind.AbstractNewtype0 {
+    final case class Sum[a](override val get: a) extends Strong[a] with Kind.AbstractNewtype0 {
         override type oldtype0 = a
     }
 
@@ -138,7 +138,7 @@ object Monoid extends MonoidInstance {
 
     // Product
     //
-    final case class Product[a](override val get: a) extends NewtypeOf[a] with Kind.AbstractNewtype0 {
+    final case class Product[a](override val get: a) extends Strong[a] with Kind.AbstractNewtype0 {
         override type oldtype0 = a
     }
 

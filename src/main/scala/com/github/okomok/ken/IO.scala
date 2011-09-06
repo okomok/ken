@@ -16,7 +16,7 @@ package ken
 
 // type IO[+a] = RealWorld.ST[a]
 final case class IO[+a](override val get: RealWorld.type => (a, RealWorld.type)) extends
-    NewtypeOf[RealWorld.type => (a, RealWorld.type)]
+    Strong[RealWorld.type => (a, RealWorld.type)]
 {
     final def ! : a = get(RealWorld)._1
     final def unIO(): a = this.!

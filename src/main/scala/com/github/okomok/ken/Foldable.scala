@@ -46,7 +46,7 @@ trait Foldable[t[+_]] extends Typeclass1[t] { outer =>
 
     // Extra
     //
-    def foldr_[a, b](f: a => b => b)(z0: b)(xs: t[a]): b = {
+    def `foldr'`[a, b](f: a => b => b)(z0: b)(xs: t[a]): b = {
         def f_(k: b => b)(x: a)(z: b): b = k { f(x)(z) }
         foldl[b => b, a](f_)(id)(xs)(z0)
     }
@@ -61,28 +61,28 @@ trait Foldable[t[+_]] extends Typeclass1[t] { outer =>
     def foldlM[m[+_], a, b](f: a => b => m[a])(z0: a)(xs: t[b])(implicit i: Monad[m]): m[a] = {
         import i.>>=
         def f_(x: b)(k: a => m[a])(z: a): m[a] = f(z)(x) >>= k
-        foldr_(f_)(i.`return`[a])(xs)(z0)
+        `foldr'`(f_)(i.`return`[a])(xs)(z0)
     }
 
     // *> is equivalent to >> ?
 
     def traverse_[f[+_], a, b](f: a => f[b])(xs: t[a])(implicit i: Applicative[f]): f[Unit] = {
-        foldr_(i.op_*>[b, Unit]_ compose f)(i.pure())(xs)
+        `foldr'`(i.op_*>[b, Unit]_ compose f)(i.pure())(xs)
     }
 
     def for_[f[+_], a, b](xs: t[a])(f: a => f[b])(implicit i: Applicative[f]): f[Unit] = traverse_(f)(xs)
 
-    def mapM_[m[+_], a, b](f: a => m[b])(xs: t[a])(implicit i: Monad[m]): m[Unit] = {
+    def mapM__[m[+_], a, b](f: a => m[b])(xs: t[a])(implicit i: Monad[m]): m[Unit] = {
         foldr(i.op_>>[Unit]_ compose f)(i.`return`())(xs)
     }
 
-    def forM_[m[+_], a, b](xs: t[a])(f: a => m[b])(implicit i: Monad[m]): m[Unit] = mapM_(f)(xs)
+    def forM__[m[+_], a, b](xs: t[a])(f: a => m[b])(implicit i: Monad[m]): m[Unit] = mapM__(f)(xs)
 
     def sequenceA_[f[+_], a](xs: t[f[a]])(implicit i: Applicative[f]): f[Unit] = {
-        foldr_(i.op_*>[a, Unit])(i.pure())(xs)
+        `foldr'`(i.op_*>[a, Unit])(i.pure())(xs)
     }
 
-    def sequence_[m[+_], a](xs: t[m[a]])(implicit i: Monad[m]): m[Unit] = {
+    def sequence__[m[+_], a](xs: t[m[a]])(implicit i: Monad[m]): m[Unit] = {
         foldr(i.op_>>[Unit])(i.`return`())(xs)
     }
 
@@ -144,10 +144,10 @@ trait Foldable[t[+_]] extends Typeclass1[t] { outer =>
         final def foldlM[a, b](f: a => b => m[a])(z0: a)(xs: t[b])(implicit i: Monad[m]): m[a] = outer.foldlM(f)(z0)(xs)
         final def traverse_[a, b](f: a => f[b])(xs: t[a])(implicit i: Applicative[f]): f[Unit] = outer.traverse_(f)(xs)(i)
         final def for_[a, b](xs: t[a])(f: a => f[b])(implicit i: Applicative[f]): f[Unit] = outer.for_(xs)(f)(i)
-        final def mapM_[a, b](f: a => m[b])(xs: t[a])(implicit i: Monad[m]): m[Unit] = outer.mapM_(f)(xs)(i)
-        final def forM_[a, b](xs: t[a])(f: a => m[b])(implicit i: Monad[m]): m[Unit] = outer.forM_(xs)(f)(i)
+        final def mapM__[a, b](f: a => m[b])(xs: t[a])(implicit i: Monad[m]): m[Unit] = outer.mapM__(f)(xs)(i)
+        final def forM__[a, b](xs: t[a])(f: a => m[b])(implicit i: Monad[m]): m[Unit] = outer.forM__(xs)(f)(i)
         final def sequenceA_[a](xs: t[f[a]])(implicit i: Applicative[f]): f[Unit] = outer.sequenceA_(xs)(i)
-        final def sequence_[a](xs: t[m[a]])(implicit i: Monad[m]): m[Unit] = outer.sequence_(xs)(i)
+        final def sequence__[a](xs: t[m[a]])(implicit i: Monad[m]): m[Unit] = outer.sequence__(xs)(i)
         final def asum[a](xs: t[f[a]])(implicit i: Alternative[f]): f[a] = outer.asum(xs)(i)
         final def msum[a](xs: t[m[a]])(implicit i: MonadPlus[m]): m[a] = outer.msum(xs)(i)
     }
@@ -165,15 +165,15 @@ trait FoldableProxy[t[+_]] extends Foldable[t] {
     override def foldr1[a](f: a => Lazy[a] => a)(xs: t[a]): a = selfFoldable.foldr1(f)(xs)
     override def foldl1[a](f: a => a => a)(xs: t[a]):a = selfFoldable.foldl1(f)(xs)
 
-    override def foldr_[a, b](f: a => b => b)(z0: b)(xs: t[a]): b = selfFoldable.foldr_(f)(z0)(xs)
+    override def `foldr'`[a, b](f: a => b => b)(z0: b)(xs: t[a]): b = selfFoldable.`foldr'`(f)(z0)(xs)
     override def foldrM[m[+_], a, b](f: a => Lazy[b] => m[b])(z0: b)(xs: t[a])(implicit i: Monad[m]): m[b] = selfFoldable.foldrM(f)(z0)(xs)(i)
     override def foldlM[m[+_], a, b](f: a => b => m[a])(z0: a)(xs: t[b])(implicit i: Monad[m]): m[a] = selfFoldable.foldlM(f)(z0)(xs)(i)
     override def traverse_[f[+_], a, b](f: a => f[b])(xs: t[a])(implicit i: Applicative[f]): f[Unit] = selfFoldable.traverse_(f)(xs)(i)
     override def for_[f[+_], a, b](xs: t[a])(f: a => f[b])(implicit i: Applicative[f]): f[Unit] = selfFoldable.for_(xs)(f)(i)
-    override def mapM_[m[+_], a, b](f: a => m[b])(xs: t[a])(implicit i: Monad[m]): m[Unit] = selfFoldable.mapM_(f)(xs)(i)
-    override def forM_[m[+_], a, b](xs: t[a])(f: a => m[b])(implicit i: Monad[m]): m[Unit] = selfFoldable.forM_(xs)(f)(i)
+    override def mapM__[m[+_], a, b](f: a => m[b])(xs: t[a])(implicit i: Monad[m]): m[Unit] = selfFoldable.mapM__(f)(xs)(i)
+    override def forM__[m[+_], a, b](xs: t[a])(f: a => m[b])(implicit i: Monad[m]): m[Unit] = selfFoldable.forM__(xs)(f)(i)
     override def sequenceA_[f[+_], a](xs: t[f[a]])(implicit i: Applicative[f]): f[Unit] = selfFoldable.sequenceA_(xs)(i)
-    override def sequence_[m[+_], a](xs: t[m[a]])(implicit i: Monad[m]): m[Unit] = selfFoldable.sequence_(xs)(i)
+    override def sequence__[m[+_], a](xs: t[m[a]])(implicit i: Monad[m]): m[Unit] = selfFoldable.sequence__(xs)(i)
     override def asum[f[+_], a](xs: t[f[a]])(implicit i: Alternative[f]): f[a] = selfFoldable.asum(xs)(i)
     override def msum[m[+_], a](xs: t[m[a]])(implicit i: MonadPlus[m]): m[a] = selfFoldable.msum(xs)(i)
     override def toList[a](xs: t[a]): List[a] = selfFoldable.toList(xs)

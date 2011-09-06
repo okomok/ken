@@ -23,7 +23,7 @@ private[enumerator] trait _Types[n[+_]] { this: _Enumerators[n] =>
 
     // Iteratee
     //
-    final case class Iteratee[-a, +b](override val get: n[Step[a, b]]) extends NewtypeOf[n[Step[a, b]]]
+    final case class Iteratee[-a, +b](override val get: n[Step[a, b]]) extends Strong[n[Step[a, b]]]
 
     object Iteratee extends Iteratee_ with Kind.FunctionLike {
         sealed trait apply[z] extends Kind.AbstractMonadTrans {
@@ -32,11 +32,11 @@ private[enumerator] trait _Types[n[+_]] { this: _Enumerators[n] =>
             override type innerMonad[+a] = n[a]
         }
 
-        //implicit def dependent[a, b](n: NewtypeOf[n[Step[a, b]]]): Iteratee[a, b] = Iteratee { n.run }
+        //implicit def dependent[a, b](n: Strong[n[Step[a, b]]]): Iteratee[a, b] = Iteratee { n.run }
 
         def run[a, b](n: Iteratee[a, b]): n[Step[a, b]] = n.run
 
-        def map[m[+_], a, a_, b, b_](f: n[Step[a, b]] => m[Step[a_, b_]])(n: Iteratee[a, b]): NewtypeOf[m[Step[a_, b_]]] = NewtypeOf { f(run(n)) }
+        def map[m[+_], a, a_, b, b_](f: n[Step[a, b]] => m[Step[a_, b_]])(n: Iteratee[a, b]): Strong[m[Step[a_, b_]]] = Strong { f(run(n)) }
     }
 
     def runIteratee[a, b](n: Iteratee[a, b]): n[Step[a, b]] = n.run
