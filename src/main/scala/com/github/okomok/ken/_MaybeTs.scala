@@ -8,15 +8,14 @@ package com.github.okomok
 package ken
 
 
-// This is ErrorT, doh!
+// MaybeT + reason == ErrorT
 
 
 private[ken] final class _MaybeTs[n[+_]](override val inner: Monad[n]) extends MonadTs[n] {
 
     final case class _MaybeT[+a](override val get: n[Maybe[a]]) extends Strong[n[Maybe[a]]]
 
-    object _MaybeT extends _MaybeT_ with Kind.AbstractMonadTrans {
-        override type apply1[+a] = _MaybeT[a]
+    object _MaybeT extends _MaybeT_ with MonadPlus[_MaybeT] with Kind.AbstractMonadTrans {
         override type oldtype1[+a] = n[Maybe[a]]
         override type innerMonad[+a] = n[a]
 
@@ -25,6 +24,32 @@ private[ken] final class _MaybeTs[n[+_]](override val inner: Monad[n]) extends M
         def run[a](n: _MaybeT[a]): n[Maybe[a]] = n.run
 
         def map[m[+_], a, b](f: n[Maybe[a]] => m[Maybe[b]])(n: _MaybeT[a]): Strong[m[Maybe[b]]] = Strong { f(run(n)) }
+
+        // Overrides
+        //
+        // Monad
+        private type m[+a] = _MaybeT[a]
+        override def `return`[a](a: Lazy[a]): m[a] = _MaybeT { inner.`return`(Just(a.!).up) }
+        override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = _MaybeT {
+            for {
+                a <- run(m)
+                * <- a match {
+                    case Nothing => inner.`return`(Nothing.of[b])
+                    case Just(r) => run(k(r))
+                }
+            } yield *
+        }
+        // MonadPlus
+        override def mzero: m[Nothing] = _MaybeT { inner.`return`(Nothing) }
+        override def mplus[a](m: m[a])(n: Lazy[m[a]]): m[a] = _MaybeT {
+            for {
+                a <- run(m)
+                * <- a match {
+                    case Nothing => run(n)
+                    case Just(r) => inner.`return`(Just(r))
+                }
+            } yield *
+        }
     }
 
     private[ken] trait _MaybeT_0 { this: _MaybeT.type =>
@@ -35,29 +60,7 @@ private[ken] final class _MaybeTs[n[+_]](override val inner: Monad[n]) extends M
             override def oldOf[a](nt: Lazy[nt[a]]): ot[a] = nt.run
         }
 
-        implicit val _asMonadPlus: MonadPlus[_MaybeT] = new MonadPlus[_MaybeT] {
-            // Monad
-            private type m[+a] = _MaybeT[a]
-            override def `return`[a](a: Lazy[a]): m[a] = _MaybeT { inner.`return`(Just(a.!).up) }
-            override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = _MaybeT {
-                run(m) >>= {
-                    case Nothing => inner.`return`(Nothing.of[b])
-                    case Just(v) => run(k(v))
-                }
-            }
-            // MonadPlus
-            override def mzero: m[Nothing] = _MaybeT { inner.`return`(Nothing) }
-            override def mplus[a](x: m[a])(y: Lazy[m[a]]): m[a] = _MaybeT {
-                val runx = run(x)
-                runx >>= {
-                    case Nothing => run(y)
-                    case j @ Just(_) => {
-                        if (runx.isInstanceOf[IO[_]]) inner.`return`(j)
-                        else runx
-                    }
-                }
-            }
-        }
+        implicit val _asMonadPlus: MonadPlus[_MaybeT] = this
 
         implicit val _asMonadTrans: MonadTrans[n, _MaybeT] = new MonadTrans[n, _MaybeT] {
             private type m[+a] = _MaybeT[a]

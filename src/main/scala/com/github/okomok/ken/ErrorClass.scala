@@ -17,7 +17,7 @@ trait ErrorClass[a] extends Typeclass0[a] {
     def noMsg: a = strMsg("")
 
     type strMsg = String_ => a
-    def strMsg: strMsg = { _ => noMsg }
+    def strMsg: strMsg = _ => noMsg
 }
 
 
@@ -30,17 +30,25 @@ trait ErrorClassProxy[a] extends ErrorClass[a] {
 
 
 object ErrorClass extends ErrorClassInstance {
-    def apply[a](implicit i: ErrorClass[a]): ErrorClass[a] = i
+    def apply[a <: Kind.Function0](implicit i: ErrorClass[a#apply0]): ErrorClass[a#apply0] = i
 }
 
 
 sealed trait ErrorClassInstance { this: ErrorClass.type =>
     implicit val ofString: ErrorClass[String_] = new ErrorClass[String_] {
         override def noMsg = ""
-        override val strMsg = id[String_]
+        override val strMsg: strMsg = id
     }
 
     implicit val ofIOError: ErrorClass[IOError] = new ErrorClass[IOError] {
-        override val strMsg = IO.userError
+        override val strMsg: strMsg = IO.userError
+    }
+
+    implicit val ofAssertionError: ErrorClass[AssertionError] = new ErrorClass[AssertionError] {
+        override val strMsg: strMsg = msg => new AssertionError(msg)
+    }
+
+    implicit def ofThrowable[x <: Throwable](implicit i: ClassManifest[x]): ErrorClass[x] = new ErrorClass[x] {
+        override val strMsg: strMsg = msg => i.erasure.getConstructor(classOf[String]).newInstance(List.stringize(msg)).asInstanceOf[x]
     }
 }

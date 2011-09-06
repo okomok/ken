@@ -18,8 +18,7 @@ private[ken] final class _ListTs[n[+_]](override val inner: Monad[n]) extends Mo
 
     final case class _ListT[+a](override val get: n[List[a]]) extends Strong[n[List[a]]]
 
-    object _ListT extends _ListT_ with Kind.AbstractMonadTrans {
-        override type apply1[+a] = _ListT[a]
+    object _ListT extends _ListT_ with MonadPlus[_ListT] with Kind.AbstractMonadTrans {
         override type oldtype1[+a] = n[List[a]]
         override type innerMonad[+a] = n[a]
 
@@ -28,6 +27,25 @@ private[ken] final class _ListTs[n[+_]](override val inner: Monad[n]) extends Mo
         def run[a](n: _ListT[a]): n[List[a]] = n.run
 
         def map[m[+_], a, b](f: n[List[a]] => m[List[b]])(n: _ListT[a]): Strong[m[List[b]]] = Strong { f(run(n)) }
+
+        // Overrides
+        //
+        // Functor
+        private type f[+a] = _ListT[a]
+        override def fmap[a, b](f: a => b)(m: f[a]): f[b] = _ListT {
+            for { a <- run(m) } yield List.map(f)(a)
+        }
+        // Monad
+        private type m[+a] = f[a]
+        override def `return`[a](a: Lazy[a]): m[a] = _ListT { inner.`return`(List(a.!)) }
+        override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = _ListT {
+            for { a <- run(m); b <- inner.mapM(run[b]_ compose k)(a) } yield List.concat(b)
+        }
+        // MonadPlus
+        override def mzero: m[Nothing] = _ListT { inner.`return`(Nil) }
+        override def mplus[a](m: m[a])(n: Lazy[m[a]]): m[a] = _ListT {
+            for { a <- run(m); b <- run(n) } yield a ++: b
+        }
     }
 
     private[ken] trait _ListT_0 { this: _ListT.type =>
@@ -38,24 +56,7 @@ private[ken] final class _ListTs[n[+_]](override val inner: Monad[n]) extends Mo
             override def oldOf[a](nt: Lazy[nt[a]]): ot[a] = nt.run
         }
 
-        implicit val _asMonadPlus: MonadPlus[_ListT] = new MonadPlus[_ListT] {
-            // Functor
-            private type f[+a] = _ListT[a]
-            override def fmap[a, b](f: a => b)(m: f[a]): f[b] = _ListT {
-                for { a <- run(m) } yield List.map(f)(a)
-            }
-            // Monad
-            private type m[+a] = f[a]
-            override def `return`[a](a: Lazy[a]): m[a] = _ListT { inner.`return`(List(a.!)) }
-            override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = _ListT {
-                for { a <- run(m); b <- inner.mapM(run[b]_ compose k)(a) } yield List.concat(b)
-            }
-            // MonadPlus
-            override def mzero: m[Nothing] = _ListT { inner.`return`(Nil) }
-            override def mplus[a](m: m[a])(n: Lazy[m[a]]): m[a] = _ListT {
-                for { a <- run(m); b <- run(n) } yield a ++: b
-            }
-        }
+        implicit val _asMonadPlus: MonadPlus[_ListT] = this
 
         implicit val _asMonadTrans: MonadTrans[n, _ListT] = new MonadTrans[n, _ListT] {
             private type m[+a] = _ListT[a]
