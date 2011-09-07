@@ -16,10 +16,27 @@ private[enumerator] trait _Types[n[+_]] { this: _Enumerators[n] =>
 
     // Step
     //
-    sealed abstract class Step[-a, +b]
-    final case class Continue[a, b](_1: Stream[a] => Iteratee[a, b]) extends Step[a, b]
-    final case class Yield[a, b](_1: b, _2: Stream[a]) extends Step[a, b]
-    final case class Error(_1: Throwable) extends Step[Any, Nothing]
+    sealed trait Step[-a, +b] extends Step_[a, n, b]
+    final case class Continue[a, b](override val k: Stream[a] => Iteratee[a, b]) extends Continue_[a, n, b] with Step[a, b]
+    final case class Yield[a, b](override val x: b, override val extra: Stream[a]) extends Yield_[a, n, b] with Step[a, b]
+    final case class Error(override val err: Throwable) extends Error_[n] with Step[Any, Nothing]
+
+    object Step {
+        def dependent[a, b](s: Step_[a, n, b]): Step[a, b] = {
+            if (s.isInstanceOf[Continue_Tag]) {
+                val s_ = s.asInstanceOf[Continue_[a, n, b]]
+                Continue(in => Iteratee.dependent(s_.k(in)))
+            } else if (s.isInstanceOf[Yield_Tag]) {
+                val s_ = s.asInstanceOf[Yield_[a, n, b]]
+                Yield(s_.x, s_.extra)
+            } else if (s.isInstanceOf[Error_Tag]) {
+                val s_ = s.asInstanceOf[Error_[n]]
+                Error(s_.err)
+            } else {
+                error("impossible")
+            }
+        }
+    }
 
     // Iteratee
     //
@@ -32,7 +49,15 @@ private[enumerator] trait _Types[n[+_]] { this: _Enumerators[n] =>
             override type innerMonad[+a] = n[a]
         }
 
-        //implicit def dependent[a, b](n: Strong[n[Step[a, b]]]): Iteratee[a, b] = Iteratee { n.run }
+        implicit def dependent[a, b](n: Strong[n[Step_[a, n, b]]]): Iteratee[a, b] = Iteratee {
+            for {
+                s <- n.run
+            } yield Step.dependent(s)
+        }
+
+        // unneeded if a bug is fixed.
+        implicit def dependentEnumerator[a, b](e: Step_[a, n, b] => Strong[n[Step_[a, n, b]]]): Step[a, b] => Iteratee[a, b] = e
+        implicit def dependentEnumeratee[ao, ai, b](e: Step_[ai, n, b] => Strong[n[Step_[ao, n, Step[ai, b]]]]): Step[ai, b] => Iteratee[ao, Step[ai, b]] = e
 
         def run[a, b](n: Iteratee[a, b]): n[Step[a, b]] = n.run
 
@@ -41,7 +66,7 @@ private[enumerator] trait _Types[n[+_]] { this: _Enumerators[n] =>
 
     def runIteratee[a, b](n: Iteratee[a, b]): n[Step[a, b]] = n.run
 
-    def returnI[a, b](step: Step[a, b]): Iteratee[a, b] = Iteratee { inner.`return`(step) }
+    def returnI[a, b](s: Step[a, b]): Iteratee[a, b] = Iteratee { inner.`return`(s) }
     def `yield`[a, b](x: b)(extra: Stream[a]): Iteratee[a, b] = returnI(Yield(x, extra))
     def continue[a, b](k: Stream[a] => Iteratee[a, b]): Iteratee[a, b] = returnI(Continue(k))
 
