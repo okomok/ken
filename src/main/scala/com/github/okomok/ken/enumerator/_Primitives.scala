@@ -59,7 +59,7 @@ private[enumerator] trait _Primitives[n[+_]] { this: _Enumerators[n] =>
             mStep <- runIteratee { enumEOF[a, b] ==<<: i }
             * <- mStep match {
                 case Error(err) => `return` { Left(err) }
-                case Yield(x, _) => `return`{ Right(x) }
+                case Yield(x, _) => `return` { Right(x) }
                 case Continue(_) => error("run: divergent iteratee")
             }
         } yield *

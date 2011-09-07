@@ -15,7 +15,7 @@ package enumerator
 sealed abstract class Stream[+a] extends Up[Stream[a]]
 
 final case class Chunks[+a](_1: List[a]) extends Stream[a]
-final case object EOF extends Stream[Nothing]
+case object EOF extends Stream[Nothing]
 
 
 object Stream extends Monad[Stream] with ThisIsInstance {

@@ -29,7 +29,7 @@ object ReadP extends MonadPlus[ReadP] with ThisIsInstance {
 
     final case class Get[a](_1: Char => P[a]) extends P[a]
     final case class Look[a](_2: String_ => P[a]) extends P[a]
-    final case object Fail extends P[Nothing]
+    case object Fail extends P[Nothing]
     final case class Result[a](_1: a, _2: P[a]) extends P[a]
     final case class Final[a](_1: List[(a, String_)]) extends P[a] {
         Predef.require { not(List.`null`(_1)) }
