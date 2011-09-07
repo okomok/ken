@@ -14,26 +14,27 @@ package com.github.okomok
 package ken
 
 
-trait Typeable[a] extends Typeclass0[a] {
+trait Typeable[a] extends Typeclass0[a] { outer =>
     final val asTypeable: Typeable[a] = this
 
     // Core
     //
-    def typeOf(x: => a): ClassManifest[a]
+    type typeOf = Lazy[a] => TypeRep
+    def typeOf: typeOf
 }
 
 
 trait TypeableProxy[a] extends Typeable[a] {
     def selfTypeable: Typeable[a]
 
-    override def typeOf(x: => a): ClassManifest[a] = selfTypeable.typeOf(x)
+    override def typeOf: typeOf = selfTypeable.typeOf
 }
 
 
 object Typeable extends TypeableInstance {
     // For some reason, result type-ascription doesn't work.
     def cast[a, b](x: => a, y: Type[b])(implicit i: Typeable[a], j: Typeable[b]): Maybe[b] = {
-        lazy val r: Maybe[b] = if (i.typeOf(x) <:< j.typeOf(Maybe.fromJust(r))) {
+        lazy val r: Maybe[b] = if (i.typeOf(x) <:< j.typeOf(Lazy(Maybe.fromJust(r)))) {
             Just(x.asInstanceOf[b])
         } else {
             Nothing
@@ -65,6 +66,6 @@ object Typeable extends TypeableInstance {
 
 sealed trait TypeableInstance { this: Typeable.type =>
     implicit def of[a](implicit i: ClassManifest[a]): Typeable[a] = new Typeable[a] {
-        override def typeOf(x: => a): ClassManifest[a] = i
+        override val typeOf: typeOf = _ => i
     }
 }

@@ -112,6 +112,8 @@ package object ken {
 
     type IOError = java.io.IOException
 
+    type TypeRep = ClassManifest[_]
+
     // Scala specific utilities
     //
     val ignore: (=> Any) => Unit = _ => ()

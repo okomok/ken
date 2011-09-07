@@ -57,27 +57,27 @@ class SybTest extends org.scalatest.junit.JUnit3Suite {
 
     object Term {
         implicit val instanceOfEmpolyee: Term[Employee] = new Term[Employee] {
-            override def typeOf(x: => Employee) = implicitly[ClassManifest[Employee]]
+            override def typeOf: typeOf = _ => implicitly[ClassManifest[Employee]]
             override def gmapT(f: PolyTermFunc)(x: Employee) = x match {
                 case Employee(per, sal) => Employee(f(per), f(sal))
             }
         }
 
         implicit val instanceOfCompany: Term[Company] = new Term[Company] {
-            override def typeOf(x: => Company) = implicitly[ClassManifest[Company]]
+            override def typeOf: typeOf = _ => implicitly[ClassManifest[Company]]
             override def gmapT(f: PolyTermFunc)(x: Company) = x match {
                 case Company(x1) => Company(f(x1))
             }
         }
 
         implicit val instanceOfDept: Term[Dept] = new Term[Dept] {
-            override def typeOf(x: => Dept) = implicitly[ClassManifest[Dept]]
+            override def typeOf: typeOf = _ => implicitly[ClassManifest[Dept]]
             override def gmapT(f: PolyTermFunc)(x: Dept) = x match {
                 case Dept(x1, x2, x3) => Dept(f(x1), f(x2), f(x3))
             }
         }
         implicit val instanceOfSubUnit: Term[SubUnit] = new Term[SubUnit] {
-            override def typeOf(x: => SubUnit) = implicitly[ClassManifest[SubUnit]]
+            override def typeOf: typeOf = _ => implicitly[ClassManifest[SubUnit]]
             override def gmapT(f: PolyTermFunc)(x: SubUnit) = x match {
                 case PersonUnit(x1) => PersonUnit(f(x1))
                 case DeptUnit(x1) => DeptUnit(f(x1))
@@ -85,32 +85,32 @@ class SybTest extends org.scalatest.junit.JUnit3Suite {
         }
 
         implicit val instanceOfPerson: Term[Person] = new Term[Person] {
-            override def typeOf(x: => Person) = implicitly[ClassManifest[Person]]
+            override def typeOf: typeOf = _ => implicitly[ClassManifest[Person]]
             override def gmapT(f: PolyTermFunc)(x: Person) = x match {
                 case Person(x1, x2) => Person(f(x1), f(x2))
             }
         }
 
         implicit val instanceOfSalary: Term[Salary] = new Term[Salary] {
-            override def typeOf(x: => Salary) = implicitly[ClassManifest[Salary]]
+            override def typeOf: typeOf = _ => implicitly[ClassManifest[Salary]]
             override def gmapT(f: PolyTermFunc)(x: Salary) = x match {
                 case Salary(x1) => Salary(f(x1))
             }
         }
 
         implicit val instanceOfString: Term[String] = new Term[String] {
-            override def typeOf(x: => String) = implicitly[ClassManifest[String]]
+            override def typeOf: typeOf = _ => implicitly[ClassManifest[String]]
             override def gmapT(f: PolyTermFunc)(x: String) = x
         }
 
         implicit val instanceOfFloat: Term[Float] = new Term[Float] {
-            override def typeOf(x: => Float) = implicitly[ClassManifest[Float]]
+            override def typeOf: typeOf = _ => implicitly[ClassManifest[Float]]
             override def gmapT(f: PolyTermFunc)(x: Float) = x
         }
 
         implicit def instanceOfList[a](implicit i: Term[a], k: ClassManifest[List[a]]): Term[List[a]] = new Term[List[a]] {
             //private[this] implicit val instance = this
-            override def typeOf(x: => List[a]) = k
+            override def typeOf: typeOf = _ => k
             override def gmapT(f: PolyTermFunc)(x: List[a]) = x match {
                 case Nil => Nil
                 case x :: xs => f(x) :: f(xs)
