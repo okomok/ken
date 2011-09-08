@@ -42,6 +42,6 @@ class World {
     }
 
     def unsafeSTToIO[a](st: ST[a]): IO[a] = st match {
-        case ST(m) => IO { s => m.asInstanceOf[RealWorld.type => (a, RealWorld.type)](s) }
+        case ST(m) => IO { s => m.asInstanceOf[IORep[a]](s) }
     }
 }

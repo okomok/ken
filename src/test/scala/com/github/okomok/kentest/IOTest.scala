@@ -18,7 +18,7 @@ class IOTest extends org.scalatest.junit.JUnit3Suite {
             line
         }
 
-        io.unIO()
+        io.!
     }
 
     def teztGetLine {
@@ -27,15 +27,15 @@ class IOTest extends org.scalatest.junit.JUnit3Suite {
             * <- IO.putStr(line)
         } yield *
 
-        io.unIO()
+        io.!
     }
 
     def teztPrintLn {
         val io = IO.putStrLn("hello")
 
-        //io.unIO()
-        //io.unIO()
-        //io.unIO()
+        //io.!
+        //io.!
+        //io.!
     }
 
     def test_ {}

@@ -39,7 +39,7 @@ class MonadTransformerTezt { // extends org.scalatest.junit.JUnit3Suite {
             _ <- lift { IO.putStrLn("Storing in database...") }
         } yield ()
 
-        askPassword.run.unIO()
+        askPassword.run.!
     }
 
     // Weakly-typed monad; Power of Scala (any pitfall?)
@@ -62,6 +62,6 @@ class MonadTransformerTezt { // extends org.scalatest.junit.JUnit3Suite {
         } yield Just() // lift finally.
 
         // No runs
-        askPassword.unIO()
+        askPassword.!
     }
 }

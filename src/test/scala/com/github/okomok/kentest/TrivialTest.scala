@@ -53,14 +53,14 @@ class TrivialTest extends org.scalatest.junit.JUnit3Suite {
             u <- IO.putChar(x)
         } yield u
 
-        io.unIO()
+        io.!
     }
 
     def teztIOAp {
         import IO._
 
         val io = { (c1: Char) => (c2: Char) => println(c1); println(c2) } <@> getChar <*> getChar
-        io.unIO()
+        io.!
     }
 
     /*

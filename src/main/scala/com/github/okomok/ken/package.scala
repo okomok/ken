@@ -112,6 +112,8 @@ package object ken {
 
     type IOError = java.io.IOException
 
+    type IORep[+a] = RealWorld.type => (a, RealWorld.type)
+
     type TypeRep = ClassManifest[_]
 
     // Scala specific utilities

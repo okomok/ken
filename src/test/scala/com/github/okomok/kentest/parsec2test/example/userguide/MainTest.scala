@@ -39,9 +39,9 @@ class MainTezt {
 
     def testSimple {
         println("---run simple---")
-        run(simple)("a").unIO()
-        run(simple)("").unIO()
-        run(simple)("123").unIO()
+        run(simple)("a").!
+        run(simple)("").!
+        run(simple)("123").!
     }
 
     // 2.2
@@ -62,8 +62,8 @@ class MainTezt {
 
     def testParens {
         println("---run parens---")
-        run(parens)("(())()").unIO()
-        run(parens)("(()()").unIO()
+        run(parens)("(())()").!
+        run(parens)("(()()").!
     }
 
     // 2.3
@@ -88,7 +88,7 @@ class MainTezt {
 
     def testTestOr {
         println("---run testOr---")
-        run(testOr2)("(b)").unIO()
+        run(testOr2)("(b)").!
     }
 
     // 2.4
@@ -105,9 +105,9 @@ class MainTezt {
 
     def testNesting {
         println("---run nesting---")
-        run(nesting)("(())()").unIO()
-        run(nesting)("(()(()))").unIO()
-        run(nesting)("(()(())").unIO()
+        run(nesting)("(())()").!
+        run(nesting)("(()(()))").!
+        run(nesting)("(()(())").!
     }
 
     // 2.5 and 2.6
@@ -121,7 +121,7 @@ class MainTezt {
 
     def testWord {
         println("---run word---")
-        run(word)("hidi,,").unIO()
+        run(word)("hidi,,").!
     }
 
     lazy val sentence: Parser[List[String_]] = for {
@@ -133,12 +133,12 @@ class MainTezt {
 
     def testSentence {
         println("---run sentence---")
-        run(sentence)("hi,di,hi.").unIO()
-        run(sentence)("hi,di hi!").unIO()
-        run(sentence)("hi,123").unIO()
+        run(sentence)("hi,di,hi.").!
+        run(sentence)("hi,di hi!").!
+        run(sentence)("hi,123").!
 
-        run(sentence)("hi di").unIO()
-        run(sentence)("hi di,").unIO()
+        run(sentence)("hi di").!
+        run(sentence)("hi di,").!
     }
 
     // 2.7

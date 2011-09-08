@@ -1,6 +1,12 @@
 
 
 // Copyright Shunsuke Sogame 2011.
+//
+// Copyright 2004, The University Court of the University of Glasgow.
+// All rights reserved.
+//
+// Copyright (c) 2002 Simon Peyton Jones
+//
 // Distributed under the New BSD license.
 
 
@@ -21,8 +27,19 @@ trait Exception[e] extends Typeable[e] with Show[e] {
 
     // Extra
     //
+    def `catch`[a](io: IO[a])(h: e => IO[a]): IO[a] = {
+        val handler_ : SomeException => IORep[a] = e => fromException(e) match {
+            case Just(e_) => IO.unIO(h(e_))
+            case Nothing => throw e
+        }
+        IO { Prim.`catch`(IO.unIO(io))(handler_) }
+    }
+
+    type throwIO = e => IO[Nothing]
+    def throwIO: throwIO = e => IO { Prim.raiseIO(toException(e)) }
+
     type `throw` = e => Nothing
-    def `throw`: `throw` = e => throw toException(e)
+    def `throw`: `throw` = e => Prim.raise(toException(e))
 }
 
 
@@ -41,9 +58,28 @@ trait ExceptionProxy[a] extends Exception[a] with TypeableProxy[a] with ShowProx
 object Exception extends ExceptionInstance {
     def apply[a <: Kind.Function0](implicit i: Exception[a#apply0]): Exception[a#apply0] = i
 
+    // ErrorCall
+    //
     final case class ErrorCall(_1: String_)
     object ErrorCall extends Eq.Of[ErrorCall] with Show.Of[ErrorCall] with Exception[ErrorCall] with ThisIsInstance {
         override val typeOf: typeOf = _ => implicitly[ClassManifest[ErrorCall]]
+    }
+
+    // Shortcut
+    //
+    def `catch`[e, a](io: IO[a])(h: e => IO[a])(implicit i: Exception[e]): IO[a] = i.`catch`(io)(h)
+    def `throw`[e](e: e)(implicit i: Exception[e]): Nothing = i.`throw`(e)
+    def throwIO[e](e: e)(implicit i: Exception[e]): IO[Nothing] = i.throwIO(e)
+
+    // catchAny
+    //
+    trait AnyExceptionHanlder[+a] {
+        def apply[e](e: e)(implicit i: Exception[e]): IO[a]
+    }
+
+    def catchAny[a](io: IO[a])(hanlder: AnyExceptionHanlder[a]): IO[a] = {
+        val handler_ : SomeException => IORep[a] = { case SomeException(e, i) => IO.unIO(hanlder(e)(i)) }
+        IO { Prim.`catch`(IO.unIO(io))(handler_) }
     }
 }
 

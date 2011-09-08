@@ -12,8 +12,6 @@ object Prim {
 
     // Exceptions
     //
-    type IORep[a] = RealWorld.type => (a, RealWorld.type)
-
     def `catch`[a](io: IORep[a])(h: SomeException => IORep[a]): IORep[a] = { s =>
         try {
             io(s)

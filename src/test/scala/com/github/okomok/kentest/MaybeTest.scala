@@ -51,7 +51,7 @@ class MaybeTest extends org.scalatest.junit.JUnit3Suite {
         } yield ()
 
         ignore {
-            askPassword.run.unIO()
+            askPassword.run.!
         }
     }
     */
@@ -89,7 +89,7 @@ class MaybeTest extends org.scalatest.junit.JUnit3Suite {
         }
 
         ignore {
-            askPassword.unIO()
+            askPassword.!
         }
     }
 
@@ -119,7 +119,7 @@ class MaybeTest extends org.scalatest.junit.JUnit3Suite {
         } yield ()
 
         ignore {
-            askPassword.run.unIO()
+            askPassword.run.!
         }
     }
 }

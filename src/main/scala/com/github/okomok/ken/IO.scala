@@ -15,11 +15,8 @@ package ken
 
 
 // type IO[+a] = RealWorld.ST[a]
-final case class IO[+a](override val get: RealWorld.type => (a, RealWorld.type)) extends
-    Strong[RealWorld.type => (a, RealWorld.type)]
-{
-    final def ! : a = get(RealWorld)._1
-    final def unIO(): a = this.!
+final case class IO[+a](override val get: IORep[a]) extends Strong[IORep[a]] {
+    def ! : a = get.apply(RealWorld)._1
 }
 
 
@@ -45,7 +42,7 @@ object IO extends MonadIO[IO] with ThisIsInstance {
     //
     def unsafeIO[a](x: => a): IO[a] = IO { s => (x, s) }
 
-    def unIO[a](io: IO[a]): RealWorld.type => (a, RealWorld.type) = io.get
+    def unIO[a](io: IO[a]): IORep[a] = io.get
 
     def unsafePerformIO[a](io: IO[a]): a = unsafeDupablePerformIO(noDuplicate(io))
 
@@ -146,26 +143,5 @@ object IO extends MonadIO[IO] with ThisIsInstance {
         } catch {
             case err: IOError => h(err).!
         }
-    }
-
-    // Primitive catch and throwIO
-    //
-    import Prim.IORep
-
-    def catchException[a, e](io: IO[a])(handler: e => IO[a])(implicit i: Exception[e]): IO[a] = {
-        val handler_ : SomeException => IORep[a] = e => i.fromException(e) match {
-            case Just(e_) => unIO(handler(e_))
-            case Nothing => throw e
-        }
-        IO { Prim.`catch`(unIO(io))(handler_) }
-    }
-
-    trait AnyExceptionHanlder[+a] {
-        def apply[e](e: e)(implicit i: Exception[e]): IO[a]
-    }
-
-    def catchAny[a](io: IO[a])(hanlder: AnyExceptionHanlder[a]): IO[a] = {
-        val handler_ : SomeException => IORep[a] = { case SomeException(e, i) => unIO(hanlder(e)(i)) }
-        IO { Prim.`catch`(unIO(io))(handler_) }
     }
 }

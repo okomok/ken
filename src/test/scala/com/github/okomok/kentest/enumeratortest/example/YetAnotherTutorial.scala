@@ -58,6 +58,6 @@ class YetAnotherTutorialTest extends org.scalatest.junit.JUnit3Suite {
         val my = new My[IO.type]
         import IO.>>=
         val io = my.run_(my.sum8) >>= IO.print
-        io.unIO()
+        io.!
     }
 }
