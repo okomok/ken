@@ -33,6 +33,8 @@ trait ExceptionProxy[a] extends Exception[a] with TypeableProxy[a] with ShowProx
 
     override def toException: toException = selfException.toException
     override def fromException: fromException = selfException.fromException
+
+    override def `throw`: `throw` = selfException.`throw`
 }
 
 

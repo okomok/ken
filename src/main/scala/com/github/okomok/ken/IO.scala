@@ -147,4 +147,25 @@ object IO extends MonadIO[IO] with ThisIsInstance {
             case err: IOError => h(err).!
         }
     }
+
+    // Primitive catch and throwIO
+    //
+    import Prim.IORep
+
+    def catchException[a, e](io: IO[a])(handler: e => IO[a])(implicit i: Exception[e]): IO[a] = {
+        val handler_ : SomeException => IORep[a] = e => i.fromException(e) match {
+            case Just(e_) => unIO(handler(e_))
+            case Nothing => throw e
+        }
+        IO { Prim.`catch`(unIO(io))(handler_) }
+    }
+
+    trait AnyExceptionHanlder[+a] {
+        def apply[e](e: e)(implicit i: Exception[e]): IO[a]
+    }
+
+    def catchAny[a](io: IO[a])(hanlder: AnyExceptionHanlder[a]): IO[a] = {
+        val handler_ : SomeException => IORep[a] = { case SomeException(e, i) => unIO(hanlder(e)(i)) }
+        IO { Prim.`catch`(unIO(io))(handler_) }
+    }
 }
