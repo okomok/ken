@@ -20,19 +20,7 @@ import scala.annotation.tailrec
 sealed abstract class List[+a] extends Up[List[a]] {
     final def of[b >: a]: List[b] = this
 
-    final override def toString: String = {
-        val (xs, ys) = List.splitAt(512)(this)
-        val ellipse = if (ys == Nil) "" else ".."
-
-        if (xs eq Nil) {
-            "Nil"
-        } else if (List.all[a](_.isInstanceOf[Char])(xs)) {
-            xs.toScalaList.mkString("\"", "", ellipse + "\"")
-        } else {
-            xs.toScalaList.mkString("List(", ",", ellipse + ")")
-        }
-    }
-
+    final override def toString: String = toScalaList.toString
     final override def hashCode: Int = toScalaList.hashCode
 
     final def !!(n: Int): a = List.op_!!(this)(n)
@@ -127,6 +115,10 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
 
     // Instances
     //
+    implicit def _asShow[a](implicit i: Show[a]): Show[List[a]] = new Show[List[a]] {
+        override val showsPrec: showsPrec = _ => x => i.showList(x)
+    }
+
     implicit def _asMonoid[a]: Monoid[List[a]] = new Monoid[List[a]] {
         private type m = List[a]
         override val mempty: m = Nil

@@ -32,13 +32,13 @@ trait Show[a] extends Typeclass0[a] {
     //
     final def showList__(showx: a => ShowS)(xs: List[a]): ShowS = s => {
         xs match {
-            case Nil => "Nil" ++: s
+            case Nil => "[]" ++: s
             case x :: xs => {
                 def showl(ys: List[a]): String_ = ys match {
-                    case Nil => ')' :: s
+                    case Nil => ']' :: s
                     case y :: ys => ',' :: showx(y)(showl(ys.!))
                 }
-                "List(" ++: showx(x)(showl(xs.!))
+                "[" ++: showx(x)(showl(xs.!))
             }
         }
     }
@@ -71,8 +71,10 @@ object Show extends ShowInstance {
     val showSpace: ShowS = xs => ' ' :: xs
 
     trait Of[a] extends Show[a] {
-        override val show: a => String_ = x => x.toString
+        override val showsPrec: showsPrec = _ => a => showString(a.toString)
     }
+
+    def ofDefault[a]: Show[a] = new Of[a] {}
 }
 
 
@@ -84,12 +86,8 @@ sealed trait ShowInstance { this: Show.type =>
     implicit val ofInteger: Show[Integer] = _Integer
     implicit val ofUnit: Show[Unit] = Unit
 
-    implicit def of[a]: Show[a] = new Of[a] {}
-
-    implicit def ofList[z](implicit i: Show[z]): Show[List[z]] = new Show[List[z]] {
-        private type a = List[z]
-        override val showsPrec: showsPrec = _ => x => i.showList(x)
-    }
+    //implicit def of[a]: Show[a] = new Of[a] {}
 
     // TODO
+    implicit def ofTuple2[a](implicit i: Show[a]): Show[(a, a)] = new Of[(a, a)] {}
 }

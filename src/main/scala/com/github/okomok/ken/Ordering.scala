@@ -22,7 +22,7 @@ case object GT extends Ordering
 
 
 object Ordering extends Bounded[Ordering] with Enum[Ordering] with Ix[Ordering]
-    with Monoid[Ordering] with Show[Ordering] with ThisIsInstance
+    with Monoid[Ordering] with Show.Of[Ordering] with ThisIsInstance
 {
     // Overrides
     //
@@ -67,6 +67,4 @@ object Ordering extends Bounded[Ordering] with Enum[Ordering] with Ix[Ordering]
         case EQ => y.!
         case GT => GT
     }
-    // Show
-    override val showsPrec: showsPrec = _ => a => Show.showString(a.toString)
 }

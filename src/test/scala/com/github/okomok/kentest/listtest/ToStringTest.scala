@@ -14,15 +14,16 @@ import com.github.okomok.ken._
 class ToStringTest extends org.scalatest.junit.JUnit3Suite {
 
     def testNil {
-        expect("Nil")(Nil.toString)
+        expect(scala.Nil.toString)(Nil.toString)
     }
 
     def testNonChar {
-        expect("List(1,2,3)")(List(1,2,3).toString)
+        expect(scala.List(1,2,3).toString)(List(1,2,3).toString)
     }
 
     def testChar {
-        expect("\"123\"")(List('1','2','3').toString)
+        // rejected
+        // expect("\"123\"")(List('1','2','3').toString)
     }
 
     def testEllipse {

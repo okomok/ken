@@ -68,7 +68,7 @@ package object parsec {
     //
     def unknownError[s, u](state: State[s, u]): ParseError = newErrorUnknown(statePos(state))
 
-    val sysUnExpectError: String => SourcePos => Reply[Nothing, Nothing, Nothing] = msg => pos => Error(newErrorMessage(SysUnExpect(msg))(pos))
+    val sysUnExpectError: String_ => SourcePos => Reply[Nothing, Nothing, Nothing] = msg => pos => Error(newErrorMessage(SysUnExpect(msg))(pos))
 
     def mergeErrorReply[s, u, a](err1: ParseError)(reply: Reply[s, u, a]) = reply match {
         case Ok(x, state, err2) => Ok(x, state, (mergeError(err1)(err2)))

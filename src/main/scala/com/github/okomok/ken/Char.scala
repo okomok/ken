@@ -17,7 +17,8 @@ package ken
 import java.lang.{Character => JChar}
 
 
-object Char extends Bounded[Char] with Enum[Char] with Eq.Of[Char] with Ord[Char] with Show[Char] {
+object Char extends Bounded[Char] with Enum[Char] with Eq.Of[Char] with Ord[Char]
+    with Show.Of[Char] with ThisIsInstance {
     // Overrides
     //
     // Bounded
@@ -40,7 +41,7 @@ object Char extends Bounded[Char] with Enum[Char] with Eq.Of[Char] with Ord[Char
     override val op_> : op_> = c1 => c2 => c1 > c2
     override val op_>= : op_>= = c1 => c2 => c1 >= c2
     // Show
-    override val showsPrec: showsPrec = _ => a => Show.showString(a.toString)
+    override val showList: showList = cs => Show.showString("\"" + List.stringize(cs) + "\"")
 
     // Utilities
     //

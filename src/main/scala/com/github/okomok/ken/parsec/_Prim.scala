@@ -301,9 +301,9 @@ private[parsec] trait _Prim[s, u, n[+_]] { this: _ParsecTs[s, u, n] =>
 
     def parse[a](p: ParsecT[a])(name: SourceName)(s: s)(implicit ev: Unit =:= u): n[Either[ParseError, a]] = runParser(p)(())(name)(s)
 
-    def parseTest[a](p: ParsecT[a])(input: s)(implicit ev: Unit =:= u): IO[Unit] = {
+    def parseTest[a](p: ParsecT[a])(input: s)(implicit i: Show[a], ev: Unit =:= u, evi: Iso1[n, WeakIdentity.apply]): IO[Unit] = {
         import IO.`for`
-        parse(p)("")(input) match {
+        evi.imply(parse(p)("")(input)) match {
             case Left(err) => for { _ <- IO.putStr("parse error at "); * <- IO.print(err) } yield *
             case Right(x) => IO.print(x)
         }

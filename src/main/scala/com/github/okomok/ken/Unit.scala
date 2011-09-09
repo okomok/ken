@@ -15,7 +15,7 @@ package ken
 
 
 object Unit extends Bounded[Unit] with Enum[Unit] with Eq.Of[Unit]
-    with Ix[Unit] with Monoid[Unit] with Ord[Unit] with Show[Unit]
+    with Ix[Unit] with Monoid[Unit] with Ord[Unit] with Show.Of[Unit] with ThisIsInstance
 {
     // Overrides
     //
@@ -51,6 +51,4 @@ object Unit extends Bounded[Unit] with Enum[Unit] with Eq.Of[Unit]
     override val mempty: mempty = ()
     override val mappend: mappend = _ => _ => ()
     override val mconcat: mconcat = _ => ()
-    // Show
-    override val showsPrec: showsPrec = _ => a => Show.showString(a.toString)
 }

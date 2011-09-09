@@ -22,7 +22,7 @@ class MainTezt {
     import pm._
     val char_ = char[Unit]_
 
-    def run[a](p: Parser[a])(input: String_): IO[Unit] = {
+    def run[a](p: Parser[a])(input: String_)(implicit i: Show[a]): IO[Unit] = {
         val io = parse(p)("")(input) match {
             case Left(err) => for {
                 _ <- IO.putStr("parse error at ")
@@ -33,7 +33,7 @@ class MainTezt {
 
         for {
             _ <- io
-            _ <- IO.print("\n\n")
+            _ <- IO.print("\n\n")(Show.ofDefault[String])
         } yield ()
     }
 

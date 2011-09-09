@@ -180,7 +180,7 @@ object Parsec2 {
         for { input <- IO.readFile(fname) } yield parse(p)(fname)(input)
     }
 
-    def parseTest[tok, a](p: GenParser[tok, Unit, a])(input: List[tok]): IO[Unit] = {
+    def parseTest[tok, a](p: GenParser[tok, Unit, a])(input: List[tok])(implicit i: Show[a]): IO[Unit] = {
         runParser(p)(())("")(input) match {
             case Left(err) => for {
                 _ <- IO.putStr("parse error at ")
@@ -521,6 +521,8 @@ object Parsec2 {
     def errorPos(err: ParseError): SourcePos = err.pos
     def errorMessages(err: ParseError): List[Message_] = List.sortBy(messageCompare)(err.msgs)
     def errorIsUnknown(err: ParseError): Bool = List.`null`(err.msgs)
+
+    object ParseError extends Eq.Of[ParseError] with Show.Of[ParseError] with ThisIsInstance
 
     // Create ParseErrors
 
