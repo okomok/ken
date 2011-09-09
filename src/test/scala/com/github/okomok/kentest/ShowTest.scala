@@ -18,8 +18,7 @@ class ShowTest extends org.scalatest.junit.JUnit3Suite {
     }
 
     def testNil {
-        // scalac bug
-        val s = List.stringize(show(Nil.of[Int]))
+        val s = List.stringize(show(Nil.up))
         expect("[]")(s)
     }
 

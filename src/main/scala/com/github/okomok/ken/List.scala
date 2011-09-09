@@ -119,6 +119,9 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
         override val showsPrec: showsPrec = _ => x => i.showList(x)
     }
 
+    // Workaround for 2.9.1
+    implicit val _asShowNothing: Show[List[Nothing]] = _asShow[Nothing](Show.ofNothing)
+
     implicit def _asMonoid[a]: Monoid[List[a]] = new Monoid[List[a]] {
         private type m = List[a]
         override val mempty: m = Nil

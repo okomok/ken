@@ -88,6 +88,8 @@ sealed trait ShowInstance { this: Show.type =>
 
     //implicit def of[a]: Show[a] = new Of[a] {}
 
+    implicit val ofNothing: Show[Nothing] = ofDefault[Nothing]
+
     // TODO
     implicit def ofTuple2[a](implicit i: Show[a]): Show[(a, a)] = new Of[(a, a)] {}
 }
