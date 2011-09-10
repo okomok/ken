@@ -22,7 +22,7 @@ object ParseError extends Eq.Of[ParseError] with Show[ParseError] with ThisIsIns
     //
     // Show
     override val show: show = err => {
-        ken.show(errorPos(err)) ++: ":" ++:
+        Show.show(errorPos(err)) ++: ":" ++:
             showErrorMessages("or")("unknown parse error")("expecting")("unexpected")("end of input")(errorMessages(err))
     }
 

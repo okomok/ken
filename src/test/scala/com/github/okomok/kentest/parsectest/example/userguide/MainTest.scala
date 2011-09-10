@@ -12,8 +12,8 @@ import com.github.okomok.ken._
 import parsec.Parsers._
 
 
-class MainTezt {
-//class MainTest extends org.scalatest.junit.JUnit3Suite {
+//class MainTezt {
+class MainTest extends org.scalatest.junit.JUnit3Suite {
 
     // 2.1
 
@@ -32,7 +32,7 @@ class MainTezt {
 
         for {
             _ <- io
-            _ <- IO.print("\n\n")(Show.ofDefault[String])
+            _ <- IO.print("\n\n")
         } yield ()
     }
 

@@ -48,9 +48,9 @@ trait Ix[a] extends Ord[a] {
     final def indexError(rng: Pair[a, a])(i: a)(tp: String_)(implicit j: Show[a]): Nothing = {
         import Show._
         error( (showString("Ix{") `.` showString(tp) `.` showString("}.index: Index ") `.`
-            showParen(True)(j.showsPrec(0)(i)) `.`
+            showParen(True)(showsPrec(0)(i)) `.`
             showString(" out of range ")) {
-                showParen(True)(Show.ofTuple2[a].showsPrec(0)(rng))("")
+                showParen(True)(showsPrec(0)(rng))("")
             } )
     }
 }
@@ -102,7 +102,7 @@ sealed trait IxInstance { this: Ix.type =>
         }
         override val unsafeIndex: unsafeIndex = { case (n, _) => k => i.toInt(i.minus(k, n)) }
         override val index: index = b => i => {
-            if (inRange(b)(i)) unsafeIndex(b)(i) else indexError(b)(i)("Integer")(Show.ofDefault[a])
+            if (inRange(b)(i)) unsafeIndex(b)(i) else indexError(b)(i)("Integer")
         }
         override val inRange: inRange = { case (n, m) => k => i.lteq(n, k) && i.lteq(k, m) }
     }

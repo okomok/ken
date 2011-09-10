@@ -14,17 +14,17 @@ class ShowTest extends org.scalatest.junit.JUnit3Suite {
 
     def testTrivial {
         val s = List.stringize(show(List(1,2)))
-        expect("[1,2]")(s)
+        expect("List(1,2)")(s)
     }
 
     def testNil {
         val s = List.stringize(show(Nil.up))
-        expect("[]")(s)
+        expect("Nil")(s)
     }
 
     def testNested {
         val s = List.stringize(show(List(List(1,2), List(3,4,5))))
-        expect("[[1,2],[3,4,5]]")(s)
+        expect("List(List(1,2),List(3,4,5))")(s)
     }
 
     def testString_1 {
@@ -39,6 +39,6 @@ class ShowTest extends org.scalatest.junit.JUnit3Suite {
 
     def testNestedString_ {
         val s = List.stringize((show(List(List('1','2'), List('3','4','5')))))
-        expect("[\"12\",\"345\"]")(s)
+        expect("List(\"12\",\"345\")")(s)
     }
 }

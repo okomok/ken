@@ -15,7 +15,7 @@ package ken
 
 
 object Unit extends Bounded[Unit] with Enum[Unit] with Eq.Of[Unit]
-    with Ix[Unit] with Monoid[Unit] with Ord[Unit] with Show.Of[Unit] with ThisIsInstance
+    with Ix[Unit] with Monoid[Unit] with Ord[Unit] with Show.Of[Unit]
 {
     // Overrides
     //
