@@ -93,5 +93,4 @@ object Double extends Enum[Double] with Eq.Of[Double] with RealFloat[Double] wit
     override val atan2: atan2 = x => y => JMath.atan2(x, y)
     // Show
     override val showsPrec: showsPrec = _ => _ => error("todo") // showSignedFloat(showFloat)(x)
-    override val showList: showList = showList__(showsPrec(0))
 }

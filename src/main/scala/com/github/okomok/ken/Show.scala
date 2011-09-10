@@ -14,6 +14,9 @@ package com.github.okomok
 package ken
 
 
+// Following Java protocol, you should implement `toString` instead of `Show`.
+// By the way, `showList` isn't used. (hard-coded in `List.toString`)
+
 trait Show[a] extends Typeclass0[a] {
     final val asShow: Show[apply0] = this
 
@@ -26,7 +29,7 @@ trait Show[a] extends Typeclass0[a] {
     def show: show = x => shows(x)("")
 
     type showList = List[a] => ShowS
-    def showList: showList = ls => s => showList__(shows)(ls)(s)
+    final def showList: showList = ls => s => showList__(shows)(ls)(s)
 
     // Extra
     //
@@ -53,7 +56,6 @@ trait ShowProxy[a] extends Show[a] {
 
     override val showsPrec: showsPrec = selfShow.showsPrec
     override val show: show = selfShow.show
-    override val showList: showList = selfShow.showList
 
     override val shows: shows = selfShow.shows
 }

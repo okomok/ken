@@ -8,8 +8,11 @@ package com.github.okomok
 package ken
 
 
-// Work around name collision against Ord's EQ.
-// Toplevel identifier is case-insensitive under the influence of file-system.
+// Avoid name collision against Ord's EQ.
+// (Toplevel identifier is case-insensitive under the influence of file-system.)
+
+
+// Following Java protocol, you should implement `equals` instead of `Eq`.
 
 trait _Eq[a] extends Typeclass0[a] {
     final val asEq: _Eq[apply0] = this
@@ -69,6 +72,21 @@ object _Eq extends EqInstance {
     def byPredicate[a](f: Pair[a, a] => Bool): _Eq[a] = new _Eq[a] {
         override val op_=== : op_=== = x => y => f(x, y)
     }
+
+    // Shortcuts
+    //
+    def op_===[a](x: a)(y: a)(implicit i: _Eq[a]): Bool = i.op_===(x)(y)
+    def op_/==[a](x: a)(y: a)(implicit i: _Eq[a]): Bool = i.op_/==(x)(y)
+
+    sealed class _Op_===[a](x: a, i: _Eq[a]) {
+        def ===(y: a): Bool = op_===(x)(y)(i)
+    }
+    implicit def ===[a](x: a)(implicit i: _Eq[a]): _Op_===[a] = new _Op_===(x, i)
+
+    sealed class _Op_/==[a](x: a, i: _Eq[a]) {
+        def /==(y: a): Bool = op_/==(x)(y)(i)
+    }
+    implicit def /==[a](x: a)(implicit i: _Eq[a]): _Op_/==[a] = new _Op_/==(x, i)
 }
 
 

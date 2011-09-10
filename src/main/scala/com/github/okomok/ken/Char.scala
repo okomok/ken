@@ -39,8 +39,6 @@ object Char extends Bounded[Char] with Enum[Char] with Eq.Of[Char] with Ord[Char
     override val op_<= : op_<= = c1 => c2 => c1 <= c2
     override val op_> : op_> = c1 => c2 => c1 > c2
     override val op_>= : op_>= = c1 => c2 => c1 >= c2
-    // Show
-    override val showList: showList = cs => Show.showString("\"" + List.stringize(cs) + "\"")
 
     // Utilities
     //

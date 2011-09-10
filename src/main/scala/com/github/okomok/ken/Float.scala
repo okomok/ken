@@ -93,7 +93,6 @@ object Float extends Enum[Float] with Eq.Of[Float] with RealFloat[Float] with Sh
     override val atan2: atan2 = x => y => JMath.atan2(x.toDouble, y.toDouble)
     // Show
     override val showsPrec: showsPrec = _ => _ => error("todo") // showSignedFloat(showFloat)(x)
-    override val showList: showList = showList__(showsPrec(0))
 
     private def showSignedFloat[a](showPos: a => ShowS)(p: Int)(x: a)(implicit i: RealFloat[a]): ShowS = {
         error("todo")
