@@ -23,7 +23,7 @@ object Function extends ArrowChoice[Function1] with ArrowApply[Function1] with A
     // Category
     private type cat[-a, +b] = a => b
     override def cid[a]: cat[a, a] = id[a]
-    override def op_<<<:[a, b, c](f: cat[b, c])(g: cat[a, b]): cat[a, c] = f.compose(g)
+    override def op_<<<:[a, b, c](f: cat[b, c])(g: cat[a, b]): cat[a, c] = f `.` g
     // Arrow
     private type a[-a, +b] = a => b
     override def arr[b, c](f: b => c): a[b, c] = f
@@ -49,7 +49,7 @@ object Function extends ArrowChoice[Function1] with ArrowApply[Function1] with A
     private[ken] def _asMonadReader[z]: MonadReader[z, ({type m[+a] = z => a})#m] = new MonadReader[z, ({type m[+a] = z => a})#m] {
         // Functor
         private type f[+a] = z => a
-        override def fmap[a, b](x: a => b)(y: f[a]): f[b] = x compose y
+        override def fmap[a, b](x: a => b)(y: f[a]): f[b] = x `.` y
         // Applicative
         override def pure[a](x: Lazy[a]): f[a] = const(x)
         override def op_<*>[a, b](x: f[a => b])(y: f[a]): f[b] = { z => x(z)(y(z)) }
@@ -59,7 +59,7 @@ object Function extends ArrowChoice[Function1] with ArrowApply[Function1] with A
         override def op_>>=[a, b](f: m[a])(k: a => m[b]): m[b] = { z => k(f(z))(z) }
         // MonadReader
         override def ask: m[z] = id
-        override def local[a](f: z => z)(m: m[a]): m[a] = m compose f
+        override def local[a](f: z => z)(m: m[a]): m[a] = m `.` f
     }
 
     private[ken] def _asMonoid[z, b](implicit mb: Monoid[b]): Monoid[z => b] = new Monoid[z => b] {

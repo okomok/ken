@@ -20,10 +20,10 @@ trait Enum[a] extends Typeclass0[a] {
     // Core
     //
     type succ = a => a
-    def succ: succ = toEnum compose ((_: Int) + 1) compose fromEnum
+    def succ: succ = toEnum `.` ((_: Int) + 1) `.` fromEnum
 
     type pred = a => a
-    def pred: pred = toEnum compose ((_: Int) - 1) compose fromEnum
+    def pred: pred = toEnum `.` ((_: Int) - 1) `.` fromEnum
 
     type toEnum = Int => a
     def toEnum: toEnum

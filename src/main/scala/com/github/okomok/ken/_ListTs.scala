@@ -39,7 +39,7 @@ private[ken] final class _ListTs[n[+_]](override val inner: Monad[n]) extends Mo
         private type m[+a] = f[a]
         override def `return`[a](a: Lazy[a]): m[a] = _ListT { inner.`return`(List(a.!)) }
         override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = _ListT {
-            for { a <- run(m); b <- inner.mapM(run[b]_ compose k)(a) } yield List.concat(b)
+            for { a <- run(m); b <- inner.mapM(run[b]_ `.` k)(a) } yield List.concat(b)
         }
         // MonadPlus
         override def mzero: m[Nothing] = _ListT { inner.`return`(Nil) }

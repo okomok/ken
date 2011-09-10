@@ -36,7 +36,7 @@ object ParseError extends Eq.Of[ParseError] with Show[ParseError] with ThisIsIns
         val (unExpect, msgs2) = List.span(UnExpect("") === (_: Message_))(msgs1)
         val (expect, messages) = List.span(Expect("") === (_: Message_))(msgs2)
 
-        def clean(ms: List[String_]): List[String_] = List.nub(List.filter[String_](not compose List.`null`)(ms))
+        def clean(ms: List[String_]): List[String_] = List.nub(List.filter[String_](not `.` List.`null`)(ms))
 
         def separate(sep: String_)(ms: List[String_]): String_ = ms match {
             case Nil => Nil

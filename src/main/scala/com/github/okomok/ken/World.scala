@@ -34,7 +34,7 @@ class World {
 
     def modifySTRef[a](ref: STRef[a])(f: a => a): ST[Unit] = {
         import ST.=<<:
-        (writeSTRef(ref)_ compose f) =<<: readSTRef(ref)
+        (writeSTRef(ref)_ `.` f) =<<: readSTRef(ref)
     }
 
     def unsafeIOToST[a](io: IO[a]): ST[a] = io match {

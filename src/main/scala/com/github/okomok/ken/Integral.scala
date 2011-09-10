@@ -49,7 +49,7 @@ trait Integral[a] extends Real[a] with Enum[a] { outer =>
     def even: even = n => (n _rem_ 2) === 0
 
     type odd = a => Bool
-    def odd: odd = not compose even
+    def odd: odd = not `.` even
 
     // Operators
     //

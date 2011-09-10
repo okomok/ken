@@ -66,7 +66,7 @@ object Show extends ShowInstance {
 
     val showString: String_ => ShowS = List.op_!++:
 
-    val showParen: Bool => ShowS => ShowS = b => p => if (b) showChar('(') compose p compose showChar(')') else p
+    val showParen: Bool => ShowS => ShowS = b => p => if (b) showChar('(') `.` p `.` showChar(')') else p
 
     val showSpace: ShowS = xs => ' ' :: xs
 

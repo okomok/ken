@@ -252,7 +252,7 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
                 def interleave_(f: List[a] => List[a])(ys: List[a])(r: List[List[a]]): (List[a], List[List[a]]) = ys match {
                     case Nil => (ts.!, r)
                     case y :: ys => {
-                        lazy val uzs = interleave_(f compose (y :: _))(ys.!)(r)
+                        lazy val uzs = interleave_(f `.` (y :: _))(ys.!)(r)
                         (y :: uzs._1, f(t :: y :: uzs._1) :: uzs._2)
                     }
                 }

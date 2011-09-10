@@ -106,6 +106,6 @@ object Ratio {
         override val succ: a => a = x => j.op_+(x)(j.fromIntegral(1))
         override val pred: a => a = x => j.op_-(x)(j.fromIntegral(1))
         override val toEnum: Int => a = n => new Ratio(i.fromIntegral(n), i.fromIntegral(1))
-        override val fromEnum: a => Int = Num[Kind.const[Int]].fromInteger compose j.truncate[Integer]
+        override val fromEnum: a => Int = Num[Kind.const[Int]].fromInteger `.` j.truncate[Integer]
     }
 }

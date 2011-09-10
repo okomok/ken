@@ -48,7 +48,12 @@ package object ken {
 
     def const[a](x: a): Any => a = _ => x
 
-    def op_compose[a, b, c](f: b => c)(g: a => b): a => c = x => f(g(x))
+    def `op_.`[a, b, c](f: b => c)(g: a => b): a => c = x => f(g(x))
+
+    sealed class `Op_.`[b, c](f: b => c) {
+        def `.`[a](g: a => b): a => c = `op_.`(f)(g)
+    }
+    implicit def `.`[b, c](f: b => c): `Op_.`[b, c] = new `Op_.`(f)
 
     def flip[a, b, c](f: a => b => c): b => a => c = x => y => f(y)(x)
 

@@ -92,7 +92,7 @@ private[ken] final class _Kleislis[m[+_]](val monad: Monad[m]) {
                     import i.`for`
                     for { (c, d) <- f.run(x, Lazy(snd(y))) } yield (c.!, d.!)
                 }
-                _Kleisli { i.liftM[(c, d), c](fst)_ compose i.mfix[(c, d)] compose f_ }
+                _Kleisli { i.liftM[(c, d), c](fst)_ `.` i.mfix[(c, d)] `.` f_ }
             }
         }
     }

@@ -29,9 +29,9 @@ private[ken] final class _ReaderTs[n[+_]](override val inner: Monad[n]) extends 
 
         def run[r, a](n: _ReaderT[r, a]): r => n[a] = n.run
 
-        def map[r, m[+_], a, b](f: n[a] => m[b])(n: _ReaderT[r, a]): Strong[r => m[b]] = Strong { f compose run(n) }
+        def map[r, m[+_], a, b](f: n[a] => m[b])(n: _ReaderT[r, a]): Strong[r => m[b]] = Strong { f `.` run(n) }
 
-        def `with`[r, r_, a](f: r_ => r)(n: _ReaderT[r, a]): _ReaderT[r_, a] = _ReaderT { run(n) compose f }
+        def `with`[r, r_, a](f: r_ => r)(n: _ReaderT[r, a]): _ReaderT[r_, a] = _ReaderT { run(n) `.` f }
     }
 
     private[ken] trait _ReaderT_0 { this: _ReaderT.type =>

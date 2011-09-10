@@ -47,8 +47,8 @@ trait Ix[a] extends Ord[a] {
     //
     final def indexError(rng: Pair[a, a])(i: a)(tp: String_)(implicit j: Show[a]): Nothing = {
         import Show._
-        error( (showString("Ix{") compose showString(tp) compose showString("}.index: Index ") compose
-            showParen(True)(j.showsPrec(0)(i)) compose
+        error( (showString("Ix{") `.` showString(tp) `.` showString("}.index: Index ") `.`
+            showParen(True)(j.showsPrec(0)(i)) `.`
             showString(" out of range ")) {
                 showParen(True)(Show.ofTuple2[a].showsPrec(0)(rng))("")
             } )

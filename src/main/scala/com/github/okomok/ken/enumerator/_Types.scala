@@ -94,7 +94,7 @@ private[enumerator] trait _Types[n[+_]] { this: _Enumerators[n] =>
             override def op_>>=[a, b](m0: m[a])(f: a => m[b]): m[b] = Function.fix {
                 (bind: Lazy[m[a] => m[b]]) => (m: m[a]) => Iteratee {
                     runIteratee(m) >>= {
-                        case Continue(k) => inner.`return`(Continue(bind compose k))
+                        case Continue(k) => inner.`return`(Continue(bind.! `.` k))
                         case Error(err) => inner.`return`(Error(err))
                         case Yield(x, Chunks(Nil)) => runIteratee(f(x))
                         case Yield(x, extra) => runIteratee(f(x)) >>= {
@@ -110,7 +110,7 @@ private[enumerator] trait _Types[n[+_]] { this: _Enumerators[n] =>
         implicit def _asMonadTrans[z]: MonadTrans[n, ({type m[+a] = Iteratee[z, a]})#m] = new MonadTrans[n, ({type m[+a] = Iteratee[z, a]})#m] {
             private type m[+a] = Iteratee[z, a]
             override def lift[a](n: n[a]): m[a] = Iteratee {
-                n >>= { runIteratee[z, a]_ compose _asMonad[z].`return`[a] }
+                n >>= { runIteratee[z, a]_ `.` _asMonad[z].`return`[a] }
             }
         }
     }

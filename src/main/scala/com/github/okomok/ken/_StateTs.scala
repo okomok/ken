@@ -33,9 +33,9 @@ private[ken] final class _StateTs[n[+_]](override val inner: Monad[n]) extends M
 
         def exec[s, a](n: _StateT[s, a]): s => n[s] = s => for { (_, s) <- run(n)(s) } yield s
 
-        def map[s, m[+_], a, b](f: n[(a, s)] => m[(b, s)])(n: _StateT[s, a]): Strong[s => m[(b, s)]] = Strong { f compose run(n) }
+        def map[s, m[+_], a, b](f: n[(a, s)] => m[(b, s)])(n: _StateT[s, a]): Strong[s => m[(b, s)]] = Strong { f `.` run(n) }
 
-        def `with`[s, a](f: s => s)(n: _StateT[s, a]): _StateT[s, a] = _StateT { run(n) compose f }
+        def `with`[s, a](f: s => s)(n: _StateT[s, a]): _StateT[s, a] = _StateT { run(n) `.` f }
     }
 
     private[ken] trait _StateT_0 { this: _StateT.type =>

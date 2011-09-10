@@ -93,7 +93,7 @@ object ReadP extends MonadPlus[ReadP] with ThisIsInstance {
     // Functor
     private type f[+a] = ReadP[a]
     override def fmap[a, b](h: a => b)(f: f[a]): f[b] = new ReadP[b] {
-        override def apply[c](k: b => P[c]): P[c] = f(k compose h)
+        override def apply[c](k: b => P[c]): P[c] = f(k `.` h)
     }
     // Monad
     private type m[+a] = ReadP[a]
@@ -155,7 +155,7 @@ object ReadP extends MonadPlus[ReadP] with ThisIsInstance {
 
     def gather[a](m: ReadP[a]): ReadP[(String_, a)] = {
         def gath[b](l: String_ => String_)(p: P[String_ => P[b]]): P[b] = p match {
-            case Get(f) => Get(c => gath(l compose List.op_::(c))(f(c)))
+            case Get(f) => Get(c => gath(l `.` List.op_::(c))(f(c)))
             case Fail => Fail
             case Look(f) => Look(s => gath(l)(f(s)))
             case Result(k, p) => P.mplus(k(l(Nil)))(gath(l)(p))

@@ -17,7 +17,7 @@ private[enumerator] trait _Primitives[n[+_]] { this: _Enumerators[n] =>
     // Iteratee Operators
     //
     def op_>>==[a, b, a_, b_](i: Iteratee[a, b])(f: Step[a, b] => Iteratee[a_, b_]): Iteratee[a_, b_] = {
-        Iteratee { runIteratee(i) >>= (runIteratee[a_, b_]_ compose f) }
+        Iteratee { runIteratee(i) >>= (runIteratee[a_, b_]_ `.` f) }
     }
 
     def op_==<<:[a, b, a_, b_](f: Step[a, b] => Iteratee[a_, b_])(i: Iteratee[a, b]): Iteratee[a_, b_] = op_>>==(i)(f)

@@ -530,7 +530,7 @@ object Parsec2 {
     def newErrorMessage(msg: Message_)(pos: SourcePos): ParseError = ParseError(pos, List(msg))
     def addErrorMessage(msg: Message_)(err: ParseError): ParseError = err.copy(msgs = msg :: err.msgs)
     def setErrorPos(pos: SourcePos)(err: ParseError): ParseError = err.copy(pos = pos)
-    def setErrorMessage(msg: Message_)(err: ParseError): ParseError = err.copy(msgs = msg :: List.filter(not compose messageEq(msg))(err.msgs))
+    def setErrorMessage(msg: Message_)(err: ParseError): ParseError = err.copy(msgs = msg :: List.filter(not `.` messageEq(msg))(err.msgs))
     def mergeError(err1: ParseError)(err2: ParseError): ParseError = ParseError(err1.pos, err1.msgs ++: err2.msgs)
 
     // Show ParseErrors
@@ -548,7 +548,7 @@ object Parsec2 {
         val (unExpect, msgs2) = List.span(messageEq(UnExpect("")))(msgs1)
         val (expect, messages) = List.span(messageEq(Expect("")))(msgs2)
 
-        def clean(ms: List[String_]): List[String_] = List.nub(List.filter[String_](not compose List.`null`)(ms))
+        def clean(ms: List[String_]): List[String_] = List.nub(List.filter[String_](not `.` List.`null`)(ms))
 
         def separate(sep: String_)(ms: List[String_]): String_ = ms match {
             case Nil => Nil

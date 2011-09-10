@@ -27,5 +27,5 @@ object Identity extends Newtype1[Identity, ({type ot[+a] = a})#ot] with MonadFix
     override def `return`[a](a: Lazy[a]): m[a] = Identity { a }
     override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = k(run(m))
     // MonadFix
-    override def mfix[a](f: Lazy[a] => m[a]): m[a] = Identity { Function.fix(run[a]_ compose f) }
+    override def mfix[a](f: Lazy[a] => m[a]): m[a] = Identity { Function.fix(run[a]_ `.` f) }
 }
