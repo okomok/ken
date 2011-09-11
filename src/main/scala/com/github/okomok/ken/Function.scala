@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-object Function extends ArrowChoice[Function1] with ArrowApply[Function1] with ArrowLoop[Function1] with Kind.qcurry2[Function1] {
+object Function extends ArrowChoice[Function] with ArrowApply[Function] with ArrowLoop[Function] with Kind.qcurry2[Function] {
     def fix[a](f: Lazy[a] => a): a = {
         lazy val x: a = f(x)
         x

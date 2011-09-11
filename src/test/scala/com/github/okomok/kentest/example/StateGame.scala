@@ -28,7 +28,7 @@ package com.github.okomok.kentest.example
                 _ <- x match {
                     case 'a' if on => put(on, score + 1)
                     case 'b' if on => put(on, score - 1)
-                    case 'c' => put(not(on), score)
+                    case 'c' => put(Bool.not(on), score)
                     case _ => put(on, score)
                 }
                 * <- playGame(xs.!)

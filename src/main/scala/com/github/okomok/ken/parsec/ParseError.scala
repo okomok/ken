@@ -36,7 +36,7 @@ object ParseError extends Eq.Of[ParseError] with Show[ParseError] with ThisIsIns
         val (unExpect, msgs2) = List.span(UnExpect("") === (_: Message_))(msgs1)
         val (expect, messages) = List.span(Expect("") === (_: Message_))(msgs2)
 
-        def clean(ms: List[String_]): List[String_] = List.nub(List.filter[String_](not `.` List.`null`)(ms))
+        def clean(ms: List[String_]): List[String_] = List.nub(List.filter[String_](Bool.not `.` List.`null`)(ms))
 
         def separate(sep: String_)(ms: List[String_]): String_ = ms match {
             case Nil => Nil
@@ -68,7 +68,7 @@ object ParseError extends Eq.Of[ParseError] with Show[ParseError] with ThisIsIns
         def showSysUnExpect: String_ = {
             def firstMsg: String_ = messageString(List.head(sysUnExpect))
 
-            if (not(List.`null`(unExpect)) || List.`null`(sysUnExpect)) ""
+            if (Bool.not(List.`null`(unExpect)) || List.`null`(sysUnExpect)) ""
             else if (List.`null`(firstMsg)) msgUnExpected ++: " " ++: msgEndOfInput
             else msgUnExpected ++: " " ++: firstMsg
         }

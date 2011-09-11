@@ -53,11 +53,11 @@ class ParseErrorTest extends org.scalatest.junit.JUnit3Suite {
         parseHex_(s)(0)(1)
     }
 
-    def toString_ : Int => ParseMonad[String_] = n => `return` { show(n) }
+    def toString_ : Int => ParseMonad[String_] = n => `return` { Show.show(n) }
 
     def convert: String_ => String_ = s => {
         val Right(str) = catchError( for { n <- parseHex(s); * <- toString_(n) } yield * ) { e =>
-            `return` { "At Index " ++: show(e.location) ++: ": " ++: e.reason }
+            `return` { "At Index " ++: Show.show(e.location) ++: ": " ++: e.reason }
         } //run
 
         str

@@ -18,6 +18,7 @@ import java.lang.{Character => JChar}
 
 
 object Char extends Bounded[Char] with Enum[Char] with Eq.Of[Char] with Ord[Char] with Show.Of[Char] {
+
     // Overrides
     //
     // Bounded
@@ -25,11 +26,11 @@ object Char extends Bounded[Char] with Enum[Char] with Eq.Of[Char] with Ord[Char
     override val maxBound: maxBound = JChar.MAX_VALUE
     // Enum
     override val succ: succ = c => {
-        if (not(ord(c) == maxBound)) chr(ord(c) + 1)
+        if (Bool.not(ord(c) == maxBound)) chr(ord(c) + 1)
         else error("Enum[Char].succ: bad argument")
     }
     override val pred: pred = c => {
-        if (not(ord(c) == minBound)) chr(ord(c) - 1)
+        if (Bool.not(ord(c) == minBound)) chr(ord(c) - 1)
         else error("Enum[Char].pred: bad argument")
     }
     override val toEnum: toEnum = chr

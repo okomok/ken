@@ -16,31 +16,7 @@ package object ken {
 
     // Bools
     //
-    val not: Bool => Bool = b => !b
-
-    val op_&& : Bool => Lazy[Bool] => Bool = b => c => b && c.!
-
-    val op_|| : Bool => Lazy[Bool] => Bool = b => c => b || c.!
-
     final val otherwise = True
-
-    // Tuples
-    //
-    def fst[a](p: (a, _)): a = p match {
-        case (x, _) => x
-    }
-
-    def snd[b](p: (_, b)): b = p match {
-        case (_, y) => y
-    }
-
-    def curry[a, b, c](f: Pair[a, b] => c): a => b => c = x => y => f((x, y))
-
-    def uncurry[a, b, c](f: a => b => c): Pair[a, b] => c = { case (x, y) => f(x)(y) }
-
-    def swap[a, b](p: (a, b)): (b, a) = p match {
-        case (x, y) => (y, x)
-    }
 
     // Miscellaneous functions
     //
@@ -76,12 +52,6 @@ package object ken {
 
     def seq[b](x: Any)(y: b): b = y // no special effects
 
-    // Converting to String
-    //
-    def show[a](x: a)(implicit i: Show[a]): String_ = i.show(x)
-
-    val _show: Any => String = _.toString // will be removed.
-
     // Trivial transformers
     //
     type Error[e, +a] = WeakIdentity.ErrorT[e, a]
@@ -108,6 +78,8 @@ package object ken {
 
     type Integer = BigInt
     val Integer = _Integer
+
+    val Pair = Tuple2
 
     type Rational = Ratio[Integer]
 

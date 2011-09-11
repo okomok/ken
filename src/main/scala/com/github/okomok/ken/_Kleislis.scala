@@ -15,6 +15,7 @@ package ken
 
 
 private[ken] final class _Kleislis[m[+_]](val monad: Monad[m]) {
+
     final case class _Kleisli[-a, +b](override val get: a => m[b]) extends Strong[a => m[b]]
 
     object _Kleisli extends _Kleisli_ with Kind.AbstractNewtype2 {
@@ -90,9 +91,9 @@ private[ken] final class _Kleislis[m[+_]](val monad: Monad[m]) {
             override def loop[b, c, d](f: a[(b, Lazy[d]), (Lazy[c], Lazy[d])]): a[b, c] = {
                 def f_(x: b)(y: Lazy[(c, d)]): m[(c, d)] = {
                     import i.`for`
-                    for { (c, d) <- f.run(x, Lazy(snd(y))) } yield (c.!, d.!)
+                    for { (c, d) <- f.run(x, Lazy(Pair.snd(y))) } yield (c.!, d.!)
                 }
-                _Kleisli { i.liftM[(c, d), c](fst)_ `.` i.mfix[(c, d)] `.` f_ }
+                _Kleisli { i.liftM[(c, d), c](Pair.fst)_ `.` i.mfix[(c, d)] `.` f_ }
             }
         }
     }

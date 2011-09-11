@@ -301,9 +301,9 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
 
     override def concatMap[a, b](f: a => List[b])(xs: List[a]): List[b] = foldr[a, List[b]](x => y => f(x) ++: y.!)(Nil)(xs)
 
-    override def and(xs: List[Bool]): Bool = foldr(op_&&)(True)(xs)
+    override def and(xs: List[Bool]): Bool = foldr(Bool.op_&&)(True)(xs)
 
-    override def or(xs: List[Bool]): Bool = foldr(op_||)(False)(xs)
+    override def or(xs: List[Bool]): Bool = foldr(Bool.op_||)(False)(xs)
 
     override def any[a](p: a => Bool)(xs: List[a]): Bool = or(map(p)(xs))
 
@@ -586,7 +586,7 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
     //
     def nubBy[a](eq: a => a => Bool)(xs: List[a]): List[a] = xs match {
         case Nil => Nil
-        case x :: xs => x :: nubBy(eq)(filter[a](y => not(eq(x)(y)))(xs.!))
+        case x :: xs => x :: nubBy(eq)(filter[a](y => Bool.not(eq(x)(y)))(xs.!))
     }
 
     def deleteBy[a](eq: a => a => Bool)(x: a)(xs: List[a]): List[a] = xs match {

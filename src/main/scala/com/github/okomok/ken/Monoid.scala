@@ -159,6 +159,6 @@ object Monoid extends MonoidInstance {
 
 trait MonoidInstance { this: Monoid.type =>
     implicit val ofUnit: Monoid[Unit] = Unit
-    implicit def ofFunction1[z, b](implicit mb: Monoid[b]): Monoid[z => b] = Function._asMonoid[z, b]
-    implicit def ofPair[a, b](implicit ma: Monoid[a], mb: Monoid[b]): Monoid[(a, b)] = Pair._asMonoid[a, b]
+    implicit def ofFunction[z, b](implicit mb: Monoid[b]): Monoid[z => b] = Function._asMonoid[z, b]
+    implicit def ofTuple2[a, b](implicit ma: Monoid[a], mb: Monoid[b]): Monoid[(a, b)] = Tuple2._asMonoid[a, b]
 }

@@ -20,10 +20,10 @@ trait _Eq[a] extends Typeclass0[a] {
     // Core
     //
     type op_=== = a => a => Bool
-    def op_=== : op_=== = x => y => not(op_/==(x)(y))
+    def op_=== : op_=== = x => y => Bool.not(op_/==(x)(y))
 
     type op_/== = a => a => Bool
-    def op_/== : op_/== = x => y => not(op_===(x)(y))
+    def op_/== : op_/== = x => y => Bool.not(op_===(x)(y))
 
     // Operators
     //

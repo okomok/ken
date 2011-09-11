@@ -8,7 +8,28 @@ package com.github.okomok
 package ken
 
 
-object Pair extends Kind.qcurry2[Pair] {
+object Tuple2 extends Kind.qcurry2[Tuple2] {
+
+    // Prelude
+    //
+    def fst[a](p: (a, _)): a = p match {
+        case (x, _) => x
+    }
+
+    def snd[b](p: (_, b)): b = p match {
+        case (_, y) => y
+    }
+
+    def curry[a, b, c](f: Pair[a, b] => c): a => b => c = x => y => f((x, y))
+
+    def uncurry[a, b, c](f: a => b => c): Pair[a, b] => c = { case (x, y) => f(x)(y) }
+
+    def swap[a, b](p: (a, b)): (b, a) = p match {
+        case (x, y) => (y, x)
+    }
+
+    // Instances
+    //
     private[ken] def _asMonoid[a, b](implicit ma: Monoid[a], mb: Monoid[b]): Monoid[(a, b)] = new Monoid[(a, b)] {
         override val mempty: mempty = (ma.mempty, mb.mempty)
         override val mappend: mappend = x1 => x2 => (x1, x2.!) match {
