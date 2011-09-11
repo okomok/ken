@@ -9,13 +9,13 @@
 
     object StateGame extends Main {
         type GameValue = Int
-        type GameState = (Boolean, Int)
+        type GameState = (Bool, Int)
 
         // Pull the Monad explicitly.
         val i = MonadState[GameState, State.apply[GameState]]
         import i._
 
-        def playGame(xs: String_): State[GameState, GameValue] = xs match {
+        val playGame: String_ => State[GameState, GameValue] = {
             case Nil => for {
                 (_, score) <- get
             } yield score
@@ -24,14 +24,14 @@
                 _ <- x match {
                     case 'a' if on => put(on, score + 1)
                     case 'b' if on => put(on, score - 1)
-                    case 'c' => put(not(on), score)
+                    case 'c' => put(Bool.not(on), score)
                     case _ => put(on, score)
                 }
-                * <- playGame(xs.!)
+                * <- playGame(xs)
             } yield *
         }
 
-        val startState = (false, 0)
+        val startState = (False, 0)
 
         val main_ = IO.print { State.eval(playGame("abcaaacbbcabbab"))(startState) }
     }

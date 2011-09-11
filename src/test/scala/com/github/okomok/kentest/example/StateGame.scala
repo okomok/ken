@@ -13,13 +13,13 @@ package com.github.okomok.kentest.example
 
     object StateGame extends Main {
         type GameValue = Int
-        type GameState = (Boolean, Int)
+        type GameState = (Bool, Int)
 
         // Pull the Monad explicitly.
         val i = MonadState[GameState, State.apply[GameState]]
         import i._
 
-        def playGame(xs: String_): State[GameState, GameValue] = xs match {
+        val playGame: String_ => State[GameState, GameValue] = {
             case Nil => for {
                 (_, score) <- get
             } yield score
@@ -31,11 +31,11 @@ package com.github.okomok.kentest.example
                     case 'c' => put(Bool.not(on), score)
                     case _ => put(on, score)
                 }
-                * <- playGame(xs.!)
+                * <- playGame(xs)
             } yield *
         }
 
-        val startState = (false, 0)
+        val startState = (False, 0)
 
         val main_ = IO.print { State.eval(playGame("abcaaacbbcabbab"))(startState) }
     }
