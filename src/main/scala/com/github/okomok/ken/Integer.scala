@@ -87,7 +87,7 @@ private[ken] object _Integer extends Enum[Integer] with Eq.Of[Integer]
         else integerToString(n)(r)
     }
 
-    private lazy val integerToString: Integer => String_ => String_ = n => cs => {
+    private lazy val integerToString: Integer => String => String = n => cs => {
         n.toString ++: cs
     }
 }

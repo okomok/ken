@@ -25,7 +25,7 @@ private[parsec] trait _ParsecTs[s, u, n[+_]] extends MonadTs[n]
     final case class ParsecT[+a](override val get: UnParser[s, u, n, a]) extends Strong[UnParser[s, u, n, a]] {
         def apply[b](v: UnParserParam[s, u, n, a, b]): n[b] = get(v)
 
-        final def <#>(msg: String_): ParsecT[a] = label(this)(msg)
+        final def <#>(msg: String): ParsecT[a] = label(this)(msg)
     }
 
     object ParsecT extends ParsecT_ with MonadPlus[ParsecT] with Kind.AbstractMonadTrans {

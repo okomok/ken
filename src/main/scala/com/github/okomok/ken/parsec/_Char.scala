@@ -13,8 +13,8 @@ package parsec
 
 
 private[parsec] trait _Char[s, u, n[+_]] { this: _ParsecTs[s, u, n] =>
-    def oneOf(cs: String_)(implicit si: Stream[s, n, Char]): ParsecT[Char] = satisfy(c => List.elem(c)(cs))
-    def noneOf(cs: String_)(implicit si: Stream[s, n, Char]): ParsecT[Char] = satisfy(c => Bool.not(List.elem(c)(cs)))
+    def oneOf(cs: String)(implicit si: Stream[s, n, Char]): ParsecT[Char] = satisfy(c => List.elem(c)(cs))
+    def noneOf(cs: String)(implicit si: Stream[s, n, Char]): ParsecT[Char] = satisfy(c => Bool.not(List.elem(c)(cs)))
 
     def spaces(implicit si: Stream[s, n, Char]): ParsecT[Unit] = skipMany(space) <#> "white space"
 
@@ -38,5 +38,5 @@ private[parsec] trait _Char[s, u, n[+_]] { this: _ParsecTs[s, u, n] =>
         tokenPrim[Char, Char](c => Show.show(List(c)))(pos => c => _cs => updatePosChar(pos)(c))(c => if (f(c)) Just(c) else Nothing)
     }
 
-    def string(s: String_)(implicit si: Stream[s, n, Char]): ParsecT[String_] = tokens[Char](Show.show)(updatePosString)(s)
+    def string(s: String)(implicit si: Stream[s, n, Char]): ParsecT[String] = tokens[Char](Show.show)(updatePosString)(s)
 }

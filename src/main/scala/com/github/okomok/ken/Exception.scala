@@ -60,7 +60,7 @@ object Exception extends ExceptionInstance {
 
     // ErrorCall
     //
-    final case class ErrorCall(_1: String_)
+    final case class ErrorCall(_1: String)
     object ErrorCall extends Eq.Of[ErrorCall] with Show.Of[ErrorCall] with Exception[ErrorCall] with ThisIsInstance {
         override val typeOf: typeOf = _ => implicitly[ClassManifest[ErrorCall]]
     }

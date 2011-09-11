@@ -22,8 +22,8 @@ class SybTest extends org.scalatest.junit.JUnit3Suite {
     case class Person(name: Name, address: Address)
     case class Salary(salary: Float)
     type Manager = Employee
-    type Name = String
-    type Address = String
+    type Name = Predef.String
+    type Address = Predef.String
 
     lazy val genCom: Company = Company(
         List(
@@ -98,9 +98,9 @@ class SybTest extends org.scalatest.junit.JUnit3Suite {
             }
         }
 
-        implicit val instanceOfString: Term[String] = new Term[String] {
-            override def typeOf: typeOf = _ => implicitly[ClassManifest[String]]
-            override def gmapT(f: PolyTermFunc)(x: String) = x
+        implicit val instanceOfString: Term[Predef.String] = new Term[Predef.String] {
+            override def typeOf: typeOf = _ => implicitly[ClassManifest[Predef.String]]
+            override def gmapT(f: PolyTermFunc)(x: Predef.String) = x
         }
 
         implicit val instanceOfFloat: Term[Float] = new Term[Float] {

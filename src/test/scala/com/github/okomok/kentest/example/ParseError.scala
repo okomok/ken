@@ -15,10 +15,10 @@ import com.github.okomok.ken._
 
 class ParseErrorTest extends org.scalatest.junit.JUnit3Suite {
 
-    final class ParseError(val location: Int, val reason: String_)
+    final class ParseError(val location: Int, val reason: String)
 
     object Err {
-        def apply(l: Int)(r: String_): ParseError = new ParseError(l, r)
+        def apply(l: Int)(r: String): ParseError = new ParseError(l, r)
     }
 
     implicit object ParseErrorClass extends ErrorClass[ParseError] {
@@ -42,8 +42,8 @@ class ParseErrorTest extends org.scalatest.junit.JUnit3Suite {
         }
     }
 
-    def parseHex: String_ => ParseMonad[Int] = { s =>
-        def parseHex_ : String_ => Int => Int => ParseMonad[Int] = cs => v => idx => cs match {
+    def parseHex: String => ParseMonad[Int] = { s =>
+        def parseHex_ : String => Int => Int => ParseMonad[Int] = cs => v => idx => cs match {
             case Nil =>`return`(v)
             case c :: cs => for {
                 d <- parseHexDigit(c)(idx)
@@ -53,9 +53,9 @@ class ParseErrorTest extends org.scalatest.junit.JUnit3Suite {
         parseHex_(s)(0)(1)
     }
 
-    def toString_ : Int => ParseMonad[String_] = n => `return` { Show.show(n) }
+    def toString_ : Int => ParseMonad[String] = n => `return` { Show.show(n) }
 
-    def convert: String_ => String_ = s => {
+    def convert: String => String = s => {
         val Right(str) = catchError( for { n <- parseHex(s); * <- toString_(n) } yield * ) { e =>
             `return` { "At Index " ++: Show.show(e.location) ++: ": " ++: e.reason }
         } //run

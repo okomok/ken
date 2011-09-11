@@ -14,7 +14,7 @@ package parsec
 
 object Parsers extends ParsersBase
 
-trait ParsersBase extends ParsecsBase[String_, Unit] {
+trait ParsersBase extends ParsecsBase[String, Unit] {
     type Parser[+a] = Parsec[a]
     final val Parser = Parsec
 

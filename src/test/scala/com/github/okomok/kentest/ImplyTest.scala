@@ -25,10 +25,10 @@ class ImplyTest extends org.scalatest.junit.JUnit3Suite {
     }
 
     def testNoAmbiguity {
-        final class ParseError(val location: Int, val reason: String_)
+        final class ParseError(val location: Int, val reason: String)
 
         object Err {
-            def apply(l: Int)(r: String_): ParseError = new ParseError(l, r)
+            def apply(l: Int)(r: String): ParseError = new ParseError(l, r)
         }
 
         implicit object ParseErrorClass extends ErrorClass[ParseError] {

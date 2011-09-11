@@ -16,7 +16,7 @@ trait ErrorClass[a] extends Typeclass0[a] {
     type noMsg = a
     def noMsg: a = strMsg("")
 
-    type strMsg = String_ => a
+    type strMsg = String => a
     def strMsg: strMsg = _ => noMsg
 }
 
@@ -35,7 +35,7 @@ object ErrorClass extends ErrorClassInstance {
 
 
 sealed trait ErrorClassInstance { this: ErrorClass.type =>
-    implicit val ofString: ErrorClass[String_] = new ErrorClass[String_] {
+    implicit val ofString: ErrorClass[String] = new ErrorClass[String] {
         override def noMsg = ""
         override val strMsg: strMsg = id
     }
@@ -49,6 +49,6 @@ sealed trait ErrorClassInstance { this: ErrorClass.type =>
     }
 
     implicit def ofThrowable[x <: Throwable](implicit i: ClassManifest[x]): ErrorClass[x] = new ErrorClass[x] {
-        override val strMsg: strMsg = msg => i.erasure.getConstructor(classOf[String]).newInstance(List.stringize(msg)).asInstanceOf[x]
+        override val strMsg: strMsg = msg => i.erasure.getConstructor(classOf[Predef.String]).newInstance(List.stringize(msg)).asInstanceOf[x]
     }
 }

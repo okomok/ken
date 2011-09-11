@@ -36,9 +36,9 @@ trait Read[a] extends Typeclass0[a] {
 
     // Extra
     //
-    def lex: ReadS[String_] = Read.readP_to_S(Lex.hsLex)(s)
+    def lex: ReadS[String] = Read.readP_to_S(Lex.hsLex)(s)
 
-    def lexListChar: ReadS[String] = Read.readP_to_S {
+    def lexListChar: ReadS[Predef.String] = Read.readP_to_S {
         for { (s, _) <- ReadP.gather(Lex.lexChar) } yield s
     }
     */

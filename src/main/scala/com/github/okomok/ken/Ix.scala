@@ -45,7 +45,7 @@ trait Ix[a] extends Ord[a] {
 
     // Extra
     //
-    final def indexError(rng: Pair[a, a])(i: a)(tp: String_)(implicit j: Show[a]): Nothing = {
+    final def indexError(rng: Pair[a, a])(i: a)(tp: String)(implicit j: Show[a]): Nothing = {
         import Show._
         error( (showString("Ix{") `.` showString(tp) `.` showString("}.index: Index ") `.`
             showParen(True)(showsPrec(0)(i)) `.`

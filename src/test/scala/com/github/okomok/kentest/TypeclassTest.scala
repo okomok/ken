@@ -55,7 +55,7 @@ class TypeclassTest extends org.scalatest.junit.JUnit3Suite {
 
         ignore {
             infer(fm.infer(x => x.toString))//(fm)
-            infer(id[fm.apply[String]](x => x.toString))//(fm)
+            infer(id[fm.apply[Predef.String]](x => x.toString))//(fm)
             infer(makeM[Int, im.apply])
         }
     }

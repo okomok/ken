@@ -13,7 +13,7 @@ class MonadTransformerTezt { // extends org.scalatest.junit.JUnit3Suite {
 
     import com.github.okomok.ken._
 
-    def isValid(s: String_): Boolean = Eq[Kind.const[String_]].op_===(s)("valid")
+    def isValid(s: String): Boolean = Eq[Kind.const[String]].op_===(s)("valid")
 
     // Strongly-typed monad; Haskell way.
     def testStrongMonadT {
@@ -26,7 +26,7 @@ class MonadTransformerTezt { // extends org.scalatest.junit.JUnit3Suite {
         val mt = MonadTrans[MaybeT.type]
         import mt.lift
 
-        def getValidPassword: MaybeT[String_] = {
+        def getValidPassword: MaybeT[String] = {
             for {
                 s <- lift(IO.getLine)
                 _ <- guard(isValid(s))
@@ -50,7 +50,7 @@ class MonadTransformerTezt { // extends org.scalatest.junit.JUnit3Suite {
         import wm._ // hides the default IO monad.
 
         // No wrappers, no lifts.
-        def getValidPassword: IO[Maybe[String_]] = for {
+        def getValidPassword: IO[Maybe[String]] = for {
             s <- IO.getLine
             _ <- guard(isValid(s))
         } yield s

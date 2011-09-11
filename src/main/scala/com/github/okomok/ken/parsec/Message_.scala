@@ -19,10 +19,10 @@ sealed abstract class Message_ extends Up[Message_] {
     }
 }
 
-final case class SysUnExpect(s: String_) extends Message_
-final case class UnExpect(s: String_) extends Message_
-final case class Expect(s: String_) extends Message_
-final case class Message(s: String_) extends Message_
+final case class SysUnExpect(s: String) extends Message_
+final case class UnExpect(s: String) extends Message_
+final case class Expect(s: String) extends Message_
+final case class Message(s: String) extends Message_
 
 
 object Message_ extends Enum[Message_] with Eq.Of[Message_] with Ord[Message_] with ThisIsInstance {

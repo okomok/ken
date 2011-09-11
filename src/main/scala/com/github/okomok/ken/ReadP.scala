@@ -28,15 +28,15 @@ object ReadP extends MonadPlus[ReadP] with ThisIsInstance {
     sealed abstract class P[+a] extends Up[P[a]]
 
     final case class Get[a](_1: Char => P[a]) extends P[a]
-    final case class Look[a](_2: String_ => P[a]) extends P[a]
+    final case class Look[a](_2: String => P[a]) extends P[a]
     case object Fail extends P[Nothing]
     final case class Result[a](_1: a, _2: P[a]) extends P[a]
-    final case class Final[a](_1: List[(a, String_)]) extends P[a] {
+    final case class Final[a](_1: List[(a, String)]) extends P[a] {
         Predef.require { Bool.not(List.`null`(_1)) }
     }
 
     object Get extends ReadP[Char]
-    object Look extends ReadP[String_]
+    object Look extends ReadP[String]
 
     object P extends MonadPlus[P] with ThisIsInstance {
         // Overrides
@@ -74,7 +74,7 @@ object ReadP extends MonadPlus[ReadP] with ThisIsInstance {
 
         // Operations
         //
-        def `final`[a](r: List[(a, String_)]): P[a] = r match {
+        def `final`[a](r: List[(a, String)]): P[a] = r match {
             case Nil => Fail
             case r => Final(r)
         }
@@ -111,7 +111,7 @@ object ReadP extends MonadPlus[ReadP] with ThisIsInstance {
     //
     val get: ReadP[Char] = Get
 
-    val look: ReadP[String_] = Look
+    val look: ReadP[String] = Look
 
     def pfail[a]: ReadP[a] = new ReadP[a] {
         override def apply[b](k: a => P[b]): P[b] = Fail
@@ -131,7 +131,7 @@ object ReadP extends MonadPlus[ReadP] with ThisIsInstance {
             if (n == 0) `return`()
             else get >> discard(n-1)
         }
-        def probe(p: P[a])(s: String_)(n: Int): ReadP[a] = (p, s) match {
+        def probe(p: P[a])(s: String)(n: Int): ReadP[a] = (p, s) match {
             case (Get(f), c :: s) => probe(f(c))(s)(n+1)
             case (Look(f), s) => probe(f(s))(s)(n)
             case (Result(_, _), _) => discard(n) >> new ReadP[a] {
@@ -153,17 +153,17 @@ object ReadP extends MonadPlus[ReadP] with ThisIsInstance {
     }
     implicit def <++[a](f: ReadP[a]): Op_<++[a] = new Op_<++(f)
 
-    def gather[a](m: ReadP[a]): ReadP[(String_, a)] = {
-        def gath[b](l: String_ => String_)(p: P[String_ => P[b]]): P[b] = p match {
+    def gather[a](m: ReadP[a]): ReadP[(String, a)] = {
+        def gath[b](l: String => String)(p: P[String => P[b]]): P[b] = p match {
             case Get(f) => Get(c => gath(l `.` List.op_::(c))(f(c)))
             case Fail => Fail
             case Look(f) => Look(s => gath(l)(f(s)))
             case Result(k, p) => P.mplus(k(l(Nil)))(gath(l)(p))
             case Final(_) => error("do not use readS_to_P in gather!")
         }
-        new ReadP[(String_, a)] {
-            override def apply[b](k: Pair[String_, a] => P[b]): P[b] = {
-                gath(id)(m(a => P.`return`((s: String_) => k(s, a))))
+        new ReadP[(String, a)] {
+            override def apply[b](k: Pair[String, a] => P[b]): P[b] = {
+                gath(id)(m(a => P.`return`((s: String) => k(s, a))))
             }
         }
     }
@@ -184,8 +184,8 @@ object ReadP extends MonadPlus[ReadP] with ThisIsInstance {
         } yield *
     }
 
-    val string: String_ => ReadP[String_] = _this => {
-        def scan(xs: String_)(ys: String_): ReadP[String_] = (xs, ys) match {
+    val string: String => ReadP[String] = _this => {
+        def scan(xs: String)(ys: String): ReadP[String] = (xs, ys) match {
             case (Nil, _) => `return`(_this)
             case (x :: xs, y :: ys) => for { _ <- get; * <- scan(xs)(ys) } yield *
             case _ => pfail
@@ -193,8 +193,8 @@ object ReadP extends MonadPlus[ReadP] with ThisIsInstance {
         for { s <- look; * <- scan(_this)(s) } yield *
     }
 
-    val munch: (Char => Bool) => ReadP[String_] = p => {
-        def scan(s: String_): ReadP[String_] = s match {
+    val munch: (Char => Bool) => ReadP[String] = p => {
+        def scan(s: String): ReadP[String] = s match {
             case c :: cs if (p(c)) => for { _ <- get; s <- scan(cs) } yield (c :: s)
             case _ => `return`(Nil)
         }
@@ -204,7 +204,7 @@ object ReadP extends MonadPlus[ReadP] with ThisIsInstance {
         } yield *
     }
 
-    val munch1: (Char => Bool) => ReadP[String_] = p => {
+    val munch1: (Char => Bool) => ReadP[String] = p => {
         for {
             c <- get
             * <- if (p(c)) ( for { s <- munch(p) } yield (c :: s) ) else pfail
@@ -218,7 +218,7 @@ object ReadP extends MonadPlus[ReadP] with ThisIsInstance {
     }
 
     val skipSpaces: ReadP[Unit] = {
-        def skip(s: String_): ReadP[Unit] = s match {
+        def skip(s: String): ReadP[Unit] = s match {
             case c :: s if Char.isSpace(c) => for { _ <- get; * <- skip(s) } yield *
             case _ => `return`()
         }

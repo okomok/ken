@@ -15,7 +15,7 @@ package object parsec {
 
     // Error
     //
-    val messageString: Message_ => String_ = {
+    val messageString: Message_ => String = {
         case SysUnExpect(s) => s
         case UnExpect(s) => s
         case Expect(s) => s
@@ -35,7 +35,7 @@ package object parsec {
 
     // Pos
     //
-    type SourceName = String
+    type SourceName = Predef.String
     type Line = Int
     type Column = Int
 
@@ -54,7 +54,7 @@ package object parsec {
     val setSourceLine: SourcePos => Line => SourcePos = pos => n => pos.copy(line = n)
     val setSourceColumn: SourcePos => Column => SourcePos = pos => n => pos.copy(column = n)
 
-    val updatePosString: SourcePos => String_ => SourcePos = pos => string => List.foldl(updatePosChar)(pos)(string)
+    val updatePosString: SourcePos => String => SourcePos = pos => string => List.foldl(updatePosChar)(pos)(string)
 
     val updatePosChar: SourcePos => Char => SourcePos = pos => {
         case '\n' => pos.copy(line = pos.line + 1, column = 1)
@@ -68,7 +68,7 @@ package object parsec {
     //
     def unknownError[s, u](state: State[s, u]): ParseError = newErrorUnknown(statePos(state))
 
-    val sysUnExpectError: String_ => SourcePos => Reply[Nothing, Nothing, Nothing] = msg => pos => Error(newErrorMessage(SysUnExpect(msg))(pos))
+    val sysUnExpectError: String => SourcePos => Reply[Nothing, Nothing, Nothing] = msg => pos => Error(newErrorMessage(SysUnExpect(msg))(pos))
 
     def mergeErrorReply[s, u, a](err1: ParseError)(reply: Reply[s, u, a]) = reply match {
         case Ok(x, state, err2) => Ok(x, state, (mergeError(err1)(err2)))
@@ -79,5 +79,5 @@ package object parsec {
     def statePos[s, u](state: State[s, u]): SourcePos = state.pos
     def stateUser[s, u](state: State[s, u]): u = state.user
 
-    val unexpectError: String_ => SourcePos => ParseError = msg => pos => newErrorMessage(SysUnExpect(msg))(pos)
+    val unexpectError: String => SourcePos => ParseError = msg => pos => newErrorMessage(SysUnExpect(msg))(pos)
 }

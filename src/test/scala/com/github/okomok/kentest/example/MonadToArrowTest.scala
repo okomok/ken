@@ -19,7 +19,7 @@ class MonadToArrowTest extends org.scalatest.junit.JUnit3Suite {
     }
 
     /*sealed*/ abstract class Exp
-    case class Var(x: String) extends Exp
+    case class Var(x: Predef.String) extends Exp
     case class Add(l: Exp, r: Exp) extends Exp
     case class If(b: Exp, t: Exp, e: Exp) extends Exp
 
@@ -27,7 +27,7 @@ class MonadToArrowTest extends org.scalatest.junit.JUnit3Suite {
     case class Num(x: Int) extends Val
     case class Bl(b: Boolean) extends Val
 
-    type Env = List[(String, Val)]
+    type Env = List[(Predef.String, Val)]
     def lookup[a, b](key: a)(xs: List[(a, b)]): b = Maybe.fromJust(List.lookup(key)(xs))
 
     def add(v1: Val)(v2: Val): Val = (v1, v2) match {

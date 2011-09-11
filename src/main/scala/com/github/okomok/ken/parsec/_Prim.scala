@@ -13,7 +13,7 @@ package parsec
 
 
 private[parsec] trait _Prim[s, u, n[+_]] { this: _ParsecTs[s, u, n] =>
-    lazy val unexpected: String_ => ParsecT[Nothing] = msg => ParsecT { new UnParser[s, u, n, Nothing] {
+    lazy val unexpected: String => ParsecT[Nothing] = msg => ParsecT { new UnParser[s, u, n, Nothing] {
         override def apply[b](v: UnParserParam[s, u, n, Nothing, b]): n[b] = {
             v.eerr { newErrorMessage(UnExpect(msg))(statePos(v.state)) }
         }
@@ -114,14 +114,14 @@ private[parsec] trait _Prim[s, u, n[+_]] { this: _ParsecTs[s, u, n] =>
         }
     } }
 
-    def label[a](p: ParsecT[a])(msg: String_): ParsecT[a] = labels(p)(List(msg))
+    def label[a](p: ParsecT[a])(msg: String): ParsecT[a] = labels(p)(List(msg))
 
-    def labels[a](p: ParsecT[a])(msgs: List[String_]): ParsecT[a] = ParsecT { new UnParser[s, u, n, a] {
+    def labels[a](p: ParsecT[a])(msgs: List[String]): ParsecT[a] = ParsecT { new UnParser[s, u, n, a] {
         override def apply[b](v: UnParserParam[s, u, n, a, b]): n[b] = {
-            def setExpectErrors(err: ParseError)(msgs: List[String_]): ParseError = msgs match {
+            def setExpectErrors(err: ParseError)(msgs: List[String]): ParseError = msgs match {
                 case Nil => setErrorMessage(Expect(""))(err)
                 case msg !:: Nil => setErrorMessage(Expect(msg))(err)
-                case msg :: msgs => List.foldr[String_, ParseError](msg => err => addErrorMessage(Expect(msg))(err))(setErrorMessage(Expect(msg))(err))(msgs.!)
+                case msg :: msgs => List.foldr[String, ParseError](msg => err => addErrorMessage(Expect(msg))(err))(setErrorMessage(Expect(msg))(err))(msgs.!)
             }
 
             val eok_ : v.eok = x => s_ => error => v.eok(x)(s_) {
@@ -133,7 +133,7 @@ private[parsec] trait _Prim[s, u, n[+_]] { this: _ParsecTs[s, u, n] =>
         }
     } }
 
-    def tokens[t](showTokens: List[t] => String_)
+    def tokens[t](showTokens: List[t] => String)
         (nextposs: SourcePos => List[t] => SourcePos)
         (tts: List[t])
         (implicit i: Stream[s, n, t], j: Eq[t]): ParsecT[List[t]] = tts match
@@ -193,7 +193,7 @@ private[parsec] trait _Prim[s, u, n[+_]] { this: _ParsecTs[s, u, n] =>
         }
     } }
 
-    def token[a, t](showToken: t => String_)
+    def token[a, t](showToken: t => String)
         (tokpos: t => SourcePos)
         (test: t => Maybe[a])(implicit i: Stream[s, n, t], ev: Iso1[n, WeakIdentity.apply]): ParsecT[a] =
     {
@@ -204,7 +204,7 @@ private[parsec] trait _Prim[s, u, n[+_]] { this: _ParsecTs[s, u, n] =>
         tokenPrim(showToken)(nextpos)(test)
     }
 
-    def tokenPrim[a, t](showToken: t => String_)
+    def tokenPrim[a, t](showToken: t => String)
         (nextpos: SourcePos => t => s => SourcePos)
         (test: t => Maybe[a])
         (implicit i: Stream[s, n, t]): ParsecT[a] =
@@ -212,7 +212,7 @@ private[parsec] trait _Prim[s, u, n[+_]] { this: _ParsecTs[s, u, n] =>
         tokenPrimEx(showToken)(nextpos)(Nothing)(test)(i)
     }
 
-    def tokenPrimEx[a, t](showToken: t => String_)
+    def tokenPrimEx[a, t](showToken: t => String)
         (nextpos: SourcePos => t => s => SourcePos)
         (nextstate: Maybe[SourcePos => t => s => u => u])
         (test: t => Maybe[a])

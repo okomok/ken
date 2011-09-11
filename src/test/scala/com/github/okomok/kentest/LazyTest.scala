@@ -18,7 +18,7 @@ class LazyTest extends org.scalatest.junit.JUnit3Suite {
 
     def testEval {
         class HasBang {
-            def ! : String = "hello"
+            def ! : Predef.String = "hello"
         }
 
         class HasEval {

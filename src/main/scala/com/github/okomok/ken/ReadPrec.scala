@@ -60,7 +60,7 @@ object ReadPrec extends Newtype1[ReadPrec, ({type ot[+a] = Int => ReadP[a]})#ot]
     //
     val get: ReadPrec[Char] = lift(ReadP.get)
 
-    val look: ReadPrec[String_] = lift(ReadP.look)
+    val look: ReadPrec[String] = lift(ReadP.look)
 
     def op_+++[a](f1: ReadPrec[a])(f2: Lazy[ReadPrec[a]]): ReadPrec[a] = ReadPrec { n => ReadP.op_+++(f1(n))(f2(n)) }
 

@@ -39,14 +39,14 @@ package object ken {
         if (p(x)) x else until(p)(f)(f(x))
     }
 
-    def asTypeOf[a](x: a)(y: a): a = x
+    def asTypeOf[a](x: a)(y: => a): a = x
 
     sealed class AsTypeOf[a](x: a) {
         def _asTypeOf_(y: => a): a = x
     }
     implicit def _asTypeOf_[a](x: a): AsTypeOf[a] = new AsTypeOf(x)
 
-    val error: String_ => Nothing = { msg => throw new java.lang.Error(List.stringize(msg)) }
+    val error: String => Nothing = { msg => throw new java.lang.Error(List.stringize(msg)) }
 
     def undefined: Nothing = throw new java.lang.Error("undefined")
 
@@ -68,7 +68,7 @@ package object ken {
 
     // Aliases
     //
-    type String_ = List[Char]
+    type String = List[Char]
 
     type Bool = Boolean
     val Bool = _Bool
@@ -83,9 +83,9 @@ package object ken {
 
     type Rational = Ratio[Integer]
 
-    type ReadS[+a] = String_ => List[(a, String_)]
+    type ReadS[+a] = String => List[(a, String)]
 
-    type ShowS = String_ => String_
+    type ShowS = String => String
 
     type IOError = java.io.IOException
 

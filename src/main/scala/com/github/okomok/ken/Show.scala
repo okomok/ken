@@ -25,7 +25,7 @@ trait Show[a] extends Typeclass0[a] {
     type showsPrec = Int => a => ShowS
     def showsPrec: showsPrec = _ => x => s => show(x) ++: s
 
-    type show = a => String_
+    type show = a => String
     def show: show = x => shows(x)("")
 
     type showList = List[a] => ShowS
@@ -37,7 +37,7 @@ trait Show[a] extends Typeclass0[a] {
         xs match {
             case Nil => "Nil" ++: s
             case x :: xs => {
-                def showl(ys: List[a]): String_ = ys match {
+                def showl(ys: List[a]): String = ys match {
                     case Nil => ')' :: s
                     case y :: ys => ',' :: showx(y)(showl(ys.!))
                 }
@@ -65,7 +65,7 @@ object Show extends ShowInstance {
     def apply[a <: Kind.Function0](implicit i: Show[a#apply0]): Show[a#apply0] = i
 
     val showChar: Char => ShowS = List.op_!::
-    val showString: String_ => ShowS = List.op_!++:
+    val showString: String => ShowS = List.op_!++:
     val showParen: Bool => ShowS => ShowS = b => p => if (b) showChar('(') `.` p `.` showChar(')') else p
     val showSpace: ShowS = xs => ' ' :: xs
 
@@ -76,7 +76,7 @@ object Show extends ShowInstance {
     // Shortcuts
     //
     def showsPrec[a](x: Int)(s: a)(implicit i: Show[a]): ShowS = i.showsPrec(x)(s)
-    def show[a](s: a)(implicit i: Show[a]): String_ = i.show(s)
+    def show[a](s: a)(implicit i: Show[a]): String = i.show(s)
     def showList[a](ls: List[a])(implicit i: Show[a]): ShowS = i.showList(ls)
     def shows[a](x: a)(implicit i: Show[a]): ShowS = i.shows(x)
 }

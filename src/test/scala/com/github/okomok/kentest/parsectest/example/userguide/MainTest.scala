@@ -21,7 +21,7 @@ class MainTezt {
     val pm = MonadPlus[Parser.type]
     import pm._
 
-    def run[a](p: Parser[a])(input: String_)(implicit i: Show[a]): IO[Unit] = {
+    def run[a](p: Parser[a])(input: String)(implicit i: Show[a]): IO[Unit] = {
         val io = parse(p)("")(input) match {
             case Left(err) => for {
                 _ <- IO.putStr("parse error at ")
@@ -110,19 +110,19 @@ class MainTezt {
 
     // 2.5 and 2.6
 
-    lazy val _word: Parser[String_] = for {
+    lazy val _word: Parser[String] = for {
         c <- letter
         d <- ( for { cs <- _word } yield  c :: cs ) <|> `return`(List(c))
     } yield d
 
-    val word: Parser[String_] = many1(letter <#> "") <#> "word"
+    val word: Parser[String] = many1(letter <#> "") <#> "word"
 
     def testWord {
         println("---run word---")
         run(word)("hidi,,").!
     }
 
-    lazy val sentence: Parser[List[String_]] = for {
+    lazy val sentence: Parser[List[String]] = for {
         words <- sepBy1(word)(separator)
         _ <- oneOf(".?!") <#> "end of sentence"
     } yield words

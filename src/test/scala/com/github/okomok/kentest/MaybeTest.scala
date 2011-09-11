@@ -10,8 +10,8 @@ package com.github.okomok.kentest
 import com.github.okomok.ken._
 
 object StackTraceString {
-    def apply(): String = {
-        var that: String = null
+    def apply(): Predef.String = {
+        var that: Predef.String = null
         try {
             throw new RuntimeException("StackTraceString")
         } catch {
@@ -20,7 +20,7 @@ object StackTraceString {
         that
     }
 
-    def fromThrowable(t: Throwable): String = {
+    def fromThrowable(t: Throwable): Predef.String = {
         val w = new java.io.StringWriter()
         t.printStackTrace(new java.io.PrintWriter(w))
         w.toString
@@ -35,9 +35,9 @@ class MaybeTest extends org.scalatest.junit.JUnit3Suite {
         import MaybeT._monad._
 
         var valid = false
-        def isValid(s: String_): Boolean = Eq[Kind.const[String_]].op_===(s)("valid")
+        def isValid(s: String): Boolean = Eq[Kind.const[String]].op_===(s)("valid")
 
-        def getValidPassword: MaybeT[String_] = {
+        def getValidPassword: MaybeT[String] = {
             for {
                 s <- lift(IO.getLine)
                 _ <- guard(isValid(s))
@@ -62,9 +62,9 @@ class MaybeTest extends org.scalatest.junit.JUnit3Suite {
         val wmt = MonadTrans.weak[IO.MaybeT.type]
         import wmt.lift
 
-        def isValid(s: String_): Boolean = Eq[Kind.const[String_]].op_===(s)("valid")
+        def isValid(s: String): Boolean = Eq[Kind.const[String]].op_===(s)("valid")
 
-        def getValidPassword: IO[Maybe[String_]] = for {
+        def getValidPassword: IO[Maybe[String]] = for {
             s <- IO.getLine
             _ <- guard(isValid(s))
         } yield s
@@ -78,8 +78,8 @@ class MaybeTest extends org.scalatest.junit.JUnit3Suite {
         def askPassword2: IO[Maybe[Unit]] = {
             IO.putStrLn("Insert your new password") >>= { (_: Unit) =>
                 // IO[Unit]
-                msum { List.repeat(getValidPassword) } >>= { (value: String_) =>
-                    // IO[Maybe[String_]]
+                msum { List.repeat(getValidPassword) } >>= { (value: String) =>
+                    // IO[Maybe[String]]
                     IO.putStrLn("Storing in database...") >>= { (_: Unit) =>
                         // IO[Unit]
                         wm.`return`(())
@@ -103,9 +103,9 @@ class MaybeTest extends org.scalatest.junit.JUnit3Suite {
         import mt.lift
 
         var valid = false
-        def isValid(s: String_): Boolean = Eq[Kind.const[String_]].op_===(s)("valid")
+        def isValid(s: String): Boolean = Eq[Kind.const[String]].op_===(s)("valid")
 
-        def getValidPassword: MaybeT[String_] = {
+        def getValidPassword: MaybeT[String] = {
             for {
                 s <- lift(IO.getLine)
                 _ <- guard(isValid(s))

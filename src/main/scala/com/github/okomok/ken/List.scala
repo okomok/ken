@@ -20,7 +20,7 @@ import scala.annotation.tailrec
 sealed abstract class List[+a] extends Up[List[a]] {
     final def of[b >: a]: List[b] = this
 
-    final override def toString: String = {
+    final override def toString: Predef.String = {
         if (this eq Nil) "Nil"
         else if (List.all((_: a).isInstanceOf[Char])(this)) toScalaList.mkString("\"", "", "\"")
         else toScalaList.mkString("List(", ",", ")")
@@ -168,7 +168,7 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
     }
 
     implicit def fromArray[a](xs: Array[a]): List[a] = fromIterable(xs)
-    implicit def fromString(xs: String): String_ = fromIterable(xs)
+    implicit def fromString(xs: Predef.String): String = fromIterable(xs)
     implicit def fromIterable[a](xs: scala.Iterable[a]): List[a] = fromIterator(xs.iterator)
 
     // Basic functions
@@ -550,15 +550,15 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
 
     // Functions on strings
     //
-    def stringize(cs: String_): String = foldl[StringBuilder, Char](sb => c => { sb += c; sb })(new StringBuilder)(cs).toString
+    def stringize(cs: String): Predef.String = foldl[StringBuilder, Char](sb => c => { sb += c; sb })(new StringBuilder)(cs).toString
 
-    def lines(s: String_): List[String_] = map(fromString)(from(stringize(s).split("\\r?\\n")))
+    def lines(s: String): List[String] = map(fromString)(from(stringize(s).split("\\r?\\n")))
 
-    def unlines(ls: List[String_]): String_ = concatMap(op_!++:("\n"))(ls)
+    def unlines(ls: List[String]): String = concatMap(op_!++:("\n"))(ls)
 
-    def words(s: String_): List[String_] = map(fromString)(from(stringize(s).split("\\W+")))
+    def words(s: String): List[String] = map(fromString)(from(stringize(s).split("\\W+")))
 
-    def unwords(ws: List[String_]): String_ = ws match {
+    def unwords(ws: List[String]): String = ws match {
         case Nil => ""
         case w !:: Nil => w
         case w :: ws => w ++: (' ' :: unwords(ws.!))

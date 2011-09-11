@@ -13,7 +13,7 @@ package parsec
 
 
 final case class ParseError(pos: SourcePos, msgs: List[Message_]) {
-    override def toString: String = List.stringize(ParseError.show(this))
+    override def toString: Predef.String = List.stringize(ParseError.show(this))
 }
 
 
@@ -28,32 +28,32 @@ object ParseError extends Eq.Of[ParseError] with Show[ParseError] with ThisIsIns
 
     // Language independent show function
     //
-    private def showErrorMessages(msgOr: String_)
-        (msgUnknown: String_)(msgExpecting: String_)(msgUnExpected: String_)
-        (msgEndOfInput: String_)(msgs: List[Message_]): String_ =
+    private def showErrorMessages(msgOr: String)
+        (msgUnknown: String)(msgExpecting: String)(msgUnExpected: String)
+        (msgEndOfInput: String)(msgs: List[Message_]): String =
     {
         val (sysUnExpect, msgs1) = List.span(SysUnExpect("") === (_: Message_))(msgs)
         val (unExpect, msgs2) = List.span(UnExpect("") === (_: Message_))(msgs1)
         val (expect, messages) = List.span(Expect("") === (_: Message_))(msgs2)
 
-        def clean(ms: List[String_]): List[String_] = List.nub(List.filter[String_](Bool.not `.` List.`null`)(ms))
+        def clean(ms: List[String]): List[String] = List.nub(List.filter[String](Bool.not `.` List.`null`)(ms))
 
-        def separate(sep: String_)(ms: List[String_]): String_ = ms match {
+        def separate(sep: String)(ms: List[String]): String = ms match {
             case Nil => Nil
             case m !:: Nil => m
             case m :: ms => m ++: sep ++: separate(sep)(ms.!)
         }
 
-        def commasOr(s: List[String_]): String_ = s match {
+        def commasOr(s: List[String]): String = s match {
             case Nil => Nil
             case m !:: Nil => m
             case ms => commaSep(List.init(ms)) ++: " " ++: msgOr ++: " " ++: List.last(ms)
         }
 
-        def commaSep(ms: List[String_]): String_ = separate(", ")(clean(ms))
-        def semiSep(ms: List[String_]): String_ = separate("; ")(clean(ms))
+        def commaSep(ms: List[String]): String = separate(", ")(clean(ms))
+        def semiSep(ms: List[String]): String = separate("; ")(clean(ms))
 
-        def showMany(pre: String_)(msgs: List[Message_]): String_ = {
+        def showMany(pre: String)(msgs: List[Message_]): String = {
             clean(List.map(messageString)(msgs)) match {
                 case Nil => ""
                 case ms => {
@@ -63,21 +63,21 @@ object ParseError extends Eq.Of[ParseError] with Show[ParseError] with ThisIsIns
             }
         }
 
-        def showExpect: String_ = showMany(msgExpecting)(expect)
-        def showUnExpect: String_ = showMany(msgUnExpected)(unExpect)
-        def showSysUnExpect: String_ = {
-            def firstMsg: String_ = messageString(List.head(sysUnExpect))
+        def showExpect: String = showMany(msgExpecting)(expect)
+        def showUnExpect: String = showMany(msgUnExpected)(unExpect)
+        def showSysUnExpect: String = {
+            def firstMsg: String = messageString(List.head(sysUnExpect))
 
             if (Bool.not(List.`null`(unExpect)) || List.`null`(sysUnExpect)) ""
             else if (List.`null`(firstMsg)) msgUnExpected ++: " " ++: msgEndOfInput
             else msgUnExpected ++: " " ++: firstMsg
         }
-        def showMessages: String_ = showMany("")(messages)
+        def showMessages: String = showMany("")(messages)
 
         if (List.`null`(msgs)) {
             msgUnknown
         } else {
-            List.concat { List.map((m: String_) => "\n" ++: m) { clean {
+            List.concat { List.map((m: String) => "\n" ++: m) { clean {
                 List(showSysUnExpect, showUnExpect, showExpect, showMessages)
             } } }
         }

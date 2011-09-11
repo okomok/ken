@@ -72,11 +72,11 @@ object IO extends MonadIO[IO] with ThisIsInstance {
         Predef.print(c)
     }
 
-    val putStr: String_ => IO[Unit] = s => unsafeIO {
+    val putStr: String => IO[Unit] = s => unsafeIO {
         s.foreach(Predef.print)
     }
 
-    val putStrLn: String_ => IO[Unit] = s => {
+    val putStrLn: String => IO[Unit] = s => {
         for { _ <- putStr(s); _ <- putChar('\n') } yield ()
     }
 
@@ -88,7 +88,7 @@ object IO extends MonadIO[IO] with ThisIsInstance {
         Predef.readChar()
     }
 
-    val getLine: IO[String_] = unsafeIO {
+    val getLine: IO[String] = unsafeIO {
         val str = Predef.readLine()
         if (str == null) {
             throw new java.io.EOFException("getLine")
@@ -97,23 +97,23 @@ object IO extends MonadIO[IO] with ThisIsInstance {
         }
     }
 
-    val getContents: IO[String_] = {
+    val getContents: IO[String] = {
         for { s <- getLine } yield (s ++: getContents.!)
     }
 
-    val interact: (String_ => String_) => IO[Unit] = f => {
+    val interact: (String => String) => IO[Unit] = f => {
         for { s <- getContents; * <- putStr(f(s)) } yield *
     }
 
     // Files
     //
-    type FilePath = String
+    type FilePath = Predef.String
 
-    val readFile: FilePath => IO[String_] = f => unsafeIO {
+    val readFile: FilePath => IO[String] = f => unsafeIO {
         scala.io.Source.fromFile(f)
     }
 
-    val writeFile: FilePath => String_ => IO[Unit] = f => txt => unsafeIO {
+    val writeFile: FilePath => String => IO[Unit] = f => txt => unsafeIO {
         val fw = new java.io.FileWriter(f)
         try {
             fw.write(List.stringize(txt))
@@ -122,7 +122,7 @@ object IO extends MonadIO[IO] with ThisIsInstance {
         }
     }
 
-    val appendFile: FilePath => String_ => IO[Unit] = f => txt => unsafeIO {
+    val appendFile: FilePath => String => IO[Unit] = f => txt => unsafeIO {
         val fw = new java.io.FileWriter(f, True)
         try {
             fw.write(List.stringize(txt))
@@ -135,7 +135,7 @@ object IO extends MonadIO[IO] with ThisIsInstance {
     //
     val ioError: IOError => IO[Nothing] = err => unsafeIO { throw err }
 
-    val userError: String_ => IOError = s => new java.io.IOException(s.toString)
+    val userError: String => IOError = s => new java.io.IOException(s.toString)
 
     def `catch`[a](io: IO[a])(h: IOError => IO[a]): IO[a] = unsafeIO {
         try {

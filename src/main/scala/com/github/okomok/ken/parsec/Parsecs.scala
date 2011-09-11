@@ -21,7 +21,7 @@ trait ParsecsBase[s, u] extends ParsecTsBase[s, u, WeakIdentity.type] {
     final val Parsec = ParsecT
 
     // test-compile :)
-    private def _token[a, t](showToken: t => String_)
+    private def _token[a, t](showToken: t => String)
         (tokpos: t => SourcePos)
         (test: t => Maybe[a])(implicit i: Stream[s, WeakIdentity.apply, t]): Parsec[a] = token(showToken)(tokpos)(test)
 }

@@ -14,8 +14,8 @@ class MonadTransTest extends org.scalatest.junit.JUnit3Suite {
 
     def testGetInstance {
         val i = MonadIO[IO.MaybeT.type]
-        val me = Monad[Error.apply[String_]]
-        val j = MonadError[String_, me.MaybeT.type]
+        val me = Monad[Error.apply[String]]
+        val j = MonadError[String, me.MaybeT.type]
     }
 
     def testDependent {

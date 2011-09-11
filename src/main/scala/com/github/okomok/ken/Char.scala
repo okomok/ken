@@ -43,8 +43,8 @@ object Char extends Bounded[Char] with Enum[Char] with Eq.Of[Char] with Ord[Char
 
     // Utilities
     //
-    val matches: String_ => Char => Bool = {
-        str => ch => String.valueOf(ch).matches(List.stringize(str))
+    val matches: String => Char => Bool = {
+        str => ch => java.lang.String.valueOf(ch).matches(List.stringize(str))
     }
 
     val isAscii: Char => Bool = ch => ch < 128
@@ -89,6 +89,6 @@ object Char extends Bounded[Char] with Enum[Char] with Eq.Of[Char] with Ord[Char
 
     //val showLitChar: Char => Show.ShowS
 
-    //val lexLitChar: Read.ReadS[String_]
+    //val lexLitChar: Read.ReadS[String]
     //val readLitChar: Read.ReadS[Char]
 }
