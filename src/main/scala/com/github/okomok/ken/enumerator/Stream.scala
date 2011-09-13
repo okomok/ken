@@ -12,7 +12,9 @@ package ken
 package enumerator
 
 
-sealed abstract class Stream[+a] extends Up[Stream[a]]
+sealed abstract class Stream[+a] extends Up[Stream[a]] {
+    final def of[b >: a]: Stream[b] = this
+}
 
 final case class Chunks[+a](_1: List[a]) extends Stream[a]
 case object EOF extends Stream[Nothing]
