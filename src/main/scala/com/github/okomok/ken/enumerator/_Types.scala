@@ -19,7 +19,7 @@ private[enumerator] trait _Types[n[+_]] { this: _Enumerators[n] =>
     sealed trait Step[-a, +b] extends Step_[a, n, b]
     final case class Continue[a, b](override val k: Stream[a] => Iteratee[a, b]) extends Continue_[a, n, b] with Step[a, b]
     final case class Yield[a, b](override val x: b, override val extra: Stream[a]) extends Yield_[a, n, b] with Step[a, b]
-    final case class Error(override val err: Throwable) extends Error_[n] with Step[Any, Nothing]
+    final case class Error(override val err: SomeException) extends Error_[n] with Step[Any, Nothing]
 
     object Step {
         def dependent[a, b](s: Step_[a, n, b]): Step[a, b] = {

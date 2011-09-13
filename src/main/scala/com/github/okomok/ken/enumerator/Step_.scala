@@ -31,5 +31,5 @@ trait Yield_[a, n[+_], b] extends Step_[a, n, b] with Yield_Tag {
 }
 
 trait Error_[n[+_]] extends Step_[Any, n, Nothing] with Error_Tag {
-    def err: Throwable
+    def err: SomeException
 }

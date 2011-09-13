@@ -53,7 +53,7 @@ private[enumerator] trait _Primitives[n[+_]] { this: _Enumerators[n] =>
 
     // Primitives
     //
-    def run[a, b](i: Iteratee[a, b]): n[Either[Throwable, b]] = {
+    def run[a, b](i: Iteratee[a, b]): n[Either[SomeException, b]] = {
         import inner.`return`
         for {
             mStep <- runIteratee { enumEOF[a, b] ==<<: i }
@@ -69,9 +69,9 @@ private[enumerator] trait _Primitives[n[+_]] { this: _Enumerators[n] =>
         run(i) >>= Either.either((x: Throwable) => throw x)(inner.`return`[b])
     }
 
-    lazy val throwError: Throwable => Iteratee[Any, Nothing] = exc => returnI(Error(exc))
+    def throwError[e](exc: e)(implicit i: Exception[e]): Iteratee[Any, Nothing] = returnI(Error(i.toException(exc)))
 
-    def catchError[a, b](iter: Iteratee[a, b])(h: Throwable => Iteratee[a, b]): Iteratee[a, b] = {
+    def catchError[a, b](iter: Iteratee[a, b])(h: SomeException => Iteratee[a, b]): Iteratee[a, b] = {
         def step(s: Step[a, b]): Iteratee[a, b] = s match {
             case Yield(b, as) => `yield`(b)(as)
             case Error(err) => h(err)
