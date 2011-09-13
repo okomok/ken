@@ -61,7 +61,7 @@ private[enumerator] trait _Utilities[n[+_]] { this: _Enumerators[n] =>
         val mi = Monad[Iteratee.apply[ao]]
         import mi.>>=
         lazy val loop: Enumeratee[ao, ai, b] = checkDone(check)
-        lazy val check: (Stream[ai] => Iteratee[ai, b]) => Iteratee[ao, Step[ai, b]] = k => isEOF[ao] >>= { f =>
+        lazy val check: (Stream[ai] => Iteratee[ai, b]) => Iteratee[ao, Step[ai, b]] = k => isEOF >>= { f =>
             if (f) `yield`(Continue(k))(EOF)
             else step(k)
         }
@@ -73,7 +73,7 @@ private[enumerator] trait _Utilities[n[+_]] { this: _Enumerators[n] =>
         case Yield(x, _) => `yield`(x)(EOF)
         case Error(err) => throwError(err)
         case Continue(k) => {
-            val check: Step[a, b] => Iteratee[a, b] = {
+            val check: Enumerator[a, b] = {
                 case Continue(_) => error("enumEOF: divergent iteratee")
                 case s => enumEOF(s)
             }
@@ -88,7 +88,7 @@ private[enumerator] trait _Utilities[n[+_]] { this: _Enumerators[n] =>
 
     def checkDone[a, a_, b](f: (Stream[a] => Iteratee[a, b]) => Iteratee[a_, Step[a, b]]): Enumeratee[a_, a, b] = checkDoneEx(Chunks(Nil))(f)
 
-    def isEOF[a]: Iteratee[a, Bool] = continue {
+    lazy val isEOF: Iteratee[Any, Bool] = continue {
         case s @ EOF => `yield`(True)(s)
         case s => `yield`(False)(s)
     }
@@ -124,10 +124,13 @@ private[enumerator] trait _Utilities[n[+_]] { this: _Enumerators[n] =>
         val mi = MonadIO[Iteratee.apply[Any]]
         import mi.`for`
         lazy val loop: Stream[Any] => Iteratee[Any, Unit] = {
-            case Chunks(xs) => for {
-                * <- mi.unless(List.`null`(xs) && Bool.not(printEmpty))(mi.liftIO(IO.print(xs)))
-                * <- continue(loop)
-            } yield *
+            case Chunks(xs) => {
+                val hide = List.`null`(xs) && Bool.not(printEmpty)
+                for {
+                    * <- mi.unless(hide)(mi.liftIO(IO.print(xs)))
+                    * <- continue(loop)
+                } yield *
+            }
             case EOF => for {
                 _ <- mi.liftIO(IO.putStrLn("EOF"))
                 * <- `yield`()(EOF.of[Any])
