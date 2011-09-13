@@ -29,7 +29,7 @@ trait ErrorClassProxy[a] extends ErrorClass[a] {
 }
 
 
-object ErrorClass extends ErrorClassInstance {
+object ErrorClass extends ErrorClassInstance with ErrorClassShortcut {
     def apply[a <: Kind.Function0](implicit i: ErrorClass[a#apply0]): ErrorClass[a#apply0] = i
 }
 
@@ -51,4 +51,10 @@ sealed trait ErrorClassInstance { this: ErrorClass.type =>
     implicit def ofThrowable[x <: Throwable](implicit i: ClassManifest[x]): ErrorClass[x] = new ErrorClass[x] {
         override val strMsg: strMsg = msg => i.erasure.getConstructor(classOf[Predef.String]).newInstance(List.stringize(msg)).asInstanceOf[x]
     }
+}
+
+
+sealed trait ErrorClassShortcut { this: ErrorClass.type =>
+    def noMsg[a](implicit i: ErrorClass[a]): a = i.noMsg
+    def strMsg[a](s: String)(implicit i: ErrorClass[a]): a = i.strMsg(s)
 }

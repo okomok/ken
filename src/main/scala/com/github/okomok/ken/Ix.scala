@@ -45,7 +45,7 @@ trait Ix[a] extends Ord[a] {
 
     // Extra
     //
-    final def indexError(rng: Pair[a, a])(i: a)(tp: String)(implicit j: Show[a]): Nothing = {
+    final def indexError(rng: (a, a))(i: a)(tp: String)(implicit j: Show[a]): Nothing = {
         import Show._
         error( (showString("Ix{") `.` showString(tp) `.` showString("}.index: Index ") `.`
             showParen(True)(showsPrec(0)(i)) `.`
@@ -69,7 +69,7 @@ trait IxProxy[a] extends Ix[a] with OrdProxy[a] {
 }
 
 
-object Ix extends IxInstance {
+object Ix extends IxInstance with IxShortcut {
     def apply[a <: Kind.Function0](implicit i: Ix[a#apply0]): Ix[a#apply0] = i
 
     def deriving[nt <: Kind.Function0, ot <: Kind.Function0](implicit i: Ix[ot#apply0], j: Newtype0[nt#apply0, ot#apply0]): Ix[nt#apply0] = new Ix[nt#apply0] with OrdProxy[nt#apply0] {
@@ -106,4 +106,15 @@ sealed trait IxInstance { this: Ix.type =>
         }
         override val inRange: inRange = { case (n, m) => k => i.lteq(n, k) && i.lteq(k, m) }
     }
+}
+
+
+sealed trait IxShortcut { this: Ix.type =>
+    def range[a](b: (a, a))(implicit ix: Ix[a]): List[a] = ix.range(b)
+    def index[a](b: (a, a))(i: a)(implicit ix: Ix[a]): Int = ix.index(b)(i)
+    def unsafeIndex[a](b: (a, a))(i: a)(implicit ix: Ix[a]): Int = ix.unsafeIndex(b)(i)
+    def inRange[a](b: (a, a))(i: a)(implicit ix: Ix[a]): Bool = ix.inRange(b)(i)
+    def rangeSize[a](b: (a, a))(implicit ix: Ix[a]): Int = ix.rangeSize(b)
+    def unsafeRangeSize[a](b: (a, a))(implicit ix: Ix[a]): Int = ix.unsafeRangeSize(b)
+    def indexError[a](rng: (a, a))(i: a)(tp: String)(implicit ix : Ix[a], j: Show[a]): Nothing = ix.indexError(rng)(i)(tp)
 }

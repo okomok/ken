@@ -86,7 +86,7 @@ trait NumProxy[a] extends Num[a] {
 }
 
 
-object Num extends NumInstance {
+object Num extends NumInstance with NumShortcut {
     def apply[a <: Kind.Function0](implicit i: Num[a#apply0]): Num[a#apply0] = i
 }
 
@@ -113,4 +113,33 @@ sealed trait NumInstance { this: Num.type =>
         override lazy val fromRational: Rational => a = error("todo")
     }
 */
+}
+
+
+sealed trait NumShortcut { this: Num.type =>
+    def op_+[a](x: a)(y: a)(implicit i: Num[a]): a = i.op_+(x)(y)
+    def op_-[a](x: a)(y: a)(implicit i: Num[a]): a = i.op_-(x)(y)
+    def op_*[a](x: a)(y: a)(implicit i: Num[a]): a = i.op_*(x)(y)
+    def negate[a](x: a)(implicit i: Num[a]): a = i.negate(x)
+    def abs[a](x: a)(implicit i: Num[a]): a = i.abs(x)
+    def signum[a](x: a)(implicit i: Num[a]): a = i.signum(x)
+    def fromInteger[a](n: Integer)(implicit i: Num[a]): a = i.fromInteger(n)
+
+    def subtract[a](x: a)(y: a)(implicit i: Num[a]): a = i.subtract(x)(y)
+    def fromIntegral[z, a](x: z, * : Type[a] = null)(implicit i: Integral[z], j: Num[a]): a = j.fromIntegral(x)
+
+    sealed class _Op_+[a](x: a)(implicit i: Num[a]) {
+        def +(y: a): a = op_+(x)(y)
+    }
+    implicit def +[a](x: a)(implicit i: Num[a]): _Op_+[a] = new _Op_+(x)
+
+    sealed class _Op_-[a](x: a)(implicit i: Num[a]) {
+        def -(y: a): a = op_-(x)(y)
+    }
+    implicit def -[a](x: a)(implicit i: Num[a]): _Op_-[a] = new _Op_-(x)
+
+    sealed class _Op_*[a](x: a)(implicit i: Num[a]) {
+        def *(y: a): a = op_*(x)(y)
+    }
+    implicit def *[a](x: a)(implicit i: Num[a]): _Op_*[a] = new _Op_*(x)
 }

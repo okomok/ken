@@ -47,7 +47,7 @@ trait EqProxy[a] extends _Eq[a] {
 }
 
 
-object _Eq extends EqInstance {
+object _Eq extends EqInstance with EqShortcut {
     def apply[a <: Kind.Function0](implicit i: _Eq[a#apply0]): _Eq[a#apply0] = i
 
     def deriving[nt <: Kind.Function0, ot <: Kind.Function0](implicit i: _Eq[ot#apply0], j: Newtype0[nt#apply0, ot#apply0]): _Eq[nt#apply0] = new _Eq[nt#apply0] {
@@ -72,21 +72,6 @@ object _Eq extends EqInstance {
     def byPredicate[a](f: Pair[a, a] => Bool): _Eq[a] = new _Eq[a] {
         override val op_=== : op_=== = x => y => f(x, y)
     }
-
-    // Shortcuts
-    //
-    def op_===[a](x: a)(y: a)(implicit i: _Eq[a]): Bool = i.op_===(x)(y)
-    def op_/==[a](x: a)(y: a)(implicit i: _Eq[a]): Bool = i.op_/==(x)(y)
-
-    sealed class _Op_===[a](x: a, i: _Eq[a]) {
-        def ===(y: a): Bool = op_===(x)(y)(i)
-    }
-    implicit def ===[a](x: a)(implicit i: _Eq[a]): _Op_===[a] = new _Op_===(x, i)
-
-    sealed class _Op_/==[a](x: a, i: _Eq[a]) {
-        def /==(y: a): Bool = op_/==(x)(y)(i)
-    }
-    implicit def /==[a](x: a)(implicit i: _Eq[a]): _Op_/==[a] = new _Op_/==(x, i)
 }
 
 
@@ -94,4 +79,20 @@ sealed trait EqInstance { this: _Eq.type =>
     implicit def ofScalaEquiv[a](implicit i: scala.Equiv[a]): _Eq[a] = new _Eq[a] {
         override val op_=== : op_=== = x => y => i.equiv(x, y)
     }
+}
+
+
+sealed trait EqShortcut { this: _Eq.type =>
+    def op_===[a](x: a)(y: a)(implicit i: _Eq[a]): Bool = i.op_===(x)(y)
+    def op_/==[a](x: a)(y: a)(implicit i: _Eq[a]): Bool = i.op_/==(x)(y)
+
+    sealed class _Op_===[a](x: a)(implicit i: _Eq[a]) {
+        def ===(y: a): Bool = op_===(x)(y)
+    }
+    implicit def ===[a](x: a)(implicit i: _Eq[a]): _Op_===[a] = new _Op_===(x)
+
+    sealed class _Op_/==[a](x: a)(implicit i: _Eq[a]) {
+        def /==(y: a): Bool = op_/==(x)(y)
+    }
+    implicit def /==[a](x: a)(implicit i: _Eq[a]): _Op_/==[a] = new _Op_/==(x)
 }

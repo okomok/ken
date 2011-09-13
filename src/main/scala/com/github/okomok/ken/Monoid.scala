@@ -56,7 +56,7 @@ trait MonoidProxy[m] extends Monoid[m] {
 }
 
 
-object Monoid extends MonoidInstance {
+object Monoid extends MonoidInstance with MonoidShortcut {
     def apply[m <: Kind.Function0](implicit i: Monoid[m#apply0]): Monoid[m#apply0] = i
 
     def deriving[nt <: Kind.Function0, ot <: Kind.Function0](implicit i: Monoid[ot#apply0], j: Newtype0[nt#apply0, ot#apply0]): Monoid[nt#apply0] = new Monoid[nt#apply0] {
@@ -157,8 +157,22 @@ object Monoid extends MonoidInstance {
 }
 
 
-trait MonoidInstance { this: Monoid.type =>
+sealed trait MonoidInstance { this: Monoid.type =>
     implicit val ofUnit: Monoid[Unit] = Unit
     implicit def ofFunction[z, b](implicit mb: Monoid[b]): Monoid[z => b] = Function._asMonoid[z, b]
     implicit def ofTuple2[a, b](implicit ma: Monoid[a], mb: Monoid[b]): Monoid[(a, b)] = Tuple2._asMonoid[a, b]
+}
+
+
+sealed trait MonoidShortcut { this: Monoid.type =>
+    def mempty[m](implicit i: Monoid[m]): m = i.mempty
+    def mappend[m](x: m)(y: Lazy[m])(implicit i: Monoid[m]): m = i.mappend(x)(y)
+    def mconcat[m](xs: List[m])(implicit i: Monoid[m]): m = i.mconcat(xs)
+
+    def dual[m](implicit i: Monoid[m]): Monoid[m] = i.dual
+
+    sealed class _Op_mappend[m](x: m)(implicit i: Monoid[m]) {
+        def _mappend_(y: Lazy[m]): m = mappend(x)(y)
+    }
+    implicit def _mappend_[m](x: m)(implicit i: Monoid[m]): _Op_mappend[m] = new _Op_mappend(x)
 }

@@ -47,7 +47,7 @@ trait FractionalProxy[a] extends Fractional[a] {
 }
 
 
-object Fractional extends FractionalInstance {
+object Fractional extends FractionalInstance with FractionalShortcut {
     def apply[a](implicit i: Fractional[a]): Fractional[a] = i
 }
 
@@ -55,4 +55,18 @@ object Fractional extends FractionalInstance {
 sealed trait FractionalInstance { this: Fractional.type =>
     implicit val ofDouble: Fractional[Double] = Double
     implicit val ofFloat: Fractional[Float] = Float
+}
+
+
+sealed trait FractionalShortcut { this: Fractional.type =>
+    def op_/[a](x: a)(y: a)(implicit i: Fractional[a]): a = i.op_/(x)(y)
+    def recip[a](x: a)(implicit i: Fractional[a]): a = i.recip(x)
+    def fromRational[a](x: Rational)(implicit i: Fractional[a]): a = i.fromRational(x)
+
+    implicit def realToFrac[z, a](x: z, * : Type[a] = null)(implicit i: Real[z], j: Fractional[a]): a = j.realToFrac(x)(i)
+
+    sealed class _Op_/[a](x: a)(implicit i: Fractional[a]) {
+        def /(y: a): a = op_/(x)(y)
+    }
+    implicit def /[a](x: a)(implicit i: Fractional[a]): _Op_/[a] = new _Op_/(x)
 }

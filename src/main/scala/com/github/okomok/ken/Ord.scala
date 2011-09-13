@@ -78,7 +78,7 @@ trait OrdProxy[a] extends Ord[a] with EqProxy[a] {
 }
 
 
-object Ord extends OrdInstance {
+object Ord extends OrdInstance with OrdShortcut {
     def apply[a <: Kind.Function0](implicit i: Ord[a#apply0]): Ord[a#apply0] = i
 
     def deriving[nt <: Kind.Function0, ot <: Kind.Function0](implicit i: Ord[ot#apply0], j: Newtype0[nt#apply0, ot#apply0]): Ord[nt#apply0] = new Ord[nt#apply0] with EqProxy[nt#apply0] {
@@ -118,4 +118,35 @@ sealed trait OrdInstance { this: Ord.type =>
         override val max: max = x => y => i.max(x, y)
         override val min: min = x => y => i.min(x, y)
     }
+}
+
+
+sealed trait OrdShortcut { this: Ord.type =>
+    def compare[a](x: a)(y: a)(implicit i: Ord[a]): Ordering = i.compare(x)(y)
+    def op_<[a](x: a)(y: a)(implicit i: Ord[a]): Bool = i.op_<(x)(y)
+    def op_<=[a](x: a)(y: a)(implicit i: Ord[a]): Bool = i.op_<=(x)(y)
+    def op_>[a](x: a)(y: a)(implicit i: Ord[a]): Bool = i.op_>(x)(y)
+    def op_>=[a](x: a)(y: a)(implicit i: Ord[a]): Bool = i.op_>=(x)(y)
+    def max[a](x: a)(y: a)(implicit i: Ord[a]): a = i.max(x)(y)
+    def min[a](x: a)(y: a)(implicit i: Ord[a]): a = i.min(x)(y)
+
+    sealed class _Op_<[a](x: a)(implicit i: Ord[a]) {
+        def <(y: a): Bool = op_<(x)(y)
+    }
+    implicit def <[a](x: a)(implicit i: Ord[a]): _Op_<[a] = new _Op_<(x)
+
+    sealed class _Op_<=[a](x: a)(implicit i: Ord[a]) {
+        def <=(y: a): Bool = op_<=(x)(y)
+    }
+    implicit def <=[a](x: a)(implicit i: Ord[a]): _Op_<=[a] = new _Op_<=(x)
+
+    sealed class _Op_>[a](x: a)(implicit i: Ord[a]) {
+        def >(y: a): Bool = op_>(x)(y)
+    }
+    implicit def >[a](x: a)(implicit i: Ord[a]): _Op_>[a] = new _Op_>(x)
+
+    sealed class _Op_>=[a](x: a)(implicit i: Ord[a]) {
+        def >=(y: a): Bool = op_>=(x)(y)
+    }
+    implicit def >=[a](x: a)(implicit i: Ord[a]): _Op_>=[a] = new _Op_>=(x)
 }

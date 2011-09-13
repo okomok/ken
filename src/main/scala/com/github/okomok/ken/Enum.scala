@@ -68,7 +68,7 @@ trait EnumProxy[a] extends Enum[a] {
 }
 
 
-object Enum extends EnumInstance {
+object Enum extends EnumInstance with EnumShortcut {
     def apply[a <: Kind.Function0](implicit i: Enum[a#apply0]): Enum[a#apply0] = i
 
     private[ken] def numericEnumFrom[a](n: a)(implicit i: Fractional[a]): List[a] = {
@@ -113,4 +113,17 @@ sealed trait EnumInstance { this: Enum.type =>
         override val toEnum: toEnum = n => i.fromInt(n)
         override val fromEnum: fromEnum = x => i.toInt(x)
     }
+}
+
+
+sealed trait EnumShortcut { this: Enum.type =>
+    def succ[a](a: a)(implicit i: Enum[a]): a = i.succ(a)
+    def pred[a](a: a)(implicit i: Enum[a]): a = i.pred(a)
+    def toEnum[a](n: Int)(implicit i: Enum[a]): a = i.toEnum(n)
+    def fromEnum[a](a: a)(implicit i: Enum[a]): Int = i.fromEnum(a)
+
+    def enumFrom[a](a: a)(implicit i: Enum[a]): List[a] = i.enumFrom(a)
+    def enumFromThen[a](x: a)(y: a)(implicit i: Enum[a]): List[a] = i.enumFromThen(x)(y)
+    def enumFromTo[a](x: a)(y: a)(implicit i: Enum[a]): List[a] = i.enumFromTo(x)(y)
+    def enumFromThenTo[a](x1: a)(x2: a)(y: a)(implicit i: Enum[a]): List[a] = i.enumFromThenTo(x1)(x2)(y)
 }

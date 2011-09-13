@@ -35,7 +35,7 @@ trait BoundedProxy[a] extends Bounded[a] {
 }
 
 
-object Bounded extends BoundedInstance {
+object Bounded extends BoundedInstance with BoundedShortcut {
     def apply[a <: Kind.Function0](implicit i: Bounded[a#apply0]): Bounded[a#apply0] = i
 
     private[ken] def boundedEnumFrom[a](n: a)(implicit i: Enum[a], j: Bounded[a]): List[a] = {
@@ -59,4 +59,10 @@ sealed trait BoundedInstance { this: Bounded.type =>
     implicit val ofChar: Bounded[Char] = Char
     implicit val ofInt: Bounded[Int] = Int
     implicit val ofUnit: Bounded[Unit] = Unit
+}
+
+
+sealed trait BoundedShortcut { this: Bounded.type =>
+    def minBound[a](a: a)(implicit i: Bounded[a]): a = i.minBound
+    def maxBound[a](a: a)(implicit i: Bounded[a]): a = i.maxBound
 }

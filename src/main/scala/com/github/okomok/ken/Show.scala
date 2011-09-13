@@ -33,7 +33,10 @@ trait Show[a] extends Typeclass0[a] {
 
     // Extra
     //
-    final def showList__(showx: a => ShowS)(xs: List[a]): ShowS = s => {
+    type shows = a => ShowS
+    def shows: shows = x => showsPrec(0)(x)
+
+    private[this] def showList__(showx: a => ShowS)(xs: List[a]): ShowS = s => {
         xs match {
             case Nil => "Nil" ++: s
             case x :: xs => {
@@ -45,9 +48,6 @@ trait Show[a] extends Typeclass0[a] {
             }
         }
     }
-
-    type shows = a => ShowS
-    def shows: shows = x => showsPrec(0)(x)
 }
 
 
@@ -61,7 +61,7 @@ trait ShowProxy[a] extends Show[a] {
 }
 
 
-object Show extends ShowInstance {
+object Show extends ShowInstance with ShowShortcut {
     def apply[a <: Kind.Function0](implicit i: Show[a#apply0]): Show[a#apply0] = i
 
     val showChar: Char => ShowS = List.op_!::
@@ -72,13 +72,6 @@ object Show extends ShowInstance {
     trait Of[a] extends Show[a] {
         override val showsPrec: showsPrec = _ => a => showString(a.toString)
     }
-
-    // Shortcuts
-    //
-    def showsPrec[a](x: Int)(s: a)(implicit i: Show[a]): ShowS = i.showsPrec(x)(s)
-    def show[a](s: a)(implicit i: Show[a]): String = i.show(s)
-    def showList[a](ls: List[a])(implicit i: Show[a]): ShowS = i.showList(ls)
-    def shows[a](x: a)(implicit i: Show[a]): ShowS = i.shows(x)
 }
 
 
@@ -94,4 +87,12 @@ sealed trait ShowInstance { this: Show.type =>
     implicit val ofNothing: Show[Nothing] = of[Nothing]
 */
     implicit def of[a]: Show[a] = new Of[a] {}
+}
+
+
+sealed trait ShowShortcut { this: Show.type =>
+    def showsPrec[a](x: Int)(s: a)(implicit i: Show[a]): ShowS = i.showsPrec(x)(s)
+    def show[a](s: a)(implicit i: Show[a]): String = i.show(s)
+    def showList[a](ls: List[a])(implicit i: Show[a]): ShowS = i.showList(ls)
+    def shows[a](x: a)(implicit i: Show[a]): ShowS = i.shows(x)
 }

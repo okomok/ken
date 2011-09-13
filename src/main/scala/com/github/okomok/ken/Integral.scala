@@ -53,32 +53,33 @@ trait Integral[a] extends Real[a] with Enum[a] { outer =>
 
     // Operators
     //
-    sealed class Op_quot(x: a) {
-        def _quot_(y: a): a = quot(x)(y)
+    sealed class Op_quot(n: a) {
+        def _quot_(d: a): a = quot(n)(d)
     }
-    final implicit def _quot_(x: a): Op_quot = new Op_quot(x)
+    final implicit def _quot_(n: a): Op_quot = new Op_quot(n)
 
-    sealed class Op_rem(x: a) {
-        def _rem_(y: a): a = rem(x)(y)
+    sealed class Op_rem(n: a) {
+        def _rem_(d: a): a = rem(n)(d)
     }
-    final implicit def _rem_(x: a): Op_rem = new Op_rem(x)
+    final implicit def _rem_(n: a): Op_rem = new Op_rem(n)
 
-    sealed class Op_div(x: a) {
-        def _div_(y: a): a = div(x)(y)
+    sealed class Op_div(n: a) {
+        def _div_(d: a): a = div(n)(d)
     }
-    final implicit def _div_(x: a): Op_div = new Op_div(x)
+    final implicit def _div_(n: a): Op_div = new Op_div(n)
 
-    sealed class Op_mod(x: a) {
-        def _mod_(y: a): a = mod(x)(y)
+    sealed class Op_mod(n: a) {
+        def _mod_(d: a): a = mod(n)(d)
     }
-    final implicit def _mod_(x: a): Op_mod = new Op_mod(x)
+    final implicit def _mod_(n: a): Op_mod = new Op_mod(n)
 
     // Convenience
     //
-    final val toInt: a => Int = x => toInteger(x).toInt
+    type toInt = a => Int
+    final val toInt: toInt = n => toInteger(n).toInt
 
     object FromInt {
-        def unapply(x: a): Option[Int] = Some(toInt(x))
+        def unapply(n: a): Option[Int] = Some(toInt(n))
     }
 }
 
@@ -97,10 +98,13 @@ trait IntegralProxy[a] extends Integral[a] with RealProxy[a] with EnumProxy[a] {
     override def divMod: divMod = selfIntegral.divMod
 
     override def toInteger: toInteger = selfIntegral.toInteger
+
+    override def even: even = selfIntegral.even
+    override def odd: odd = selfIntegral.odd
 }
 
 
-object Integral extends IntegralInstance {
+object Integral extends IntegralInstance with IntegralShortcut {
     def apply[a <: Kind.Function0](implicit i: Integral[a#apply0]): Integral[a#apply0] = i
 }
 
@@ -121,4 +125,42 @@ sealed trait IntegralInstance { this: Integral.type =>
         override val quotRem: quotRem = x => y => (i.quot(x, y), i.rem(x, y))
         override val toInteger: toInteger = i.toInt
     }
+}
+
+
+sealed trait IntegralShortcut { this: Integral.type =>
+    def quot[a](n: a)(d: a)(implicit i: Integral[a]): a = i.quot(n)(d)
+    def rem[a](n: a)(d: a)(implicit i: Integral[a]): a = i.rem(n)(d)
+    def div[a](n: a)(d: a)(implicit i: Integral[a]): a = i.div(n)(d)
+    def mod[a](n: a)(d: a)(implicit i: Integral[a]): a = i.mod(n)(d)
+
+    def quotRem[a](n: a)(d: a)(implicit i: Integral[a]): (a, a) = i.quotRem(n)(d)
+    def divMod[a](n: a)(d: a)(implicit i: Integral[a]): (a, a) = i.divMod(n)(d)
+
+    def toInteger[a](n: a)(implicit i: Integral[a]): Integer = i.toInteger(n)
+
+    def even[a](n: a)(implicit i: Integral[a]): Bool = i.even(n)
+    def odd[a](n: a)(implicit i: Integral[a]): Bool = i.odd(n)
+
+    sealed class _Op_quot[a](n: a)(implicit i: Integral[a]) {
+        def _quot_(d: a): a = quot(n)(d)
+    }
+    implicit def _quot_[a](n: a)(implicit i: Integral[a]): _Op_quot[a] = new _Op_quot(n)
+
+    sealed class _Op_rem[a](n: a)(implicit i: Integral[a]) {
+        def _rem_(d: a): a = rem(n)(d)
+    }
+    implicit def _rem_[a](n: a)(implicit i: Integral[a]): _Op_rem[a] = new _Op_rem(n)
+
+    sealed class _Op_div[a](n: a)(implicit i: Integral[a]) {
+        def _div_(d: a): a = div(n)(d)
+    }
+    implicit def _div_[a](n: a)(implicit i: Integral[a]): _Op_div[a] = new _Op_div(n)
+
+    sealed class _Op_mod[a](n: a)(implicit i: Integral[a]) {
+        def _mod_(d: a): a = mod(n)(d)
+    }
+    implicit def _mod_[a](n: a)(implicit i: Integral[a]): _Op_mod[a] = new _Op_mod(n)
+
+    def toInt[a](n: a)(implicit i: Integral[a]): Int = i.toInt(n)
 }
