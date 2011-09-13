@@ -23,7 +23,7 @@ trait Exception[e] extends Typeable[e] with Show[e] {
     def toException: toException = e => SomeException(e)(this)
 
     type fromException = SomeException => Maybe[e]
-    def fromException: fromException = { case SomeException(e, t) => Typeable.cast(e, Type[e])(t, this) }
+    def fromException: fromException = { case SomeException(e, t) => t.cast[e](e)(this) }
 
     // Extra
     //
@@ -84,8 +84,8 @@ trait Exception[e] extends Typeable[e] with Show[e] {
 }
 
 
-trait ExceptionProxy[a] extends Exception[a] with TypeableProxy[a] with ShowProxy[a] {
-    def selfException: Exception[a]
+trait ExceptionProxy[e] extends Exception[e] with TypeableProxy[e] with ShowProxy[e] {
+    def selfException: Exception[e]
     override def selfTypeable = selfException
     override def selfShow = selfException
 
@@ -93,11 +93,20 @@ trait ExceptionProxy[a] extends Exception[a] with TypeableProxy[a] with ShowProx
     override def fromException: fromException = selfException.fromException
 
     override def `throw`: `throw` = selfException.`throw`
+    override def throwIO: throwIO = selfException.throwIO
+    override def `catch`[a](a: IO[a])(h: e => IO[a]): IO[a] = selfException.`catch`(a)(h)
+    override def catchJust[a, b](p: e => Maybe[b])(a: IO[a])(h: b => IO[a]): IO[a] = selfException.catchJust(p)(a)(h)
+    override def handle[a](h: e => IO[a])(a: IO[a]): IO[a] = selfException.handle(h)(a)
+    override def handleJust[a, b](p: e => Maybe[b])(h: b => IO[a])(a: IO[a]): IO[a] = selfException.handleJust(p)(h)(a)
+    override def mapException[e2, a](f: e => e2)(v: a)(implicit i: Exception[e2]): a = selfException.mapException(f)(v)(i)
+    override def `try`[a](a: IO[a]): IO[Either[e, a]] = selfException.`try`(a)
+    override def tryJust[a, b](p: e => Maybe[b])(a: IO[a]): IO[Either[b, a]] = selfException.tryJust(p)(a)
+    override def onException[a, b](io: IO[a])(what: IO[b]): IO[a] = selfException.onException(io)(what)
 }
 
 
 object Exception extends ExceptionInstance with ExceptionShortcut {
-    def apply[a <: Kind.Function0](implicit i: Exception[a#apply0]): Exception[a#apply0] = i
+    def apply[e <: Kind.Function0](implicit i: Exception[e#apply0]): Exception[e#apply0] = i
 
     // ErrorCall
     //

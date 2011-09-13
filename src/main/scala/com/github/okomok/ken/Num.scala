@@ -126,7 +126,7 @@ sealed trait NumShortcut { this: Num.type =>
     def fromInteger[a](n: Integer)(implicit i: Num[a]): a = i.fromInteger(n)
 
     def subtract[a](x: a)(y: a)(implicit i: Num[a]): a = i.subtract(x)(y)
-    def fromIntegral[z, a](x: z, * : Type[a] = null)(implicit i: Integral[z], j: Num[a]): a = j.fromIntegral(x)
+    implicit def fromIntegral[z, a](x: z, * : Type[a] = null)(implicit i: Integral[z], j: Num[a]): a = j.fromIntegral(x)
 
     sealed class _Op_+[a](x: a)(implicit i: Num[a]) {
         def +(y: a): a = op_+(x)(y)
