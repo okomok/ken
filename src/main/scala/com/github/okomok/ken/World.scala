@@ -37,6 +37,14 @@ class World {
         (writeSTRef(ref)_ `.` f) =<<: readSTRef(ref)
     }
 
+    def atomicModifySTRef[a, b](r: STRef[a])(f: a => (a, b)): ST[b] = returnST {
+        r.synchronized {
+            val (new_r, b) = f(r.mutvar)
+            r.mutvar = new_r
+            b
+        }
+    }
+
     def unsafeIOToST[a](io: IO[a]): ST[a] = io match {
         case IO(m) => ST { s => m.asInstanceOf[This => (a, This)](s) }
     }

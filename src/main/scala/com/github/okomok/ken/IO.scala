@@ -56,16 +56,6 @@ object IO extends MonadIO[IO] with ThisIsInstance {
         }
     }
 
-    // Coercions between IO and ST
-    //
-    def stToIO[a](st: RealWorld.ST[a]): IO[a] = st match {
-        case RealWorld.ST(m) => IO(m)
-    }
-
-    def ioToST[a](io: IO[a]): RealWorld.ST[a] = io match {
-        case IO(m) => RealWorld.ST(m)
-    }
-
     // Output functions
     //
     val putChar: Char => IO[Unit] = c => unsafeIO {

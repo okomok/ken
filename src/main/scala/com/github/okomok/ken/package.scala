@@ -87,7 +87,7 @@ package object ken {
 
     type ShowS = String => String
 
-    type IOError = java.io.IOException
+    type IOError = java.io.IOException // TODO
 
     type IORep[+a] = RealWorld.type => (a, RealWorld.type)
 

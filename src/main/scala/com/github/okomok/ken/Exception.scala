@@ -115,7 +115,7 @@ object Exception extends ExceptionInstance with ExceptionShortcut {
         override val typeOf: typeOf = _ => implicitly[ClassManifest[ErrorCall]]
     }
 
-    def evaluate[a](x: a): IO[a] = IO.`return`(x)
+    def evaluate[a](x: a): IO[a] = IO.`return`(x) // no special effects
 
     def assert[a](b: Bool)(x: a): a = b match {
         case True => x
@@ -142,7 +142,15 @@ sealed trait ExceptionInstance { this: Exception.type =>
 sealed trait ExceptionShortcut { this: Exception.type =>
     def toException[e](e: e)(implicit i: Exception[e]): SomeException = i.toException(e)
     def fromException[e](se: SomeException)(implicit i: Exception[e]): Maybe[e] = i.fromException(se)
-    def `catch`[e, a](io: IO[a])(h: e => IO[a])(implicit i: Exception[e]): IO[a] = i.`catch`(io)(h)
+
     def `throw`[e](e: e)(implicit i: Exception[e]): Nothing = i.`throw`(e)
     def throwIO[e](e: e)(implicit i: Exception[e]): IO[Nothing] = i.throwIO(e)
+    def `catch`[e, a](io: IO[a])(h: e => IO[a])(implicit i: Exception[e]): IO[a] = i.`catch`(io)(h)
+    def catchJust[e, a, b](p: e => Maybe[b])(a: IO[a])(h: b => IO[a])(implicit i: Exception[e]): IO[a] = i.catchJust(p)(a)(h)
+    def handle[e, a](h: e => IO[a])(a: IO[a])(implicit i: Exception[e]): IO[a] = i.handle(h)(a)
+    def handleJust[e, a, b](p: e => Maybe[b])(h: b => IO[a])(a: IO[a])(implicit i: Exception[e]): IO[a] = i.handleJust(p)(h)(a)
+    def mapException[e, e2, a](f: e => e2)(v: a)(implicit i: Exception[e], i2: Exception[e2]): a = i.mapException(f)(v)(i2)
+    def `try`[e, a](a: IO[a], * : Type[e] = null)(implicit i: Exception[e]): IO[Either[e, a]] = i.`try`(a)
+    def tryJust[e, a, b](p: e => Maybe[b])(a: IO[a])(implicit i: Exception[e]): IO[Either[b, a]] = i.tryJust(p)(a)
+    def onException[e, a, b](io: IO[a])(what: IO[b], * : Type[e] = null)(implicit i: Exception[e]): IO[a] = i.onException(io)(what)
 }
