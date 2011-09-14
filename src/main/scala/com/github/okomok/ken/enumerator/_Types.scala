@@ -38,7 +38,7 @@ private[enumerator] trait _Types[n[+_]] { this: _Enumerators[n] =>
         }
     }
 
-    // Iteratee
+    // Iteratee (reaction)
     //
     final case class Iteratee[-a, +b](override val get: n[Step[a, b]]) extends Strong[n[Step[a, b]]]
 
@@ -70,7 +70,7 @@ private[enumerator] trait _Types[n[+_]] { this: _Enumerators[n] =>
     def `yield`[a, b](x: b)(extra: Stream[a]): Iteratee[a, b] = returnI(Yield(x, extra))
     def continue[a, b](k: Stream[a] => Iteratee[a, b]): Iteratee[a, b] = returnI(Continue(k))
 
-    // Enumerator
+    // Enumerator (seqeuence)
     //
     type Enumerator[a, b] = Step[a, b] => Iteratee[a, b]
 

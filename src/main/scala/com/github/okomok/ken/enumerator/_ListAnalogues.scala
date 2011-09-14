@@ -13,8 +13,12 @@ package enumerator
 
 
 private[enumerator] trait _ListAnalogues[n[+_]] { this: _Enumerators[n] =>
+
+    /**
+     * Iteratee which cares about the first element only.
+     */
     def head[a]: Iteratee[a, Maybe[a]] = {
-        def loop(in: Stream[a]): Iteratee[a, Maybe[a]] = in match {
+        lazy val loop: Stream[a] => Iteratee[a, Maybe[a]] = {
             case Chunks(Nil) => head
             case Chunks(x :: xs) => `yield`(Just(x))(Chunks(xs.!))
             case EOF => `yield`(Nothing)(EOF)

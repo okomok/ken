@@ -14,8 +14,9 @@ package enumerator
 
 private[enumerator] trait _Utilities[n[+_]] { this: _Enumerators[n] =>
 
-    // Unsorted Utilities
-    //
+    /**
+     * Appends all the enumerators of `es`.
+     */
     def concatEnums[a, b](es: List[Enumerator[a, b]]): Enumerator[a, b] = List.foldl[Enumerator[a, b], Enumerator[a, b]](op_>==>:)(returnI)(es)
 
     def joinI[a, a_, b](outer: Iteratee[a, Step[a_, b]]): Iteratee[a, b] = {
@@ -69,6 +70,9 @@ private[enumerator] trait _Utilities[n[+_]] { this: _Enumerators[n] =>
         loop
     }
 
+    /**
+     * An empty enumerator
+     */
     def enumEOF[a, b]: Enumerator[a, b] = {
         case Yield(x, _) => `yield`(x)(EOF)
         case Error(err) => throwError(err)
@@ -139,6 +143,9 @@ private[enumerator] trait _Utilities[n[+_]] { this: _Enumerators[n] =>
         continue(loop)
     }
 
+    /**
+     * Builds an enumerator whose elements are those of a list.
+     */
     def enumList[a, b](n: Integer)(xs: List[a], * : Type[b] = null): Enumerator[a, b] = {
         lazy val loop: List[a] => Step[a, b] => Iteratee[a, b] = xs => {
             case Continue(k) if Bool.not(List.`null`(xs)) => {

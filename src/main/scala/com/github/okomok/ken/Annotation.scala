@@ -15,4 +15,14 @@ object Annotation {
      */
     class marker extends StaticAnnotation
 
+    /**
+     * Alias of a name
+     */
+    class aliasOf(what: String) extends StaticAnnotation
+
+    /**
+     * Method whose parameters are flipped from a method.
+     */
+    class flipOf(what: String) extends StaticAnnotation
+
 }
