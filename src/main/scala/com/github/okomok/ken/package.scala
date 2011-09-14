@@ -46,7 +46,7 @@ package object ken {
     }
     implicit def _asTypeOf_[a](x: a): AsTypeOf[a] = new AsTypeOf(x)
 
-    val error: String => Nothing = { msg => throw new java.lang.Error(List.stringize(msg)) }
+    val error: String => Nothing = { msg => throw new java.lang.Error(List.toJString(msg)) }
 
     def undefined: Nothing = throw new java.lang.Error("undefined")
 

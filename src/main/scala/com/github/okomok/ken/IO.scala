@@ -106,7 +106,7 @@ object IO extends MonadIO[IO] with ThisIsInstance {
     val writeFile: FilePath => String => IO[Unit] = f => txt => unsafeIO {
         val fw = new java.io.FileWriter(f)
         try {
-            fw.write(List.stringize(txt))
+            fw.write(List.toJString(txt))
         } finally {
             fw.close()
         }
@@ -115,7 +115,7 @@ object IO extends MonadIO[IO] with ThisIsInstance {
     val appendFile: FilePath => String => IO[Unit] = f => txt => unsafeIO {
         val fw = new java.io.FileWriter(f, True)
         try {
-            fw.write(List.stringize(txt))
+            fw.write(List.toJString(txt))
         } finally {
             fw.close()
         }
@@ -133,5 +133,27 @@ object IO extends MonadIO[IO] with ThisIsInstance {
         } catch {
             case err: IOError => h(err).!
         }
+    }
+
+    // Handle
+    //
+    final case class Handle(rep: Any)
+
+    val stdout: Handle = Handle(java.lang.System.out)
+    val stderr: Handle = Handle(java.lang.System.err)
+
+    val hClose: Handle => IO[Unit] = {
+        case Handle(rep: java.io.InputStream) => unsafeIO { rep.close() }
+        case Handle(rep: java.io.OutputStream) => unsafeIO { rep.close() }
+    }
+
+    val hFlush: Handle => IO[Unit] = {
+        case Handle(rep: java.io.OutputStream) => unsafeIO { rep.flush() }
+        case _ => `return`()
+    }
+
+    val hPutStr: Handle => String => IO[Unit] = {
+        case Handle(rep: java.io.PrintStream) => s => unsafeIO { rep.print(List.toJString(s)) }
+        case _ => _ => `return`()
     }
 }

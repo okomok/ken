@@ -550,15 +550,15 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
 
     // Functions on strings
     //
-    def stringize(cs: String): Predef.String = foldl[StringBuilder, Char](sb => c => { sb += c; sb })(new StringBuilder)(cs).toString
+    lazy val toJString: String => Predef.String = cs => foldl[StringBuilder, Char](sb => c => { sb += c; sb })(new StringBuilder)(cs).toString
 
-    def lines(s: String): List[String] = map(fromString)(from(stringize(s).split("\\r?\\n")))
+    lazy val lines: String => List[String] = s => map(fromString)(from(toJString(s).split("\\r?\\n")))
 
-    def unlines(ls: List[String]): String = concatMap(op_!++:("\n"))(ls)
+    lazy val unlines: List[String] => String = ls => concatMap(op_!++:("\n"))(ls)
 
-    def words(s: String): List[String] = map(fromString)(from(stringize(s).split("\\W+")))
+    lazy val words: String => List[String] = s => map(fromString)(from(toJString(s).split("\\W+")))
 
-    def unwords(ws: List[String]): String = ws match {
+    lazy val unwords: List[String] => String = {
         case Nil => ""
         case w !:: Nil => w
         case w :: ws => w ++: (' ' :: unwords(ws.!))
@@ -703,7 +703,7 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
 
     // Misc
     //
-    val range: Pair[Int, Int] => List[Int] = { case (n, m) =>
+    lazy val range: Pair[Int, Int] => List[Int] = { case (n, m) =>
         Predef.require(n <= m)
         if (n == m) {
             Nil
@@ -712,7 +712,7 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
         }
     }
 
-    val rangeFrom: Int => List[Int] = n => {
+    lazy val rangeFrom: Int => List[Int] = n => {
         n :: rangeFrom(n + 1)
     }
 

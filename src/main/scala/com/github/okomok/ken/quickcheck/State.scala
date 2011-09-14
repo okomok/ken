@@ -14,7 +14,7 @@ package quickcheck
 
 
 final case class State(
-    //terminal: Terminal,
+    terminal: Terminal,
     maxSuccessTests: Int,
     maxDiscardTests: Int,
     computeSize: Int => Int => Int,

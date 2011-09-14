@@ -75,7 +75,6 @@ trait Exception[e] extends Typeable[e] with Show[e] {
     }
 
     def onException[a, b](io: IO[a])(what: IO[b]): IO[a] = `catch`(io) { e =>
-        import IO.`for`
         for {
             _ <- what
             * <- `throw`(e): IO[a]

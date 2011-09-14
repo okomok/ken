@@ -56,13 +56,13 @@ class ListTest extends org.scalatest.junit.JUnit3Suite {
     def testLines {
         val xs = List.from("ABC\nDE\nFGHI\n")
         val as = List("ABC","DE","FGHI")
-        expect(as)(List.map(List.stringize)(List.lines(xs)))
+        expect(as)(List.map(List.toJString)(List.lines(xs)))
     }
 
     def testWords {
         val xs = List.from("ABC DE \n  FGHI   \n   ")
         val as = List("ABC","DE","FGHI")
-        expect(as)(List.map(List.stringize)(List.words(xs)))
+        expect(as)(List.map(List.toJString)(List.words(xs)))
     }
 
     def teztRepeat2 {
