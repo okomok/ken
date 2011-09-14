@@ -14,8 +14,11 @@ trait Strong[+a] extends Up[Strong[a]] {
 
     final def run: a = get
     final def app: a = get
-
-    final def apply[b, c](x: b)(implicit ev: a <:< Function1[b, c]): c = ev(get)(x)
+/*
+    final def apply[b, c](b: b)(implicit ev: a <:< Function[b, c]): c = ev(get)(b)
+    final def apply[b, c, d](b: b)(c: c)(implicit ev: a <:< Function[b, c => d]): d = ev(get)(b)(c)
+    final def apply[b, c, d, e](b: b)(c: c)(d: d)(implicit ev: a <:< Function[b, c => d => e]): e = ev(get)(b)(c)(d)
+*/
 }
 
 

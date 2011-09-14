@@ -18,7 +18,7 @@ import java.lang.{Integer => JInt}
 
 
 object Int extends Bounded[Int] with Enum[Int] with Eq.Of[Int]
-    with Integral[Int] with Ix[Int] with Show[Int]
+    with Integral[Int] with Ix[Int] with Random[Int] with Show[Int]
 {
     // Overrides
     //
@@ -94,6 +94,15 @@ object Int extends Bounded[Int] with Enum[Int] with Eq.Of[Int]
         else indexError(b)(i)("Int")
     }
     override val inRange: inRange = { case (m, n) => i => m <= i && i <= n }
+    // Random
+    private type a = Int
+    override def randomR[g](ival: (a, a))(g: g)(implicit i: RandomGen[g]): (a, g) = {
+        val (l, h) = ival
+        val (n, g_) = i.next(g)
+        (l + ((n.toDouble / maxBound.toDouble) * (h - l)).toInt, g_) // TODO
+    }
+    override def random[g](g: g)(implicit i: RandomGen[g]): (a, g) = i.next(g)
+
     // Show
     override val showsPrec: showsPrec = showSignedInt
 

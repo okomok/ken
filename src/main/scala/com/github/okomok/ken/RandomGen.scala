@@ -25,7 +25,7 @@ trait RandomGen[g] extends Typeclass0[g] {
     type split = g => (g, g)
     def split: split
 
-    type genRange = g => (Int, Int)
+    type genRange = Lazy[g] => (Int, Int)
     def genRange: genRange = _ => (Int.minBound, Int.maxBound)
 }
 
@@ -51,5 +51,5 @@ sealed trait RandomGenInstance { this: RandomGen.type =>
 sealed trait RandomGenShortcut { this: RandomGen.type =>
     def next[g](g: g)(implicit i: RandomGen[g]): (Int, g) = i.next(g)
     def split[g](g: g)(implicit i: RandomGen[g]): (g, g) = i.split(g)
-    def genRange[g](g: g)(implicit i: RandomGen[g]): (Int, Int) = i.genRange(g)
+    def genRange[g](g: Lazy[g])(implicit i: RandomGen[g]): (Int, Int) = i.genRange(g)
 }
