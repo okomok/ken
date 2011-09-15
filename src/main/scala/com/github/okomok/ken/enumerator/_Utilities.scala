@@ -35,7 +35,7 @@ private[enumerator] trait _Utilities[n[+_]] { this: _Enumerators[n] =>
 
     def op_=@:[ao, ai, b](enum: Enumeratee[ao, ai, b])(iter: Iteratee[ai, b]): Iteratee[ao, b] = joinI(enum @@: iter)
 
-    sealed class Op_=@:[ai, b](iter: Iteratee[ai, b]) {
+    private[ken] sealed class Op_=@:[ai, b](iter: Iteratee[ai, b]) {
         def =@:[ao](enum: Enumeratee[ao, ai, b]): Iteratee[ao, b] = op_=@:(enum)(iter)
     }
     implicit def =@:[ai, b](iter: Iteratee[ai, b]): Op_=@:[ai, b] = new Op_=@:(iter)
@@ -53,7 +53,7 @@ private[enumerator] trait _Utilities[n[+_]] { this: _Enumerators[n] =>
 
     def op_@=:[ao, ai, b](enum: Enumerator[ao, Step[ai, b]])(enee: Enumeratee[ao, ai, b]): Enumerator[ai, b] = joinE(enum)(enee)
 
-    sealed class Op_@=:[ao, ai, b](enee: Enumeratee[ao, ai, b]) {
+    private[ken] sealed class Op_@=:[ao, ai, b](enee: Enumeratee[ao, ai, b]) {
         def @=:(enum: Enumerator[ao, Step[ai, b]]): Enumerator[ai, b] = op_@=:(enum)(enee)
     }
     implicit def @=:[ao, ai, b](enee: Enumeratee[ao, ai, b]): Op_@=:[ao, ai, b] = new Op_@=:(enee)

@@ -114,7 +114,8 @@ object Exception extends ExceptionInstance with ExceptionShortcut {
         override val typeOf: typeOf = _ => implicitly[ClassManifest[ErrorCall]]
     }
 
-    def evaluate[a](x: a): IO[a] = IO.`return`(x) // no special effects
+    @Annotation.ceremonial("no special effects")
+    def evaluate[a](x: a): IO[a] = IO.`return`(x)
 
     def assert[a](b: Bool)(x: a): a = b match {
         case True => x

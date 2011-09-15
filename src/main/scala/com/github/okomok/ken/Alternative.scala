@@ -40,7 +40,7 @@ trait Alternative[f[+_]] extends Applicative[f] {
 
     // Operators
     //
-    sealed class Op_<|>[a](x: f[a]) {
+    private[ken] sealed class Op_<|>[a](x: f[a]) {
         def <|>(y: Lazy[f[a]]): f[a] = op_<|>(x)(y)
     }
     final implicit def <|>[a](x: f[a]): Op_<|>[a] = new Op_<|>(x)

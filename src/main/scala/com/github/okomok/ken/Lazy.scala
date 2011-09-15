@@ -44,7 +44,7 @@ object Lazy extends Monad[Lazy] with ThisIsInstance with LazyEval {
 
 
 private[ken] trait LazyEval { this: Lazy.type =>
-    sealed class Op_![a](x: Lazy[a]) {
+    private[ken] sealed class Op_![a](x: Lazy[a]) {
         def ! : a = x._eval
     }
     implicit def __![a](x: Lazy[a]): Op_![a] = new Op_!(x) // lower priority

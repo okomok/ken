@@ -45,32 +45,32 @@ trait Arrow[a[-_, +_]] extends Category[a] {
 
     // Operators
     //
-    sealed class Op_***:[b_, c_](g: a[b_, c_]) {
+    private[ken] sealed class Op_***:[b_, c_](g: a[b_, c_]) {
         def ***:[b, c](f: a[b, c]): a[(b, b_), (c, c_)] = op_***:(f)(g)
     }
     final implicit def ***:[b_, c_](g: a[b_, c_]): Op_***:[b_, c_] = new Op_***:(g)
 
-    sealed class Op_&&&:[b, c_](g: a[b, c_]) {
+    private[ken] sealed class Op_&&&:[b, c_](g: a[b, c_]) {
         def &&&:[c](f: a[b, c]): a[b, (c, c_)] = op_&&&:(f)(g)
     }
     final implicit def &&&:[b, c_](g: a[b, c_]): Op_&&&:[b, c_] = new Op_&&&:(g)
 
-    sealed class Op_^>>:[c, d](a: a[c, d]) {
+    private[ken] sealed class Op_^>>:[c, d](a: a[c, d]) {
         def ^>>:[b](f: b => c): a[b, d] = op_^>>:(f)(a)
     }
     final implicit def ^>>:[c, d](a: a[c, d]): Op_^>>:[c, d] = new Op_^>>:(a)
 
-    sealed class Op_>>^:[c, d](f: c => d) {
+    private[ken] sealed class Op_>>^:[c, d](f: c => d) {
         def >>^:[b](a: a[b, c]): a[b, d] = op_>>^:(a)(f)
     }
     final implicit def >>^:[c, d](f: c => d): Op_>>^:[c, d] = new Op_>>^:(f)
 
-    sealed class Op_<<^:[b, c](f: b => c) {
+    private[ken] sealed class Op_<<^:[b, c](f: b => c) {
         def <<^:[d](a: a[c, d]): a[b, d] = op_<<^:(a)(f)
     }
     final implicit def <<^:[b, c](f: b => c): Op_<<^:[b, c] = new Op_<<^:(f)
 
-    sealed class Op_^<<:[b, c](a: a[b, c]) {
+    private[ken] sealed class Op_^<<:[b, c](a: a[b, c]) {
         def ^<<:[d](f: c => d): a[b, d] = op_^<<:(f)(a)
     }
     final implicit def ^<<:[b, c](a: a[b, c]): Op_^<<:[b, c] = new Op_^<<:(a)

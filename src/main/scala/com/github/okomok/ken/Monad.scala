@@ -95,12 +95,12 @@ trait Monad[m[+_]] extends Applicative[m] {
 
     // Operators
     //
-    sealed class Op_>>=[a](x: m[a]) {
+    private[ken] sealed class Op_>>=[a](x: m[a]) {
         def >>=[b](y: a => m[b]): m[b] = op_>>=(x)(y)
     }
     final implicit def >>=[a](x: m[a]): Op_>>=[a] = new Op_>>=(x)
 
-    sealed class Op_>>(x: m[_]) {
+    private[ken] sealed class Op_>>(x: m[_]) {
         def >>[b](y: m[b]): m[b] = op_>>(x)(y)
     }
     final implicit def >>(x: m[_]): Op_>> = new Op_>>(x)
@@ -113,17 +113,17 @@ trait Monad[m[+_]] extends Applicative[m] {
     }
     final implicit def `for`[a](x: m[a]): For[a] = new For(x)
 
-    sealed class Op_=<<:[a](x: m[a]) {
+    private[ken] sealed class Op_=<<:[a](x: m[a]) {
         def =<<:[b](f: a => m[b]): m[b] = op_=<<:(f)(x)
     }
     final implicit def =<<:[a](x: m[a]): Op_=<<:[a] = new Op_=<<:(x)
 
-    sealed class Op_>=>:[b, c](g: b => m[c]) {
+    private[ken] sealed class Op_>=>:[b, c](g: b => m[c]) {
         def >=>:[a](f: a => m[b]): a => m[c] = op_>=>:(f)(g)
     }
     final implicit def >=>:[b, c](g: b => m[c]): Op_>=>:[b, c] = new Op_>=>:(g)
 
-    sealed class Op_<=<:[a, b](f: a => m[b]) {
+    private[ken] sealed class Op_<=<:[a, b](f: a => m[b]) {
         def <=<:[c](g: b => m[c]): a => m[c] = op_<=<:(g)(f)
     }
     final implicit def <=<:[a, b](f: a => m[b]): Op_<=<:[a, b] = new Op_<=<:(f)

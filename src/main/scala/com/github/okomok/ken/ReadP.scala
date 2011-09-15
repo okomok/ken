@@ -121,7 +121,7 @@ object ReadP extends MonadPlus[ReadP] with ThisIsInstance {
         override def apply[b](k: a => P[b]): P[b] = f1(k) _mplus_ f2(k)
     }
 
-    sealed class Op_+++[a](f1: ReadP[a]) {
+    private[ken] sealed class Op_+++[a](f1: ReadP[a]) {
         def +++(f2: Lazy[ReadP[a]]): ReadP[a] = op_+++(f1)(f2)
     }
     implicit def +++[a](f1: ReadP[a]): Op_+++[a] = new Op_+++(f1)
@@ -148,7 +148,7 @@ object ReadP extends MonadPlus[ReadP] with ThisIsInstance {
         } yield *
     }
 
-    sealed class Op_<++[a](f: ReadP[a]) {
+    private[ken] sealed class Op_<++[a](f: ReadP[a]) {
         def <++(q: Lazy[ReadP[a]]): ReadP[a] = op_<++(f)(q)
     }
     implicit def <++[a](f: ReadP[a]): Op_<++[a] = new Op_<++(f)

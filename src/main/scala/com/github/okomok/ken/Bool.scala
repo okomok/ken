@@ -58,8 +58,8 @@ private[ken] object _Bool extends Bounded[Bool] with Enum[Bool] with Eq.Of[Bool]
     // Prelude
     //
     val not: Bool => Bool = b => !b
-
     val op_&& : Bool => Lazy[Bool] => Bool = b => c => b && c.!
-
     val op_|| : Bool => Lazy[Bool] => Bool = b => c => b || c.!
+    final val otherwise = True // useless?
+
 }

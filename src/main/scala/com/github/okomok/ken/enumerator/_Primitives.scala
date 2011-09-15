@@ -35,27 +35,27 @@ private[enumerator] trait _Primitives[n[+_]] { this: _Enumerators[n] =>
     @Annotation.flipOf("op_>==>:")
     def op_<==<:[a, b, a_, b_](e2: Step[a, b] => Iteratee[a_, b_])(e1: Enumerator[a, b]): Step[a, b] => Iteratee[a_, b_] = op_>==>:(e1)(e2)
 
-    sealed class Op_>>==[a, b](i: Iteratee[a, b]) {
+    private[ken] sealed class Op_>>==[a, b](i: Iteratee[a, b]) {
         def >>==[a_, b_](f: Step[a, b] => Iteratee[a_, b_]): Iteratee[a_, b_] = op_>>==(i)(f)
     }
     implicit def >>==[a, b](i: Iteratee[a, b]): Op_>>==[a, b] = new Op_>>==(i)
 
-    sealed class Op_==<<:[a, b](i: Iteratee[a, b]) {
+    private[ken] sealed class Op_==<<:[a, b](i: Iteratee[a, b]) {
         def ==<<:[a_, b_](f: Step[a, b] => Iteratee[a_, b_]): Iteratee[a_, b_] = op_==<<:(f)(i)
     }
     implicit def ==<<:[a, b](i: Iteratee[a, b]): Op_==<<:[a, b] = new Op_==<<:(i)
 
-    sealed class Op_@@:[a, b](i: Iteratee[a, b]) {
+    private[ken] sealed class Op_@@:[a, b](i: Iteratee[a, b]) {
         def @@:[a_, b_](f: Step[a, b] => Iteratee[a_, b_]): Iteratee[a_, b_] = op_@@:(f)(i)
     }
     implicit def @@:[a, b](i: Iteratee[a, b]): Op_@@:[a, b] = new Op_@@:(i)
 
-    sealed class Op_>==>:[a, b, a_, b_](e2: Step[a, b] => Iteratee[a_, b_]) {
+    private[ken] sealed class Op_>==>:[a, b, a_, b_](e2: Step[a, b] => Iteratee[a_, b_]) {
         def >==>:(e1: Enumerator[a, b]): Step[a, b] => Iteratee[a_, b_] = op_>==>:(e1)(e2)
     }
     implicit def >==>:[a, b, a_, b_](e2: Step[a, b] => Iteratee[a_, b_]): Op_>==>:[a, b, a_, b_] = new Op_>==>:(e2)
 
-    sealed class Op_<==<:[a, b](e1: Enumerator[a, b]) {
+    private[ken] sealed class Op_<==<:[a, b](e1: Enumerator[a, b]) {
         def <==<:[a_, b_](e2: Step[a, b] => Iteratee[a_, b_]): Step[a, b] => Iteratee[a_, b_] = op_<==<:(e2)(e1)
     }
     implicit def <==<:[a, b](e1: Enumerator[a, b]): Op_<==<:[a, b] = new Op_<==<:(e1)

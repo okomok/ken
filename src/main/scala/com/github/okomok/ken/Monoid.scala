@@ -38,10 +38,10 @@ trait Monoid[m] extends Typeclass0[m] { outer =>
 
     // Operators
     //
-    sealed class Op_mappend(x: m) {
+    private[ken] sealed class Op_mappend_(x: m) {
         def _mappend_(y: Lazy[m]): m = mappend(x)(y)
     }
-    final implicit def _mappend_(x: m): Op_mappend = new Op_mappend(x)
+    final implicit def _mappend_(x: m): Op_mappend_ = new Op_mappend_(x)
 }
 
 

@@ -22,12 +22,12 @@ trait Category[cat[-_, +_]] extends Typeclass2[cat] {
 
     // Operators
     //
-    sealed class Op_<<<:[a, b](g: cat[a, b]) {
+    private[ken] sealed class Op_<<<:[a, b](g: cat[a, b]) {
         def <<<:[c](f: cat[b, c]): cat[a, c] = op_<<<:(f)(g)
     }
     final implicit def <<<:[a, b](g: cat[a, b]): Op_<<<:[a, b] = new Op_<<<:(g)
 
-    sealed class Op_>>>:[b, c](g: cat[b, c]) {
+    private[ken] sealed class Op_>>>:[b, c](g: cat[b, c]) {
         def >>>:[a](f: cat[a, b]): cat[a, c] = op_>>>:(f)(g)
     }
     final implicit def >>>:[b, c](g: cat[b, c]): Op_>>>:[b, c] = new Op_>>>:(g)

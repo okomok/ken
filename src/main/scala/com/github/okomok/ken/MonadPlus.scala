@@ -39,7 +39,7 @@ trait MonadPlus[m[+_]] extends Monad[m] with Alternative[m] {
 
     // Operators
     //
-    sealed class Op_mplus[a](x: m[a]) {
+    private[ken] sealed class Op_mplus[a](x: m[a]) {
         def _mplus_(y: Lazy[m[a]]): m[a] = mplus(x)(y)
     }
     final implicit def _mplus_[a](x: m[a]): Op_mplus[a] = new Op_mplus(x)

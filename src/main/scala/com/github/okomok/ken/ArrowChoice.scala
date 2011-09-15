@@ -43,12 +43,12 @@ trait ArrowChoice[a[-_, +_]] extends Arrow[a] {
 
     // Operators
     //
-    sealed class Op_+++:[b_, c_](g: a[b_, c_]) {
+    private[ken] sealed class Op_+++:[b_, c_](g: a[b_, c_]) {
         def +++:[b, c](f: a[b, c]): a[Either[b, b_], Either[c, c_]] = op_+++:(f)(g)
     }
     final implicit def +++:[b_, c_](g: a[b_, c_]): Op_+++:[b_, c_] = new Op_+++:(g)
 
-    sealed class Op_|||:[c, d](g: a[c, d]) {
+    private[ken] sealed class Op_|||:[c, d](g: a[c, d]) {
         def |||:[b](f: a[b, d]): a[Either[b, c], d] = op_|||:(f)(g)
     }
     final implicit def |||:[c, d](g: a[c, d]): Op_|||:[c, d] = new Op_|||:(g)

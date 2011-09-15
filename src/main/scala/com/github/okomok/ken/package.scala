@@ -14,10 +14,6 @@ package object ken {
     type Eq[a] = _Eq[a]
     val Eq = _Eq
 
-    // Bools
-    //
-    final val otherwise = True
-
     // Miscellaneous functions
     //
     def id[a]: a => a = x => x
@@ -26,31 +22,50 @@ package object ken {
 
     def `op_.`[a, b, c](f: b => c)(g: a => b): a => c = x => f(g(x))
 
-    sealed class `Op_.`[b, c](f: b => c) {
+    private[ken] sealed class `Op_.`[b, c](f: b => c) {
         def `.`[a](g: a => b): a => c = `op_.`(f)(g)
     }
+
+    @Annotation.ceremonial("`compose` is recommended")
     implicit def `.`[b, c](f: b => c): `Op_.`[b, c] = new `Op_.`(f)
 
     def flip[a, b, c](f: a => b => c): b => a => c = x => y => f(y)(x)
 
     def op_@[a, b](f: a => b)(x: a): b = f(x)
 
+    private[ken] sealed class Op_@[a, b](f: a => b) {
+        def `@`(x: a): b = op_@(f)(x)
+    }
+
+    @Annotation.ceremonial("`apply` is much better")
+    implicit def `@`[a, b](f: a => b): Op_@[a, b] = new Op_@(f)
+
     def until[a](p: a => Bool)(f: a => a)(x: a): a = {
         if (p(x)) x else until(p)(f)(f(x))
     }
 
-    def asTypeOf[a](x: a)(y: => a): a = x
+    @Annotation.ceremonial("useless in Scala")
+    def asTypeOf[a](x: a)(y: Lazy[a]): a = x
 
-    sealed class AsTypeOf[a](x: a) {
-        def _asTypeOf_(y: => a): a = x
+    private[ken] sealed class Op_asTypeOf_[a](x: a) {
+        def _asTypeOf_(y: Lazy[a]): a = x
     }
-    implicit def _asTypeOf_[a](x: a): AsTypeOf[a] = new AsTypeOf(x)
+
+    @Annotation.ceremonial("useless in Scala")
+    implicit def _asTypeOf_[a](x: a): Op_asTypeOf_[a] = new Op_asTypeOf_(x)
 
     val error: String => Nothing = { msg => throw new java.lang.Error(List.toJString(msg)) }
 
     def undefined: Nothing = throw new java.lang.Error("undefined")
 
-    def seq[b](x: Any)(y: b): b = y // no special effects
+    @Annotation.ceremonial("no special effects")
+    def seq[b](x: Any)(y: b): b = y
+
+    @Annotation.ceremonial("same as `op_@`")
+    def op_@![a, b](f: a => b)(x: a): b = seq(x)(f(x))
+
+    @Annotation.ceremonial("same as `@`")
+    implicit def @![a, b](f: a => b): Op_@[a, b] = new Op_@(f)
 
     // Trivial transformers
     //
@@ -91,7 +106,8 @@ package object ken {
 
     type IOError = java.io.IOException // TODO
 
-    type IORep[+a] = RealWorld.type => (a, RealWorld.type) // no special effects
+    @Annotation.ceremonial("no special effects")
+    type IORep[+a] = RealWorld.type => (a, RealWorld.type)
 
     type TypeRep = ClassManifest[_]
 

@@ -49,17 +49,17 @@ trait Num[a] extends Typeclass0[a] {
 
     // Operators
     //
-    sealed class Op_+(x: a) {
+    private[ken] sealed class Op_+(x: a) {
         def +(y: a): a = op_+(x)(y)
     }
     final implicit def +(x: a): Op_+ = new Op_+(x)
 
-    sealed class Op_-(x: a) {
+    private[ken] sealed class Op_-(x: a) {
         def -(y: a): a = op_-(x)(y)
     }
     final implicit def -(x: a): Op_- = new Op_-(x)
 
-    sealed class Op_*(x: a) {
+    private[ken] sealed class Op_*(x: a) {
         def *(y: a): a = op_*(x)(y)
     }
     final implicit def *(x: a): Op_* = new Op_*(x)

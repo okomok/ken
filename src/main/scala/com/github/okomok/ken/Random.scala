@@ -58,7 +58,7 @@ object Random extends RandomInstance with RandomShortcut {
 
     // StdGen
     //
-    final class StdGen private[Random] (private val s: Long = System.currentTimeMillis) {
+    final class StdGen private[Random] (private val s: Long = java.lang.System.currentTimeMillis) {
         private val rep = new java.util.Random(s)
         override def toString = "StdGen(" + s + ")"
     }
@@ -70,7 +70,7 @@ object Random extends RandomInstance with RandomShortcut {
         //
         // RandomGen
         override val next: next = g => (g.rep.nextInt, g)
-        override val split: split = g => (new StdGen(g.s + 1), new StdGen(g.s - 1))
+        override val split: split = g => (new StdGen(g.s + 1), new StdGen(g.s - 1)) // TODO
     }
 
     val setStdGen: StdGen => IO[Unit] = sgen => writeIORef(theStdGen)(sgen)
@@ -93,6 +93,7 @@ object Random extends RandomInstance with RandomShortcut {
 
 
 sealed trait RandomInstance { this: Random.type =>
+    implicit val ofInt: Random[Int] = Int
 }
 
 

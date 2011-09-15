@@ -17,7 +17,7 @@ trait ArrowPlus[a[-_, +_]] extends ArrowZero[a] {
 
     // Operators
     //
-    sealed class Op_<+>:[b, c](g: Lazy[a[b, c]]) {
+    private[ken] sealed class Op_<+>:[b, c](g: Lazy[a[b, c]]) {
         def <+>:(f: a[b, c]): a[b, c] = op_<+>:(f)(g)
     }
     implicit def <+>:[b, c](g: => a[b, c]): Op_<+>:[b, c] = new Op_<+>:(Lazy(g))

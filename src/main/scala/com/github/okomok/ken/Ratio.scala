@@ -53,7 +53,7 @@ object Ratio {
 /*
     def op_%%[a](x: a)(y: a)(implicit i: Integral[a]): Ratio[a] = Ratio(x, y)
 
-    sealed class Op_%%[a](x: a) {
+    private[ken] sealed class Op_%%[a](x: a) {
         def %%(y: a)(implicit i: Integral[a]): Ratio[a] = op_%%(x)(y)
     }
     implicit def %%[a](x: a): Op_%%[a] = new Op_%%(x)

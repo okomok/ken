@@ -64,14 +64,14 @@ object ReadPrec extends Newtype1[ReadPrec, ({type ot[+a] = Int => ReadP[a]})#ot]
 
     def op_+++[a](f1: ReadPrec[a])(f2: Lazy[ReadPrec[a]]): ReadPrec[a] = ReadPrec { n => ReadP.op_+++(f1.get(n))(f2.get(n)) }
 
-    sealed class Op_+++[a](f1: ReadPrec[a]) {
+    private[ken] sealed class Op_+++[a](f1: ReadPrec[a]) {
         def +++(f2: Lazy[ReadPrec[a]]): ReadPrec[a] = op_+++(f1)(f2)
     }
     implicit def +++[a](f1: ReadPrec[a]): Op_+++[a] = new Op_+++(f1)
 
     def op_<++[a](f1: ReadPrec[a])(f2: Lazy[ReadPrec[a]]): ReadPrec[a] = ReadPrec { n => ReadP.op_<++(f1.get(n))(f2.get(n)) }
 
-    sealed class Op_<++[a](f1: ReadPrec[a]) {
+    private[ken] sealed class Op_<++[a](f1: ReadPrec[a]) {
         def <++(f2: Lazy[ReadPrec[a]]): ReadPrec[a] = op_<++(f1)(f2)
     }
     implicit def <++[a](f1: ReadPrec[a]): Op_<++[a] = new Op_<++(f1)

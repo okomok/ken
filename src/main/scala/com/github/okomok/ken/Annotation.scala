@@ -9,7 +9,6 @@ package ken
 
 
 object Annotation {
-
     /**
      * Marker trait for documentation
      */
@@ -25,4 +24,8 @@ object Annotation {
      */
     class flipOf(what: String) extends StaticAnnotation
 
+    /**
+     * No special effects in Scala
+     */
+    class ceremonial(why: String) extends StaticAnnotation
 }

@@ -38,17 +38,17 @@ trait Applicative[f[+_]] extends Functor[f] {
 
     // Operators
     //
-    sealed class Op_<*>[a, b](x: f[a => b]) {
+    private[ken] sealed class Op_<*>[a, b](x: f[a => b]) {
         def <*>(y: f[a]): f[b] = op_<*>(x)(y)
     }
     final implicit def <*>[a, b](x: f[a => b]): Op_<*>[a, b] = new Op_<*>(x)
 
-    sealed class Op_*>[a](x: f[a]) {
+    private[ken] sealed class Op_*>[a](x: f[a]) {
         def *>[b](y: f[b]): f[b] = op_*>(x)(y)
     }
     final implicit def *>[a](x: f[a]): Op_*>[a] = new Op_*>(x)
 
-    sealed class Op_<*[a](x: f[a]) {
+    private[ken] sealed class Op_<*[a](x: f[a]) {
         def <*[b](y: f[b]): f[a] = op_<*(x)(y)
     }
     final implicit def <*[a](x: f[a]): Op_<*[a] = new Op_<*(x)

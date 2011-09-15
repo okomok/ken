@@ -53,22 +53,22 @@ trait Integral[a] extends Real[a] with Enum[a] { outer =>
 
     // Operators
     //
-    sealed class Op_quot(n: a) {
+    private[ken] sealed class Op_quot(n: a) {
         def _quot_(d: a): a = quot(n)(d)
     }
     final implicit def _quot_(n: a): Op_quot = new Op_quot(n)
 
-    sealed class Op_rem(n: a) {
+    private[ken] sealed class Op_rem(n: a) {
         def _rem_(d: a): a = rem(n)(d)
     }
     final implicit def _rem_(n: a): Op_rem = new Op_rem(n)
 
-    sealed class Op_div(n: a) {
+    private[ken] sealed class Op_div(n: a) {
         def _div_(d: a): a = div(n)(d)
     }
     final implicit def _div_(n: a): Op_div = new Op_div(n)
 
-    sealed class Op_mod(n: a) {
+    private[ken] sealed class Op_mod(n: a) {
         def _mod_(d: a): a = mod(n)(d)
     }
     final implicit def _mod_(n: a): Op_mod = new Op_mod(n)
