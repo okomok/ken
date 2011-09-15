@@ -38,4 +38,11 @@ class WorldTest extends org.scalatest.junit.JUnit3Suite {
         val w = new World
         implicitly[Monad[w.ST]]
     }
+
+    def testIncompatible {
+        val w1 = new World
+        val w2 = new World
+        def makeSTRef2: w2.STRef[Int] = error("dummy")
+        //w1.readSTRef(makeSTRef2) // never compiles.
+    }
 }

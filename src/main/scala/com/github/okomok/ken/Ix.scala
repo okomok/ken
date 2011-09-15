@@ -53,6 +53,20 @@ trait Ix[a] extends Ord[a] {
                 showParen(True)(showsPrec(0)(rng))("")
             } )
     }
+
+    type safeRangeSize = Pair[a, a] => Int
+    final val safeRangeSize: safeRangeSize = { case (l, u) =>
+        val r = rangeSize(l, u)
+        if (r < 0) error("Negative range size")
+        else r
+    }
+
+    type safeIndex = Pair[a, a] => Int => a => Int
+    final val safeIndex: safeIndex = { case (l, u) => n => i =>
+        val i_ = index(l, u)(i)
+        if (0 <= i_ && i_ < n) i_
+        else error("Error in array index; " ++: Show.show(i_) ++: " not in range [0.." ++: Show.show(n) ++: List.from(")"))
+    }
 }
 
 

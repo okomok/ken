@@ -1,6 +1,12 @@
 
 
 // Copyright Shunsuke Sogame 2011.
+//
+// Copyright 2004, The University Court of the University of Glasgow.
+// All rights reserved.
+//
+// Copyright (c) 2002 Simon Peyton Jones
+//
 // Distributed under the New BSD license.
 
 
@@ -8,9 +14,14 @@ package com.github.okomok
 package ken
 
 
-class World {
-    type This = this.type
+import scala.collection.mutable.ArraySeq
 
+
+class World {
+    type This = this.type // makes other's `ST` incompatible.
+
+    // ST
+    //
     type ST[+a] = State[This, a]
 
     object ST extends MonadStateProxy[This, ST] {
@@ -52,4 +63,46 @@ class World {
     def unsafeSTToIO[a](st: ST[a]): IO[a] = st match {
         case ST(m) => IO { s => m.asInstanceOf[IORep[a]](s) }
     }
+
+    // STArray
+    //
+    final case class STArray[i, e](l: i, u: i, n: Int, rep: ArraySeq[e]) {
+        override def equals(that: Any): Boolean = that match {
+            case that: STArray[_, _] => rep.equals(that.rep)
+            case _ => false
+        }
+        override def hashCode: Int = rep.hashCode
+    }
+
+    def newSTArray[i, e](rng: (i, i))(initial: e)(implicit ix: Ix[i]): ST[STArray[i, e]] = returnST { rng match {
+        case (l, u) => {
+            val n = ix.safeRangeSize(rng)
+            val rep = ArraySeq.fill(n)(initial)
+            STArray(l, u, n, rep)
+        }
+    } }
+
+    def boundsSTArray[i, e](marr: STArray[i, e]): (i, i) = marr match {
+        case STArray(l, u, _, _) => (l, u)
+    }
+
+    def numElementsSTArray[i, e](marr: STArray[i, e]): Int = marr match {
+        case STArray(_, _, n, _) => n
+    }
+
+    def readSTArray[i, e](marr: STArray[i, e])(i: i)(implicit ix: Ix[i]): ST[e] = marr match {
+        case STArray(l, u, n, _) => unsafeReadSTArray(marr)(ix.safeIndex(l, u)(n)(i))
+    }
+
+    def unsafeReadSTArray[i, e](marr: STArray[i, e])(i: Int): ST[e] = returnST { marr match {
+        case STArray(_, _, _, rep) => rep(i)
+    } }
+
+    def writeSTArray[i, e](marr: STArray[i, e])(i: i)(e: e)(implicit ix: Ix[i]): ST[Unit] = marr match {
+        case STArray(l, u, n, _) => unsafeWriteSTArray(marr)(ix.safeIndex(l, u)(n)(i))(e)
+    }
+
+    def unsafeWriteSTArray[i, e](marr: STArray[i, e])(i: Int)(e: e): ST[Unit] = returnST { marr match {
+        case STArray(_, _, _, rep) => rep(i) = e
+    } }
 }
