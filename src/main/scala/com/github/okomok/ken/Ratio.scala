@@ -22,7 +22,7 @@ sealed class Ratio[a](val numerator: a, val denominator:a) extends Kind.constThi
         case that: Ratio[_] => (numerator == that.numerator) && (denominator == that.denominator)
         case _ => false
     }
-    override def toString: Predef.String = "Ratio(" + numerator + "," + denominator + ")"
+    override def toString: JString = "Ratio(" + numerator + "," + denominator + ")"
     override def hashCode: Int = (numerator, denominator).hashCode
 }
 

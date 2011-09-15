@@ -20,7 +20,7 @@ import scala.annotation.tailrec
 sealed abstract class List[+a] extends Up[List[a]] {
     final def of[b >: a]: List[b] = this
 
-    final override def toString: Predef.String = {
+    final override def toString: JString = {
         if (this eq Nil) "Nil"
         else if (List.all((_: a).isInstanceOf[Char])(this)) toScalaList.mkString("\"", "", "\"")
         else toScalaList.mkString("List(", ",", ")")
@@ -168,7 +168,7 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
     }
 
     implicit def fromArray[a](xs: Array[a]): List[a] = fromIterable(xs)
-    implicit def fromString(xs: Predef.String): String = fromIterable(xs)
+    implicit def fromString(xs: JString): String = fromIterable(xs)
     implicit def fromIterable[a](xs: scala.Iterable[a]): List[a] = fromIterator(xs.iterator)
 
     // Basic functions
@@ -550,15 +550,15 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
 
     // Functions on strings
     //
-    lazy val toJString: String => Predef.String = cs => foldl[StringBuilder, Char](sb => c => { sb += c; sb })(new StringBuilder)(cs).toString
+    val toJString: String => JString = cs => foldl[StringBuilder, Char](sb => c => { sb += c; sb })(new StringBuilder)(cs).toString
 
-    lazy val lines: String => List[String] = s => map(fromString)(from(toJString(s).split("\\r?\\n")))
+    val lines: String => List[String] = s => map(fromString)(from(toJString(s).split("\\r?\\n")))
 
-    lazy val unlines: List[String] => String = ls => concatMap(op_!++:("\n"))(ls)
+    val unlines: List[String] => String = ls => concatMap(op_!++:("\n"))(ls)
 
-    lazy val words: String => List[String] = s => map(fromString)(from(toJString(s).split("\\W+")))
+    val words: String => List[String] = s => map(fromString)(from(toJString(s).split("\\W+")))
 
-    lazy val unwords: List[String] => String = {
+    val unwords: List[String] => String = {
         case Nil => ""
         case w !:: Nil => w
         case w :: ws => w ++: (' ' :: unwords(ws.!))
@@ -703,7 +703,7 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
 
     // Misc
     //
-    lazy val range: Pair[Int, Int] => List[Int] = { case (n, m) =>
+    val range: Pair[Int, Int] => List[Int] = { case (n, m) =>
         Predef.require(n <= m)
         if (n == m) {
             Nil
@@ -712,7 +712,7 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
         }
     }
 
-    lazy val rangeFrom: Int => List[Int] = n => {
+    val rangeFrom: Int => List[Int] = n => {
         n :: rangeFrom(n + 1)
     }
 

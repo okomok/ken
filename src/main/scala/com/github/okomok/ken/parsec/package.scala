@@ -35,7 +35,7 @@ package object parsec {
 
     // Pos
     //
-    type SourceName = Predef.String
+    type SourceName = JString
     type Line = Int
     type Column = Int
 

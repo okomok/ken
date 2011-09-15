@@ -69,6 +69,7 @@ package object ken {
     // Aliases
     //
     type String = List[Char]
+    type JString = Predef.String
 
     type Bool = Boolean
     val Bool = _Bool
@@ -80,6 +81,7 @@ package object ken {
     val Integer = _Integer
 
     val Pair = Tuple2
+    // val Triple = Tuple3
 
     type Rational = Ratio[Integer]
 
@@ -89,7 +91,7 @@ package object ken {
 
     type IOError = java.io.IOException // TODO
 
-    type IORep[+a] = RealWorld.type => (a, RealWorld.type)
+    type IORep[+a] = RealWorld.type => (a, RealWorld.type) // no special effects
 
     type TypeRep = ClassManifest[_]
 

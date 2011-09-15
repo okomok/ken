@@ -17,7 +17,7 @@ import RealWorld._
 
 
 final case class Str(override val get: String) extends Strong[String] {
-    override def toString: Predef.String  = List.toJString(get)
+    override def toString: JString  = List.toJString(get)
 }
 
 

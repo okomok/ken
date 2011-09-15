@@ -15,7 +15,7 @@ trait Main {
 
     private[this] var _args: List[String] = null
 
-    def main(args: Array[Predef.String]): Unit = {
+    def main(args: Array[JString]): Unit = {
         _args = args.map(str => List.from(str))
         main_.!
     }

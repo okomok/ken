@@ -97,7 +97,7 @@ object IO extends MonadIO[IO] with ThisIsInstance {
 
     // Files
     //
-    type FilePath = Predef.String
+    type FilePath = JString
 
     val readFile: FilePath => IO[String] = f => unsafeIO {
         scala.io.Source.fromFile(f)
@@ -137,18 +137,17 @@ object IO extends MonadIO[IO] with ThisIsInstance {
 
     // Handle
     //
-    final case class Handle(rep: Any)
+    final case class Handle(rep: java.io.Closeable)
 
     val stdout: Handle = Handle(java.lang.System.out)
     val stderr: Handle = Handle(java.lang.System.err)
 
     val hClose: Handle => IO[Unit] = {
-        case Handle(rep: java.io.InputStream) => unsafeIO { rep.close() }
-        case Handle(rep: java.io.OutputStream) => unsafeIO { rep.close() }
+        case Handle(rep) => unsafeIO { rep.close() }
     }
 
     val hFlush: Handle => IO[Unit] = {
-        case Handle(rep: java.io.OutputStream) => unsafeIO { rep.flush() }
+        case Handle(rep: java.io.Flushable) => unsafeIO { rep.flush() }
         case _ => `return`()
     }
 

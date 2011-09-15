@@ -18,7 +18,7 @@ final case class Consumed[+a](reply: a) extends Consumed_[a]
 final case class Empty[+a](reply: a) extends Consumed_[a]
 
 
-object Consumed_ extends Functor[Consumed_] {
+object Consumed_ extends Functor[Consumed_] with ThisIsInstance {
     // Overrides
     //
     // Functor

@@ -101,7 +101,7 @@ object Int extends Bounded[Int] with Enum[Int] with Eq.Of[Int]
         val (n, g_) = i.next(g)
         (l + ((n.toDouble / maxBound.toDouble) * (h - l)).toInt, g_) // TODO
     }
-    override def random[g](g: g)(implicit i: RandomGen[g]): (a, g) = i.next(g)
+    override def random[g](g: g)(implicit i: RandomGen[g]): (a, g) = randomR(minBound, maxBound)(g)(i)
 
     // Show
     override val showsPrec: showsPrec = showSignedInt
