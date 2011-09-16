@@ -18,7 +18,7 @@ import java.lang.{Math => JMath}
 import java.lang.{Double => JDouble}
 
 
-object Double extends Enum[Double] with Eq.Of[Double] with RealFloat[Double] with Show[Double] {
+object Double extends Enum[Double] with Eq.Of[Double] with RealFloat[Double] with Show.Of[Double] {
     // Overrides
     //
     // Ord
@@ -97,17 +97,56 @@ object Double extends Enum[Double] with Eq.Of[Double] with RealFloat[Double] wit
     override val floatRadix: floatRadix = _ => 2
     override val floatDigits: floatDigits = _ => 53
     override val floatRange: floatRange = _ => (-1021, 1024)
-    override val decodeFloat: decodeFloat = _ => error("todo")
-    override val encodeFloat: encodeFloat = _ => _ => error("todo")
-    override val exponent: exponent = JMath.getExponent(_)
-    override val significand: significand = _ => error("todo")
-    override val scaleFloat: scaleFloat = _ => error("todo")
+    override val decodeFloat: decodeFloat = _decodeDouble
+    override val encodeFloat: encodeFloat = _encodeDouble
     override val isNaN: isNaN = JDouble.isNaN(_)
     override val isInfinite: isInfinite = JDouble.isInfinite(_)
-    override val isDenormalized: isDenormalized = _ => error("todo")
-    override val isNegativeZero: isNegativeZero = _ => error("todo")
+    override val isDenormalized: isDenormalized = x => _expBits(x) == 0
+    override val isNegativeZero: isNegativeZero = x => (x == 0.0D) && (_signBits(x) == 1)
     override val isIEEE: isIEEE = _ => True
     override val atan2: atan2 = x => y => JMath.atan2(x, y)
-    // Show
-    override val showsPrec: showsPrec = _ => _ => error("todo") // showSignedFloat(showFloat)(x)
+
+    private lazy val _signBits: Double => Int = x => {
+        val mask = 0x8000000000000000L
+        ((JDouble.doubleToRawLongBits(x) & mask) >>> 63).toInt
+    }
+
+    private lazy val _expBits: Double => Int = x => {
+        val mask = 0x7ff0000000000000L
+        ((JDouble.doubleToRawLongBits(x) & mask) >>> 52).toInt
+    }
+
+    private lazy val _fractBits: Double => Long = x => {
+        val mask = 0x000fffffffffffffL
+        JDouble.doubleToRawLongBits(x) & mask
+    }
+
+    private lazy val _decodeDouble: Double => (Integer, Int) = x => {
+        val sign: Integer = if (_signBits(x) != 0) -1 else 1
+        val exp: Int = _expBits(x)
+        if (x == 0) {
+            (0, 0)
+        } else if (isDenormalized(x)) {
+            error("todo")
+            // (sign * fract, exp - 1022 - 52)
+        } else {
+            val fract = _fractBits(x) | 0x0010000000000000L
+            (sign * fract, exp - 1023 - 52)
+        }
+    }
+
+    private lazy val _encodeDouble: Integer => Int => Double = { m => n =>
+        if (m == 0 && n == 0) {
+            0.0D
+        } else {
+            var bits: Long = 0
+            if (m < 0) {
+                bits |= 0x8000000000000000L
+            }
+            bits |= (n + 1023 + 52).toLong << 52
+            val fract = java.lang.Math.abs(m.toLong)
+            bits |= (fract & 0x000fffffffffffffL)
+            JDouble.longBitsToDouble(bits)
+        }
+    }
 }

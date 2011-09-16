@@ -95,8 +95,6 @@ object Float extends Enum[Float] with Eq.Of[Float] with RealFloat[Float] with Sh
     override val decodeFloat: decodeFloat = _ => error("todo")
     override val encodeFloat: encodeFloat = _ => _ => error("todo")
     override val exponent: exponent = x => JMath.getExponent(x)
-    override val significand: significand = _ => error("todo")
-    override val scaleFloat: scaleFloat = _ => _ => error("todo")
     override val isNaN: isNaN = x => JFloat.isNaN(x)
     override val isInfinite: isInfinite = x => JFloat.isInfinite(x)
     override val isDenormalized: isDenormalized = _ => error("todo")

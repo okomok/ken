@@ -40,7 +40,7 @@ trait RealFloat[a] extends RealFrac[a] with Floating[a] {
     type exponent = a => Int
     def exponent: exponent = x => {
         val (m, n) = decodeFloat(x)
-        if (m == 0) 0 else n + floatDigits(x)
+        if (m == 0) 0 else (n + floatDigits(x))
     }
 
     type significand = a => a
@@ -55,7 +55,7 @@ trait RealFloat[a] extends RealFrac[a] with Floating[a] {
         val (l, h) = floatRange(x)
         val d = floatDigits(x)
         val b = h - l + 4 * d
-        encodeFloat(m)(n + clamp(b)(k))
+        encodeFloat(m)(n + RealFloat.clamp(b)(k))
     }
 
     type isNaN = a => Bool
@@ -90,11 +90,6 @@ trait RealFloat[a] extends RealFrac[a] with Floating[a] {
         } else {
             x + y
         }
-    }
-
-    private[this] def clamp(bd: Int)(k: Int): Int = {
-        val i = Ord[Kind.const[Int]]
-        i.max(-bd)(i.min(bd)(k))
     }
 }
 
@@ -223,6 +218,8 @@ object RealFloat extends RealFloatInstance {
             doDiv(i _div_ (b _pow_ l))(l)
         }
     }
+
+    private val clamp: Int => Int => Int = bd => k => Int.max(-bd)(Int.min(bd)(k))
 }
 
 
