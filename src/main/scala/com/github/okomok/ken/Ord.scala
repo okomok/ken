@@ -61,6 +61,16 @@ trait Ord[a] extends Eq[a] { outer =>
         def >=(y: a): Bool = op_>=(x)(y)
     }
     final implicit def >=(x: a): Op_>= = new Op_>=(x)
+
+    private[ken] sealed class Op_max_(x: a) {
+        def _max_(y: a): a = max(x)(y)
+    }
+    final implicit def _max_(x: a): Op_max_ = new Op_max_(x)
+
+    private[ken] sealed class Op_min_(x: a) {
+        def _min_(y: a): a = min(x)(y)
+    }
+    final implicit def _min_(x: a): Op_min_ = new Op_min_(x)
 }
 
 
@@ -149,4 +159,14 @@ sealed trait OrdShortcut { this: Ord.type =>
         def >=(y: a): Bool = op_>=(x)(y)
     }
     implicit def >=[a](x: a)(implicit i: Ord[a]): _Op_>=[a] = new _Op_>=(x)
+
+    sealed class _Op_max_[a](x: a)(implicit i: Ord[a]) {
+        def _max_(y: a): a = max(x)(y)
+    }
+    implicit def _max_[a](x: a)(implicit i: Ord[a]): _Op_max_[a] = new _Op_max_(x)
+
+    sealed class _Op_min_[a](x: a)(implicit i: Ord[a]) {
+        def _min_(y: a): a = min(x)(y)
+    }
+    implicit def _min_[a](x: a)(implicit i: Ord[a]): _Op_min_[a] = new _Op_min_(x)
 }

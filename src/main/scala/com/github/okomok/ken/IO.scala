@@ -16,7 +16,7 @@ package ken
 
 // type IO[+a] = RealWorld.ST[a]
 final case class IO[+a](override val get: IORep[a]) extends Strong[IORep[a]] {
-    def ! : a = get.apply(RealWorld)._1
+    def ! : a = (get)(RealWorld)._1
 }
 
 
