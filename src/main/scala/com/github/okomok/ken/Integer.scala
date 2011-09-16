@@ -16,7 +16,7 @@ package ken
 
 // `object Integer` crashes scalac.
 private[ken] object _Integer extends Enum[Integer] with Eq.Of[Integer]
-    with Integral[Integer] with Ix[Integer] with Show[Integer]
+    with Integral[Integer] with Ix[Integer] with Random[Integer] with Show[Integer]
 {
     // Overrides
     //
@@ -81,6 +81,10 @@ private[ken] object _Integer extends Enum[Integer] with Eq.Of[Integer]
         else indexError(b)(i)("Integer")
     }
     override val inRange: inRange = { case (m, n) => i => m <= i && i <= n }
+    // Random
+    private type a = Integer
+    override def randomR[g](ival: (a, a))(g: g)(implicit i: RandomGen[g]): (a, g) = Random.randomIvalInteger[g, a](ival)(g)
+    override def random[g](g: g)(implicit i: RandomGen[g]): (a, g) = randomR(Int.toInteger(Int.minBound), Int.toInteger(Int.maxBound))(g)
     // Show
     override val showsPrec: showsPrec = p => n => r => {
         if (p > 6 && n < 0) '(' :: integerToString(n)(')' :: r)

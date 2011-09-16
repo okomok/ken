@@ -96,12 +96,10 @@ object Int extends Bounded[Int] with Enum[Int] with Eq.Of[Int]
     override val inRange: inRange = { case (m, n) => i => m <= i && i <= n }
     // Random
     private type a = Int
-    override def randomR[g](ival: (a, a))(g: g)(implicit i: RandomGen[g]): (a, g) = {
-        val (l, h) = ival
-        val (n, g_) = i.next(g)
-        (l + ((n.toDouble / maxBound.toDouble) * (h - l)).toInt, g_) // TODO
+    override def randomR[g](ival: (a, a))(g: g)(implicit i: RandomGen[g]): (a, g) = ival match {
+        case (a, b) => Random.randomIvalInteger[g, a](toInteger(a), toInteger(b))(g)
     }
-    override def random[g](g: g)(implicit i: RandomGen[g]): (a, g) = randomR(minBound, maxBound)(g)(i)
+    override def random[g](g: g)(implicit i: RandomGen[g]): (a, g) = randomR(minBound, maxBound)(g)
 
     // Show
     override val showsPrec: showsPrec = showSignedInt

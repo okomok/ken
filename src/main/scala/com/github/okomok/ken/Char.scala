@@ -17,7 +17,7 @@ package ken
 import java.lang.{Character => JChar}
 
 
-object Char extends Bounded[Char] with Enum[Char] with Eq.Of[Char] with Ord[Char] with Show.Of[Char] {
+object Char extends Bounded[Char] with Enum[Char] with Eq.Of[Char] with Ord[Char] with Random[Char] with Show.Of[Char] {
 
     // Overrides
     //
@@ -40,6 +40,14 @@ object Char extends Bounded[Char] with Enum[Char] with Eq.Of[Char] with Ord[Char
     override val op_<= : op_<= = c1 => c2 => c1 <= c2
     override val op_> : op_> = c1 => c2 => c1 > c2
     override val op_>= : op_>= = c1 => c2 => c1 >= c2
+    // Random
+    private type a = Char
+    override def randomR[g](ival: (a, a))(g: g)(implicit i: RandomGen[g]): (a, g) = ival match {
+        case (a, b) => Random.randomIvalInteger[g, a](Int.toInteger(ord(a)), Int.toInteger(ord(b)))(g) match {
+            case (x, g_) => (chr(x), g_)
+        }
+    }
+    override def random[g](g: g)(implicit i: RandomGen[g]): (a, g) = randomR(minBound, maxBound)(g)
 
     // Utilities
     //

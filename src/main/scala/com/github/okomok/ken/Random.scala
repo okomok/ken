@@ -89,11 +89,43 @@ object Random extends RandomInstance with RandomShortcut {
         val swap: Pair[a, StdGen] => (StdGen, a) = { case (v, g) => (g, v) }
         atomicModifyIORef(theStdGen)(swap `.` f)
     }
+
+    private[ken] def randomIvalInteger[g, a](ival: (Integer, Integer))(rng: g)(implicit i: RandomGen[g], j: Num[a]): (a, g) = ival match {
+        case (l, h) if l > h => randomIvalInteger(h, l)(rng)
+        case (l, h) => {
+            import Integer._mod_
+            val k: Integer = h - l + 1
+            val b: Integer = 2147483561
+            val n: Integer = iLogBase(b)(k)
+            lazy val f: Integer => Integer => g => (Integer, g) = n_ => acc => g => {
+                if (n_ == 0) {
+                    (acc, g)
+                } else {
+                    val (x, g_) = i.next(g)
+                    f(n_ - 1)(Integer.fromIntegral(x) + acc * b)(g_)
+                }
+            }
+            f(n)(1)(rng) match {
+                case (v, rng_) => (j.fromInteger(l + (v _mod_ k)), rng_)
+            }
+        }
+    }
+
+    private val iLogBase: Integer => Integer => Integer = b => i => {
+        import Integer._div_
+        if (i < b) 1 else (1 + iLogBase(b)(i _div_ b))
+    }
+
+    private val int32Count: Integer = Int.toInteger(Int.maxBound) - Int.toInteger(Int.minBound)
+    private val stdRange: (Int, Int) = (0, 2147483562)
 }
 
 
 sealed trait RandomInstance { this: Random.type =>
+    implicit val ofBool: Random[Bool] = _Bool
+    implicit val ofChar: Random[Char] = Char
     implicit val ofInt: Random[Int] = Int
+    implicit val ofInteger: Random[Integer] = _Integer
 }
 
 

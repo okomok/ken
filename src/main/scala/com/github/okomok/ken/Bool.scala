@@ -16,7 +16,7 @@ package ken
 
 // `object Bool` crashes scalac.
 private[ken] object _Bool extends Bounded[Bool] with Enum[Bool] with Eq.Of[Bool]
-    with Ord[Bool] with Ix[Bool] with Show.Of[Bool]
+    with Ord[Bool] with Ix[Bool] with Random[Bool] with Show.Of[Bool]
 {
     // Overrides
     //
@@ -54,12 +54,31 @@ private[ken] object _Bool extends Bounded[Bool] with Enum[Bool] with Eq.Of[Bool]
         else indexError(b)(i)("Bool")
     }
     override val inRange: inRange = { case (l, u) => i => fromEnum(i) >= fromEnum(l) && fromEnum(i) <= fromEnum(u) }
+    // Random
+    private type a = Bool
+    override def randomR[g](ival: (a, a))(g: g)(implicit i: RandomGen[g]): (a, g) = {
+        val bool2Int: Bool => Integer = {
+            case False => 0
+            case True => 1
+        }
+        val int2Bool: Int => Bool = {
+            case 0 => False
+            case 1 => True
+        }
+        ival match {
+            case (a, b) => Random.randomIvalInteger[g, Int](bool2Int(a), bool2Int(b))(g) match {
+                case (x, g_) => (int2Bool(x), g_)
+            }
+        }
+    }
+    override def random[g](g: g)(implicit i: RandomGen[g]): (a, g) = randomR(minBound, maxBound)(g)
 
     // Prelude
     //
     val not: Bool => Bool = b => !b
     val op_&& : Bool => Lazy[Bool] => Bool = b => c => b && c.!
     val op_|| : Bool => Lazy[Bool] => Bool = b => c => b || c.!
-    final val otherwise = True // useless?
 
+    @Annotation.ceremonial("useless?")
+    final val otherwise = True
 }
