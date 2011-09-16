@@ -14,9 +14,7 @@ package com.github.okomok
 package ken
 
 
-// Following Java protocol, you should implement `toString` instead of `Show`.
-// By the way, `showList` isn't used. (hard-coded in `List.toString`)
-
+// @Annotation.ceremonial("shall be equivalent to `Any.toString`") // comment out for weird `xs` name collision
 trait Show[a] extends Typeclass0[a] {
     final val asShow: Show[apply0] = this
 
@@ -29,6 +27,7 @@ trait Show[a] extends Typeclass0[a] {
     def show: show = x => shows(x)("")
 
     type showList = List[a] => ShowS
+    // @Annotation.ceremonial("hard-coded in `List.toString`") // comment out for duplicate field
     final def showList: showList = ls => s => showList__(shows)(ls)(s)
 
     // Extra
@@ -92,7 +91,8 @@ sealed trait ShowInstance { this: Show.type =>
 
 sealed trait ShowShortcut { this: Show.type =>
     def showsPrec[a](x: Int)(s: a)(implicit i: Show[a]): ShowS = i.showsPrec(x)(s)
-    def show[a](s: a)(implicit i: Show[a]): String = i.show(s)
+    // def show[a](s: a)(implicit i: Show[a]): String = i.show(s)
+    val show: Any => String = s => of[Any].show(s)
     def showList[a](ls: List[a])(implicit i: Show[a]): ShowS = i.showList(ls)
     def shows[a](x: a)(implicit i: Show[a]): ShowS = i.shows(x)
 }

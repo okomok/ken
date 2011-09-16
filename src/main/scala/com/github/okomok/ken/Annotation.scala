@@ -28,4 +28,9 @@ object Annotation {
      * No special effects in Scala
      */
     class ceremonial(why: String) extends StaticAnnotation
+
+    /**
+     * Unused name
+     */
+    class unused extends StaticAnnotation
 }

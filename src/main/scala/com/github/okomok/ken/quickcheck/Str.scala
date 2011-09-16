@@ -39,7 +39,8 @@ object Str {
         else s
     }
 
-    def showErr[a](x: a)(implicit i: Show[a]): String = List.unwords(List.words(i.show(x)))
+    // def showErr[a](x: a)(implicit i: Show[a]): String = List.unwords(List.words(i.show(x)))
+    val showErr: Any => String = x => List.unwords(List.words(Show.show(x)))
 
     val bold: String => String = s => s
 

@@ -8,12 +8,11 @@ package com.github.okomok
 package ken
 
 
-// Avoid name collision against Ord's EQ.
+// Avoid name collision against `Ord`'s `EQ`.
 // (Toplevel identifier is case-insensitive under the influence of file-system.)
 
 
-// Following Java protocol, you should implement `equals` instead of `Eq`.
-
+// @Annotation.ceremonial("shall be equivalent to `Any.==`") // comment out for weird `xs` name collision
 trait _Eq[a] extends Typeclass0[a] {
     final val asEq: _Eq[apply0] = this
 
@@ -83,6 +82,19 @@ sealed trait EqInstance { this: _Eq.type =>
 
 
 sealed trait EqShortcut { this: _Eq.type =>
+    def op_===[a](x: a)(y: a): Bool = Eq.of[a].op_===(x)(y)
+    def op_/==[a](x: a)(y: a): Bool = Eq.of[a].op_/==(x)(y)
+
+    sealed class _Op_===[a](x: a) {
+        def ===(y: a): Bool = op_===(x)(y)
+    }
+    implicit def ===[a](x: a): _Op_===[a] = new _Op_===(x)
+
+    sealed class _Op_/==[a](x: a) {
+        def /==(y: a): Bool = op_/==(x)(y)
+    }
+    implicit def /==[a](x: a): _Op_/==[a] = new _Op_/==(x)
+/*
     def op_===[a](x: a)(y: a)(implicit i: _Eq[a]): Bool = i.op_===(x)(y)
     def op_/==[a](x: a)(y: a)(implicit i: _Eq[a]): Bool = i.op_/==(x)(y)
 
@@ -95,4 +107,5 @@ sealed trait EqShortcut { this: _Eq.type =>
         def /==(y: a): Bool = op_/==(x)(y)
     }
     implicit def /==[a](x: a)(implicit i: _Eq[a]): _Op_/==[a] = new _Op_/==(x)
+*/
 }
