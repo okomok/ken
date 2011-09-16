@@ -114,7 +114,7 @@ object Gen extends Monad[Gen] with ThisIsInstance {
                 if (n <= k) x
                 else pick(n-k)(xs)
             }
-            case _ => error("QuickCheck.frequence used with empty list")
+            case _ => error("QuickCheck.frequency used with empty list")
         }
 
         choose(1, tot) >>= (pick(_)(xs))
@@ -131,7 +131,7 @@ object Gen extends Monad[Gen] with ThisIsInstance {
             import Int.{_div_, _max_}
             val k: Int = List.length(xs)
             val mx: Int = 100
-            def log_(n: Int) : Int = Double.round[Int](Double.log(Double.fromIntegral(n)))
+            def log_(n: Int) : Int = /*Double.round[Int]*/(Double.log(Double.fromIntegral(n))).toInt
             val size: Int => Int = n => (log_(n) + 1) * (k _div_ log_(mx))
             sized { n => elements(List.take(1 _max_ size(n))(xs)) }
         }
