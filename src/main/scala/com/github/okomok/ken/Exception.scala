@@ -107,13 +107,6 @@ trait ExceptionProxy[e] extends Exception[e] with TypeableProxy[e] with ShowProx
 object Exception extends ExceptionInstance with ExceptionShortcut {
     def apply[e <: Kind.Function0](implicit i: Exception[e#apply0]): Exception[e#apply0] = i
 
-    // ErrorCall
-    //
-    final case class ErrorCall(_1: String)
-    object ErrorCall extends Eq.Of[ErrorCall] with Show.Of[ErrorCall] with Exception[ErrorCall] with ThisIsInstance {
-        override val typeOf: typeOf = _ => implicitly[ClassManifest[ErrorCall]]
-    }
-
     @Annotation.ceremonial("no special effects")
     def evaluate[a](x: a): IO[a] = IO.`return`(x)
 

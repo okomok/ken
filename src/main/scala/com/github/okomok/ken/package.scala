@@ -104,12 +104,17 @@ package object ken {
 
     type ShowS = String => String
 
-    type IOError = java.io.IOException // TODO
+    type IOError = IOException
+    val IOError = IOException
 
     @Annotation.ceremonial("no special effects")
     type IORep[+a] = RealWorld.type => (a, RealWorld.type)
 
     type TypeRep = ClassManifest[_]
+
+    // Unsafe.Coerce
+    //
+    def unsafeCoerce[a, b](a: a, * : Type[b] = null): b = a.asInstanceOf[b]
 
     // Scala specific utilities
     //

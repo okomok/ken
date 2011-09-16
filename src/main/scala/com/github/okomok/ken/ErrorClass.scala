@@ -40,10 +40,6 @@ sealed trait ErrorClassInstance { this: ErrorClass.type =>
         override val strMsg: strMsg = id
     }
 
-    implicit val ofIOError: ErrorClass[IOError] = new ErrorClass[IOError] {
-        override val strMsg: strMsg = IO.userError
-    }
-
     implicit val ofAssertionError: ErrorClass[AssertionError] = new ErrorClass[AssertionError] {
         override val strMsg: strMsg = msg => new AssertionError(msg)
     }

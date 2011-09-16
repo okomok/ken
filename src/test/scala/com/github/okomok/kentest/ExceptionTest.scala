@@ -32,7 +32,7 @@ class ExceptionTest extends org.scalatest.junit.JUnit3Suite {
 
     def testMismatch {
         val i = Exception[MyException.type]
-        val s = SomeException(Exception.ErrorCall("hello"))
+        val s = SomeException(ErrorCall("hello"))
         val t = i.fromException(s)
         expect(Nothing)(t)
     }

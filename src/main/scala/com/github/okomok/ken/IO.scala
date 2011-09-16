@@ -122,17 +122,13 @@ object IO extends MonadIO[IO] with ThisIsInstance {
 
     // Exception handling in the I/O asMonad
     //
-    val ioError: IOError => IO[Nothing] = err => returnIO { throw err }
+    val ioError: IOError => IO[Nothing] = err => IOError.throwIO(err)
 
-    val userError: String => IOError = s => new java.io.IOException(s.toString)
+    val userError: String => IOError = str => IOError(new java.io.IOException(List.toJString(str)))
 
-    def `catch`[a](io: IO[a])(h: IOError => IO[a]): IO[a] = returnIO {
-        try {
-            io.!
-        } catch {
-            case err: IOError => h(err).!
-        }
-    }
+    def `catch`[a](io: IO[a])(h: IOError => IO[a]): IO[a] = IOError.`catch`(io)(h)
+
+    def `try`[a](f: IO[a]): IO[Either[IOError, a]] = `catch`(for { r <- f } yield Right(r).of[IOError, a])(e =>`return`(Lazy(Left(e))))
 
     // Handle
     //

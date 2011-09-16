@@ -27,7 +27,7 @@ object Int extends Bounded[Int] with Enum[Int] with Eq.Of[Int]
     override val maxBound: maxBound = JInt.MAX_VALUE
     // Enum
     override val succ: succ = x => {
-        if (x == maxBound)  error("Enum[Int].succ: tried to take `succ` of maxBound")
+        if (x == maxBound) error("Enum[Int].succ: tried to take `succ` of maxBound")
         else x + 1
     }
     override val pred: pred = x => {
@@ -100,7 +100,6 @@ object Int extends Bounded[Int] with Enum[Int] with Eq.Of[Int]
         case (a, b) => Random.randomIvalInteger[g, a](toInteger(a), toInteger(b))(g)
     }
     override def random[g](g: g)(implicit i: RandomGen[g]): (a, g) = randomR(minBound, maxBound)(g)
-
     // Show
     override val showsPrec: showsPrec = showSignedInt
 
