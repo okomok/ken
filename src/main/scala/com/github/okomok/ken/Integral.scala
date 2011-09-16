@@ -14,6 +14,9 @@ package com.github.okomok
 package ken
 
 
+import scala.annotation.tailrec
+
+
 trait Integral[a] extends Real[a] with Enum[a] { outer =>
     final val asIntegral: Integral[apply0] = this
 
@@ -51,6 +54,26 @@ trait Integral[a] extends Real[a] with Enum[a] { outer =>
     type odd = a => Bool
     def odd: odd = Bool.not `.` even
 
+    def pow[b](x0: b)(y0: a)(implicit j: Num[b]): b = {
+        @tailrec
+        def f(x: b)(y: a): b = {
+            if (even(y)) f(j.op_*(x)(x))(y _quot_ 2)
+            else if (y === 1) x
+            else g(j.op_*(x)(x))((y - 1) _quot_ 2)(x)
+        }
+        @tailrec
+        def g(x: b)(y: a)(z: b): b = {
+            if (even(y)) g(j.op_*(x)(x))(y _quot_ 2)(z)
+            else if (y === 1) j.op_*(x)(z)
+            else g(j.op_*(x)(x))((y - 1) _quot_ 2)(j.op_*(x)(z))
+        }
+        if (y0 < 0) error("Negative exponent")
+        else if (y0 === 0) j.fromInteger(1)
+        else f(x0)(y0)
+    }
+
+    def powpow[b](x: b)(n: a)(implicit j: Fractional[b]): b = if (n >= 0) (x _pow_ n) else j.recip(x _pow_ negate(n))
+
     // Operators
     //
     private[ken] sealed class Op_quot(n: a) {
@@ -72,6 +95,11 @@ trait Integral[a] extends Real[a] with Enum[a] { outer =>
         def _mod_(d: a): a = mod(n)(d)
     }
     final implicit def _mod_(n: a): Op_mod = new Op_mod(n)
+
+    private[ken] sealed class Op_pow_[b](x0: b)(implicit j: Num[b]) {
+        def _pow_(y0: a): b = pow(x0)(y0)
+    }
+    final implicit def _pow_[b](x0: b)(implicit j: Num[b]): Op_pow_[b] = new Op_pow_(x0)
 
     // Convenience
     //
@@ -101,6 +129,9 @@ trait IntegralProxy[a] extends Integral[a] with RealProxy[a] with EnumProxy[a] {
 
     override def even: even = selfIntegral.even
     override def odd: odd = selfIntegral.odd
+
+    override def pow[b](x0: b)(y0: a)(implicit j: Num[b]): b = selfIntegral.pow(x0)(y0)(j)
+    override def powpow[b](x: b)(n: a)(implicit j: Fractional[b]): b = selfIntegral.powpow(x)(n)(j)
 }
 
 
@@ -142,25 +173,33 @@ sealed trait IntegralShortcut { this: Integral.type =>
     def even[a](n: a)(implicit i: Integral[a]): Bool = i.even(n)
     def odd[a](n: a)(implicit i: Integral[a]): Bool = i.odd(n)
 
-    sealed class _Op_quot[a](n: a)(implicit i: Integral[a]) {
+    def pow[a, b](x0: b)(y0: a)(implicit i: Integral[a], j: Num[b]): b = i.pow(x0)(y0)
+    def powpow[a, b](x: b)(n: a)(implicit i: Integral[a], j: Fractional[b]): b = i.powpow(x)(n)
+
+    private[ken] sealed class _Op_quot[a](n: a)(implicit i: Integral[a]) {
         def _quot_(d: a): a = quot(n)(d)
     }
     implicit def _quot_[a](n: a)(implicit i: Integral[a]): _Op_quot[a] = new _Op_quot(n)
 
-    sealed class _Op_rem[a](n: a)(implicit i: Integral[a]) {
+    private[ken] sealed class _Op_rem[a](n: a)(implicit i: Integral[a]) {
         def _rem_(d: a): a = rem(n)(d)
     }
     implicit def _rem_[a](n: a)(implicit i: Integral[a]): _Op_rem[a] = new _Op_rem(n)
 
-    sealed class _Op_div[a](n: a)(implicit i: Integral[a]) {
+    private[ken] sealed class _Op_div[a](n: a)(implicit i: Integral[a]) {
         def _div_(d: a): a = div(n)(d)
     }
     implicit def _div_[a](n: a)(implicit i: Integral[a]): _Op_div[a] = new _Op_div(n)
 
-    sealed class _Op_mod[a](n: a)(implicit i: Integral[a]) {
+    private[ken] sealed class _Op_mod[a](n: a)(implicit i: Integral[a]) {
         def _mod_(d: a): a = mod(n)(d)
     }
     implicit def _mod_[a](n: a)(implicit i: Integral[a]): _Op_mod[a] = new _Op_mod(n)
+
+    private[ken] sealed class _Op_pow_[b](x0: b)(implicit j: Num[b]) {
+        def _pow_[a](y0: a)(implicit i: Integral[a]): b = pow(x0)(y0)
+    }
+    implicit def _pow_[b](x0: b)(implicit j: Num[b]): _Op_pow_[b] = new _Op_pow_(x0)
 
     def toInt[a](n: a)(implicit i: Integral[a]): Int = i.toInt(n)
 }

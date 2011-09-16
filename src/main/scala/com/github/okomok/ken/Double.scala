@@ -51,12 +51,29 @@ object Double extends Enum[Double] with Eq.Of[Double] with RealFloat[Double] wit
     // Fractional
     override val op_/ : op_/ = x => y => x / y
     override val recip: recip = x => 1.0D / x
-    override val fromRational: fromRational = _ => error("todo")
+    override lazy val fromRational: fromRational = RealFloat.fromRatToDouble
     // Real
-    override val toRational: toRational = _ => error("todo")
+    override val toRational: toRational = x => {
+        val (m, n) = decodeFloat(x)
+        val b = floatRadix(x)
+        val ir = Num[Rational]
+        Int.powpow(ir.op_*(Ratio(m, 1))(Ratio(b, 1)))(n)
+    }
     // RealFrac
     private type a = Double
-    override def properFraction[b](r: a)(implicit j : Integral[b]): (b, a) = error("todo")
+    override def properFraction[b](x: a)(implicit j : Integral[b]): (b, a) = decodeFloat(x) match {
+        case (m, n) => {
+            import Integer._pow_
+            val b: Integer = floatRadix(x)
+            if (n >= 0) {
+                (j.op_*(j.fromInteger(m))(j.fromInteger(b) _pow_ n), 0.0D)
+            } else {
+                Integer.quotRem(m)(b _pow_ Int.negate(n)) match {
+                    case (w, r) => (j.fromInteger(w), encodeFloat(r)(n))
+                }
+            }
+        }
+    }
     // Floating
     override val pi: pi = JMath.PI
     override val exp: exp = JMath.exp(_)

@@ -51,12 +51,24 @@ object Float extends Enum[Float] with Eq.Of[Float] with RealFloat[Float] with Sh
     // Fractional
     override val op_/ : op_/ = x => y => x / y
     override val recip: recip = x => 1.0F / x
-    override val fromRational: fromRational = _ => error("todo")
+    override lazy val fromRational: fromRational = RealFloat.fromRatToFloat
     // Real
     override val toRational: toRational = _ => error("todo")
     // RealFrac
     private type a = Float
-    override def properFraction[b](r: a)(implicit j : Integral[b]): (b, a) = error("todo")
+    override def properFraction[b](x: a)(implicit j : Integral[b]): (b, a) = decodeFloat(x) match {
+        case (m, n) => {
+            import Integer._pow_
+            val b: Integer = floatRadix(x)
+            if (n >= 0) {
+                (j.op_*(j.fromInteger(m))(j.fromInteger(b) _pow_ n), 0.0D)
+            } else {
+                Integer.quotRem(m)(b _pow_ Int.negate(n)) match {
+                    case (w, r) => (j.fromInteger(w), encodeFloat(r)(n))
+                }
+            }
+        }
+    }
     // Floating
     override val pi: pi = JMath.PI.toFloat // suppress realToFrac by toFloat.
     override val exp: exp = x => JMath.exp(x.toDouble)
@@ -97,26 +109,4 @@ object Float extends Enum[Float] with Eq.Of[Float] with RealFloat[Float] with Sh
     private def showSignedFloat[a](showPos: a => ShowS)(p: Int)(x: a)(implicit i: RealFloat[a]): ShowS = {
         error("todo")
     }
-/*
-    private lazy val fromRat: Rational => Float = {
-        case Ratio(n, 0) => {
-            if (n > 0) {
-                1/0
-            } else if (n < 0) {
-                -1/0
-            } else {
-                0/0
-            }
-        }
-        case r@Ratio(n, d) => {
-            if (n > 0) {
-                fromRat_(r)
-            } else if (n < 0) {
-                -fromRat_(Ratio(-n, d))
-            } else {
-                encodeFloat(0)(0)
-            }
-        }
-    }
-*/
 }

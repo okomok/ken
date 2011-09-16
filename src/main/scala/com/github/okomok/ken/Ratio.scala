@@ -68,6 +68,13 @@ object Ratio {
     }
 
     implicit def _asRealFrac[z](implicit i: Integral[z]): RealFrac[Ratio[z]] = new RealFrac[Ratio[z]] {
+        // Ord
+        override val op_< : op_< = { case Ratio(x, y) => { case Ratio(x_, y_) =>
+            i.op_<(i.op_*(x)(y_))(i.op_*(x_)(y))
+        } }
+        override val op_<= : op_<= = { case Ratio(x, y) => { case Ratio(x_, y_) =>
+            i.op_<=(i.op_*(x)(y_))(i.op_*(x_)(y))
+        } }
         // Num
         override val op_+ : op_+ = { case Ratio(x, y) => { case Ratio(x_, y_) => {
             reduce(i.op_+(i.op_*(x)(y_))(i.op_*(x_)(y)))(i.op_*(y)(y_))
