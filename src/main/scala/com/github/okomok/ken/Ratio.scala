@@ -67,7 +67,7 @@ object Ratio {
         gcd_(abs(x))(abs(y))
     }
 
-    implicit def _asRealFrac[z](implicit i: Integral[z]): RealFrac[Ratio[z]] = new RealFrac[Ratio[z]] {
+    implicit def _asRealFrac[z](implicit i: Integral[z]): RealFrac[Ratio[z]] = new RealFrac[Ratio[z]] with Eq.Of[Ratio[z]] {
         // Ord
         override val op_< : op_< = { case Ratio(x, y) => { case Ratio(x_, y_) =>
             i.op_<(i.op_*(x)(y_))(i.op_*(x_)(y))
@@ -91,7 +91,7 @@ object Ratio {
         override val fromInteger: fromInteger = x => new Ratio(i.fromInteger(x), i.fromIntegral(1))
         // Fractional
         override val op_/ : op_/ = { case Ratio(x, y) => { case Ratio(x_, y_) => {
-            Ratio(i.op_*(x)(y), i.op_*(x_)(y_))
+            Ratio(i.op_*(x)(y_), i.op_*(y)(x_))
         } } }
         override val recip: recip = { case Ratio(x, y) => Ratio(y, x) }
         override val fromRational: fromRational = { case Ratio(x, y) => new Ratio(i.fromInteger(x), i.fromInteger(y)) }
