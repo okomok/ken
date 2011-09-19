@@ -90,7 +90,7 @@ private[ken] final class _ErrorTs[n[+_]](override val inner: Monad[n]) extends M
             }
         }
 
-        implicit def _asMonadTrans[e](implicit i: ErrorClass[e]): MonadTransControl[n, ({type m[+a] = _ErrorT[e, a]})#m, ({type u[+a] = Either[e, a]})#u] = new MonadTransControl[n, ({type m[+a] = _ErrorT[e, a]})#m, ({type u[+a] = Either[e, a]})#u] {
+        implicit def _asMonadTrans[e]: MonadTransControl[n, ({type m[+a] = _ErrorT[e, a]})#m, ({type u[+a] = Either[e, a]})#u] = new MonadTransControl[n, ({type m[+a] = _ErrorT[e, a]})#m, ({type u[+a] = Either[e, a]})#u] {
             // MonadTrans
             type m[+a] = _ErrorT[e, a]
             override def lift[a](n: n[a]): m[a] = _ErrorT {
