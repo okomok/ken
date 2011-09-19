@@ -98,10 +98,10 @@ private[ken] final class _ErrorTs[n[+_]](override val inner: Monad[n]) extends M
             }
             // MonadTransControl
             type u[+a] = Either[e, a]
-            override def liftControl[a](f: MonadTransControl.Run[n, m, u] => n[a]): m[a] = _ErrorT {
+            override def liftControl[a](f: Run => n[a]): m[a] = _ErrorT {
                 val em = Monad[Either.apply[e]]
                 inner.liftM[a, Either[e, a]](em.`return`[a]) { f {
-                    new MonadTransControl.Run[n, m, u] {
+                    new Run {
                         override def apply[o[+_], b](t: m[b])(implicit i: Monad[o]): n[o[u[b]]] = {
                             inner.liftM((x: Either[e, b]) => i.`return`(x))(run(t))
                         }

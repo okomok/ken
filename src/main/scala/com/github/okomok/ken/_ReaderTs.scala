@@ -66,9 +66,9 @@ private[ken] final class _ReaderTs[n[+_]](override val inner: Monad[n]) extends 
             override def lift[a](n: n[a]): m[a] = _ReaderT { _ => n }
             // MonadTransControl
             type u[+a] = a
-            override def liftControl[a](f: MonadTransControl.Run[n, m, u] => n[a]): m[a] = _ReaderT { r =>
+            override def liftControl[a](f: Run => n[a]): m[a] = _ReaderT { r =>
                 f {
-                    new MonadTransControl.Run[n, m, u] {
+                    new Run {
                         override def apply[o[+_], b](t: m[b])(implicit i: Monad[o]): n[o[u[b]]] = {
                             inner.liftM((x: b) => i.`return`(x))(run(t)(r))
                         }
