@@ -14,8 +14,9 @@ package ken
 //
 trait MonadTransControl[n[+_], m[+_], u[+_]] extends MonadTrans[n, m] with Kind.AbstractMonadTransControl {
     override type baseMonad[+a] = u[a]
-
     type Run = MonadTransControl.Run[n, m, u]
+
+    final val asMonadTransControl: MonadTransControl[innerMonad, apply, baseMonad] = this
 
     // Core
     //
@@ -23,7 +24,7 @@ trait MonadTransControl[n[+_], m[+_], u[+_]] extends MonadTrans[n, m] with Kind.
 
     // Extra
     //
-    def control[a](f: Run => n[m[a]])(implicit j: Monad[m]): m[a] = j.join( liftControl(run => f(run)) )
+    def control[a](f: Run => n[m[a]])(implicit j: Monad[m]): m[a] = j.join(liftControl(f))
 }
 
 

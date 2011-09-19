@@ -21,7 +21,6 @@ class MonadControlTest extends org.scalatest.junit.JUnit3Suite {
 
     val mte = MonadTransControl[IO.ErrorT.apply[MyError]]
     val me = MonadError[MyError, IO.ErrorT.apply[MyError]]
-    import me.`for`
 
     def simple {
         val sayHi: IO[Unit] = IO.putStrLn("Hello")
@@ -35,10 +34,13 @@ class MonadControlTest extends org.scalatest.junit.JUnit3Suite {
         val useMyFile: IO[Unit] = withMyFile(sayHi)
     }
 
-    val sayHiError: IO.Handle => IO.ErrorT[MyError, Unit] = handle => for {
-        _ <- mte.lift { IO.hPutStrLn(handle)("Hi there, error!") }
-        * <- me.throwError(MyError)
-    } yield *
+    val sayHiError: IO.Handle => IO.ErrorT[MyError, Unit] = handle => {
+        import me.`for`
+        for {
+            _ <- mte.lift { IO.hPutStrLn(handle)("Hi there, error!") }
+            * <- me.throwError(MyError)
+        } yield *
+    }
 
     // val useMyFileErrorBad: IO.ErrorT[MyError, Unit] = withMyFile(sayHiError) // doesn't compile.
 
@@ -53,7 +55,11 @@ class MonadControlTest extends org.scalatest.junit.JUnit3Suite {
 
     val useMyFileError6: IO.ErrorT[MyError, Unit] = mte.control { run =>
         withMyFile { h =>
-            IO.liftM((x: IO[Either[MyError, Unit]]) => IO.ErrorT(x))(run[IO, Unit](sayHiError(h)))
+            import IO.`for`
+            for {
+                u <- run[IO, Unit](sayHiError(h))
+            } yield IO.ErrorT(u)
+            // IO.liftM((x: IO[Either[MyError, Unit]]) => IO.ErrorT(x))(run[IO, Unit](sayHiError(h)))
         }
     }
 }
