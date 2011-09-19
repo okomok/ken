@@ -12,7 +12,10 @@ package ken
 // m: transformer (MaybeT etc)
 // u: base (Maybe etc)
 //
-trait MonadTransControl[n[+_], m[+_], u[+_]] extends MonadTrans[n, m] {
+trait MonadTransControl[n[+_], m[+_], u[+_]] extends MonadTrans[n, m] with Kind.AbstractMonadTransControl {
+    override type baseMonad[+a] = u[a]
+
+    type RunT = MonadTransControl.Run[n, m, u] // todo
     import MonadTransControl.Run
 
     // Core

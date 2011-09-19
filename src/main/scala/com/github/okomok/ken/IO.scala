@@ -143,11 +143,14 @@ object IO extends MonadIO[IO] with ThisIsInstance {
 
     val hFlush: Handle => IO[Unit] = {
         case Handle(rep: java.io.Flushable) => returnIO { rep.flush() }
-        case _ => `return`()
+        case _ => ioError(userError("non-flushable handle"))
     }
 
-    val hPutStr: Handle => String => IO[Unit] = {
-        case Handle(rep: java.io.PrintStream) => s => returnIO { rep.print(List.toJString(s)) }
-        case _ => _ => `return`()
+    val hPrint: Handle => Any => IO[Unit] = {
+        case Handle(rep: java.io.PrintStream) => x => returnIO { rep.print(Show.show(x)) }
+        case _ => _ => ioError(userError("non-printable handle"))
     }
+
+    val hPutStr: Handle => String => IO[Unit] = hPrint
+    val hPutStrLn: Handle => String => IO[Unit] = h => s => hPutStr(h)(s ++: List.from("\n"))
 }

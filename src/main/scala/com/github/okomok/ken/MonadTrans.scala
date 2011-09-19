@@ -11,7 +11,10 @@ package ken
 /**
  * Lifts an inner monad.
  */
-trait MonadTrans[n[+_], m[+_]] extends Typeclass {
+trait MonadTrans[n[+_], m[+_]] extends Typeclass with Kind.AbstractMonadTrans {
+    override type apply1[+a] = m[a]
+    override type innerMonad[+a] = n[a]
+
     def lift[a](n: n[a]): m[a]
 }
 
