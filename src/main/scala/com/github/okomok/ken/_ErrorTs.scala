@@ -19,10 +19,11 @@ private[ken] final class _ErrorTs[n[+_]](override val inner: Monad[n]) extends M
     final case class _ErrorT[e, +a](override val get: n[Either[e, a]]) extends Strong[n[Either[e, a]]]
 
     object _ErrorT extends _ErrorT_ with Kind.FunctionLike {
-        sealed trait apply[e] extends Kind.AbstractMonadTrans {
+        sealed trait apply[e] extends Kind.AbstractMonadTransControl {
             override type apply1[+a] = _ErrorT[e, a]
             override type oldtype1[+a] = n[Either[e, a]]
             override type innerMonad[+a] = n[a]
+            override type baseMonad[+a] = Either[e, a]
         }
 
         implicit def dependent[e, a](n: Strong[n[Either[e, a]]]): _ErrorT[e, a] = _ErrorT { n.run }
@@ -89,10 +90,23 @@ private[ken] final class _ErrorTs[n[+_]](override val inner: Monad[n]) extends M
             }
         }
 
-        implicit def _asMonadTrans[e]: MonadTrans[n, ({type m[+a] = _ErrorT[e, a]})#m] = new MonadTrans[n, ({type m[+a] = _ErrorT[e, a]})#m] {
-            private type m[+a] = _ErrorT[e, a]
+        implicit def _asMonadTrans[e](implicit i: ErrorClass[e]): MonadTransControl[n, ({type m[+a] = _ErrorT[e, a]})#m, ({type u[+a] = Either[e, a]})#u] = new MonadTransControl[n, ({type m[+a] = _ErrorT[e, a]})#m, ({type u[+a] = Either[e, a]})#u] {
+            // MonadTrans
+            type m[+a] = _ErrorT[e, a]
             override def lift[a](n: n[a]): m[a] = _ErrorT {
                 for { a <- n } yield Right(a)
+            }
+            // MonadTransControl
+            type u[+a] = Either[e, a]
+            override def liftControl[a](f: MonadTransControl.Run[n, m, u] => n[a]): m[a] = _ErrorT {
+                val em = Monad[Either.apply[e]]
+                inner.liftM[a, Either[e, a]](em.`return`[a]) { f {
+                    new MonadTransControl.Run[n, m, u] {
+                        override def apply[o[+_], b](t: m[b])(implicit i: Monad[o]): n[o[u[b]]] = {
+                            inner.liftM((x: Either[e, b]) => i.`return`(x))(run(t))
+                        }
+                    }
+                } }
             }
         }
     }

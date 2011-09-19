@@ -19,10 +19,11 @@ private[ken] final class _ReaderTs[n[+_]](override val inner: Monad[n]) extends 
     final case class _ReaderT[r, +a](override val get: r => n[a]) extends Strong[r => n[a]]
 
     object _ReaderT extends _ReaderT_ with Kind.FunctionLike {
-        sealed trait apply[r] extends Kind.AbstractMonadTrans {
+        sealed trait apply[r] extends Kind.AbstractMonadTransControl {
             override type apply1[+a] = _ReaderT[r, a]
             override type oldtype1[+a] = r => n[a]
             override type innerMonad[+a] = n[a]
+            override type baseMonad[+a] = a
         }
 
         implicit def dependent[r, a](n: Strong[r => n[a]]): _ReaderT[r, a] = _ReaderT { n.run }
@@ -59,9 +60,21 @@ private[ken] final class _ReaderTs[n[+_]](override val inner: Monad[n]) extends 
             override def local[a](f: r => r)(m: m[a]): m[a] = _ReaderT { r => run(m)(f(r)) }
         }
 
-        implicit def _asMonadTrans[r]: MonadTrans[n, ({type m[+a] = _ReaderT[r, a]})#m] = new MonadTrans[n, ({type m[+a] = _ReaderT[r, a]})#m] {
-            private type m[+a] = _ReaderT[r, a]
+        implicit def _asMonadTrans[r]: MonadTransControl[n, ({type m[+a] = _ReaderT[r, a]})#m, ({type u[+a] = a})#u] = new MonadTransControl[n, ({type m[+a] = _ReaderT[r, a]})#m, ({type u[+a] = a})#u] {
+            // MonadTrans
+            type m[+a] = _ReaderT[r, a]
             override def lift[a](n: n[a]): m[a] = _ReaderT { _ => n }
+            // MonadTransControl
+            type u[+a] = a
+            override def liftControl[a](f: MonadTransControl.Run[n, m, u] => n[a]): m[a] = _ReaderT { r =>
+                f {
+                    new MonadTransControl.Run[n, m, u] {
+                        override def apply[o[+_], b](t: m[b])(implicit i: Monad[o]): n[o[u[b]]] = {
+                            inner.liftM((x: b) => i.`return`(x))(run(t)(r))
+                        }
+                    }
+                }
+            }
         }
     }
 

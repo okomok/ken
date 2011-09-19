@@ -36,4 +36,10 @@ class MonadTransTest extends org.scalatest.junit.JUnit3Suite {
         }
         ()
     }
+
+    def testControlInstance {
+        val i1 = MonadTransControl[IO.ReaderT.apply[Int]]
+        val i2 = MonadTransControl[List.ErrorT.apply[String]]
+        ()
+    }
 }

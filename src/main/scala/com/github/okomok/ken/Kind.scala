@@ -72,6 +72,15 @@ object Kind {
     trait AbstractMonadTrans extends MonadTrans with AbstractNewtype1 {
     }
 
+    // MonadTransControl
+    //
+    sealed trait MonadTransControl extends MonadTrans {
+        type baseMonad[+a]
+    }
+
+    trait AbstractMonadTransControl extends MonadTransControl with AbstractMonadTrans {
+    }
+
     // Misc
     //
     trait const[z] extends AbstractFunction0 with AbstractFunction1 with AbstractFunction2 {
