@@ -28,7 +28,8 @@ object IO extends MonadIO[IO] with ThisIsInstance {
     override def `return`[a](x: Lazy[a]): m[a] = returnIO(x)
     override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = bindIO(m)(k)
     // MonadIO
-    def liftIO[a](io: IO[a]): m[a] = io
+    override def liftIO[a](io: IO[a]): m[a] = io
+    override def liftControlIO[a](f: RunInIO => IO[a]): m[a] = MonadTransControl.idLiftControl(f)
 
     private def returnIO[a](x: => a): IO[a] = IO { s => (x, s) }
 

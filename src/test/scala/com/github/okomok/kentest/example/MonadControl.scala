@@ -55,8 +55,7 @@ class MonadControlTest extends org.scalatest.junit.JUnit3Suite {
 
     val useMyFileError6: IO.ErrorT[MyError, Unit] = mt.control { run =>
         withMyFile { h =>
-            import IO.`for`
-            for {
+            for { // This `for` is IO.for.
                 u <- run[IO, Unit](sayHiError(h))
             } yield IO.ErrorT(u) // makes it dependent...
             // IO.liftM((x: IO[Either[MyError, Unit]]) => IO.ErrorT(x))(run[IO, Unit](sayHiError(h)))

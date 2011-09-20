@@ -8,6 +8,9 @@ package com.github.okomok
 package ken
 
 
+// TODO: merge into MonadTrans.
+
+
 // n: inner
 // m: transformer (MaybeT etc)
 // u: base (Maybe etc)
@@ -37,7 +40,7 @@ trait MonadTransControlProxy[n[+_], m[+_], u[+_]] extends MonadTransControl[n, m
 }
 
 
-object MonadTransControl { outer =>
+object MonadTransControl {
     def apply[m <: Kind.MonadTransControl](implicit i: MonadTransControl[m#innerMonad, m#apply, m#baseMonad]): MonadTransControl[m#innerMonad, m#apply, m#baseMonad] = i
 
     def deriving[nt <: Kind.Function1, ot <: Kind.MonadTransControl](implicit i: MonadTransControl[ot#innerMonad, ot#apply, ot#baseMonad], j: Newtype1[nt#apply, ot#apply]): MonadTransControl[ot#innerMonad, nt#apply, ot#baseMonad] = new MonadTransControl[ot#innerMonad, nt#apply, ot#baseMonad] with MonadTransProxy[ot#innerMonad, nt#apply] {
@@ -46,10 +49,10 @@ object MonadTransControl { outer =>
         type u[+a] = ot#baseMonad[a]
         override val selfMonadTrans = MonadTrans.deriving[nt, ot](i, j)
         override def liftControl[a](f: Run => n[a]): m[a] = j.newOf {
-            i.liftControl { (run: outer.Run[n, ot#apply, u]) =>
+            i.liftControl { run =>
                 f {
                     new Run {
-                        override def apply[o[+_], b](t: m[b])(implicit mo: Monad[o]): n[o[u[b]]] = run(j.oldOf(t))
+                        override def apply[o[+_], b](t: m[b])(implicit mo: Monad[o]): n[o[u[b]]] = run[o, b](j.oldOf(t))
                     }
                 }
             }
@@ -58,7 +61,21 @@ object MonadTransControl { outer =>
 
     def weak[nt <: Kind.MonadTransControl](implicit i: MonadTransControl[nt#innerMonad, nt#apply, nt#baseMonad], j: Newtype1[nt#apply, nt#oldtype1]): MonadTransControl[nt#innerMonad, nt#oldtype1, nt#baseMonad] = deriving[Kind.quote1[nt#oldtype1], nt](i, j.dual)
 
+    // Run types
+    //
     trait Run[n[+_], m[+_], u[+_]] {
         def apply[o[+_], b](t: m[b])(implicit i: Monad[o]): n[o[u[b]]]
+    }
+
+    trait RunInBase[m[+_], base[+_]] {
+        def apply[b](t: m[b]): base[m[b]]
+    }
+
+    // Lifting
+    //
+    def idLiftControl[m[+_], a](f: RunInBase[m, m] => m[a])(implicit j: Monad[m]): m[a] = f {
+        new RunInBase[m, m] {
+            override def apply[b](t: m[b]): m[m[b]] = j.liftM[b, m[b]](j.`return`[b])(t)
+        }
     }
 }

@@ -101,8 +101,22 @@ private[ken] final class _ReaderTs[n[+_]](override val inner: Monad[n]) extends 
     private[ken] trait _ReaderT_3 extends _ReaderT_2 { this: _ReaderT.type =>
         implicit def _asMonadIO[r](implicit i: MonadIO[n]): MonadIO[({type m[+a] = _ReaderT[r, a]})#m] = new MonadIO[({type m[+a] = _ReaderT[r, a]})#m] with MonadProxy[({type m[+a] = _ReaderT[r, a]})#m] {
             private type m[+a] = _ReaderT[r, a]
+            private val mt = _asMonadTrans[r]
             override val selfMonad = _asMonadReader[r]
-            override def liftIO[a](io: IO[a]): m[a] = _asMonadTrans.lift(i.liftIO(io))
+            override def liftIO[a](io: IO[a]): m[a] = mt.lift(i.liftIO(io))
+            override def liftControlIO[a](f: RunInIO => IO[a]): m[a] = {
+                def dep[b](x: n[n[b]]): n[m[b]] = for { n <- x } yield _ReaderT((r: r) => n)
+
+                mt.liftControl { run1 =>
+                    i.liftControlIO { runInBase =>
+                        f {
+                            new RunInIO {
+                                override def apply[b](t: m[b]): IO[m[b]] = IO.liftM((x: n[m[b]]) => join(mt.lift(x)))(runInBase(dep(run1[n, b](t))))
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
