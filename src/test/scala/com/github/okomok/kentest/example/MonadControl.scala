@@ -19,12 +19,12 @@ class MonadControlTest extends org.scalatest.junit.JUnit3Suite {
     type MyError = String
     val MyError = List.from("my error")
 
-    val mte = MonadTransControl[IO.ErrorT.apply[MyError]]
+    val mt = MonadTransControl[IO.ErrorT.apply[MyError]]
     val me = MonadError[MyError, IO.ErrorT.apply[MyError]]
 
     def simple {
         val sayHi: IO[Unit] = IO.putStrLn("Hello")
-        val sayHiError: IO.ErrorT[MyError, Unit] = mte.lift { IO.putStrLn("Hello") }
+        val sayHiError: IO.ErrorT[MyError, Unit] = mt.lift { IO.putStrLn("Hello") }
     }
 
     def withMyFile[a](f: IO.Handle => IO[a]): IO[a] = IO.ioError(IO.userError("todo"))
@@ -37,7 +37,7 @@ class MonadControlTest extends org.scalatest.junit.JUnit3Suite {
     val sayHiError: IO.Handle => IO.ErrorT[MyError, Unit] = handle => {
         import me.`for`
         for {
-            _ <- mte.lift { IO.hPutStrLn(handle)("Hi there, error!") }
+            _ <- mt.lift { IO.hPutStrLn(handle)("Hi there, error!") }
             * <- me.throwError(MyError)
         } yield *
     }
@@ -53,13 +53,32 @@ class MonadControlTest extends org.scalatest.junit.JUnit3Suite {
         rewrapped
     }
 
-    val useMyFileError6: IO.ErrorT[MyError, Unit] = mte.control { run =>
+    val useMyFileError6: IO.ErrorT[MyError, Unit] = mt.control { run =>
         withMyFile { h =>
             import IO.`for`
             for {
                 u <- run[IO, Unit](sayHiError(h))
-            } yield IO.ErrorT(u)
+            } yield IO.ErrorT(u) // makes it dependent...
             // IO.liftM((x: IO[Either[MyError, Unit]]) => IO.ErrorT(x))(run[IO, Unit](sayHiError(h)))
+        }
+    }
+
+    // Weak way of Scala
+    //
+    val mtw = MonadTransControl.weak[IO.ErrorT.apply[MyError]]
+    implicit val mew = MonadError.weak[MyError, IO.ErrorT.apply[MyError]]
+
+    val sayHiErrorWeak: IO.Handle => IO[Either[MyError, Unit]] = handle => {
+        import mew.`for`
+        for {
+            _ <- IO.hPutStrLn(handle)("Hi there, error!")
+            * <- mew.throwError(MyError)
+        } yield *
+    }
+
+    val useMyFileErrorWeak: IO[Either[MyError, Unit]] = mtw.control { run =>
+        withMyFile { h =>
+            run[IO, Unit](sayHiErrorWeak(h))
         }
     }
 }
