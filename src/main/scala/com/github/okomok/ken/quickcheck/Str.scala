@@ -48,22 +48,22 @@ object Str {
         for {
             _ <- IO.hFlush(IO.stdout)
             _ <- IO.hFlush(IO.stderr)
-            ref <- newIORef(IO.`return`())
+            ref <- IORef.`new`(IO.`return`())
         } yield Terminal(ref)
     }
 
     val flush: Terminal => IO[Unit] = { case Terminal(ref) =>
         for {
-            io <- readIORef(ref)
-            _ <- writeIORef(ref)(IO.`return`())
+            io <- IORef.read(ref)
+            _ <- IORef.write(ref)(IO.`return`())
             * <- io
         } yield *
     }
 
     val postpone: Terminal => IO[Unit] => IO[Unit] = { case Terminal(ref) => io_ =>
         for {
-            io <- readIORef(ref)
-            * <- writeIORef(ref)(io >> io_)
+            io <- IORef.read(ref)
+            * <- IORef.write(ref)(io >> io_)
         } yield *
     }
 

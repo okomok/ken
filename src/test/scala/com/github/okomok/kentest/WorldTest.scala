@@ -17,15 +17,15 @@ class WorldTest extends org.scalatest.junit.JUnit3Suite {
         import w._
         val sm = Monad[ST.type]
         import sm.{`for`, forM_}
-        runST {
+        ST.run {
             for {
-                n <- newSTRef(i.fromInteger(0))
+                n <- STRef.`new`(i.fromInteger(0))
                 _ <- forM_(xs) { x =>
                     for {
-                        * <- modifySTRef(n)(i.op_+(x))
+                        * <- STRef.modify(n)(i.op_+(x))
                     } yield *
                 }
-                * <- readSTRef(n)
+                * <- STRef.read(n)
             } yield *
         }
     }

@@ -73,21 +73,21 @@ object Random extends RandomInstance with RandomShortcut {
         override val split: split = g => (new StdGen(g.s + 1), new StdGen(g.s - 1)) // TODO
     }
 
-    val setStdGen: StdGen => IO[Unit] = sgen => writeIORef(theStdGen)(sgen)
-    val getStdGen: IO[StdGen] = readIORef(theStdGen)
+    val setStdGen: StdGen => IO[Unit] = sgen => IORef.write(theStdGen)(sgen)
+    val getStdGen: IO[StdGen] = IORef.read(theStdGen)
 
     val theStdGen: IORef[StdGen] = IO.unsafePerformIO {
         for {
             rng <- IO.`return`(new StdGen())
-            * <- newIORef(rng)
+            * <- IORef.`new`(rng)
         } yield *
     }
 
-    val newStdGen: IO[StdGen] = atomicModifyIORef(theStdGen)(StdGen.split)
+    val newStdGen: IO[StdGen] = IORef.atomicModify(theStdGen)(StdGen.split)
 
     def getStdRandom[a](f: StdGen => (a, StdGen)): IO[a] = {
         val swap: Pair[a, StdGen] => (StdGen, a) = { case (v, g) => (g, v) }
-        atomicModifyIORef(theStdGen)(swap `.` f)
+        IORef.atomicModify(theStdGen)(swap `.` f)
     }
 
     private[ken] def randomIvalInteger[g, a](ival: (Integer, Integer))(rng: g)(implicit i: RandomGen[g], j: Num[a]): (a, g) = ival match {
