@@ -133,18 +133,6 @@ private[ken] final class _ErrorTs[n[+_]](override val inner: Monad[n]) extends M
             private val mt = _asMonadTrans[e]
             override val selfMonad = _monad[e]
             override def liftIO[a](io: IO[a]): m[a] = mt.lift(i.liftIO(io))
-            override def liftControlIO[a](f: RunInIO => IO[a]): m[a] = {
-                def dep[b](x: n[n[Either[e, b]]]): n[m[b]] = for { n <- x } yield _ErrorT(n)
-                mt.liftControl { run1 =>
-                    i.liftControlIO { runInBase =>
-                        f {
-                            new RunInIO {
-                                override def apply[b](t: m[b]): IO[m[b]] = IO.liftM((x: n[m[b]]) => join(mt.lift(x)))(runInBase(dep(run1[n, b](t))))
-                            }
-                        }
-                    }
-                }
-            }
         }
     }
 
@@ -169,7 +157,7 @@ private[ken] final class _ErrorTs[n[+_]](override val inner: Monad[n]) extends M
         }
     }
 
-    private[ken] trait _ErrorT_ extends _ErrorT_4 { this: _ErrorT.type =>
+    private[ken] trait _ErrorT_5 extends _ErrorT_4 { this: _ErrorT.type =>
         implicit def _asMonadWriter[e, w](implicit i: MonadWriter[w, n], j: ErrorClass[e]): MonadWriter[w, ({type m[+a] = _ErrorT[e, a]})#m] = new MonadWriter[w, ({type m[+a] = _ErrorT[e, a]})#m] with MonadProxy[({type m[+a] = _ErrorT[e, a]})#m] {
             private type m[+a] = _ErrorT[e, a]
             override val selfMonad = _monad[e]
@@ -193,6 +181,26 @@ private[ken] final class _ErrorTs[n[+_]](override val inner: Monad[n]) extends M
                             case Right((r, f)) => inner.`return`(Right(r), f)
                         }
                     } yield *
+                }
+            }
+        }
+    }
+
+    private[ken] trait _ErrorT_ extends _ErrorT_5 { this: _ErrorT.type =>
+        implicit def _asMonadControlIO[e](implicit i: MonadControlIO[n], j: ErrorClass[e]): MonadControlIO[({type m[+a] = _ErrorT[e, a]})#m] = new MonadControlIO[({type m[+a] = _ErrorT[e, a]})#m] with MonadIOProxy[({type m[+a] = _ErrorT[e, a]})#m] {
+            private type m[+a] = _ErrorT[e, a]
+            private val mt = _asMonadTrans[e]
+            override val selfMonadIO = _asMonadIO[e](i, j)
+            override def liftControlIO[a](f: RunInIO => IO[a]): m[a] = {
+                def dep[b](x: n[n[Either[e, b]]]): n[m[b]] = for { n <- x } yield _ErrorT(n)
+                mt.liftControl { run1 =>
+                    i.liftControlIO { runInBase =>
+                        f {
+                            new RunInIO {
+                                override def apply[b](t: m[b]): IO[m[b]] = IO.liftM((x: n[m[b]]) => join(mt.lift(x)))(runInBase(dep(run1[n, b](t))))
+                            }
+                        }
+                    }
                 }
             }
         }

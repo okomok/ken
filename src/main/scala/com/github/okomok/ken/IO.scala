@@ -20,7 +20,7 @@ final case class IO[+a](override val get: IORep[a]) extends Strong[IORep[a]] {
 }
 
 
-object IO extends MonadIO[IO] with ThisIsInstance {
+object IO extends MonadControlIO[IO] with ThisIsInstance {
     // Overrides
     //
     private type m[+a] = IO[a]

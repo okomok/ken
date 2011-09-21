@@ -8,9 +8,6 @@ package com.github.okomok
 package ken
 
 
-// TODO: merge into MonadTrans.
-
-
 // n: inner
 // m: transformer (MaybeT etc)
 // u: base (Maybe etc)

@@ -104,19 +104,6 @@ private[ken] final class _ReaderTs[n[+_]](override val inner: Monad[n]) extends 
             private val mt = _asMonadTrans[r]
             override val selfMonad = _asMonadReader[r]
             override def liftIO[a](io: IO[a]): m[a] = mt.lift(i.liftIO(io))
-            override def liftControlIO[a](f: RunInIO => IO[a]): m[a] = {
-                def dep[b](x: n[n[b]]): n[m[b]] = for { n <- x } yield _ReaderT((r: r) => n)
-
-                mt.liftControl { run1 =>
-                    i.liftControlIO { runInBase =>
-                        f {
-                            new RunInIO {
-                                override def apply[b](t: m[b]): IO[m[b]] = IO.liftM((x: n[m[b]]) => join(mt.lift(x)))(runInBase(dep(run1[n, b](t))))
-                            }
-                        }
-                    }
-                }
-            }
         }
     }
 
@@ -153,7 +140,7 @@ private[ken] final class _ReaderTs[n[+_]](override val inner: Monad[n]) extends 
         }
     }
 
-    private[ken] trait _ReaderT_ extends _ReaderT_6 { this: _ReaderT.type =>
+    private[ken] trait _ReaderT_7 extends _ReaderT_6 { this: _ReaderT.type =>
         implicit def _asMonadWriter[r, w](implicit i: MonadWriter[w, n]): MonadWriter[w, ({type m[+a] = _ReaderT[r, a]})#m] = new MonadWriter[w, ({type m[+a] = _ReaderT[r, a]})#m] with MonadProxy[({type m[+a] = _ReaderT[r, a]})#m] {
             private type m[+a] = _ReaderT[r, a]
             override val selfMonad = _asMonadReader[r]
@@ -161,6 +148,28 @@ private[ken] final class _ReaderTs[n[+_]](override val inner: Monad[n]) extends 
             override def tell(x: w): m[Unit] = _asMonadTrans.lift(i.tell(x))
             override def listen[a](m: m[a]): m[(a, w)] = _ReaderT { w => i.listen(run(m)(w)) }
             override def pass[a](m: m[(a, w => w)]): m[a] = _ReaderT { w => i.pass(run(m)(w)) }
+        }
+    }
+
+    private[ken] trait _ReaderT_ extends _ReaderT_7 { this: _ReaderT.type =>
+        implicit def _asMonadControlIO[r](implicit i: MonadControlIO[n]): MonadControlIO[({type m[+a] = _ReaderT[r, a]})#m] = new MonadControlIO[({type m[+a] = _ReaderT[r, a]})#m] with MonadIOProxy[({type m[+a] = _ReaderT[r, a]})#m] {
+            private type m[+a] = _ReaderT[r, a]
+            private val mt = _asMonadTrans[r]
+            override val selfMonadIO = _asMonadIO[r](i)
+            override def liftIO[a](io: IO[a]): m[a] = mt.lift(i.liftIO(io))
+            override def liftControlIO[a](f: RunInIO => IO[a]): m[a] = {
+                def dep[b](x: n[n[b]]): n[m[b]] = for { n <- x } yield _ReaderT((r: r) => n)
+
+                mt.liftControl { run1 =>
+                    i.liftControlIO { runInBase =>
+                        f {
+                            new RunInIO {
+                                override def apply[b](t: m[b]): IO[m[b]] = IO.liftM((x: n[m[b]]) => join(mt.lift(x)))(runInBase(dep(run1[n, b](t))))
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
