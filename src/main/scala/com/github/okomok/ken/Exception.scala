@@ -49,8 +49,10 @@ trait Exception[e] extends Typeable[e] with Show[e] {
         `catch`(a)(handler_)
     }
 
+    @Annotation.flipOf("`catch`")
     def handle[a](h: e => IO[a])(a: IO[a]): IO[a] = `catch`(a)(h)
 
+    @Annotation.flipOf("catchJust")
     def handleJust[a, b](p: e => Maybe[b])(h: b => IO[a])(a: IO[a]): IO[a] = catchJust(p)(a)(h)
 
     def mapException[e2, a](f: e => e2)(v: a)(implicit i: Exception[e2]): a = IO.unsafePerformIO(`catch`(Exception.evaluate(v))(x => i.`throw`(f(x))))
@@ -73,13 +75,6 @@ trait Exception[e] extends Typeable[e] with Show[e] {
             }
         } yield *
     }
-
-    def onException[a, b](io: IO[a])(what: IO[b]): IO[a] = `catch`(io) { e =>
-        for {
-            _ <- what
-            * <- `throw`(e): IO[a]
-        } yield *
-    }
 }
 
 
@@ -100,7 +95,6 @@ trait ExceptionProxy[e] extends Exception[e] with TypeableProxy[e] with ShowProx
     override def mapException[e2, a](f: e => e2)(v: a)(implicit i: Exception[e2]): a = selfException.mapException(f)(v)(i)
     override def `try`[a](a: IO[a]): IO[Either[e, a]] = selfException.`try`(a)
     override def tryJust[a, b](p: e => Maybe[b])(a: IO[a]): IO[Either[b, a]] = selfException.tryJust(p)(a)
-    override def onException[a, b](io: IO[a])(what: IO[b]): IO[a] = selfException.onException(io)(what)
 }
 
 
@@ -110,18 +104,72 @@ object Exception extends ExceptionInstance with ExceptionShortcut {
     @Annotation.ceremonial("no special effects")
     def evaluate[a](x: a): IO[a] = IO.`return`(x)
 
+    @Annotation.ceremonial("no special effects")
+    def mask[a](action: (IO[a] => IO[a]) => IO[a]): IO[a] = {
+        val restore: IO[a] => IO[a] = act => act
+        action(restore)
+    }
+
+    def onException[a, b](io: IO[a])(what: IO[b]): IO[a] = SomeException.`catch`(io) { e =>
+        for {
+            _ <- what
+            * <- SomeException.`throw`(e): IO[a]
+        } yield *
+    }
+
+    def bracket[a, b, c](before: IO[a])(after: a => IO[b])(thing: a => IO[c]): IO[c] = mask[c] { restore =>
+        for {
+            a <- before
+            r <- onException(restore(thing(a)))(after(a))
+            _ <- after(a)
+        } yield r
+    }
+
+    def `finally`[a, b](a: IO[a])(sequel: IO[b]): IO[a] = mask[a] { restore =>
+        for {
+            r <- onException(restore(a))(sequel)
+            _ <- sequel
+        } yield r
+    }
+
+    def bracket_[a, b, c](before: IO[a])(after: IO[b])(thing: IO[c]): IO[c] = bracket(before)(const(after))(const(thing))
+
+    def bracketOnError[a, b, c](before: IO[a])(after: a => IO[b])(thing: a => IO[c]): IO[c] = mask[c] { restore =>
+        for {
+            a <- before
+            * <- onException(restore(thing(a)))(after(a))
+        } yield *
+    }
+
     def assert[a](b: Bool)(x: a): a = b match {
         case True => x
         case False => error("todo")
     }
 
-    // catchAny
-    //
-    trait AnyExceptionHanlder[+a] {
+    sealed class Handler[a](private val h: Any => IO[a], private val i: Exception[Any])
+
+    object Handler {
+        def apply[a, e](h: e => IO[a])(implicit i: Exception[e]): Handler[a] = new Handler(h.asInstanceOf[Any => IO[a]], i.asInstanceOf[Exception[Any]])
+        def unapply[a](h: Handler[a]): Option[(Any => IO[a], Exception[Any])] = Some((h.h, h.i))
+    }
+
+    def catches[a](io: IO[a])(handlers: List[Handler[a]]): IO[a] = `catch`(io)(catchesHandler(handlers))
+
+    def catchesHandler[a](handlers: List[Handler[a]])(e: SomeException): IO[a] = {
+        val tryHandler: Handler[a] => IO[a] => IO[a] = { case Handler(handler, i) => res =>
+            i.fromException(e) match {
+                case Just(e_) => handler(e_)
+                case Nothing => res
+            }
+        }
+        List.foldr(tryHandler)(SomeException.`throw`(e))(handlers)
+    }
+
+    trait AnyHandler[+a] {
         def apply[e](e: e)(implicit i: Exception[e]): IO[a]
     }
 
-    def catchAny[a](io: IO[a])(hanlder: AnyExceptionHanlder[a]): IO[a] = {
+    def catchAny[a](io: IO[a])(hanlder: AnyHandler[a]): IO[a] = {
         val handler_ : SomeException => IORep[a] = { case SomeException(e, i) => IO.unIO(hanlder(e)(i)) }
         IO { Prim.`catch`(IO.unIO(io))(handler_) }
     }
@@ -145,5 +193,4 @@ sealed trait ExceptionShortcut { this: Exception.type =>
     def mapException[e, e2, a](f: e => e2)(v: a)(implicit i: Exception[e], i2: Exception[e2]): a = i.mapException(f)(v)(i2)
     def `try`[e, a](a: IO[a], * : Type[e] = null)(implicit i: Exception[e]): IO[Either[e, a]] = i.`try`(a)
     def tryJust[e, a, b](p: e => Maybe[b])(a: IO[a])(implicit i: Exception[e]): IO[Either[b, a]] = i.tryJust(p)(a)
-    def onException[e, a, b](io: IO[a])(what: IO[b], * : Type[e] = null)(implicit i: Exception[e]): IO[a] = i.onException(io)(what)
 }

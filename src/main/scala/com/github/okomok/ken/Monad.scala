@@ -108,7 +108,7 @@ trait Monad[m[+_]] extends Applicative[m] {
     sealed class For[a](x: m[a]) {
         def flatMap[b](y: a => m[b]): m[b] = op_>>=(x)(y)
         def map[b](y: a => b): m[b] = op_>>=(x)(_x => `return`(y(_x)))
-        def filter(y: a => Bool): m[a] = map(_x => seq(Predef.require(y(_x)))(_x))
+        def filter(y: a => Bool): m[a] = map(_x => seq(Predef.require(y(_x), "no monadic filter"))(_x))
         def withFilter(y: a => Bool): m[a] = filter(y)
     }
     final implicit def `for`[a](x: m[a]): For[a] = new For(x)
@@ -163,6 +163,12 @@ trait Monad[m[+_]] extends Applicative[m] {
     final lazy val _inKleislis = new _Kleislis[m](this)
     type Kleisli[-a, +b] = _inKleislis._Kleisli[a, b]
     final lazy val Kleisli = _inKleislis._Kleisli
+
+    // Monad-control
+    //
+    def sequenceEither[e, a](x: Either[e, m[a]]): m[Either[e, a]] = {
+        Either.either((e: e) => `return`(Left(e).of[e, a]))(liftM((a: a) => Right(a).of[e, a]))(x)
+    }
 }
 
 

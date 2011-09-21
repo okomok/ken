@@ -20,12 +20,8 @@ sealed class SomeException(private val e: Any, private val i: Exception[Any]) ex
 object SomeException extends Eq.Of[SomeException] with Show.Of[SomeException]
     with Exception[SomeException] with TypeableProxy[SomeException] with ThisIsInstance
 {
-    def apply[e](e: e)(implicit i: Exception[e]): SomeException = new SomeException(e, erasure(i))
+    def apply[e](e: e)(implicit i: Exception[e]): SomeException = new SomeException(e, i.asInstanceOf[Exception[Any]])
     def unapply[e](x: SomeException): Option[(Any, Exception[Any])] = Some((x.e, x.i))
-
-    private def erasure[e](i: Exception[e]): Exception[Any] = new Exception[Any] {
-        override val typeOf: typeOf = _ => i.typeOf(Lazy(error("unused")))
-    }
 
     // Overrides
     //
