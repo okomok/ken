@@ -153,4 +153,16 @@ object Gen extends Monad[Gen] with ThisIsInstance {
     }
 
     def vectorOf[a](k: Int)(gen: Gen[a]): Gen[List[a]] = sequence( for { _ <- Int.enumFromTo(1)(k) } yield gen )
+
+    def op_><[a](f: Gen[a] => Gen[a])(g: Gen[a] => Gen[a]): Gen[a] => Gen[a] = gen => {
+        for {
+            n <- Arbitary.arbitary[Int]
+            * <- g(Gen.variant(n)(f(gen)))
+        } yield *
+    }
+
+    private[quickcheck] sealed class Op_><[a](f: Gen[a] => Gen[a]) {
+        def ><(g: Gen[a] => Gen[a]): Gen[a] => Gen[a] = op_><(f)(g)
+    }
+    final implicit def ><[a](f: Gen[a] => Gen[a]): Op_><[a] = new Op_><(f)
 }
