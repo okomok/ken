@@ -23,7 +23,7 @@ private[ken] final class _ErrorTs[n[+_]](override val inner: Monad[n]) extends M
             override type apply1[+a] = _ErrorT[e, a]
             override type oldtype1[+a] = n[Either[e, a]]
             override type innerMonad[+a] = n[a]
-            override type baseMonad[+a] = Either[e, a]
+            override type baseResult[+a] = Either[e, a]
         }
 
         implicit def dependent[e, a](n: Strong[n[Either[e, a]]]): _ErrorT[e, a] = _ErrorT { n.run }

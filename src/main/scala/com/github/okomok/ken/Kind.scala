@@ -75,7 +75,7 @@ object Kind {
     // MonadTransControl
     //
     sealed trait MonadTransControl extends MonadTrans {
-        type baseMonad[+a]
+        type baseResult[+a]
     }
 
     trait AbstractMonadTransControl extends MonadTransControl with AbstractMonadTrans {

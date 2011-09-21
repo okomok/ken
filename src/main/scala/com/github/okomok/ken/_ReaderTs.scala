@@ -23,7 +23,7 @@ private[ken] final class _ReaderTs[n[+_]](override val inner: Monad[n]) extends 
             override type apply1[+a] = _ReaderT[r, a]
             override type oldtype1[+a] = r => n[a]
             override type innerMonad[+a] = n[a]
-            override type baseMonad[+a] = a
+            override type baseResult[+a] = a
         }
 
         implicit def dependent[r, a](n: Strong[r => n[a]]): _ReaderT[r, a] = _ReaderT { n.run }
