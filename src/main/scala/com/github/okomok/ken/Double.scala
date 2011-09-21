@@ -100,6 +100,7 @@ object Double extends Enum[Double] with Eq.Of[Double] with RealFloat[Double] wit
     override val floatRange: floatRange = _ => (-1021, 1024)
     override val decodeFloat: decodeFloat = _decodeDouble
     override val encodeFloat: encodeFloat = m => n => _encodeDouble(m, n)
+    override val exponent: exponent = x => JMath.getExponent(x)
     override val isNaN: isNaN = JDouble.isNaN(_)
     override val isInfinite: isInfinite = JDouble.isInfinite(_)
     override val isDenormalized: isDenormalized = x => _expBits(x) == 0
@@ -129,7 +130,7 @@ object Double extends Enum[Double] with Eq.Of[Double] with RealFloat[Double] wit
         } else if (isDenormalized(x)) {
             _normalizedDecode(sign * _fractBits(x), exp - _expDenormalizedBias - _fractBitCount)
         } else {
-            val fract = _fractBits(x) | 0x0010000000000000L
+            val fract = _fractBits(x) | (_fractMask + 1)
             (sign * fract, exp - _expNormalizedBias - _fractBitCount) ensuring _isNormalizedDecode
         }
     }

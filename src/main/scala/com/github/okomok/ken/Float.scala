@@ -16,9 +16,10 @@ package ken
 
 import java.lang.{Math => JMath}
 import java.lang.{Float => JFloat}
+import scala.annotation.tailrec
 
 
-object Float extends Enum[Float] with Eq.Of[Float] with RealFloat[Float] with Show[Float] {
+object Float extends Enum[Float] with Eq.Of[Float] with RealFloat[Float] with Show.Of[Float] {
     // Overrides
     //
     // Ord
@@ -53,7 +54,12 @@ object Float extends Enum[Float] with Eq.Of[Float] with RealFloat[Float] with Sh
     override val recip: recip = x => 1.0F / x
     override lazy val fromRational: fromRational = RealFloat.fromRatToFloat
     // Real
-    override val toRational: toRational = _ => error("todo")
+    override val toRational: toRational = x => {
+        val (m, n) = decodeFloat(x)
+        val b = floatRadix(x)
+        val ir = Num[Rational]
+        ir.op_*(Rational(m, 1))(Int.powpow(Rational(b, 1))(n))
+    }
     // RealFrac
     private type a = Float
     override def properFraction[b](x: a)(implicit j : Integral[b]): (b, a) = decodeFloat(x) match {
@@ -92,19 +98,83 @@ object Float extends Enum[Float] with Eq.Of[Float] with RealFloat[Float] with Sh
     override val floatRadix: floatRadix = _ => 2
     override val floatDigits: floatDigits = _ => 24
     override val floatRange: floatRange = _ => (-125, 128)
-    override val decodeFloat: decodeFloat = _ => error("todo")
-    override val encodeFloat: encodeFloat = _ => _ => error("todo")
+    override val decodeFloat: decodeFloat = _decodeFloat
+    override val encodeFloat: encodeFloat = m => n => _encodeFloat(m, n)
     override val exponent: exponent = x => JMath.getExponent(x)
     override val isNaN: isNaN = x => JFloat.isNaN(x)
     override val isInfinite: isInfinite = x => JFloat.isInfinite(x)
-    override val isDenormalized: isDenormalized = _ => error("todo")
-    override val isNegativeZero: isNegativeZero = _ => error("todo")
+    override val isDenormalized: isDenormalized = x => _expBits(x) == 0
+    override val isNegativeZero: isNegativeZero = x => (x == 0.0D) && (_signBits(x) == 1)
     override val isIEEE: isIEEE = _ => True
     override val atan2: atan2 = x => y => JMath.atan2(x.toDouble, y.toDouble)
-    // Show
-    override val showsPrec: showsPrec = _ => _ => error("todo") // showSignedFloat(showFloat)(x)
 
-    private def showSignedFloat[a](showPos: a => ShowS)(p: Int)(x: a)(implicit i: RealFloat[a]): ShowS = {
-        error("todo")
+    // Details
+    //
+    private final val _signMask = 0x80000000
+    private final val _expMask = 0x7f800000
+    private final val _fractMask = 0x007fffff
+    private final val _expNormalizedBias = 127
+    private final val _expDenormalizedBias = 126
+    private final val _expBitCount = 8
+    private final val _fractBitCount = 23
+
+    private lazy val _signBits: Float => Int = x => ((JFloat.floatToRawIntBits(x) & _signMask) >>> (_expBitCount + _fractBitCount)).toInt
+    private lazy val _expBits: Float => Int = x =>  ((JFloat.floatToRawIntBits(x) & _expMask) >>> _fractBitCount).toInt
+    private lazy val _fractBits: Float => Int = x => JFloat.floatToRawIntBits(x) & _fractMask
+
+    private lazy val _decodeFloat: Float => (Integer, Int) = x => {
+        val sign: Integer = if (_signBits(x) != 0) -1 else 1
+        val exp: Int = _expBits(x)
+        if (x == 0) {
+            (0, 0)
+        } else if (isDenormalized(x)) {
+            _normalizedDecode(sign * _fractBits(x), exp - _expDenormalizedBias - _fractBitCount)
+        } else {
+            val fract = _fractBits(x) | (_fractMask + 1)
+            (sign * fract, exp - _expNormalizedBias - _fractBitCount) ensuring _isNormalizedDecode
+        }
+    }
+
+    private lazy val _encodeFloat: Pair[Integer, Int] => Float = { case (m, n) =>
+        val impl: Pair[Integer, Int] => Float = { case (m, n) =>
+            if (m == 0 && n == 0) {
+                0.0F
+            } else {
+                var bits: Int = 0
+                if (m < 0) {
+                    bits |= _signMask
+                }
+                bits |= (n + _expNormalizedBias + _fractBitCount) << _fractBitCount
+                val fract = java.lang.Math.abs(m.toInt)
+                bits |= (fract & _fractMask)
+                JFloat.intBitsToFloat(bits)
+            }
+        }
+        impl(_normalizedDecode(m, n))
+    }
+
+    private lazy val _isNormalizedDecode: Pair[Integer, Int] => Bool = { case (m, n) =>
+        import Integer._pow_
+        val b: Integer = floatRadix(0.0F)
+        val d: Int = floatDigits(0.0F)
+        val m_ : Integer = Integer.abs(m)
+        (m == 0 && n == 0) || ((b _pow_ (d-1)) <= m_ && m_ < (b _pow_ d))
+    }
+
+    @tailrec
+    private def _normalizedDecode(m_n: Pair[Integer, Int]): (Integer, Int) = m_n match { case (m, n) =>
+        if (_isNormalizedDecode(m, n)) (m, n)
+        else {
+            import Integer._pow_
+            val b: Integer = floatRadix(0.0F)
+            val d: Int = floatDigits(0.0F)
+            val m_ : Integer = Integer.abs(m)
+            val sign: Integer = if (m < 0) -1 else 1
+            if ( (b _pow_ (d-1)) > m_ ) {
+                _normalizedDecode(sign * (m_ * b), n - 1)
+            } else {
+                _normalizedDecode(sign * (m_ / b), n + 1)
+            }
+        }
     }
 }
