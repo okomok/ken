@@ -159,7 +159,6 @@ private[ken] final class _ReaderTs[n[+_]](override val inner: Monad[n]) extends 
             override def liftIO[a](io: IO[a]): m[a] = mt.lift(i.liftIO(io))
             override def liftControlIO[a](f: RunInIO => IO[a]): m[a] = {
                 def dep[b](x: n[n[b]]): n[m[b]] = for { n <- x } yield _ReaderT((r: r) => n)
-
                 mt.liftControl { run1 =>
                     i.liftControlIO { runInBase =>
                         f {
