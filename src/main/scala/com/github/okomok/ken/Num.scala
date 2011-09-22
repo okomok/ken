@@ -64,6 +64,11 @@ trait Num[a] extends Typeclass0[a] {
     }
     final implicit def *(x: a): Op_* = new Op_*(x)
 
+    private[ken] sealed class Op_unary_-(x: a) {
+        def unary_- : a = negate(x)
+    }
+    final implicit def unary_-(x: a): Op_unary_- = new Op_unary_-(x)
+
     // Convenience
     //
     // final def fromInt(n: Int): a = fromInteger(n)
@@ -142,4 +147,9 @@ sealed trait NumShortcut { this: Num.type =>
         def *(y: a): a = op_*(x)(y)
     }
     implicit def *[a](x: a)(implicit i: Num[a]): _Op_*[a] = new _Op_*(x)
+
+    sealed class _Op_unary_-[a](x: a)(implicit i: Num[a]) {
+        def unary_- : a = negate(x)
+    }
+    implicit def unary_-[a](x: a)(implicit i: Num[a]): _Op_unary_-[a] = new _Op_unary_-(x)
 }

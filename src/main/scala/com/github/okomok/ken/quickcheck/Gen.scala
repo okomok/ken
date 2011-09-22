@@ -53,7 +53,6 @@ object Gen extends Monad[Gen] with ThisIsInstance {
         x
     }
 
-    // problematic
     def promote[m[+_], a](m: m[Gen[a]])(implicit i: Monad[m]): Gen[m[a]] = Gen { r => n =>
         i.liftM((gen: Gen[a]) => (gen.get)(r)(n))(m)
     }
