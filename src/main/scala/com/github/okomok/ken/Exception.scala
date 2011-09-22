@@ -23,7 +23,7 @@ trait Exception[e] extends Typeable[e] with Show[e] {
     def toException: toException = e => SomeException(e)(this)
 
     type fromException = SomeException => Maybe[e]
-    def fromException: fromException = { case SomeException(e, t) => t.cast[e](e)(this) }
+    def fromException: fromException = { se => (se.rep._2).cast[e](Lazy(se.rep._1))(this) }
 
     // Extra
     //
@@ -146,31 +146,38 @@ object Exception extends ExceptionInstance with ExceptionShortcut {
         case False => error("todo")
     }
 
-    sealed class Handler[a](private val h: Any => IO[a], private val i: Exception[Any])
+    final case class Handler[a](rep: (e => IO[a], Exception[e]) forSome { type e })
 
     object Handler {
-        def apply[a, e](h: e => IO[a])(implicit i: Exception[e]): Handler[a] = new Handler(h.asInstanceOf[Any => IO[a]], i.asInstanceOf[Exception[Any]])
-        def unapply[a](h: Handler[a]): Option[(Any => IO[a], Exception[Any])] = Some((h.h, h.i))
+        def apply[a, e](h: e => IO[a])(implicit i: Exception[e]): Handler[a] = new Handler(h, i)
     }
 
     def catches[a](io: IO[a])(handlers: List[Handler[a]]): IO[a] = `catch`(io)(catchesHandler(handlers))
 
     def catchesHandler[a](handlers: List[Handler[a]])(e: SomeException): IO[a] = {
-        val tryHandler: Handler[a] => IO[a] => IO[a] = { case Handler(handler, i) => res =>
-            i.fromException(e) match {
-                case Just(e_) => handler(e_)
-                case Nothing => res
+        val tryHandler: Handler[a] => IO[a] => IO[a] = { h => res =>
+            def impl[e](x: (e => IO[a], Exception[e])): IO[a] = {
+                x._2.fromException(e) match {
+                    case Just(e_) => x._1(e_)
+                    case Nothing => res
+                }
             }
+            impl(h.rep)
         }
         List.foldr(tryHandler)(SomeException.`throw`(e))(handlers)
     }
 
     trait AnyHandler[+a] {
-        def apply[e](e: e)(implicit i: Exception[e]): IO[a]
+        def apply[e](x: e)(implicit i: Exception[e]): IO[a]
     }
 
-    def catchAny[a](io: IO[a])(hanlder: AnyHandler[a]): IO[a] = {
-        val handler_ : SomeException => IORep[a] = { case SomeException(e, i) => IO.unIO(hanlder(e)(i)) }
+    def catchAny[a](io: IO[a])(handler: AnyHandler[a]): IO[a] = {
+        val handler_ : SomeException => IORep[a] = se => {
+            def impl[e](x: (e, Exception[e])): IORep[a] = {
+                IO.unIO(handler(x._1)(x._2))
+            }
+            impl(se.rep)
+        }
         IO { Prim.`catch`(IO.unIO(io))(handler_) }
     }
 }

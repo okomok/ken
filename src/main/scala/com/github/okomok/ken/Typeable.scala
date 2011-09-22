@@ -19,12 +19,12 @@ trait Typeable[a] extends Typeclass0[a] {
 
     // Core
     //
-    type typeOf = Lazy[a] => TypeRep
+    type typeOf = Lazy[_] => TypeRep
     def typeOf: typeOf
 
     // Extra
     //
-    def cast[b](x: Lazy[a])(implicit j: Typeable[b]): Maybe[b] = {
+    def cast[b](x: Lazy[_])(implicit j: Typeable[b]): Maybe[b] = {
         lazy val r: Maybe[b] = if (typeOf(x) <:< j.typeOf(Lazy(Maybe.fromJust(r)))) {
             Just(x.!.asInstanceOf[b])
         } else {
@@ -54,7 +54,7 @@ trait TypeableProxy[a] extends Typeable[a] {
 
     override def typeOf: typeOf = selfTypeable.typeOf
 
-    override def cast[b](x: Lazy[a])(implicit j: Typeable[b]): Maybe[b] = selfTypeable.cast(x)(j)
+    override def cast[b](x: Lazy[_])(implicit j: Typeable[b]): Maybe[b] = selfTypeable.cast(x)(j)
     override def mkT[b](f: b => b)(x: a)(implicit j: Typeable[b]): a = selfTypeable.mkT(f)(x)(j)
     override def mkQ[b, r](r: r)(q: b => r)(a: a)(implicit j: Typeable[b]): r = selfTypeable.mkQ(r)(q)(a)(j)
 }

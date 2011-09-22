@@ -14,14 +14,14 @@ package com.github.okomok
 package ken
 
 
-sealed class SomeException(private val e: Any, private val i: Exception[Any]) extends Throwable
+final case class SomeException(rep: (e, Exception[e]) forSome { type e }) extends Throwable
 
 
 object SomeException extends Eq.Of[SomeException] with Show.Of[SomeException]
     with Exception[SomeException] with TypeableProxy[SomeException] with ThisIsInstance
 {
-    def apply[e](e: e)(implicit i: Exception[e]): SomeException = new SomeException(e, i.asInstanceOf[Exception[Any]])
-    def unapply[e](x: SomeException): Option[(Any, Exception[Any])] = Some((x.e, x.i))
+    def apply[e](e: e)(implicit i: Exception[e]): SomeException = new SomeException(e, i)
+    // scalac-generated `unapply` seems to have a bug.
 
     // Overrides
     //

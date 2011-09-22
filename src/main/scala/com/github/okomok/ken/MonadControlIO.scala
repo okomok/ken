@@ -30,19 +30,21 @@ trait MonadControlIO[m[+_]] extends MonadIO[m] {
         j.`catch`(runInIO(a))(e => runInIO { handler(e) })
     }
 
-    sealed class Handler[a](private val h: Any => m[a], private val i: Exception[Any])
+    final case class Handler[a](rep: (e => m[a], Exception[e]) forSome { type e })
 
     object Handler {
-        def apply[e, a](h: e => m[a])(implicit i: Exception[e]): Handler[a] = new Handler(h.asInstanceOf[Any => m[a]], i.asInstanceOf[Exception[Any]])
-        def unapply[a](h: Handler[a]): Option[(Any => m[a], Exception[Any])] = Some((h.h, h.i))
+        def apply[e, a](h: e => m[a])(implicit i: Exception[e]): Handler[a] = new Handler(h, i)
     }
 
     def catches[a](a: m[a])(handlers: List[Handler[a]]): m[a] = controlIO { runInIO =>
         Exception.catches(runInIO(a)) {
             for {
-                Handler(handler, i) <- handlers
+                h <- handlers
             } yield {
-                Exception.Handler((e: Any) => runInIO { handler(e) })(i)
+                def impl[e](x: (e => m[a], Exception[e])): Exception.Handler[m[a]] = {
+                    Exception.Handler((e: e) => runInIO { x._1(e) })(x._2)
+                }
+                impl(h.rep)
             }
         }
     }
