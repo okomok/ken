@@ -70,20 +70,59 @@ object Arbitary extends ArbitaryInstance with ArbitaryShortcut {
         } yield Int.fromInteger(n)
     }
 
+    def shrinkList[a](shr: a => List[a])(xs: List[a]): List[List[a]] = {
+        val removeChunks: List[a] => List[List[a]] = xs => {
+            lazy val rem: Int => List[a] => List[List[a]] = {
+                case 0 => _ => Nil
+                case 1 => _ => List(Nil)
+                case n => xs => {
+                    import Int._div_
+                    import Bool.not
+
+                    val n1 = n _div_ 2
+                    val xs1 = List.take(n1)(xs)
+                    val n2 = n - n1
+                    val xs2 = List.drop(n1)(xs)
+                    lazy val ilv: List[List[a]] => List[List[a]] => List[List[a]] = xs => ys => (xs, ys) match {
+                        case (Nil, ys) => ys
+                        case (xs, Nil) => xs
+                        case (x :: xs, y :: ys) => x :: y :: ilv(xs)(ys)
+                    }
+
+                    xs1 :: xs2 :: (ilv
+                    ( for { xs1_ <- rem(n1)(xs1) if not(List.`null`(xs1_)) } yield (xs1_ ++: xs2) )
+                    ( for { xs2_ <- rem(n2)(xs2) if not(List.`null`(xs2_)) } yield (xs1 ++: xs2_) ) )
+                }
+            }
+
+            rem(List.length(xs))(xs)
+        }
+
+        lazy val shrinkOne: List[a] => List[List[a]] = {
+            case Nil => Nil
+            case x :: xs => {
+                ( for { x_ <- shr(x) } yield (x_ :: xs.!) ) ++:
+                ( for { xs_ <- shrinkOne(xs) } yield (x :: xs_) )
+            }
+        }
+
+        removeChunks(xs) ++: shrinkOne(xs)
+    }
+
     lazy val shrinkNothing: Any => List[Nothing] = _ => Nil
 
     def shrinkIntegral[a](a: a)(implicit i: Integral[a]): List[a] = List.nub {
         import i._
         val op_<< : a => a => Bool = x => y => abs(x) < abs(y)
         ( for { x <- List(a) if x < 0 } yield (-x) ) ++:
-        ( for { x_ <- List.takeWhile(op_<<(a))(0 :: ( for { i <- List.tail(List.iterate((_: a) _quot_ 2)(a)) } yield (a - i) )) } yield x_ )
+        ( for { x_ <- List.takeWhile(op_<<(_: a)(a))(0 :: ( for { i <- List.tail(List.iterate((_: a) _quot_ 2)(a)) } yield (a - i) )) } yield x_ )
     }
 
     def shrinkRealFrac[a](a: a)(implicit i: RealFrac[a]): List[a] = List.nub {
         import i._
         val op_<< : a => a => Bool = x => y => abs(x) < abs(y)
         ( for { x <- List(a) if x < 0 } yield (-x) ) ++:
-        ( for { x_ <- List(fromInteger(truncate[Integer](a))) } yield x_ )
+        ( for { x_ <- List(fromInteger(truncate[Integer](a))) if op_<<(x_)(a) } yield x_ )
     }
 }
 
@@ -139,45 +178,6 @@ sealed trait ArbitaryInstance { this: Arbitary.type =>
             } yield *
         }
         override val shrink: shrink = xs => shrinkList(i.shrink)(xs)
-    }
-
-    def shrinkList[a](shr: a => List[a])(xs: List[a]): List[List[a]] = {
-        val removeChunks: List[a] => List[List[a]] = xs => {
-            lazy val rem: Int => List[a] => List[List[a]] = {
-                case 0 => _ => Nil
-                case 1 => _ => List(Nil)
-                case n => xs => {
-                    import Int._div_
-                    import Bool.not
-
-                    val n1 = n _div_ 2
-                    val xs1 = List.take(n1)(xs)
-                    val n2 = n - n1
-                    val xs2 = List.drop(n1)(xs)
-                    lazy val ilv: List[List[a]] => List[List[a]] => List[List[a]] = xs => ys => (xs, ys) match {
-                        case (Nil, ys) => ys
-                        case (xs, Nil) => xs
-                        case (x :: xs, y :: ys) => x :: y :: ilv(xs)(ys)
-                    }
-
-                    xs1 :: xs2 :: (ilv
-                    ( for { xs1_ <- rem(n1)(xs1) if not(List.`null`(xs1_)) } yield (xs1_ ++: xs2) )
-                    ( for { xs2_ <- rem(n2)(xs2) if not(List.`null`(xs2_)) } yield (xs1 ++: xs2_) ) )
-                }
-            }
-
-            rem(List.length(xs))(xs)
-        }
-
-        lazy val shrinkOne: List[a] => List[List[a]] = {
-            case Nil => Nil
-            case x :: xs => {
-                ( for { x_ <- shr(x) } yield (x_ :: xs.!) ) ++:
-                ( for { xs_ <- shrinkOne(xs) } yield (x :: xs_) )
-            }
-        }
-
-        removeChunks(xs) ++: shrinkOne(xs)
     }
 
     implicit def ofRatio[a](implicit i: Integral[a]): Arbitary[Ratio[a]] = new Arbitary[Ratio[a]] {
