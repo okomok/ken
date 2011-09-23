@@ -93,6 +93,23 @@ trait NumProxy[a] extends Num[a] {
 
 object Num extends NumInstance with NumShortcut {
     def apply[a <: Kind.Function0](implicit i: Num[a#apply0]): Num[a#apply0] = i
+
+    def deriving[nt <: Kind.Function0, ot <: Kind.Function0](implicit i: Num[ot#apply0], j: Newtype0[nt#apply0, ot#apply0]): Num[nt#apply0] = new Num[nt#apply0] {
+        type a = nt#apply0
+
+        override val op_+ : op_+ = x => y => j.newOf(i.op_+(j.oldOf(x))(j.oldOf(y)))
+        override val op_- : op_- = x => y => j.newOf(i.op_-(j.oldOf(x))(j.oldOf(y)))
+        override val op_* : op_* = x => y => j.newOf(i.op_*(j.oldOf(x))(j.oldOf(y)))
+        override val negate: negate = x => j.newOf(i.negate(j.oldOf(x)))
+        override val abs: abs = x => j.newOf(i.abs(j.oldOf(x)))
+        override val signum: signum = x => j.newOf(i.signum(j.oldOf(x)))
+        override val fromInteger: fromInteger = n => j.newOf(i.fromInteger(n))
+
+        override val subtract: subtract = x => y => j.newOf(i.subtract(j.oldOf(x))(j.oldOf(y)))
+        override def fromIntegral[z](x: z)(implicit zi: Integral[z]): a = j.newOf(i.fromIntegral(x)(zi))
+    }
+
+    def weak[nt <: Kind.Newtype0](implicit i: Num[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Num[nt#oldtype0] = deriving[Kind.const[nt#oldtype0], nt](i, j.dual)
 }
 
 
