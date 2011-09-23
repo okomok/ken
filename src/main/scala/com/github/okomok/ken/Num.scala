@@ -95,7 +95,7 @@ object Num extends NumInstance with NumShortcut {
     def apply[a <: Kind.Function0](implicit i: Num[a#apply0]): Num[a#apply0] = i
 
     def deriving[nt <: Kind.Function0, ot <: Kind.Function0](implicit i: Num[ot#apply0], j: Newtype0[nt#apply0, ot#apply0]): Num[nt#apply0] = new Num[nt#apply0] {
-        type a = nt#apply0
+        private type a = nt#apply0
 
         override val op_+ : op_+ = x => y => j.newOf(i.op_+(j.oldOf(x))(j.oldOf(y)))
         override val op_- : op_- = x => y => j.newOf(i.op_-(j.oldOf(x))(j.oldOf(y)))
@@ -150,22 +150,22 @@ sealed trait NumShortcut { this: Num.type =>
     def subtract[a](x: a)(y: a)(implicit i: Num[a]): a = i.subtract(x)(y)
     implicit def fromIntegral[z, a](x: z, * : Type[a] = null)(implicit i: Integral[z], j: Num[a]): a = j.fromIntegral(x)
 
-    sealed class _Op_+[a](x: a)(implicit i: Num[a]) {
+    private[ken] class _Op_+[a](x: a)(implicit i: Num[a]) {
         def +(y: a): a = op_+(x)(y)
     }
     implicit def +[a](x: a)(implicit i: Num[a]): _Op_+[a] = new _Op_+(x)
 
-    sealed class _Op_-[a](x: a)(implicit i: Num[a]) {
+    private[ken] class _Op_-[a](x: a)(implicit i: Num[a]) {
         def -(y: a): a = op_-(x)(y)
     }
     implicit def -[a](x: a)(implicit i: Num[a]): _Op_-[a] = new _Op_-(x)
 
-    sealed class _Op_*[a](x: a)(implicit i: Num[a]) {
+    private[ken] class _Op_*[a](x: a)(implicit i: Num[a]) {
         def *(y: a): a = op_*(x)(y)
     }
     implicit def *[a](x: a)(implicit i: Num[a]): _Op_*[a] = new _Op_*(x)
 
-    sealed class _Op_unary_-[a](x: a)(implicit i: Num[a]) {
+    private[ken] class _Op_unary_-[a](x: a)(implicit i: Num[a]) {
         def unary_- : a = negate(x)
     }
     implicit def unary_-[a](x: a)(implicit i: Num[a]): _Op_unary_-[a] = new _Op_unary_-(x)

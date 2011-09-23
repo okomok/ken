@@ -92,7 +92,8 @@ object Ord extends OrdInstance with OrdShortcut {
     def apply[a <: Kind.Function0](implicit i: Ord[a#apply0]): Ord[a#apply0] = i
 
     def deriving[nt <: Kind.Function0, ot <: Kind.Function0](implicit i: Ord[ot#apply0], j: Newtype0[nt#apply0, ot#apply0]): Ord[nt#apply0] = new Ord[nt#apply0] with EqProxy[nt#apply0] {
-        override val selfEq = Eq.deriving[nt, ot](i, j)
+        override val selfEq = Eq.deriving[nt, ot]
+
         override val compare: compare = x => y => i.compare(j.oldOf(x))(j.oldOf(y))
         override val op_< : op_< = x => y => i.op_<(j.oldOf(x))(j.oldOf(y))
         override val op_<= : op_<= = x => y => i.op_<=(j.oldOf(x))(j.oldOf(y))
@@ -140,32 +141,32 @@ sealed trait OrdShortcut { this: Ord.type =>
     def max[a](x: a)(y: a)(implicit i: Ord[a]): a = i.max(x)(y)
     def min[a](x: a)(y: a)(implicit i: Ord[a]): a = i.min(x)(y)
 
-    sealed class _Op_<[a](x: a)(implicit i: Ord[a]) {
+    private[ken] class _Op_<[a](x: a)(implicit i: Ord[a]) {
         def <(y: a): Bool = op_<(x)(y)
     }
     implicit def <[a](x: a)(implicit i: Ord[a]): _Op_<[a] = new _Op_<(x)
 
-    sealed class _Op_<=[a](x: a)(implicit i: Ord[a]) {
+    private[ken] class _Op_<=[a](x: a)(implicit i: Ord[a]) {
         def <=(y: a): Bool = op_<=(x)(y)
     }
     implicit def <=[a](x: a)(implicit i: Ord[a]): _Op_<=[a] = new _Op_<=(x)
 
-    sealed class _Op_>[a](x: a)(implicit i: Ord[a]) {
+    private[ken] class _Op_>[a](x: a)(implicit i: Ord[a]) {
         def >(y: a): Bool = op_>(x)(y)
     }
     implicit def >[a](x: a)(implicit i: Ord[a]): _Op_>[a] = new _Op_>(x)
 
-    sealed class _Op_>=[a](x: a)(implicit i: Ord[a]) {
+    private[ken] class _Op_>=[a](x: a)(implicit i: Ord[a]) {
         def >=(y: a): Bool = op_>=(x)(y)
     }
     implicit def >=[a](x: a)(implicit i: Ord[a]): _Op_>=[a] = new _Op_>=(x)
 
-    sealed class _Op_max_[a](x: a)(implicit i: Ord[a]) {
+    private[ken] class _Op_max_[a](x: a)(implicit i: Ord[a]) {
         def _max_(y: a): a = max(x)(y)
     }
     implicit def _max_[a](x: a)(implicit i: Ord[a]): _Op_max_[a] = new _Op_max_(x)
 
-    sealed class _Op_min_[a](x: a)(implicit i: Ord[a]) {
+    private[ken] class _Op_min_[a](x: a)(implicit i: Ord[a]) {
         def _min_(y: a): a = min(x)(y)
     }
     implicit def _min_[a](x: a)(implicit i: Ord[a]): _Op_min_[a] = new _Op_min_(x)

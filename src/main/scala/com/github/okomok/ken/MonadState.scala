@@ -46,7 +46,8 @@ object MonadState {
 
     def deriving[s, nt <: Kind.Function1, ot <: Kind.Function1](implicit i: MonadState[s, ot#apply], j: Newtype1[nt#apply, ot#apply]): MonadState[s, nt#apply] = new MonadState[s, nt#apply] with MonadProxy[nt#apply] {
         private type m[+a] = nt#apply[a]
-        override val selfMonad = Monad.deriving[nt, ot](i, j)
+        override val selfMonad = Monad.deriving[nt, ot]
+
         override def get: m[s] = j.newOf { i.get }
         override def put(s: s): m[Unit] = j.newOf { i.put(s) }
     }

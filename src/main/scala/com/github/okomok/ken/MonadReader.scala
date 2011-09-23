@@ -44,9 +44,12 @@ object MonadReader {
 
     def deriving[r, nt <: Kind.Function1, ot <: Kind.Function1](implicit i: MonadReader[r, ot#apply], j: Newtype1[nt#apply, ot#apply]): MonadReader[r, nt#apply] = new MonadReader[r, nt#apply] with MonadProxy[nt#apply] {
         private type m[+a] = nt#apply[a]
-        override val selfMonad = Monad.deriving[nt, ot](i, j)
+        override val selfMonad = Monad.deriving[nt, ot]
+
         override def ask: m[r] = j.newOf { i.ask }
         override def local[a](f: r => r)(m: m[a]): m[a] = j.newOf { i.local(f)(j.oldOf(m)) }
+
+        override def asks[a](f: r => a): m[a] = j.newOf { i.asks(f) }
     }
 
     def weak[r, nt <: Kind.Newtype1](implicit i: MonadReader[r, nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): MonadReader[r, nt#oldtype1] = deriving[r, Kind.quote1[nt#oldtype1], nt](i, j.dual)

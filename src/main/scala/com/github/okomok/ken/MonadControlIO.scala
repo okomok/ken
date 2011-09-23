@@ -104,7 +104,8 @@ object MonadControlIO {
 
     def deriving[nt <: Kind.Function1, ot <: Kind.Function1](implicit i: MonadControlIO[ot#apply], j: Newtype1[nt#apply, ot#apply]): MonadControlIO[nt#apply] = new MonadControlIO[nt#apply] with MonadIOProxy[nt#apply] {
         private type m[+a] = nt#apply[a]
-        override val selfMonadIO = MonadIO.deriving[nt, ot](i, j)
+        override val selfMonadIO = MonadIO.deriving[nt, ot]
+
         override def liftIO[a](io: IO[a]): m[a] = j.newOf { i.liftIO(io) }
         override def liftControlIO[a](f: RunInIO => IO[a]): m[a] = j.newOf {
             i.liftControlIO { run =>

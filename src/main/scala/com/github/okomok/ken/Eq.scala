@@ -84,12 +84,12 @@ sealed trait EqShortcut { this: _Eq.type =>
     def op_===[a](x: a)(y: a): Bool = Eq.of[a].op_===(x)(y)
     def op_/==[a](x: a)(y: a): Bool = Eq.of[a].op_/==(x)(y)
 
-    sealed class _Op_===[a](x: a) {
+    private[ken] class _Op_===[a](x: a) {
         def ===(y: a): Bool = op_===(x)(y)
     }
     implicit def ===[a](x: a): _Op_===[a] = new _Op_===(x)
 
-    sealed class _Op_/==[a](x: a) {
+    private[ken] class _Op_/==[a](x: a) {
         def /==(y: a): Bool = op_/==(x)(y)
     }
     implicit def /==[a](x: a): _Op_/==[a] = new _Op_/==(x)
@@ -97,12 +97,12 @@ sealed trait EqShortcut { this: _Eq.type =>
     def op_===[a](x: a)(y: a)(implicit i: _Eq[a]): Bool = i.op_===(x)(y)
     def op_/==[a](x: a)(y: a)(implicit i: _Eq[a]): Bool = i.op_/==(x)(y)
 
-    sealed class _Op_===[a](x: a)(implicit i: _Eq[a]) {
+    private[ken] class _Op_===[a](x: a)(implicit i: _Eq[a]) {
         def ===(y: a): Bool = op_===(x)(y)
     }
     implicit def ===[a](x: a)(implicit i: _Eq[a]): _Op_===[a] = new _Op_===(x)
 
-    sealed class _Op_/==[a](x: a)(implicit i: _Eq[a]) {
+    private[ken] class _Op_/==[a](x: a)(implicit i: _Eq[a]) {
         def /==(y: a): Bool = op_/==(x)(y)
     }
     implicit def /==[a](x: a)(implicit i: _Eq[a]): _Op_/==[a] = new _Op_/==(x)

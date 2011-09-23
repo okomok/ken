@@ -76,11 +76,14 @@ object Applicative {
 
     def deriving[nt <: Kind.Function1, ot <: Kind.Function1](implicit i: Applicative[ot#apply], j: Newtype1[nt#apply, ot#apply]): Applicative[nt#apply] = new Applicative[nt#apply] with FunctorProxy[nt#apply] {
         private type f[+a] = nt#apply[a]
-        override val selfFunctor = Functor.deriving[nt, ot](i, j)
+        override val selfFunctor = Functor.deriving[nt, ot]
+
         override def pure[a](x: Lazy[a]): f[a] = j.newOf { i.pure(x) }
         override def op_<*>[a, b](x: f[a => b])(y: f[a]): f[b] = j.newOf { i.op_<*>(j.oldOf(x))(j.oldOf(y)) }
         override def op_*>[a, b](x: f[a])(y: f[b]): f[b] = j.newOf { i.op_*>(j.oldOf(x))(j.oldOf(y)) }
         override def op_<*[a, b](x: f[a])(y: f[b]): f[a] = j.newOf { i.op_<*(j.oldOf(x))(j.oldOf(y)) }
+
+        // TODO
     }
 
     def weak[nt <: Kind.Newtype1](implicit i: Applicative[nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): Applicative[nt#oldtype1] = deriving[Kind.quote1[nt#oldtype1], nt](i, j.dual)

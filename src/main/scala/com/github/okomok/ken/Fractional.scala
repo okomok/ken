@@ -52,7 +52,7 @@ object Fractional extends FractionalInstance with FractionalShortcut {
     def apply[a](implicit i: Fractional[a]): Fractional[a] = i
 
     def deriving[nt <: Kind.Function0, ot <: Kind.Function0](implicit i: Fractional[ot#apply0], j: Newtype0[nt#apply0, ot#apply0]): Fractional[nt#apply0] = new Fractional[nt#apply0] with NumProxy[nt#apply0] {
-        type a = nt#apply0
+        private type a = nt#apply0
         override val selfNum = Num.deriving[nt, ot]
 
         override val op_/ : op_/ = x => y => j.newOf(i.op_/(j.oldOf(x))(j.oldOf(y)))
@@ -79,7 +79,7 @@ sealed trait FractionalShortcut { this: Fractional.type =>
 
     implicit def realToFrac[z, a](x: z, * : Type[a] = null)(implicit i: Real[z], j: Fractional[a]): a = j.realToFrac(x)(i)
 
-    sealed class _Op_/[a](x: a)(implicit i: Fractional[a]) {
+    private[ken] class _Op_/[a](x: a)(implicit i: Fractional[a]) {
         def /(y: a): a = op_/(x)(y)
     }
     implicit def /[a](x: a)(implicit i: Fractional[a]): _Op_/[a] = new _Op_/(x)

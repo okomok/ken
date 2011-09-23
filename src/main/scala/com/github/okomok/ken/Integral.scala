@@ -137,6 +137,30 @@ trait IntegralProxy[a] extends Integral[a] with RealProxy[a] with EnumProxy[a] {
 
 object Integral extends IntegralInstance with IntegralShortcut {
     def apply[a <: Kind.Function0](implicit i: Integral[a#apply0]): Integral[a#apply0] = i
+
+    def deriving[nt <: Kind.Function0, ot <: Kind.Function0](implicit i: Integral[ot#apply0], j: Newtype0[nt#apply0, ot#apply0]): Integral[nt#apply0] = new Integral[nt#apply0] with RealProxy[nt#apply0] with EnumProxy[nt#apply0] {
+        private type a = nt#apply0
+        override val selfReal = Real.deriving[nt, ot]
+        override val selfEnum = Enum.deriving[nt, ot]
+
+        override def quot: quot = x => y => j.newOf(i.quot(j.oldOf(x))(j.oldOf(y)))
+        override def rem: rem = x => y => j.newOf(i.rem(j.oldOf(x))(j.oldOf(y)))
+        override def div: div = x => y => j.newOf(i.div(j.oldOf(x))(j.oldOf(y)))
+        override def mod: mod = x => y => j.newOf(i.mod(j.oldOf(x))(j.oldOf(y)))
+
+        override def quotRem: quotRem = x => y => i.quotRem(j.oldOf(x))(j.oldOf(y)) match { case (q, r) => (j.newOf(q), j.newOf(r)) }
+        override def divMod: divMod = x => y => i.divMod(j.oldOf(x))(j.oldOf(y)) match { case (d, v) => (j.newOf(d), j.newOf(v)) }
+
+        override def toInteger: toInteger = x => i.toInteger(j.oldOf(x))
+
+        override def even: even = x => i.even(j.oldOf(x))
+        override def odd: odd = x => i.odd(j.oldOf(x))
+
+        override def pow[b](x0: b)(y0: a)(implicit bn: Num[b]): b = i.pow(x0)(j.oldOf(y0))(bn)
+        override def powpow[b](x: b)(n: a)(implicit bf: Fractional[b]): b = i.powpow(x)(j.oldOf(n))(bf)
+    }
+
+    def weak[nt <: Kind.Newtype0](implicit i: Integral[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Integral[nt#oldtype0] = deriving[Kind.const[nt#oldtype0], nt](i, j.dual)
 }
 
 
@@ -176,27 +200,27 @@ sealed trait IntegralShortcut { this: Integral.type =>
     def pow[a, b](x0: b)(y0: a)(implicit i: Integral[a], j: Num[b]): b = i.pow(x0)(y0)
     def powpow[a, b](x: b)(n: a)(implicit i: Integral[a], j: Fractional[b]): b = i.powpow(x)(n)
 
-    private[ken] sealed class _Op_quot[a](n: a)(implicit i: Integral[a]) {
+    private[ken] class _Op_quot[a](n: a)(implicit i: Integral[a]) {
         def _quot_(d: a): a = quot(n)(d)
     }
     implicit def _quot_[a](n: a)(implicit i: Integral[a]): _Op_quot[a] = new _Op_quot(n)
 
-    private[ken] sealed class _Op_rem[a](n: a)(implicit i: Integral[a]) {
+    private[ken] class _Op_rem[a](n: a)(implicit i: Integral[a]) {
         def _rem_(d: a): a = rem(n)(d)
     }
     implicit def _rem_[a](n: a)(implicit i: Integral[a]): _Op_rem[a] = new _Op_rem(n)
 
-    private[ken] sealed class _Op_div[a](n: a)(implicit i: Integral[a]) {
+    private[ken] class _Op_div[a](n: a)(implicit i: Integral[a]) {
         def _div_(d: a): a = div(n)(d)
     }
     implicit def _div_[a](n: a)(implicit i: Integral[a]): _Op_div[a] = new _Op_div(n)
 
-    private[ken] sealed class _Op_mod[a](n: a)(implicit i: Integral[a]) {
+    private[ken] class _Op_mod[a](n: a)(implicit i: Integral[a]) {
         def _mod_(d: a): a = mod(n)(d)
     }
     implicit def _mod_[a](n: a)(implicit i: Integral[a]): _Op_mod[a] = new _Op_mod(n)
 
-    private[ken] sealed class _Op_pow_[b](x0: b)(implicit j: Num[b]) {
+    private[ken] class _Op_pow_[b](x0: b)(implicit j: Num[b]) {
         def _pow_[a](y0: a)(implicit i: Integral[a]): b = pow(x0)(y0)
     }
     implicit def _pow_[b](x0: b)(implicit j: Num[b]): _Op_pow_[b] = new _Op_pow_(x0)

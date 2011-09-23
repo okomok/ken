@@ -22,13 +22,13 @@ trait RealFloat[a] extends RealFrac[a] with Floating[a] {
 
     // Core
     //
-    type floatRadix = Lazy[a] => Integer
+    type floatRadix = Lazy[_] => Integer
     def floatRadix: floatRadix
 
-    type floatDigits = Lazy[a] => Int
+    type floatDigits = Lazy[_] => Int
     def floatDigits: floatDigits
 
-    type floatRange = Lazy[a] => (Int, Int)
+    type floatRange = Lazy[_] => (Int, Int)
     def floatRange: floatRange
 
     type decodeFloat = a => (Integer, Int)
@@ -120,8 +120,46 @@ trait RealFloatProxy[a] extends RealFloat[a] with RealFracProxy[a] with Floating
 }
 
 
-object RealFloat extends RealFloatInstance {
+object RealFloat extends RealFloatInstance with RealFloatDetail {
     def apply[a <: Kind.Function0](implicit i: RealFloat[a#apply0]): RealFloat[a#apply0] = i
+
+    def deriving[nt <: Kind.Function0, ot <: Kind.Function0](implicit i: RealFloat[ot#apply0], j: Newtype0[nt#apply0, ot#apply0]): RealFloat[nt#apply0] = new RealFloat[nt#apply0] with RealFracProxy[nt#apply0] with FloatingProxy[nt#apply0] {
+        private type a = nt#apply0
+        override val selfRealFrac = RealFrac.deriving[nt, ot]
+        override val selfFloating = Floating.deriving[nt, ot]
+
+        override def floatRadix: floatRadix = i.floatRadix
+        override def floatDigits: floatDigits = i.floatDigits
+        override def floatRange: floatRange = i.floatRange
+
+        override def decodeFloat: decodeFloat = x => i.decodeFloat(j.oldOf(x))
+        override def encodeFloat: encodeFloat = m => n => j.newOf(i.encodeFloat(m)(n))
+
+        override def exponent: exponent = x => i.exponent(j.oldOf(x))
+        override def significand: significand = x => j.newOf(i.significand(j.oldOf(x)))
+        override def scaleFloat: scaleFloat = n => x => j.newOf(i.scaleFloat(n)(j.oldOf(x)))
+
+        override def isNaN: isNaN = x => i.isNaN(j.oldOf(x))
+        override def isInfinite: isInfinite = x => i.isInfinite(j.oldOf(x))
+        override def isDenormalized: isDenormalized = x => i.isDenormalized(j.oldOf(x))
+        override def isNegativeZero: isNegativeZero = x => i.isNegativeZero(j.oldOf(x))
+        override def isIEEE: isIEEE = x => i.isIEEE(j.oldOf(x))
+
+        override def atan2: atan2 = x => y => j.newOf(i.atan2(j.oldOf(x))(j.oldOf(y)))
+
+    }
+
+    def weak[nt <: Kind.Newtype0](implicit i: RealFloat[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): RealFloat[nt#oldtype0] = deriving[Kind.const[nt#oldtype0], nt](i, j.dual)
+}
+
+
+sealed trait RealFloatInstance { this: RealFloat.type =>
+    implicit val ofDouble: RealFloat[Double] = Double
+    implicit val ofFloat: RealFloat[Float] = Float
+}
+
+
+private[ken] sealed trait RealFloatDetail { this: RealFloat.type =>
 /*
     private[ken] def fromRat[a](x: Rational)(implicit i: RealFloat[a]): a = {
         val Ratio(n, d) = x
@@ -219,11 +257,5 @@ object RealFloat extends RealFloatInstance {
         }
     }
 
-    private val clamp: Int => Int => Int = bd => k => Int.max(-bd)(Int.min(bd)(k))
-}
-
-
-sealed trait RealFloatInstance { this: RealFloat.type =>
-    implicit val ofDouble: RealFloat[Double] = Double
-    implicit val ofFloat: RealFloat[Float] = Float
+    private[ken] val clamp: Int => Int => Int = bd => k => Int.max(-bd)(Int.min(bd)(k))
 }

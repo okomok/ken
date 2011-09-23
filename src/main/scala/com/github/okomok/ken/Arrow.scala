@@ -100,7 +100,7 @@ object Arrow {
 
     def deriving[nt <: Kind.Function2, ot <: Kind.Function2](implicit i: Arrow[ot#apply2], j: Newtype2[nt#apply2, ot#apply2]): Arrow[nt#apply2] = new Arrow[nt#apply2] with CategoryProxy[nt#apply2] {
         private type a[-a, +b] = nt#apply2[a, b]
-        override val selfCategory = Category.deriving[nt, ot](i, j)
+        override val selfCategory = Category.deriving[nt, ot]
 
         override def arr[b, c](f: b => c): a[b, c] = j.newOf(i.arr(f))
         override def first[b, c, d](f: a[b, c], * : Type[d] = null): a[(b, d), (c, d)] = j.newOf(Lazy(i.first(j.oldOf(Lazy(f)))))

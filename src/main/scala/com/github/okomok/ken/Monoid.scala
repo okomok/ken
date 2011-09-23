@@ -171,7 +171,7 @@ sealed trait MonoidShortcut { this: Monoid.type =>
 
     def dual[m](implicit i: Monoid[m]): Monoid[m] = i.dual
 
-    sealed class _Op_mappend[m](x: m)(implicit i: Monoid[m]) {
+    private[ken] class _Op_mappend[m](x: m)(implicit i: Monoid[m]) {
         def _mappend_(y: Lazy[m]): m = mappend(x)(y)
     }
     implicit def _mappend_[m](x: m)(implicit i: Monoid[m]): _Op_mappend[m] = new _Op_mappend(x)

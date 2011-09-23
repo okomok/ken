@@ -115,6 +115,38 @@ trait FloatingProxy[a] extends Floating[a] with FractionalProxy[a] {
 
 object Floating {
     def apply[a <: Kind.Function0](implicit i: Floating[a#apply0]): Floating[a#apply0] = i
+
+    def deriving[nt <: Kind.Function0, ot <: Kind.Function0](implicit i: Floating[ot#apply0], j: Newtype0[nt#apply0, ot#apply0]): Floating[nt#apply0] = new Floating[nt#apply0] with FractionalProxy[nt#apply0] {
+        private type a = nt#apply0
+        override val selfFractional = Fractional.deriving[nt, ot]
+
+        override val pi: pi = j.newOf(i.pi)
+
+        override val exp: exp = x => j.newOf(i.exp(j.oldOf(x)))
+        override val log: log = x => j.newOf(i.log(j.oldOf(x)))
+        override val sqrt: sqrt = x => j.newOf(i.sqrt(j.oldOf(x)))
+
+        override val op_** : op_** = x => y => j.newOf(i.op_**(j.oldOf(x))(j.oldOf(y)))
+        override val logBase: logBase = x => y => j.newOf(i.logBase(j.oldOf(x))(j.oldOf(y)))
+
+        override val sin: sin = x => j.newOf(i.sin(j.oldOf(x)))
+        override val cos: cos = x => j.newOf(i.cos(j.oldOf(x)))
+        override val tan: tan = x => j.newOf(i.tan(j.oldOf(x)))
+
+        override val asin: asin = x => j.newOf(i.asin(j.oldOf(x)))
+        override val acos: acos = x => j.newOf(i.acos(j.oldOf(x)))
+        override val atan: atan = x => j.newOf(i.atan(j.oldOf(x)))
+
+        override val sinh: sinh = x => j.newOf(i.sinh(j.oldOf(x)))
+        override val cosh: cosh = x => j.newOf(i.cosh(j.oldOf(x)))
+        override val tanh: tanh = x => j.newOf(i.tanh(j.oldOf(x)))
+
+        override val asinh: asinh = x => j.newOf(i.asinh(j.oldOf(x)))
+        override val acosh: acosh = x => j.newOf(i.acosh(j.oldOf(x)))
+        override val atanh: atanh = x => j.newOf(i.atanh(j.oldOf(x)))
+    }
+
+    def weak[nt <: Kind.Newtype0](implicit i: Floating[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Floating[nt#oldtype0] = deriving[Kind.const[nt#oldtype0], nt](i, j.dual)
 }
 
 

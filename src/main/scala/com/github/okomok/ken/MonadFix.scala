@@ -30,7 +30,8 @@ object MonadFix {
 
     def deriving[nt <: Kind.Function1, ot <: Kind.Function1](implicit i: MonadFix[ot#apply], j: Newtype1[nt#apply, ot#apply]): MonadFix[nt#apply] = new MonadFix[nt#apply] with MonadProxy[nt#apply] {
         private type m[+a] = nt#apply[a]
-        override val selfMonad = Monad.deriving[nt, ot](i, j)
+        override val selfMonad = Monad.deriving[nt, ot]
+
         override def mfix[a](f: Lazy[a] => m[a]): m[a] = {
             def k(a: Lazy[a]): ot#apply[a] = j.oldOf(f(a))
             j.newOf { i.mfix(k) }
