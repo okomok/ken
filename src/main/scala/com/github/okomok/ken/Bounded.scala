@@ -35,22 +35,15 @@ trait BoundedProxy[a] extends Bounded[a] {
 }
 
 
-object Bounded extends BoundedInstance with BoundedShortcut {
+object Bounded extends BoundedInstance with BoundedShortcut with BoundedDetail {
     def apply[a <: Kind.Function0](implicit i: Bounded[a#apply0]): Bounded[a#apply0] = i
 
-    private[ken] def boundedEnumFrom[a](n: a)(implicit i: Enum[a], j: Bounded[a]): List[a] = {
-        List.map(i.toEnum)(Int.enumFromTo(i.fromEnum(n))(i.fromEnum(j.maxBound _asTypeOf_ n)))
+    def deriving[nt <: Kind.Function0, ot <: Kind.Function0](implicit i: Bounded[ot#apply0], j: Newtype0[nt#apply0, ot#apply0]): Bounded[nt#apply0] = new Bounded[nt#apply0] {
+        override val minBound: minBound = j.newOf(i.minBound)
+        override val maxBound: maxBound = j.newOf(i.maxBound)
     }
 
-    private[ken] def boundedEnumFromThen[a](n1: a)(n2: a)(implicit i: Enum[a], j: Bounded[a]): List[a] = {
-        val i_n1 = i.fromEnum(n1)
-        val i_n2 = i.fromEnum(n2)
-        if (i_n2 > i_n1) {
-            List.map(i.toEnum)(Int.enumFromThenTo(i_n1)(i_n2)(i.fromEnum(j.maxBound _asTypeOf_ n1)))
-        } else {
-            List.map(i.toEnum)(Int.enumFromThenTo(i_n1)(i_n2)(i.fromEnum(j.minBound _asTypeOf_ n1)))
-        }
-    }
+    def weak[nt <: Kind.Newtype0](implicit i: Bounded[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Bounded[nt#oldtype0] = deriving[Kind.const[nt#oldtype0], nt](i, j.dual)
 }
 
 
@@ -65,4 +58,21 @@ sealed trait BoundedInstance { this: Bounded.type =>
 sealed trait BoundedShortcut { this: Bounded.type =>
     def minBound[a](a: a)(implicit i: Bounded[a]): a = i.minBound
     def maxBound[a](a: a)(implicit i: Bounded[a]): a = i.maxBound
+}
+
+
+private[ken] sealed trait BoundedDetail { this: Bounded.type =>
+    private[ken] def boundedEnumFrom[a](n: a)(implicit i: Enum[a], j: Bounded[a]): List[a] = {
+        List.map(i.toEnum)(Int.enumFromTo(i.fromEnum(n))(i.fromEnum(j.maxBound _asTypeOf_ n)))
+    }
+
+    private[ken] def boundedEnumFromThen[a](n1: a)(n2: a)(implicit i: Enum[a], j: Bounded[a]): List[a] = {
+        val i_n1 = i.fromEnum(n1)
+        val i_n2 = i.fromEnum(n2)
+        if (i_n2 > i_n1) {
+            List.map(i.toEnum)(Int.enumFromThenTo(i_n1)(i_n2)(i.fromEnum(j.maxBound _asTypeOf_ n1)))
+        } else {
+            List.map(i.toEnum)(Int.enumFromThenTo(i_n1)(i_n2)(i.fromEnum(j.minBound _asTypeOf_ n1)))
+        }
+    }
 }

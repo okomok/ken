@@ -50,10 +50,10 @@ trait Exception[e] extends Typeable[e] with Show[e] {
     }
 
     @Annotation.flipOf("`catch`")
-    def handle[a](h: e => IO[a])(a: IO[a]): IO[a] = `catch`(a)(h)
+    final def handle[a](h: e => IO[a])(a: IO[a]): IO[a] = `catch`(a)(h)
 
     @Annotation.flipOf("catchJust")
-    def handleJust[a, b](p: e => Maybe[b])(h: b => IO[a])(a: IO[a]): IO[a] = catchJust(p)(a)(h)
+    final def handleJust[a, b](p: e => Maybe[b])(h: b => IO[a])(a: IO[a]): IO[a] = catchJust(p)(a)(h)
 
     def mapException[e2, a](f: e => e2)(v: a)(implicit i: Exception[e2]): a = IO.unsafePerformIO(`catch`(Exception.evaluate(v))(x => i.`throw`(f(x))))
 
@@ -90,8 +90,6 @@ trait ExceptionProxy[e] extends Exception[e] with TypeableProxy[e] with ShowProx
     override def throwIO: throwIO = selfException.throwIO
     override def `catch`[a](a: IO[a])(h: e => IO[a]): IO[a] = selfException.`catch`(a)(h)
     override def catchJust[a, b](p: e => Maybe[b])(a: IO[a])(h: b => IO[a]): IO[a] = selfException.catchJust(p)(a)(h)
-    override def handle[a](h: e => IO[a])(a: IO[a]): IO[a] = selfException.handle(h)(a)
-    override def handleJust[a, b](p: e => Maybe[b])(h: b => IO[a])(a: IO[a]): IO[a] = selfException.handleJust(p)(h)(a)
     override def mapException[e2, a](f: e => e2)(v: a)(implicit i: Exception[e2]): a = selfException.mapException(f)(v)(i)
     override def `try`[a](a: IO[a]): IO[Either[e, a]] = selfException.`try`(a)
     override def tryJust[a, b](p: e => Maybe[b])(a: IO[a]): IO[Either[b, a]] = selfException.tryJust(p)(a)
@@ -100,6 +98,26 @@ trait ExceptionProxy[e] extends Exception[e] with TypeableProxy[e] with ShowProx
 
 object Exception extends ExceptionInstance with ExceptionShortcut {
     def apply[e <: Kind.Function0](implicit i: Exception[e#apply0]): Exception[e#apply0] = i
+
+    def deriving[nt <: Kind.Function0, ot <: Kind.Function0](implicit i: Exception[ot#apply0], j: Newtype0[nt#apply0, ot#apply0], k: Typeable[nt#apply0]): Exception[nt#apply0] = new Exception[nt#apply0] with TypeableProxy[nt#apply0] with ShowProxy[nt#apply0] {
+        type e = nt#apply0
+
+        override val selfTypeable = k
+        override val selfShow = Show.deriving[nt, ot]
+
+        override val toException: toException = e => i.toException(j.oldOf(e))
+        override val fromException: fromException = se => for { ot <- i.fromException(se) } yield j.newOf(ot)
+
+        override val `throw`: `throw` = e => i.`throw`(j.oldOf(e))
+        override val throwIO: throwIO = e => i.throwIO(j.oldOf(e))
+        override def `catch`[a](a: IO[a])(h: e => IO[a]): IO[a] = i.`catch`(a)(e => h(j.newOf(e)))
+        override def catchJust[a, b](p: e => Maybe[b])(a: IO[a])(h: b => IO[a]): IO[a] = i.catchJust(e => p(j.newOf(e)))(a)(h)
+        override def mapException[e2, a](f: e => e2)(v: a)(implicit i2: Exception[e2]): a = i.mapException(e => f(j.newOf(e)))(v)(i2)
+        override def `try`[a](a: IO[a]): IO[Either[e, a]] = for { ea <- i.`try`(a) } yield { ea match { case Left(e) => Left(j.newOf(e)); case Right(a) => Right(a) } }
+        override def tryJust[a, b](p: e => Maybe[b])(a: IO[a]): IO[Either[b, a]] = i.tryJust(e => p(j.newOf(e)))(a)
+    }
+
+    def weak[nt <: Kind.Newtype0](implicit i: Exception[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0], k: Typeable[nt#oldtype0]): Exception[nt#oldtype0] = deriving[Kind.const[nt#oldtype0], nt](i, j.dual, k)
 
     @Annotation.ceremonial("no special effects")
     def evaluate[a](x: a): IO[a] = IO.`return`(x)

@@ -33,6 +33,17 @@ trait Arbitary[a] extends Typeclass0[a] {
 }
 
 
+trait ArbitaryProxy[a] extends Arbitary[a] {
+    def selfArbitary: Arbitary[a]
+
+    override def arbitary: arbitary = selfArbitary.arbitary
+    override def shrink: shrink = selfArbitary.shrink
+
+    override def vectorOf: vectorOf = selfArbitary.vectorOf
+    override def orderedList(implicit j: Ord[a]): Gen[List[a]] = selfArbitary.orderedList(j)
+}
+
+
 object Arbitary extends ArbitaryInstance with ArbitaryShortcut {
     def apply[a <: Kind.Function0](implicit i: Arbitary[a#apply0]): Arbitary[a#apply0] = i
 
@@ -124,17 +135,6 @@ object Arbitary extends ArbitaryInstance with ArbitaryShortcut {
         ( for { x <- List(a) if x < 0 } yield (-x) ) ++:
         ( for { x_ <- List(fromInteger(truncate[Integer](a))) if op_<<(x_)(a) } yield x_ )
     }
-}
-
-
-trait ArbitaryProxy[a] extends Arbitary[a] {
-    def selfArbitary: Arbitary[a]
-
-    override def arbitary: arbitary = selfArbitary.arbitary
-    override def shrink: shrink = selfArbitary.shrink
-
-    override def vectorOf: vectorOf = selfArbitary.vectorOf
-    override def orderedList(implicit j: Ord[a]): Gen[List[a]] = selfArbitary.orderedList(j)
 }
 
 

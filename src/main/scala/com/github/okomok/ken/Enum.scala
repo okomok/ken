@@ -68,35 +68,22 @@ trait EnumProxy[a] extends Enum[a] {
 }
 
 
-object Enum extends EnumInstance with EnumShortcut {
+object Enum extends EnumInstance with EnumShortcut with EnumDetail {
     def apply[a <: Kind.Function0](implicit i: Enum[a#apply0]): Enum[a#apply0] = i
 
-    private[ken] def numericEnumFrom[a](n: a)(implicit i: Fractional[a]): List[a] = {
-        import i._
-        n :: numericEnumFrom(n + 1)
+    def deriving[nt <: Kind.Function0, ot <: Kind.Function0](implicit i: Enum[ot#apply0], j: Newtype0[nt#apply0, ot#apply0]): Enum[nt#apply0] = new Enum[nt#apply0] {
+        override val succ: succ = a => j.newOf(i.succ(j.oldOf(a)))
+        override val pred: pred = a => j.newOf(i.pred(j.oldOf(a)))
+        override val toEnum: toEnum = n => j.newOf(i.toEnum(n))
+        override val fromEnum:fromEnum = a => i.fromEnum(j.oldOf(a))
+
+        override val enumFrom: enumFrom = x => for { ot <- i.enumFrom(j.oldOf(x)) } yield j.newOf(ot)
+        override val enumFromThen: enumFromThen = x => y => for { ot <- i.enumFromThen(j.oldOf(x))(j.oldOf(y)) } yield j.newOf(ot)
+        override val enumFromTo: enumFromTo = x => y => for { ot <- i.enumFromTo(j.oldOf(x))(j.oldOf(y)) } yield j.newOf(ot)
+        override val enumFromThenTo: enumFromThenTo = x1 => x2 => y => for { ot <- i.enumFromThenTo(j.oldOf(x1))(j.oldOf(x2))(j.oldOf(y)) } yield j.newOf(ot)
     }
 
-    private[ken] def numericEnumFromThen[a](n: a)(m: a)(implicit i: Fractional[a]): List[a] = {
-        import i._
-        n :: numericEnumFromThen(m)(m+m-n)
-    }
-
-    private[ken] def numericEnumFromTo[a](n: a)(m: a)(implicit i: Ord[a], j: Fractional[a]): List[a] = {
-        import i._
-        import j._
-        List.takeWhile((_: a) <= m + 1/2)(numericEnumFrom(n))
-    }
-
-    private[ken] def numericEnumFromThenTo[a](e1: a)(e2: a)(e3: a)(implicit i: Ord[a], j: Fractional[a]): List[a] = {
-        import i._
-        import j._
-        val mid = (e2 - e1) / 2
-        val predicate: a => Bool = {
-            if (e2 >= e1) (_: a) <= e3 + mid
-            else (_: a) >= e3 + mid
-        }
-        List.takeWhile(predicate)(numericEnumFromThen(e1)(e2))
-    }
+    def weak[nt <: Kind.Newtype0](implicit i: Enum[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Enum[nt#oldtype0] = deriving[Kind.const[nt#oldtype0], nt](i, j.dual)
 }
 
 
@@ -126,4 +113,34 @@ sealed trait EnumShortcut { this: Enum.type =>
     def enumFromThen[a](x: a)(y: a)(implicit i: Enum[a]): List[a] = i.enumFromThen(x)(y)
     def enumFromTo[a](x: a)(y: a)(implicit i: Enum[a]): List[a] = i.enumFromTo(x)(y)
     def enumFromThenTo[a](x1: a)(x2: a)(y: a)(implicit i: Enum[a]): List[a] = i.enumFromThenTo(x1)(x2)(y)
+}
+
+
+private[ken] sealed trait EnumDetail { this: Enum.type =>
+    private[ken] def numericEnumFrom[a](n: a)(implicit i: Fractional[a]): List[a] = {
+        import i._
+        n :: numericEnumFrom(n + 1)
+    }
+
+    private[ken] def numericEnumFromThen[a](n: a)(m: a)(implicit i: Fractional[a]): List[a] = {
+        import i._
+        n :: numericEnumFromThen(m)(m+m-n)
+    }
+
+    private[ken] def numericEnumFromTo[a](n: a)(m: a)(implicit i: Ord[a], j: Fractional[a]): List[a] = {
+        import i._
+        import j._
+        List.takeWhile((_: a) <= m + 1/2)(numericEnumFrom(n))
+    }
+
+    private[ken] def numericEnumFromThenTo[a](e1: a)(e2: a)(e3: a)(implicit i: Ord[a], j: Fractional[a]): List[a] = {
+        import i._
+        import j._
+        val mid = (e2 - e1) / 2
+        val predicate: a => Bool = {
+            if (e2 >= e1) (_: a) <= e3 + mid
+            else (_: a) >= e3 + mid
+        }
+        List.takeWhile(predicate)(numericEnumFromThen(e1)(e2))
+    }
 }
