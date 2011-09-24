@@ -112,7 +112,7 @@ package object ken {
 
     type TypeRep = ClassManifest[_]
 
-    type :^:[x, xs <: Kind.List] = Kind.cons[x, xs]
+    type :^:[x[_], xs <: Kind.List] = Kind.cons[x, xs]
 
     // Unsafe.Coerce
     //

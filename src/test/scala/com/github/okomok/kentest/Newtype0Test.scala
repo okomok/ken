@@ -15,7 +15,7 @@ class Newtype0Test extends org.scalatest.junit.JUnit3Suite {
     final case class Wrap[a](override val get: a) extends NewtypeOf[a]
 
     object Wrap {
-        implicit def _asNewType0[a]: Newtype0[Wrap[a], a, Num.type :^: Ord.type :^: Real.type :^: Enum.type :^: Integral.type :^: Floating.type :^: Kind.nil] = new Newtype0[Wrap[a], a, Num.type :^: Ord.type :^: Real.type :^: Enum.type :^: Integral.type :^: Floating.type :^: Kind.nil] {
+        implicit def _asNewType0[a]: Newtype0[Wrap[a], a, Num :^: Ord :^: Real :^: Enum :^: Integral :^: Floating :^: Kind.nil] = new Newtype0[Wrap[a], a, Num :^: Ord :^: Real :^: Enum :^: Integral :^: Floating :^: Kind.nil] {
             override val newOf: newOf = ot => Wrap(ot)
             override val oldOf: oldOf = nt => nt.get
         }
@@ -28,7 +28,7 @@ class Newtype0Test extends org.scalatest.junit.JUnit3Suite {
         Enum[Wrap[Int]]
         Real[Wrap[Int]]
 
-        Floating[Wrap[Int]]
+        // Floating[Wrap[Int]] // must be error.
     }
 
 }

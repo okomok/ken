@@ -44,26 +44,26 @@ object NewtypeOf extends NewtypeOf_ {
 
 
 private[ken] sealed trait NewtypeOf_0 { this: NewtypeOf.type =>
-    implicit def _asOrd[nt, ot, ds <: Kind.List](implicit i: Newtype0[nt, ot, ds], j: Ord[ot], k: Kind.Contains[ds, Real.type]): Ord[nt] = Ord.deriving[Newtype0[nt, ot, _]]
-    implicit def _asEnum[nt, ot, ds <: Kind.List](implicit i: Newtype0[nt, ot, ds], j: Enum[ot], k: Kind.Contains[ds, Enum.type]): Enum[nt] = Enum.deriving[Newtype0[nt, ot, _]]
-    implicit def _asBounded[nt, ot, ds <: Kind.List](implicit i: Newtype0[nt, ot, ds], j: Bounded[ot], k: Kind.Contains[ds, Bounded.type]): Bounded[nt] = Bounded.deriving[Newtype0[nt, ot, _]]
+    implicit def _asOrd[nt, ot, ds <: Kind.List](implicit i: Newtype0[nt, ot, ds], j: Ord[ot], k: Kind.Contains[ds, Real]): Ord[nt] = Ord.deriving[Newtype0[nt, ot, _]]
+    implicit def _asEnum[nt, ot, ds <: Kind.List](implicit i: Newtype0[nt, ot, ds], j: Enum[ot], k: Kind.Contains[ds, Enum]): Enum[nt] = Enum.deriving[Newtype0[nt, ot, _]]
+    implicit def _asBounded[nt, ot, ds <: Kind.List](implicit i: Newtype0[nt, ot, ds], j: Bounded[ot], k: Kind.Contains[ds, Bounded]): Bounded[nt] = Bounded.deriving[Newtype0[nt, ot, _]]
 }
 
 private[ken] sealed trait NewtypeOf_1 extends NewtypeOf_0 { this: NewtypeOf.type =>
-    implicit def _asNum[nt, ot, ds <: Kind.List](implicit i: Newtype0[nt, ot, ds], j: Num[ot], k: Kind.Contains[ds, Num.type]): Num[nt] = Num.deriving[Newtype0[nt, ot, _]]
-    implicit def _asReal[nt, ot, ds <: Kind.List](implicit i: Newtype0[nt, ot, ds], j: Real[ot], k: Kind.Contains[ds, Real.type]): Real[nt] = Real.deriving[Newtype0[nt, ot, _]]
+    implicit def _asNum[nt, ot, ds <: Kind.List](implicit i: Newtype0[nt, ot, ds], j: Num[ot], k: Kind.Contains[ds, Num]): Num[nt] = Num.deriving[Newtype0[nt, ot, _]]
+    implicit def _asReal[nt, ot, ds <: Kind.List](implicit i: Newtype0[nt, ot, ds], j: Real[ot], k: Kind.Contains[ds, Real]): Real[nt] = Real.deriving[Newtype0[nt, ot, _]]
 }
 
 private[ken] sealed trait NewtypeOf_2 extends NewtypeOf_1 { this: NewtypeOf.type =>
-    implicit def _asFractional[nt, ot, ds <: Kind.List](implicit i: Newtype0[nt, ot, ds], j: Fractional[ot], k: Kind.Contains[ds, Real.type]): Fractional[nt] = Fractional.deriving[Newtype0[nt, ot, _]]
-    implicit def _asIntegral[nt, ot, ds <: Kind.List](implicit i: Newtype0[nt, ot, ds], j: Integral[ot], k: Kind.Contains[ds, Integral.type]): Integral[nt] = Integral.deriving[Newtype0[nt, ot, _]]
+    implicit def _asFractional[nt, ot, ds <: Kind.List](implicit i: Newtype0[nt, ot, ds], j: Fractional[ot], k: Kind.Contains[ds, Real]): Fractional[nt] = Fractional.deriving[Newtype0[nt, ot, _]]
+    implicit def _asIntegral[nt, ot, ds <: Kind.List](implicit i: Newtype0[nt, ot, ds], j: Integral[ot], k: Kind.Contains[ds, Integral]): Integral[nt] = Integral.deriving[Newtype0[nt, ot, _]]
 }
 
 private[ken] sealed trait NewtypeOf_3 extends NewtypeOf_2 { this: NewtypeOf.type =>
-    implicit def _asRealFrac[nt, ot, ds <: Kind.List](implicit i: Newtype0[nt, ot, ds], j: RealFrac[ot], k: Kind.Contains[ds, RealFrac.type]): RealFrac[nt] = RealFrac.deriving[Newtype0[nt, ot, _]]
+    implicit def _asRealFrac[nt, ot, ds <: Kind.List](implicit i: Newtype0[nt, ot, ds], j: RealFrac[ot], k: Kind.Contains[ds, RealFrac]): RealFrac[nt] = RealFrac.deriving[Newtype0[nt, ot, _]]
 }
 
 private[ken] sealed trait NewtypeOf_  extends NewtypeOf_3 { this: NewtypeOf.type =>
-    implicit def _asFloating[nt, ot, ds <: Kind.List](implicit i: Newtype0[nt, ot, ds], j: Floating[ot], k: Kind.Contains[ds, Real.type]): Floating[nt] = Floating.deriving[Newtype0[nt, ot, _]]
-    implicit def _asRealFloat[nt, ot, ds <: Kind.List](implicit i: Newtype0[nt, ot, ds], j: RealFloat[ot], k: Kind.Contains[ds, RealFloat.type]): RealFloat[nt] = RealFloat.deriving[Newtype0[nt, ot, _]]
+    implicit def _asFloating[nt, ot, ds <: Kind.List](implicit i: Newtype0[nt, ot, ds], j: Floating[ot], k: Kind.Contains[ds, Real]): Floating[nt] = Floating.deriving[Newtype0[nt, ot, _]]
+    implicit def _asRealFloat[nt, ot, ds <: Kind.List](implicit i: Newtype0[nt, ot, ds], j: RealFloat[ot], k: Kind.Contains[ds, RealFloat]): RealFloat[nt] = RealFloat.deriving[Newtype0[nt, ot, _]]
 }

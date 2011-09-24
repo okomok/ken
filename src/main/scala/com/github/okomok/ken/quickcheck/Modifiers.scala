@@ -20,7 +20,7 @@ object Modifiers {
     final case class Blind[a](override val get: a) extends NewtypeOf[a]
 
     object Blind /*extends Blind_*/ {
-        implicit def _asNewType0[a]: Newtype0[Blind[a], a, Num.type :^: Ord.type :^: Real.type :^: Enum.type :^: Integral.type :^: Kind.nil] = new Newtype0[Blind[a], a, Num.type :^: Ord.type :^: Real.type :^: Enum.type :^: Integral.type :^: Kind.nil] {
+        implicit def _asNewType0[a]: Newtype0[Blind[a], a, Num :^: Ord :^: Real :^: Enum :^: Integral :^: Kind.nil] = new Newtype0[Blind[a], a, Num :^: Ord :^: Real :^: Enum :^: Integral :^: Kind.nil] {
             override val newOf: newOf = ot => Blind(ot)
             override val oldOf: oldOf = nt => nt.get
         }
@@ -48,7 +48,7 @@ object Modifiers {
     final case class Fixed[a](override val get: a) extends NewtypeOf[a]
 
     object Fixed /*extends Fixed_*/ {
-        implicit def _asNewType0[a]: Newtype0[Fixed[a], a, Num.type :^: Ord.type :^: Real.type :^: Enum.type :^: Integral.type :^: Kind.nil] = new Newtype0[Fixed[a], a, Num.type :^: Ord.type :^: Real.type :^: Enum.type :^: Integral.type :^: Kind.nil] {
+        implicit def _asNewType0[a]: Newtype0[Fixed[a], a, Num :^: Ord :^: Real :^: Enum :^: Integral :^: Kind.nil] = new Newtype0[Fixed[a], a, Num :^: Ord :^: Real :^: Enum :^: Integral :^: Kind.nil] {
             override val newOf: newOf = ot => Fixed(ot)
             override val oldOf: oldOf = nt => nt.get
         }
@@ -110,7 +110,7 @@ object Modifiers {
     final case class Positive[a](override val get: a) extends NewtypeOf[a]
 
     object Positive /*extends Positive_*/ {
-        implicit def _asNewType0[a]: Newtype0[Positive[a], a, Num.type :^: Ord.type :^: Real.type :^: Enum.type :^: Integral.type :^: Kind.nil] = new Newtype0[Positive[a], a, Num.type :^: Ord.type :^: Real.type :^: Enum.type :^: Integral.type :^: Kind.nil] {
+        implicit def _asNewType0[a]: Newtype0[Positive[a], a, Num :^: Ord :^: Real :^: Enum :^: Integral :^: Kind.nil] = new Newtype0[Positive[a], a, Num :^: Ord :^: Real :^: Enum :^: Integral :^: Kind.nil] {
             override val newOf: newOf = ot => Positive(ot)
             override val oldOf: oldOf = nt => nt.get
         }
@@ -138,7 +138,7 @@ object Modifiers {
     final case class NonZero[a](override val get: a) extends NewtypeOf[a]
 
     object NonZero /*extends NonZero_*/ {
-        implicit def _asNewType0[a]: Newtype0[NonZero[a], a, Num.type :^: Ord.type :^: Real.type :^: Enum.type :^: Integral.type :^: Kind.nil] = new Newtype0[NonZero[a], a, Num.type :^: Ord.type :^: Real.type :^: Enum.type :^: Integral.type :^: Kind.nil] {
+        implicit def _asNewType0[a]: Newtype0[NonZero[a], a, Num :^: Ord :^: Real :^: Enum :^: Integral :^: Kind.nil] = new Newtype0[NonZero[a], a, Num :^: Ord :^: Real :^: Enum :^: Integral :^: Kind.nil] {
             override val newOf: newOf = ot => NonZero(ot)
             override val oldOf: oldOf = nt => nt.get
         }
@@ -166,7 +166,7 @@ object Modifiers {
     final case class NonNegative[a](override val get: a) extends NewtypeOf[a]
 
     object NonNegative /*extends NonNegative_*/ {
-        implicit def _asNewType0[a]: Newtype0[NonNegative[a], a, Num.type :^: Ord.type :^: Real.type :^: Enum.type :^: Integral.type :^: Kind.nil] = new Newtype0[NonNegative[a], a, Num.type :^: Ord.type :^: Real.type :^: Enum.type :^: Integral.type :^: Kind.nil] {
+        implicit def _asNewType0[a]: Newtype0[NonNegative[a], a, Num :^: Ord :^: Real :^: Enum :^: Integral :^: Kind.nil] = new Newtype0[NonNegative[a], a, Num :^: Ord :^: Real :^: Enum :^: Integral :^: Kind.nil] {
             override val newOf: newOf = ot => NonNegative(ot)
             override val oldOf: oldOf = nt => nt.get
         }
@@ -194,7 +194,7 @@ object Modifiers {
     final case class Shrink2[a](override val get: a) extends NewtypeOf[a]
 
     object Shrink2 /*extends Shrink2_*/ {
-        implicit def _asNewType0[a]: Newtype0[Shrink2[a], a, Num.type :^: Ord.type :^: Real.type :^: Enum.type :^: Integral.type :^: Kind.nil] = new Newtype0[Shrink2[a], a, Num.type :^: Ord.type :^: Real.type :^: Enum.type :^: Integral.type :^: Kind.nil] {
+        implicit def _asNewType0[a]: Newtype0[Shrink2[a], a, Num :^: Ord :^: Real :^: Enum :^: Integral :^: Kind.nil] = new Newtype0[Shrink2[a], a, Num :^: Ord :^: Real :^: Enum :^: Integral :^: Kind.nil] {
             override val newOf: newOf = ot => Shrink2(ot)
             override val oldOf: oldOf = nt => nt.get
         }

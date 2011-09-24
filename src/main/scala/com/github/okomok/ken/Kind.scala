@@ -107,24 +107,32 @@ object Kind {
     // List
     //
     sealed trait List {
-        type head
+        type head[a]
         type tail <: List
     }
 
-    trait cons[x, xs <: List] extends List {
-        override type head = x
+    trait cons[x[_], xs <: List] extends List {
+        override type head[a] = x[a]
         override type tail = xs
     }
 
     trait nil extends List {
-        override type head = Nothing
+        override type head[a] = Nothing
         override type tail = Nothing
     }
 
-    trait Contains[xs <: List, y]
+    type list1[x1[_]] = cons[x1, nil]
+    type list2[x1[_], x2[_]] = cons[x1, cons[x2, nil]]
+    type list3[x1[_], x2[_], x3[_]] = cons[x1, cons[x2, cons[x3, nil]]]
+    type list4[x1[_], x2[_], x3[_], x4[_]] = cons[x1, cons[x2, cons[x3, cons[x4, nil]]]]
+    type list5[x1[_], x2[_], x3[_], x4[_], x5[_]] = cons[x1, cons[x2, cons[x3, cons[x4, cons[x5, nil]]]]]
+    type list6[x1[_], x2[_], x3[_], x4[_], x5[_], x6[_]] = cons[x1, cons[x2, cons[x3, cons[x4, cons[x5, cons[x6, nil]]]]]]
+    type list7[x1[_], x2[_], x3[_], x4[_], x5[_], x6[_], x7[_]] = cons[x1, cons[x2, cons[x3, cons[x4, cons[x5, cons[x6, cons[x7, nil]]]]]]]
+
+    trait Contains[xs <: List, y[_]]
 
     object Contains {
-        implicit def ofHead[x, xs <: List, y](implicit ev: x =:= y): Contains[cons[x, xs], y] = new Contains[cons[x, xs], y] {}
-        implicit def ofTail[x, xs <: List, y](implicit ev: Contains[xs, y]): Contains[cons[x, xs], y] = new Contains[cons[x, xs], y] {}
+        implicit def ofHead[x[_], xs <: List]: Contains[cons[x, xs], x] = new Contains[cons[x, xs], x] {}
+        implicit def ofTail[x[_], xs <: List, y[_]](implicit ev: Contains[xs, y]): Contains[cons[x, xs], y] = new Contains[cons[x, xs], y] {}
     }
 }
