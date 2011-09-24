@@ -38,5 +38,5 @@ object MonadFix {
         }
     }
 
-    def weak[nt <: Kind.Newtype1](implicit i: MonadFix[nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): MonadFix[nt#oldtype1] = deriving[Kind.dualNewtype1[nt]](i, j.dual)
+    def weak[nt <: Kind.Newtype1](implicit i: MonadFix[nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): MonadFix[nt#oldtype1] = deriving[Kind.coNewtype1[nt]](i, j.coNewtype)
 }

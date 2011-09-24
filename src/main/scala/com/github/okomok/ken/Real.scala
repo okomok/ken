@@ -37,7 +37,7 @@ object Real extends RealInstance {
         override val toRational: toRational = x => i.toRational(j.oldOf(x))
     }
 
-    def weak[nt <: Kind.Newtype0](implicit i: Real[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Real[nt#oldtype0] = deriving[Kind.dualNewtype0[nt]](i, j.dual)
+    def weak[nt <: Kind.Newtype0](implicit i: Real[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Real[nt#oldtype0] = deriving[Kind.coNewtype0[nt]](i, j.coNewtype)
 }
 
 

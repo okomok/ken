@@ -16,7 +16,7 @@ package quickcheck
 import RealWorld._
 
 
-final case class Str(override val get: String) extends Strong[String] {
+final case class Str(override val get: String) extends NewtypeOf[String] {
     override def toString: JString  = List.toJString(get)
 }
 

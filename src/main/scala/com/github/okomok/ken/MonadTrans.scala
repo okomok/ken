@@ -11,7 +11,7 @@ package ken
 /**
  * Lifts an inner monad.
  */
-trait MonadTrans[n[+_], m[+_]] extends Typeclass with Kind.AbstractMonadTrans {
+trait MonadTrans[n[+_], m[+_]] extends Typeclass with Kind.MonadTrans {
     override type innerMonad[+a] = n[a]
     override type apply1[+a] = m[a]
 
@@ -37,5 +37,5 @@ object MonadTrans {
         override def lift[a](n: n[a]): m[a] = j.newOf { i.lift(n) }
     }
 
-    def weak[nt <: Kind.MonadTrans](implicit i: MonadTrans[nt#innerMonad, nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): MonadTrans[nt#innerMonad, nt#oldtype1] = deriving[Kind.quote1[nt#oldtype1], nt](i, j.dual)
+    def weak[nt <: Kind.MonadTrans](implicit i: MonadTrans[nt#innerMonad, nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): MonadTrans[nt#innerMonad, nt#oldtype1] = deriving[Kind.quote1[nt#oldtype1], nt](i, j.coNewtype)
 }

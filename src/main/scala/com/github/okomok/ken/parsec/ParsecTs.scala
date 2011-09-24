@@ -22,13 +22,13 @@ private[parsec] trait _ParsecTs[s, u, n[+_]] extends MonadTs[n]
 {
     // ParsecT
     //
-    final case class ParsecT[+a](override val get: UnParser[s, u, n, a]) extends Strong[UnParser[s, u, n, a]] {
+    final case class ParsecT[+a](override val get: UnParser[s, u, n, a]) extends NewtypeOf[UnParser[s, u, n, a]] {
         def apply[b](v: UnParserParam[s, u, n, a, b]): n[b] = get(v)
 
         final def <#>(msg: String): ParsecT[a] = label(this)(msg)
     }
 
-    object ParsecT extends ParsecT_ with MonadPlus[ParsecT] with Kind.AbstractMonadTrans {
+    object ParsecT extends ParsecT_ with MonadPlus[ParsecT] with Kind.MonadTrans {
         override type oldtype1[+a] = UnParser[s, u, n, a]
         override type innerMonad[+a] = n[a]
 
@@ -42,7 +42,7 @@ private[parsec] trait _ParsecTs[s, u, n[+_]] extends MonadTs[n]
         override def mzero: m[Nothing] = parserZero
         override def mplus[a](p1: m[a])(p2: Lazy[m[a]]): m[a] = parserPlus(p1)(p2)
 
-        implicit def dependent[a](n: Strong[UnParser[s, u, n, a]]): ParsecT[a] = ParsecT { n.get }
+        implicit def dependent[a](n: NewtypeOf[UnParser[s, u, n, a]]): ParsecT[a] = ParsecT { n.get }
     }
 
     // Instances

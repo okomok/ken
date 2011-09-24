@@ -42,5 +42,5 @@ object ArrowPlus {
         override def op_<+>:[b, c](f: a[b, c])(g: Lazy[a[b, c]]): a[b, c] = j.newOf(i.op_<+>:(j.oldOf(f))(j.oldOf(g)))
     }
 
-    def weak[nt <: Kind.Newtype2](implicit i: ArrowPlus[nt#apply2], j: Newtype2[nt#apply2, nt#oldtype2]): ArrowPlus[nt#oldtype2] = deriving[Kind.dualNewtype2[nt]](i, j.dual)
+    def weak[nt <: Kind.Newtype2](implicit i: ArrowPlus[nt#apply2], j: Newtype2[nt#apply2, nt#oldtype2]): ArrowPlus[nt#oldtype2] = deriving[Kind.coNewtype2[nt]](i, j.coNewtype)
 }

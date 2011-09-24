@@ -19,7 +19,7 @@ object Poly {
 
     // A
     //
-    final case class A(override val get: Integer) extends Strong[Integer]
+    final case class A(override val get: Integer) extends NewtypeOf[Integer]
 
     object A extends Newtype0[A, Integer]
         with Arbitary[A] with CoArbitary[A] with Eq.Of[A] with Show.Of[A] with ThisIsInstance
@@ -41,7 +41,7 @@ object Poly {
 
     // B
     //
-    final case class B(override val get: Integer) extends Strong[Integer]
+    final case class B(override val get: Integer) extends NewtypeOf[Integer]
 
     object B extends Newtype0[B, Integer]
         with Arbitary[B] with CoArbitary[B] with Eq.Of[B] with Show.Of[B] with ThisIsInstance
@@ -63,7 +63,7 @@ object Poly {
 
     // C
     //
-    final case class C(override val get: Integer) extends Strong[Integer]
+    final case class C(override val get: Integer) extends NewtypeOf[Integer]
 
     object C extends Newtype0[C, Integer]
         with Arbitary[C] with CoArbitary[C] with Eq.Of[C] with Show.Of[C] with ThisIsInstance
@@ -85,7 +85,7 @@ object Poly {
 
     // OrdA
     //
-    final case class OrdA(override val get: Integer) extends Strong[Integer]
+    final case class OrdA(override val get: Integer) extends NewtypeOf[Integer]
 
     object OrdA extends Newtype0[OrdA, Integer]
         with Arbitary[OrdA] with CoArbitary[OrdA] with OrdProxy[OrdA] with Show.Of[OrdA] with ThisIsInstance
@@ -109,7 +109,7 @@ object Poly {
 
     // OrdB
     //
-    final case class OrdB(override val get: Integer) extends Strong[Integer]
+    final case class OrdB(override val get: Integer) extends NewtypeOf[Integer]
 
     object OrdB extends Newtype0[OrdB, Integer]
         with Arbitary[OrdB] with CoArbitary[OrdB] with OrdProxy[OrdB] with Show.Of[OrdB] with ThisIsInstance
@@ -133,7 +133,7 @@ object Poly {
 
     // OrdC
     //
-    final case class OrdC(override val get: Integer) extends Strong[Integer]
+    final case class OrdC(override val get: Integer) extends NewtypeOf[Integer]
 
     object OrdC extends Newtype0[OrdC, Integer]
         with Arbitary[OrdC] with CoArbitary[OrdC] with OrdProxy[OrdC] with Show.Of[OrdC] with ThisIsInstance

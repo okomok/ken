@@ -79,5 +79,5 @@ object ArrowChoice {
         override def op_|||:[b, c, d](f: a[b, d])(g: a[c, d]): a[Either[b, c], d] = j.newOf(i.op_|||:(j.oldOf(f))(j.oldOf(g)))
     }
 
-    def weak[nt <: Kind.Newtype2](implicit i: ArrowChoice[nt#apply2], j: Newtype2[nt#apply2, nt#oldtype2]): ArrowChoice[nt#oldtype2] = deriving[Kind.dualNewtype2[nt]](i, j.dual)
+    def weak[nt <: Kind.Newtype2](implicit i: ArrowChoice[nt#apply2], j: Newtype2[nt#apply2, nt#oldtype2]): ArrowChoice[nt#oldtype2] = deriving[Kind.coNewtype2[nt]](i, j.coNewtype)
 }

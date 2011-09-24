@@ -70,7 +70,7 @@ object Show extends ShowInstance with ShowShortcut {
         override val shows: shows = a => i.shows(j.oldOf(a))
     }
 
-    def weak[nt <: Kind.Newtype0](implicit i: Show[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Show[nt#oldtype0] = deriving[Kind.dualNewtype0[nt]](i, j.dual)
+    def weak[nt <: Kind.Newtype0](implicit i: Show[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Show[nt#oldtype0] = deriving[Kind.coNewtype0[nt]](i, j.coNewtype)
 
     val showChar: Char => ShowS = List.op_!::
     val showString: String => ShowS = List.op_!++:

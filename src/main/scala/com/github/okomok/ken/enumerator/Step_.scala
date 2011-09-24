@@ -21,7 +21,7 @@ trait Yield_Tag
 trait Error_Tag
 
 trait Continue_[a, n[+_], b] extends Step_[a, n, b] with Continue_Tag {
-    type k = Stream[a] => Strong[n[Step_[a, n, b]]]
+    type k = Stream[a] => NewtypeOf[n[Step_[a, n, b]]]
     def k: k
 }
 

@@ -16,22 +16,22 @@ package ken
 
 private[ken] final class _WriterTs[n[+_]](override val inner: Monad[n]) extends MonadTs[n] {
 
-    final case class _WriterT[w, +a](override val get: n[(a, w)]) extends Strong[n[(a, w)]]
+    final case class _WriterT[w, +a](override val get: n[(a, w)]) extends NewtypeOf[n[(a, w)]]
 
     object _WriterT extends _WriterT_ with Kind.FunctionLike {
-        sealed trait apply[w] extends Kind.AbstractMonadTrans {
+        sealed trait apply[w] extends Kind.MonadTrans {
             override type apply1[+a] = _WriterT[w, a]
             override type oldtype1[+a] = n[(a, w)]
             override type innerMonad[+a] = n[a]
         }
 
-        implicit def dependent[w, a](n: Strong[n[(a, w)]]): _WriterT[w, a] = _WriterT(n.run)
+        implicit def dependent[w, a](n: NewtypeOf[n[(a, w)]]): _WriterT[w, a] = _WriterT(n.run)
 
         def run[w, a](n: _WriterT[w, a]): n[(a, w)] = n.run
 
         def exec[w, a](n: _WriterT[w, a]): n[w] = for { (_, w) <- run(n) } yield w
 
-        def map[w, w_, m[+_], a, b](f: n[(a, w)] => m[(b, w_)])(n: _WriterT[w, a]): Strong[m[(b, w_)]] = Strong { f(run(n)) }
+        def map[w, w_, m[+_], a, b](f: n[(a, w)] => m[(b, w_)])(n: _WriterT[w, a]): NewtypeOf[m[(b, w_)]] = NewtypeOf { f(run(n)) }
     }
 
     private[ken] trait _WriterT_0 { this: _WriterT.type =>

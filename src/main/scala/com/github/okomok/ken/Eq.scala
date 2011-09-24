@@ -54,7 +54,7 @@ object _Eq extends EqInstance with EqShortcut {
         override val op_/== : op_/== = x => y => i.op_/==(j.oldOf(x))(j.oldOf(y))
     }
 
-    def weak[nt <: Kind.Newtype0](implicit i: _Eq[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): _Eq[nt#oldtype0] = deriving[Kind.dualNewtype0[nt]](i, j.dual)
+    def weak[nt <: Kind.Newtype0](implicit i: _Eq[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): _Eq[nt#oldtype0] = deriving[Kind.coNewtype0[nt]](i, j.coNewtype)
 
     trait Of[a] extends _Eq[a] {
         override val op_=== : op_=== = x => y => x == y

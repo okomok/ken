@@ -16,21 +16,21 @@ package ken
 
 private[ken] final class _ErrorTs[n[+_]](override val inner: Monad[n]) extends MonadTs[n] {
 
-    final case class _ErrorT[e, +a](override val get: n[Either[e, a]]) extends Strong[n[Either[e, a]]]
+    final case class _ErrorT[e, +a](override val get: n[Either[e, a]]) extends NewtypeOf[n[Either[e, a]]]
 
     object _ErrorT extends _ErrorT_ with Kind.FunctionLike {
-        sealed trait apply[e] extends Kind.AbstractMonadTransControl {
+        sealed trait apply[e] extends Kind.MonadTransControl {
             override type apply1[+a] = _ErrorT[e, a]
             override type oldtype1[+a] = n[Either[e, a]]
             override type innerMonad[+a] = n[a]
             override type baseResult[+a] = Either[e, a]
         }
 
-        implicit def dependent[e, a](n: Strong[n[Either[e, a]]]): _ErrorT[e, a] = _ErrorT { n.run }
+        implicit def dependent[e, a](n: NewtypeOf[n[Either[e, a]]]): _ErrorT[e, a] = _ErrorT { n.run }
 
         def run[e, a](n: _ErrorT[e, a]): n[Either[e, a]] = n.run
 
-        def map[e, e_, m[+_], a, b](f: n[Either[e, a]] => m[Either[e_, b]])(n: _ErrorT[e, a]): Strong[m[Either[e_, b]]] = Strong { f(run(n)) }
+        def map[e, e_, m[+_], a, b](f: n[Either[e, a]] => m[Either[e_, b]])(n: _ErrorT[e, a]): NewtypeOf[m[Either[e_, b]]] = NewtypeOf { f(run(n)) }
     }
 
     private[ken] trait _ErrorT_0 { this: _ErrorT.type =>

@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-trait Newtype1[nt[+_], ot[+_]] extends Typeclass with Kind.AbstractNewtype1 { outer =>
+trait Newtype1[nt[+_], ot[+_]] extends Typeclass with Kind.Newtype1 { outer =>
     override type apply1[+a] = nt[a]
     override type oldtype1[+a] = ot[a]
 
@@ -23,7 +23,7 @@ trait Newtype1[nt[+_], ot[+_]] extends Typeclass with Kind.AbstractNewtype1 { ou
     //
     final def run[a](nt: nt[a]): ot[a] = oldOf(nt)
 
-    def dual: Newtype1[ot, nt] = new Newtype1[ot, nt] {
+    def coNewtype: Newtype1[ot, nt] = new Newtype1[ot, nt] {
         override def oldOf[a](ot: Lazy[ot[a]]): nt[a] = outer.newOf(ot)
         override def newOf[a](nt: Lazy[nt[a]]): ot[a] = outer.oldOf(nt)
     }
@@ -36,7 +36,7 @@ trait Newtype1Proxy[nt[+_], ot[+_]] extends Newtype1[nt, ot] {
     override def newOf[a](ot: Lazy[ot[a]]): nt[a] = selfNewtype1.newOf(ot)
     override def oldOf[a](nt: Lazy[nt[a]]): ot[a] = selfNewtype1.oldOf(nt)
 
-    override def dual: Newtype1[ot, nt] = selfNewtype1.dual
+    override def coNewtype: Newtype1[ot, nt] = selfNewtype1.coNewtype
 }
 
 

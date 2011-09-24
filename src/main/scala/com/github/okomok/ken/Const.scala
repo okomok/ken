@@ -14,11 +14,11 @@ package com.github.okomok
 package ken
 
 
-final case class Const[a, +b](override val get: a) extends Strong[a]
+final case class Const[a, +b](override val get: a) extends NewtypeOf[a]
 
 
 object Const extends Kind.FunctionLike {
-    sealed trait apply[z] extends Kind.AbstractNewtype1 {
+    sealed trait apply[z] extends Kind.Newtype1 {
         override type apply1[+a] = Const[z, a]
         override type oldtype1[+a] = z
     }

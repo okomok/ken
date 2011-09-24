@@ -43,7 +43,7 @@ object Bounded extends BoundedInstance with BoundedShortcut with BoundedDetail {
         override val maxBound: maxBound = j.newOf(i.maxBound)
     }
 
-    def weak[nt <: Kind.Newtype0](implicit i: Bounded[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Bounded[nt#oldtype0] = deriving[Kind.dualNewtype0[nt]](i, j.dual)
+    def weak[nt <: Kind.Newtype0](implicit i: Bounded[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Bounded[nt#oldtype0] = deriving[Kind.coNewtype0[nt]](i, j.coNewtype)
 }
 
 

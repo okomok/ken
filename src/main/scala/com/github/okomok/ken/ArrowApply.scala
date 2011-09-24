@@ -62,5 +62,5 @@ object ArrowApply {
         override def leftApp[b, c, d](f: a[b, c], * : Type[d] = null): a[Either[b, d], Either[c, d]] = j.newOf(Lazy(i.leftApp(j.oldOf(Lazy(f)))))
     }
 
-    def weak[nt <: Kind.Newtype2](implicit i: ArrowApply[nt#apply2], j: Newtype2[nt#apply2, nt#oldtype2]): ArrowApply[nt#oldtype2] = deriving[Kind.dualNewtype2[nt]](i, j.dual)
+    def weak[nt <: Kind.Newtype2](implicit i: ArrowApply[nt#apply2], j: Newtype2[nt#apply2, nt#oldtype2]): ArrowApply[nt#oldtype2] = deriving[Kind.coNewtype2[nt]](i, j.coNewtype)
 }

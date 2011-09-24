@@ -49,5 +49,5 @@ object MonadIO {
         override def ioError(e: IOError): m[Nothing] = j.newOf { i.ioError(e) }
     }
 
-    def weak[nt <: Kind.Newtype1](implicit i: MonadIO[nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): MonadIO[nt#oldtype1] = deriving[Kind.dualNewtype1[nt]](i, j.dual)
+    def weak[nt <: Kind.Newtype1](implicit i: MonadIO[nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): MonadIO[nt#oldtype1] = deriving[Kind.coNewtype1[nt]](i, j.coNewtype)
 }

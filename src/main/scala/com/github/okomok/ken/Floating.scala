@@ -146,7 +146,7 @@ object Floating {
         override val atanh: atanh = x => j.newOf(i.atanh(j.oldOf(x)))
     }
 
-    def weak[nt <: Kind.Newtype0](implicit i: Floating[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Floating[nt#oldtype0] = deriving[Kind.dualNewtype0[nt]](i, j.dual)
+    def weak[nt <: Kind.Newtype0](implicit i: Floating[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Floating[nt#oldtype0] = deriving[Kind.coNewtype0[nt]](i, j.coNewtype)
 }
 
 

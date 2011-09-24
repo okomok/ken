@@ -35,5 +35,5 @@ object ArrowZero {
         override def zeroArrow[b, c]: a[b, c] = j.newOf(i.zeroArrow[b, c])
     }
 
-    def weak[nt <: Kind.Newtype2](implicit i: ArrowZero[nt#apply2], j: Newtype2[nt#apply2, nt#oldtype2]): ArrowZero[nt#oldtype2] = deriving[Kind.dualNewtype2[nt]](i, j.dual)
+    def weak[nt <: Kind.Newtype2](implicit i: ArrowZero[nt#apply2], j: Newtype2[nt#apply2, nt#oldtype2]): ArrowZero[nt#oldtype2] = deriving[Kind.coNewtype2[nt]](i, j.coNewtype)
 }

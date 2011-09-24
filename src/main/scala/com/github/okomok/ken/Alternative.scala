@@ -75,5 +75,5 @@ object Alternative {
         override def optional[a](x: f[a]): f[Maybe[a]] = j.newOf(i.optional(j.oldOf(x)))
     }
 
-    def weak[nt <: Kind.Newtype1](implicit i: Alternative[nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): Alternative[nt#oldtype1] = deriving[Kind.dualNewtype1[nt]](i, j.dual)
+    def weak[nt <: Kind.Newtype1](implicit i: Alternative[nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): Alternative[nt#oldtype1] = deriving[Kind.coNewtype1[nt]](i, j.coNewtype)
 }

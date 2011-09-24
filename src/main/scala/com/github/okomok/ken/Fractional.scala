@@ -62,7 +62,7 @@ object Fractional extends FractionalInstance with FractionalShortcut {
         override def realToFrac[z](x: z)(implicit zr: Real[z]): a = j.newOf(i.realToFrac(x)(zr))
     }
 
-    def weak[nt <: Kind.Newtype0](implicit i: Fractional[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Fractional[nt#oldtype0] = deriving[Kind.dualNewtype0[nt]](i, j.dual)
+    def weak[nt <: Kind.Newtype0](implicit i: Fractional[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Fractional[nt#oldtype0] = deriving[Kind.coNewtype0[nt]](i, j.coNewtype)
 }
 
 

@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-trait Newtype2[nt[-_, +_], ot[-_, +_]] extends Typeclass with Kind.AbstractNewtype2 { outer =>
+trait Newtype2[nt[-_, +_], ot[-_, +_]] extends Typeclass with Kind.Newtype2 { outer =>
     override type apply2[-a, +b] = nt[a, b]
     override type oldtype2[-a, +b] = ot[a, b]
 
@@ -23,7 +23,7 @@ trait Newtype2[nt[-_, +_], ot[-_, +_]] extends Typeclass with Kind.AbstractNewty
     //
     final def run[a, b](nt: nt[a, b]): ot[a, b] = oldOf(nt)
 
-    def dual: Newtype2[ot, nt] = new Newtype2[ot, nt] {
+    def coNewtype: Newtype2[ot, nt] = new Newtype2[ot, nt] {
         override def oldOf[a, b](ot: Lazy[ot[a, b]]): nt[a, b] = outer.newOf(ot)
         override def newOf[a, b](nt: Lazy[nt[a, b]]): ot[a, b] = outer.oldOf(nt)
     }
@@ -36,7 +36,7 @@ trait Newtype2Proxy[nt[-_, +_], ot[-_, +_]] extends Newtype2[nt, ot] {
     override def newOf[a, b](ot: Lazy[ot[a, b]]): nt[a, b] = selfNewtype2.newOf(ot)
     override def oldOf[a, b](nt: Lazy[nt[a, b]]): ot[a, b] = selfNewtype2.oldOf(nt)
 
-    override def dual: Newtype2[ot, nt] = selfNewtype2.dual
+    override def coNewtype: Newtype2[ot, nt] = selfNewtype2.coNewtype
 }
 
 

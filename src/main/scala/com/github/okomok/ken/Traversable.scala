@@ -98,10 +98,10 @@ object Traversable {
 
 // StateL
 //
-private[ken] final case class StateL[s, +a](override val get: s => (s, a)) extends Strong[s => (s, a)]
+private[ken] final case class StateL[s, +a](override val get: s => (s, a)) extends NewtypeOf[s => (s, a)]
 
 private[ken] object StateL extends Kind.FunctionLike {
-    sealed trait apply[s] extends Kind.AbstractNewtype1 {
+    sealed trait apply[s] extends Kind.Newtype1 {
         override type apply1[+a] = StateL[s, a]
         override type oldtype1[+a] = s => (a, s)
     }
@@ -126,10 +126,10 @@ private[ken] object StateL extends Kind.FunctionLike {
 
 // StateR
 //
-private[ken] final case class StateR[s, +a](override val get: Lazy[s] => (s, a)) extends Strong[Lazy[s] => (s, a)]
+private[ken] final case class StateR[s, +a](override val get: Lazy[s] => (s, a)) extends NewtypeOf[Lazy[s] => (s, a)]
 
 private[ken] object StateR extends Kind.FunctionLike {
-    sealed trait apply[s] extends Kind.AbstractNewtype1 {
+    sealed trait apply[s] extends Kind.Newtype1 {
         override type apply1[+a] = StateR[s, a]
         override type oldtype1[+a] = Lazy[s] => (a, s)
     }

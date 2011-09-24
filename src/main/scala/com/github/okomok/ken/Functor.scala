@@ -52,7 +52,7 @@ object Functor extends FunctorInstance {
         override def fmap[a, b](f: a => b)(m: f[a]): f[b] = j.newOf { i.fmap(f)(j.oldOf(m)) }
     }
 
-    def weak[nt <: Kind.Newtype1](implicit i: Functor[nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): Functor[nt#oldtype1] = deriving[Kind.dualNewtype1[nt]](i, j.dual)
+    def weak[nt <: Kind.Newtype1](implicit i: Functor[nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): Functor[nt#oldtype1] = deriving[Kind.coNewtype1[nt]](i, j.coNewtype)
 }
 
 

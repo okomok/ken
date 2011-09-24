@@ -115,5 +115,5 @@ object Arrow {
         override def returnA[b]: a[b, b] = j.newOf(i.returnA[b])
     }
 
-    def weak[nt <: Kind.Newtype2](implicit i: Arrow[nt#apply2], j: Newtype2[nt#apply2, nt#oldtype2]): Arrow[nt#oldtype2] = deriving[Kind.dualNewtype2[nt]](i, j.dual)
+    def weak[nt <: Kind.Newtype2](implicit i: Arrow[nt#apply2], j: Newtype2[nt#apply2, nt#oldtype2]): Arrow[nt#oldtype2] = deriving[Kind.coNewtype2[nt]](i, j.coNewtype)
 }

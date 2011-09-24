@@ -40,28 +40,28 @@ private[enumerator] trait _Types[n[+_]] { this: _Enumerators[n] =>
 
     // Iteratee (reaction)
     //
-    final case class Iteratee[-a, +b](override val get: n[Step[a, b]]) extends Strong[n[Step[a, b]]]
+    final case class Iteratee[-a, +b](override val get: n[Step[a, b]]) extends NewtypeOf[n[Step[a, b]]]
 
     object Iteratee extends Iteratee_ with Kind.FunctionLike {
-        sealed trait apply[z] extends Kind.AbstractMonadTrans {
+        sealed trait apply[z] extends Kind.MonadTrans {
             override type apply1[+a] = Iteratee[z, a]
             override type oldtype1[+a] = n[Step[z, a]]
             override type innerMonad[+a] = n[a]
         }
 
-        implicit def dependent[a, b](n: Strong[n[Step_[a, n, b]]]): Iteratee[a, b] = Iteratee {
+        implicit def dependent[a, b](n: NewtypeOf[n[Step_[a, n, b]]]): Iteratee[a, b] = Iteratee {
             for {
                 s <- n.run
             } yield Step.dependent(s)
         }
 
         // unneeded if a bug is fixed.
-        implicit def dependentEnumerator[a, b](e: Step_[a, n, b] => Strong[n[Step_[a, n, b]]]): Step[a, b] => Iteratee[a, b] = e
-        implicit def dependentEnumeratee[ao, ai, b](e: Step_[ai, n, b] => Strong[n[Step_[ao, n, Step[ai, b]]]]): Step[ai, b] => Iteratee[ao, Step[ai, b]] = e
+        implicit def dependentEnumerator[a, b](e: Step_[a, n, b] => NewtypeOf[n[Step_[a, n, b]]]): Step[a, b] => Iteratee[a, b] = e
+        implicit def dependentEnumeratee[ao, ai, b](e: Step_[ai, n, b] => NewtypeOf[n[Step_[ao, n, Step[ai, b]]]]): Step[ai, b] => Iteratee[ao, Step[ai, b]] = e
 
         def run[a, b](n: Iteratee[a, b]): n[Step[a, b]] = n.run
 
-        def map[m[+_], a, a_, b, b_](f: n[Step[a, b]] => m[Step[a_, b_]])(n: Iteratee[a, b]): Strong[m[Step[a_, b_]]] = Strong { f(run(n)) }
+        def map[m[+_], a, a_, b, b_](f: n[Step[a, b]] => m[Step[a_, b_]])(n: Iteratee[a, b]): NewtypeOf[m[Step[a_, b_]]] = NewtypeOf { f(run(n)) }
     }
 
     def runIteratee[a, b](n: Iteratee[a, b]): n[Step[a, b]] = n.run

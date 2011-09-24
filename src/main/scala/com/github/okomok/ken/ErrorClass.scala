@@ -37,7 +37,7 @@ object ErrorClass extends ErrorClassInstance with ErrorClassShortcut {
         override val strMsg: strMsg = msg => j.newOf(i.strMsg(msg))
     }
 
-    def weak[nt <: Kind.Newtype0](implicit i: ErrorClass[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): ErrorClass[nt#oldtype0] = deriving[Kind.dualNewtype0[nt]](i, j.dual)
+    def weak[nt <: Kind.Newtype0](implicit i: ErrorClass[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): ErrorClass[nt#oldtype0] = deriving[Kind.coNewtype0[nt]](i, j.coNewtype)
 }
 
 

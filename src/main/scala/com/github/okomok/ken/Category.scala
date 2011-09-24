@@ -56,7 +56,7 @@ object Category extends CategoryInstance {
         override def op_>>>:[a, b, c](f: cat[a, b])(g: cat[b, c]): cat[a, c] = j.newOf(i.op_>>>:(j.oldOf(f))(j.oldOf(g)))
     }
 
-    def weak[nt <: Kind.Newtype2](implicit i: Category[nt#apply2], j: Newtype2[nt#apply2, nt#oldtype2]): Category[nt#oldtype2] = deriving[Kind.dualNewtype2[nt]](i, j.dual)
+    def weak[nt <: Kind.Newtype2](implicit i: Category[nt#apply2], j: Newtype2[nt#apply2, nt#oldtype2]): Category[nt#oldtype2] = deriving[Kind.coNewtype2[nt]](i, j.coNewtype)
 }
 
 

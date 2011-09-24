@@ -103,7 +103,7 @@ object Ord extends OrdInstance with OrdShortcut {
         override val min: min = x => y => j.newOf(i.min(j.oldOf(x))(j.oldOf(y)))
     }
 
-    def weak[nt <: Kind.Newtype0](implicit i: Ord[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Ord[nt#oldtype0] = deriving[Kind.dualNewtype0[nt]](i, j.dual)
+    def weak[nt <: Kind.Newtype0](implicit i: Ord[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Ord[nt#oldtype0] = deriving[Kind.coNewtype0[nt]](i, j.coNewtype)
 }
 
 

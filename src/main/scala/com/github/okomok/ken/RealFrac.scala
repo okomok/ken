@@ -93,7 +93,7 @@ object RealFrac extends RealFracInstance {
         override def floor[b](x: a)(implicit bi: Integral[b]): b = i.floor(j.oldOf(x))(bi)
     }
 
-    def weak[nt <: Kind.Newtype0](implicit i: RealFrac[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): RealFrac[nt#oldtype0] = deriving[Kind.dualNewtype0[nt]](i, j.dual)
+    def weak[nt <: Kind.Newtype0](implicit i: RealFrac[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): RealFrac[nt#oldtype0] = deriving[Kind.coNewtype0[nt]](i, j.coNewtype)
 }
 
 

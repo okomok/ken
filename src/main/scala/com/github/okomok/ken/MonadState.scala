@@ -52,5 +52,5 @@ object MonadState {
         override def put(s: s): m[Unit] = j.newOf { i.put(s) }
     }
 
-    def weak[s, nt <: Kind.Newtype1](implicit i: MonadState[s, nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): MonadState[s, nt#oldtype1] = deriving[s, Kind.dualNewtype1[nt]](i, j.dual)
+    def weak[s, nt <: Kind.Newtype1](implicit i: MonadState[s, nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): MonadState[s, nt#oldtype1] = deriving[s, Kind.coNewtype1[nt]](i, j.coNewtype)
 }

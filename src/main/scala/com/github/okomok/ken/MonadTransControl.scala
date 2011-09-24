@@ -12,7 +12,7 @@ package ken
 // m: transformer (MaybeT etc)
 // u: base (Maybe etc)
 //
-trait MonadTransControl[n[+_], m[+_], u[+_]] extends MonadTrans[n, m] with Kind.AbstractMonadTransControl {
+trait MonadTransControl[n[+_], m[+_], u[+_]] extends MonadTrans[n, m] with Kind.MonadTransControl {
     override type baseResult[+a] = u[a]
     type Run = MonadTransControl.Run[n, m, u]
 
@@ -57,7 +57,7 @@ object MonadTransControl {
         }
     }
 
-    def weak[nt <: Kind.MonadTransControl](implicit i: MonadTransControl[nt#innerMonad, nt#apply, nt#baseResult], j: Newtype1[nt#apply, nt#oldtype1]): MonadTransControl[nt#innerMonad, nt#oldtype1, nt#baseResult] = deriving[Kind.quote1[nt#oldtype1], nt](i, j.dual)
+    def weak[nt <: Kind.MonadTransControl](implicit i: MonadTransControl[nt#innerMonad, nt#apply, nt#baseResult], j: Newtype1[nt#apply, nt#oldtype1]): MonadTransControl[nt#innerMonad, nt#oldtype1, nt#baseResult] = deriving[Kind.quote1[nt#oldtype1], nt](i, j.coNewtype)
 
     // Run types
     //

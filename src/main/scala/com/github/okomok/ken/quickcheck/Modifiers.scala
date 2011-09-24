@@ -17,7 +17,7 @@ object Modifiers {
 
     // Blind
     //
-    final case class Blind[a](override val get: a) extends Strong[a]
+    final case class Blind[a](override val get: a) extends NewtypeOf[a]
 
     object Blind {
         // Instances

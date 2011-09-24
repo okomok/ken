@@ -19,7 +19,7 @@ final case class Error(err: ParseError) extends Reply[Nothing, Nothing, Nothing]
 
 
 object Reply extends Kind.FunctionLike {
-    sealed trait apply[s, u] extends Kind.AbstractFunction1 {
+    sealed trait apply[s, u] extends Kind.Function1 {
         override type apply1[+a] = Reply[s, u, a]
     }
 

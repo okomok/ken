@@ -83,7 +83,7 @@ object Enum extends EnumInstance with EnumShortcut with EnumDetail {
         override val enumFromThenTo: enumFromThenTo = x1 => x2 => y => for { ot <- i.enumFromThenTo(j.oldOf(x1))(j.oldOf(x2))(j.oldOf(y)) } yield j.newOf(ot)
     }
 
-    def weak[nt <: Kind.Newtype0](implicit i: Enum[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Enum[nt#oldtype0] = deriving[Kind.dualNewtype0[nt]](i, j.dual)
+    def weak[nt <: Kind.Newtype0](implicit i: Enum[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Enum[nt#oldtype0] = deriving[Kind.coNewtype0[nt]](i, j.coNewtype)
 }
 
 

@@ -149,7 +149,7 @@ object RealFloat extends RealFloatInstance with RealFloatDetail {
 
     }
 
-    def weak[nt <: Kind.Newtype0](implicit i: RealFloat[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): RealFloat[nt#oldtype0] = deriving[Kind.dualNewtype0[nt]](i, j.dual)
+    def weak[nt <: Kind.Newtype0](implicit i: RealFloat[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): RealFloat[nt#oldtype0] = deriving[Kind.coNewtype0[nt]](i, j.coNewtype)
 }
 
 

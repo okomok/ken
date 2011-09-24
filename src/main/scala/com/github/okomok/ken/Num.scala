@@ -109,7 +109,7 @@ object Num extends NumInstance with NumShortcut {
         override def fromIntegral[z](x: z)(implicit zi: Integral[z]): a = j.newOf(i.fromIntegral(x)(zi))
     }
 
-    def weak[nt <: Kind.Newtype0](implicit i: Num[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Num[nt#oldtype0] = deriving[Kind.dualNewtype0[nt]](i, j.dual)
+    def weak[nt <: Kind.Newtype0](implicit i: Num[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Num[nt#oldtype0] = deriving[Kind.coNewtype0[nt]](i, j.coNewtype)
 }
 
 

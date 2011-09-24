@@ -58,5 +58,5 @@ object MonadWriter {
         override def pass[a](x: m[(a, w => w)]): m[a] = j.newOf { i.pass(j.oldOf(x)) }
     }
 
-    def weak[w, nt <: Kind.Newtype1](implicit i: MonadWriter[w, nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): MonadWriter[w, nt#oldtype1] = deriving[w, Kind.dualNewtype1[nt]](i, j.dual)
+    def weak[w, nt <: Kind.Newtype1](implicit i: MonadWriter[w, nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): MonadWriter[w, nt#oldtype1] = deriving[w, Kind.coNewtype1[nt]](i, j.coNewtype)
 }

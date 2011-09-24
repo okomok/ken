@@ -16,4 +16,4 @@ package quickcheck
 import RealWorld.IORef
 
 
-final case class Terminal(override val get: IORef[IO[Unit]]) extends Strong[IORef[IO[Unit]]]
+final case class Terminal(override val get: IORef[IO[Unit]]) extends NewtypeOf[IORef[IO[Unit]]]

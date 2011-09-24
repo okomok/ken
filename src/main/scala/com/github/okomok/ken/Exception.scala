@@ -116,7 +116,7 @@ object Exception extends ExceptionInstance with ExceptionShortcut {
         override def tryJust[a, b](p: e => Maybe[b])(a: IO[a]): IO[Either[b, a]] = i.tryJust(e => p(j.newOf(e)))(a)
     }
 
-    def weak[nt <: Kind.Newtype0](implicit i: Exception[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0], k: Typeable[nt#oldtype0]): Exception[nt#oldtype0] = deriving[Kind.dualNewtype0[nt]](i, j.dual, k)
+    def weak[nt <: Kind.Newtype0](implicit i: Exception[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0], k: Typeable[nt#oldtype0]): Exception[nt#oldtype0] = deriving[Kind.coNewtype0[nt]](i, j.coNewtype, k)
 
     @Annotation.ceremonial("no special effects")
     def evaluate[a](x: a): IO[a] = IO.`return`(x)

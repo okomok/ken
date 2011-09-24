@@ -52,5 +52,5 @@ object MonadReader {
         override def asks[a](f: r => a): m[a] = j.newOf { i.asks(f) }
     }
 
-    def weak[r, nt <: Kind.Newtype1](implicit i: MonadReader[r, nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): MonadReader[r, nt#oldtype1] = deriving[r, Kind.dualNewtype1[nt]](i, j.dual)
+    def weak[r, nt <: Kind.Newtype1](implicit i: MonadReader[r, nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): MonadReader[r, nt#oldtype1] = deriving[r, Kind.coNewtype1[nt]](i, j.coNewtype)
 }

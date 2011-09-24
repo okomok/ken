@@ -35,5 +35,5 @@ object ArrowLoop {
         override def loop[b, c, d](f: a[(b, Lazy[d]), (Lazy[c], Lazy[d])]): a[b, c] = j.newOf(i.loop(j.oldOf(f)))
     }
 
-    def weak[nt <: Kind.Newtype2](implicit i: ArrowLoop[nt#apply2], j: Newtype2[nt#apply2, nt#oldtype2]): ArrowLoop[nt#oldtype2] = deriving[Kind.dualNewtype2[nt]](i, j.dual)
+    def weak[nt <: Kind.Newtype2](implicit i: ArrowLoop[nt#apply2], j: Newtype2[nt#apply2, nt#oldtype2]): ArrowLoop[nt#oldtype2] = deriving[Kind.coNewtype2[nt]](i, j.coNewtype)
 }

@@ -12,9 +12,9 @@ import scala.annotation.unchecked.uncheckedVariance
 
 
 // Up is workaround: https://issues.scala-lang.org/browse/SI-4225
-trait Strong[+a] extends Up[Strong[a]] with Kind.AbstractNewtype0 {
+trait NewtypeOf[+a] extends Up[NewtypeOf[a]] with Kind.Newtype0 {
     override type apply0 = this.type
-    override type oldtype0 = a @uncheckedVariance
+    override type oldtype0 = a @uncheckedVariance // Why needed?
 
     def get: a
 
@@ -28,15 +28,15 @@ trait Strong[+a] extends Up[Strong[a]] with Kind.AbstractNewtype0 {
 }
 
 
-trait StrongProxy[+a] extends Strong[a] {
-    def selfStrong: Strong[a]
+trait StrongProxy[+a] extends NewtypeOf[a] {
+    def selfStrong: NewtypeOf[a]
 
     override def get: a = selfStrong.run
 }
 
 
-object Strong {
-    def apply[a](a: a): Strong[a] = new Strong[a] {
+object NewtypeOf {
+    def apply[a](a: a): NewtypeOf[a] = new NewtypeOf[a] {
         override def get: a = a
     }
 }

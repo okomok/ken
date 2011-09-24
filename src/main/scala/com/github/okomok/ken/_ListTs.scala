@@ -16,17 +16,17 @@ package ken
 
 private[ken] final class _ListTs[n[+_]](override val inner: Monad[n]) extends MonadTs[n] {
 
-    final case class _ListT[+a](override val get: n[List[a]]) extends Strong[n[List[a]]]
+    final case class _ListT[+a](override val get: n[List[a]]) extends NewtypeOf[n[List[a]]]
 
-    object _ListT extends _ListT_ with MonadPlus[_ListT] with Kind.AbstractMonadTrans {
+    object _ListT extends _ListT_ with MonadPlus[_ListT] with Kind.MonadTrans {
         override type oldtype1[+a] = n[List[a]]
         override type innerMonad[+a] = n[a]
 
-        implicit def dependent[a](n: Strong[n[List[a]]]): _ListT[a] = _ListT { n.run }
+        implicit def dependent[a](n: NewtypeOf[n[List[a]]]): _ListT[a] = _ListT { n.run }
 
         def run[a](n: _ListT[a]): n[List[a]] = n.run
 
-        def map[m[+_], a, b](f: n[List[a]] => m[List[b]])(n: _ListT[a]): Strong[m[List[b]]] = Strong { f(run(n)) }
+        def map[m[+_], a, b](f: n[List[a]] => m[List[b]])(n: _ListT[a]): NewtypeOf[m[List[b]]] = NewtypeOf { f(run(n)) }
 
         // Overrides
         //

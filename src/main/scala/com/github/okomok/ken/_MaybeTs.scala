@@ -13,17 +13,17 @@ package ken
 
 private[ken] final class _MaybeTs[n[+_]](override val inner: Monad[n]) extends MonadTs[n] {
 
-    final case class _MaybeT[+a](override val get: n[Maybe[a]]) extends Strong[n[Maybe[a]]]
+    final case class _MaybeT[+a](override val get: n[Maybe[a]]) extends NewtypeOf[n[Maybe[a]]]
 
-    object _MaybeT extends _MaybeT_ with MonadPlus[_MaybeT] with Kind.AbstractMonadTrans {
+    object _MaybeT extends _MaybeT_ with MonadPlus[_MaybeT] with Kind.MonadTrans {
         override type oldtype1[+a] = n[Maybe[a]]
         override type innerMonad[+a] = n[a]
 
-        implicit def dependent[a](n: Strong[n[Maybe[a]]]): _MaybeT[a] = _MaybeT { n.run }
+        implicit def dependent[a](n: NewtypeOf[n[Maybe[a]]]): _MaybeT[a] = _MaybeT { n.run }
 
         def run[a](n: _MaybeT[a]): n[Maybe[a]] = n.run
 
-        def map[m[+_], a, b](f: n[Maybe[a]] => m[Maybe[b]])(n: _MaybeT[a]): Strong[m[Maybe[b]]] = Strong { f(run(n)) }
+        def map[m[+_], a, b](f: n[Maybe[a]] => m[Maybe[b]])(n: _MaybeT[a]): NewtypeOf[m[Maybe[b]]] = NewtypeOf { f(run(n)) }
 
         // Overrides
         //

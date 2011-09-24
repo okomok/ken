@@ -12,7 +12,7 @@ package ken
 trait Typeclass
 
 
-trait Typeclass0[a] extends Typeclass with Kind.AbstractFunction0 {
+trait Typeclass0[a] extends Typeclass with Kind.Function0 {
     override type apply0 = a
 
     // Newtypes
@@ -21,7 +21,7 @@ trait Typeclass0[a] extends Typeclass with Kind.AbstractFunction0 {
 }
 
 
-trait Typeclass1[f[+_]] extends Typeclass with Kind.AbstractFunction1 {
+trait Typeclass1[f[+_]] extends Typeclass with Kind.Function1 {
     override type apply1[+a] = f[a]
 
     /**
@@ -41,7 +41,7 @@ trait Typeclass1[f[+_]] extends Typeclass with Kind.AbstractFunction1 {
 }
 
 
-trait Typeclass2[f[-_, +_]] extends Typeclass with Kind.AbstractFunction2 {
+trait Typeclass2[f[-_, +_]] extends Typeclass with Kind.Function2 {
     override type apply2[-a, +b] = f[a, b]
 
     /**
