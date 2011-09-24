@@ -101,4 +101,28 @@ object Kind {
             override type apply1[+b] = f[a, b]
         }
     }
+
+    // List
+    //
+    sealed trait List {
+        type head
+        type tail <: List
+    }
+
+    trait cons[x, xs <: List] extends List {
+        override type head = x
+        override type tail = xs
+    }
+
+    trait nil extends List {
+        override type head = Nothing
+        override type tail = Nothing
+    }
+
+    trait Contains[xs <: List, y]
+
+    object Contains {
+        implicit def ofHead[x, xs <: List, y](implicit ev: x =:= y): Contains[cons[x, xs], y] = new Contains[cons[x, xs], y] {}
+        implicit def ofTail[x, xs <: List, y](implicit ev: Contains[xs, y]): Contains[cons[x, xs], y] = new Contains[cons[x, xs], y] {}
+    }
 }

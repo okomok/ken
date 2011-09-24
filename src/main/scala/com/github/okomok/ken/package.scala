@@ -112,6 +112,8 @@ package object ken {
 
     type TypeRep = ClassManifest[_]
 
+    type :^:[x, xs <: Kind.List] = Kind.cons[x, xs]
+
     // Unsafe.Coerce
     //
     def unsafeCoerce[a, b](a: a, * : Type[b] = null): b = a.asInstanceOf[b]
