@@ -123,7 +123,7 @@ trait RealFloatProxy[a] extends RealFloat[a] with RealFracProxy[a] with Floating
 object RealFloat extends RealFloatInstance with RealFloatDetail {
     def apply[a <: Kind.Function0](implicit i: RealFloat[a#apply0]): RealFloat[a#apply0] = i
 
-    def deriving[nt <: Kind.Newtype0](implicit i: RealFloat[nt#oldtype0], j: Newtype0[nt#apply0, nt#oldtype0]): RealFloat[nt#apply0] = new RealFloat[nt#apply0] with RealFracProxy[nt#apply0] with FloatingProxy[nt#apply0] {
+    def deriving[nt <: Kind.Newtype0](implicit i: RealFloat[nt#oldtype0], j: Newtype0[nt#apply0, nt#oldtype0, _]): RealFloat[nt#apply0] = new RealFloat[nt#apply0] with RealFracProxy[nt#apply0] with FloatingProxy[nt#apply0] {
         private type a = nt#apply0
         override val selfRealFrac = RealFrac.deriving[nt]
         override val selfFloating = Floating.deriving[nt]
@@ -149,7 +149,7 @@ object RealFloat extends RealFloatInstance with RealFloatDetail {
 
     }
 
-    def weak[nt <: Kind.Newtype0](implicit i: RealFloat[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): RealFloat[nt#oldtype0] = deriving[Kind.coNewtype0[nt]](i, j.coNewtype)
+    def weak[nt <: Kind.Newtype0](implicit i: RealFloat[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0, _]): RealFloat[nt#oldtype0] = deriving[Kind.coNewtype0[nt]](i, j.coNewtype)
 }
 
 

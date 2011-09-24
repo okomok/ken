@@ -34,6 +34,7 @@ object Kind {
     //
     trait Newtype0 extends Function0 {
         type oldtype0
+        type deriving0 <: List
     }
 
     trait Newtype1 extends Function1 {
@@ -49,6 +50,7 @@ object Kind {
     trait coNewtype0[nt <: Newtype0] extends Newtype0 {
         override type apply0 = nt#oldtype0
         override type oldtype0 = nt#apply0
+        override type deriving0 = nt#deriving0
     }
 
     trait coNewtype1[nt <: Newtype1] extends Newtype1 {

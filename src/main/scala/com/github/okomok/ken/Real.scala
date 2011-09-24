@@ -30,14 +30,14 @@ trait RealProxy[a] extends Real[a] with NumProxy[a] with OrdProxy[a] {
 object Real extends RealInstance {
     def apply[a <: Kind.Function0](implicit i: Real[a#apply0]): Real[a#apply0] = i
 
-    def deriving[nt <: Kind.Newtype0](implicit i: Real[nt#oldtype0], j: Newtype0[nt#apply0, nt#oldtype0]): Real[nt#apply0] = new Real[nt#apply0] with NumProxy[nt#apply0] with OrdProxy[nt#apply0] {
+    def deriving[nt <: Kind.Newtype0](implicit i: Real[nt#oldtype0], j: Newtype0[nt#apply0, nt#oldtype0, _]): Real[nt#apply0] = new Real[nt#apply0] with NumProxy[nt#apply0] with OrdProxy[nt#apply0] {
         override val selfNum = Num.deriving[nt]
         override val selfOrd = Ord.deriving[nt]
 
         override val toRational: toRational = x => i.toRational(j.oldOf(x))
     }
 
-    def weak[nt <: Kind.Newtype0](implicit i: Real[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Real[nt#oldtype0] = deriving[Kind.coNewtype0[nt]](i, j.coNewtype)
+    def weak[nt <: Kind.Newtype0](implicit i: Real[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0, _]): Real[nt#oldtype0] = deriving[Kind.coNewtype0[nt]](i, j.coNewtype)
 }
 
 

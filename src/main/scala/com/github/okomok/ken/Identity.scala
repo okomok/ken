@@ -31,7 +31,7 @@ object Identity extends Newtype1[Identity, ({type ot[+a] = a})#ot] with MonadFix
 
     // Instances
     //
-    implicit def _asNewtype0[a]: Newtype0[Identity[a], a] = new Newtype0[Identity[a], a] {
+    implicit def _asNewtype0[a]: Newtype0[Identity[a], a, Kind.nil] = new Newtype0[Identity[a], a, Kind.nil] {
         override val newOf: newOf = ot => Identity(ot)
         override val oldOf: oldOf = nt => nt.get
     }

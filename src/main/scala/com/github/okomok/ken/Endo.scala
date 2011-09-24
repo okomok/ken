@@ -12,7 +12,7 @@ final case class Endo[a](override val get: a => a) extends NewtypeOf[a => a]
 
 
 object Endo {
-    implicit def _asNewtype0[a]: Newtype0[Endo[a], a => a] = new Newtype0[Endo[a], a => a] {
+    implicit def _asNewtype0[a]: Newtype0[Endo[a], a => a, Kind.nil] = new Newtype0[Endo[a], a => a, Kind.nil] {
         override val newOf: newOf = ot => Endo(ot)
         override val oldOf: oldOf = nt => nt.run
 

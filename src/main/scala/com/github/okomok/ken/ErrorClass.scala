@@ -32,12 +32,12 @@ trait ErrorClassProxy[a] extends ErrorClass[a] {
 object ErrorClass extends ErrorClassInstance with ErrorClassShortcut {
     def apply[a <: Kind.Function0](implicit i: ErrorClass[a#apply0]): ErrorClass[a#apply0] = i
 
-    def deriving[nt <: Kind.Newtype0](implicit i: ErrorClass[nt#oldtype0], j: Newtype0[nt#apply0, nt#oldtype0]): ErrorClass[nt#apply0] = new ErrorClass[nt#apply0] {
+    def deriving[nt <: Kind.Newtype0](implicit i: ErrorClass[nt#oldtype0], j: Newtype0[nt#apply0, nt#oldtype0, _]): ErrorClass[nt#apply0] = new ErrorClass[nt#apply0] {
         override val noMsg: noMsg = j.newOf(i.noMsg)
         override val strMsg: strMsg = msg => j.newOf(i.strMsg(msg))
     }
 
-    def weak[nt <: Kind.Newtype0](implicit i: ErrorClass[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): ErrorClass[nt#oldtype0] = deriving[Kind.coNewtype0[nt]](i, j.coNewtype)
+    def weak[nt <: Kind.Newtype0](implicit i: ErrorClass[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0, _]): ErrorClass[nt#oldtype0] = deriving[Kind.coNewtype0[nt]](i, j.coNewtype)
 }
 
 

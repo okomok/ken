@@ -59,20 +59,20 @@ trait MonoidProxy[m] extends Monoid[m] {
 object Monoid extends MonoidInstance with MonoidShortcut {
     def apply[m <: Kind.Function0](implicit i: Monoid[m#apply0]): Monoid[m#apply0] = i
 
-    def deriving[nt <: Kind.Newtype0](implicit i: Monoid[nt#oldtype0], j: Newtype0[nt#apply0, nt#oldtype0]): Monoid[nt#apply0] = new Monoid[nt#apply0] {
+    def deriving[nt <: Kind.Newtype0](implicit i: Monoid[nt#oldtype0], j: Newtype0[nt#apply0, nt#oldtype0, _]): Monoid[nt#apply0] = new Monoid[nt#apply0] {
         override val mempty: mempty = j.newOf(i.mempty)
         override val mappend: mappend = x => y => j.newOf(i.mappend(j.oldOf(x))(j.oldOf(y)))
         override val mconcat: mconcat = xs => j.newOf(i.mconcat(List.map[nt#apply0, nt#oldtype0](j.oldOf)(xs)))
     }
 
-    def weak[nt <: Kind.Newtype0](implicit i: Monoid[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Monoid[nt#oldtype0] = deriving[Kind.coNewtype0[nt]](i, j.coNewtype)
+    def weak[nt <: Kind.Newtype0](implicit i: Monoid[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0, _]): Monoid[nt#oldtype0] = deriving[Kind.coNewtype0[nt]](i, j.coNewtype)
 
     // Dual
     //
     final case class Dual[+a](override val get: a) extends NewtypeOf[a]
 
     object Dual {
-        implicit def _asNewtype0[a]: Newtype0[Dual[a], a] = new Newtype0[Dual[a], a] {
+        implicit def _asNewtype0[a]: Newtype0[Dual[a], a, Kind.nil] = new Newtype0[Dual[a], a, Kind.nil] {
             override val newOf: newOf = ot => Dual(ot)
             override val oldOf: oldOf = nt => nt.get
         }
@@ -87,7 +87,7 @@ object Monoid extends MonoidInstance with MonoidShortcut {
     //
     final case class All(override val get: Bool) extends NewtypeOf[Bool]
 
-    object All extends Newtype0[All, Bool] with ThisIsInstance {
+    object All extends Newtype0[All, Bool, Kind.nil] with ThisIsInstance {
         // Overrides
         //
         // Newtype0
@@ -104,7 +104,7 @@ object Monoid extends MonoidInstance with MonoidShortcut {
     //
     final case class Any_(override val get: Bool) extends NewtypeOf[Bool]
 
-    object Any_  extends Newtype0[Any_, Bool] with ThisIsInstance {
+    object Any_  extends Newtype0[Any_, Bool, Kind.nil] with ThisIsInstance {
         // Overrrides
         //
         // Newtype0
@@ -122,7 +122,7 @@ object Monoid extends MonoidInstance with MonoidShortcut {
     final case class Sum[a](override val get: a) extends NewtypeOf[a]
 
     object Sum {
-        implicit def _asNewtype0[a]: Newtype0[Sum[a], a] = new Newtype0[Sum[a], a] {
+        implicit def _asNewtype0[a]: Newtype0[Sum[a], a, Kind.nil] = new Newtype0[Sum[a], a, Kind.nil] {
             override val newOf: newOf = ot => Sum(ot)
             override val oldOf: oldOf = nt => nt.get
         }
@@ -139,7 +139,7 @@ object Monoid extends MonoidInstance with MonoidShortcut {
     final case class Product[a](override val get: a) extends NewtypeOf[a]
 
     object Product {
-        implicit def _asNewtype0[a]: Newtype0[Product[a], a] = new Newtype0[Product[a], a] {
+        implicit def _asNewtype0[a]: Newtype0[Product[a], a, Kind.nil] = new Newtype0[Product[a], a, Kind.nil] {
             override val newOf: newOf = ot => Product(ot)
             override val oldOf: oldOf = nt => nt.get
         }

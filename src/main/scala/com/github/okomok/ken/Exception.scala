@@ -99,7 +99,7 @@ trait ExceptionProxy[e] extends Exception[e] with TypeableProxy[e] with ShowProx
 object Exception extends ExceptionInstance with ExceptionShortcut {
     def apply[e <: Kind.Function0](implicit i: Exception[e#apply0]): Exception[e#apply0] = i
 
-    def deriving[nt <: Kind.Newtype0](implicit i: Exception[nt#oldtype0], j: Newtype0[nt#apply0, nt#oldtype0], k: Typeable[nt#apply0]): Exception[nt#apply0] = new Exception[nt#apply0] with TypeableProxy[nt#apply0] with ShowProxy[nt#apply0] {
+    def deriving[nt <: Kind.Newtype0](implicit i: Exception[nt#oldtype0], j: Newtype0[nt#apply0, nt#oldtype0, _], k: Typeable[nt#apply0]): Exception[nt#apply0] = new Exception[nt#apply0] with TypeableProxy[nt#apply0] with ShowProxy[nt#apply0] {
         type e = nt#apply0
         override val selfTypeable = k
         override val selfShow = Show.deriving[nt]
@@ -116,7 +116,7 @@ object Exception extends ExceptionInstance with ExceptionShortcut {
         override def tryJust[a, b](p: e => Maybe[b])(a: IO[a]): IO[Either[b, a]] = i.tryJust(e => p(j.newOf(e)))(a)
     }
 
-    def weak[nt <: Kind.Newtype0](implicit i: Exception[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0], k: Typeable[nt#oldtype0]): Exception[nt#oldtype0] = deriving[Kind.coNewtype0[nt]](i, j.coNewtype, k)
+    def weak[nt <: Kind.Newtype0](implicit i: Exception[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0, _], k: Typeable[nt#oldtype0]): Exception[nt#oldtype0] = deriving[Kind.coNewtype0[nt]](i, j.coNewtype, k)
 
     @Annotation.ceremonial("no special effects")
     def evaluate[a](x: a): IO[a] = IO.`return`(x)
