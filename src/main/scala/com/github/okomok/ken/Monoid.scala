@@ -72,7 +72,7 @@ object Monoid extends MonoidInstance with MonoidShortcut {
     final case class Dual[+a](override val get: a) extends NewtypeOf[a]
 
     object Dual {
-        implicit def _asNewtype0[a]: Newtype0[Dual[a], a, Kind.nil] = new Newtype0[Dual[a], a, Kind.nil] {
+        implicit def _asNewtype0[a]: Newtype0[Dual[a], a, Kind.Nil] = new Newtype0[Dual[a], a, Kind.Nil] {
             override val newOf: newOf = ot => Dual(ot)
             override val oldOf: oldOf = nt => nt.get
         }
@@ -87,7 +87,7 @@ object Monoid extends MonoidInstance with MonoidShortcut {
     //
     final case class All(override val get: Bool) extends NewtypeOf[Bool]
 
-    object All extends Newtype0[All, Bool, Kind.nil] with ThisIsInstance {
+    object All extends Newtype0[All, Bool, Kind.Nil] with ThisIsInstance {
         // Overrides
         //
         // Newtype0
@@ -104,7 +104,7 @@ object Monoid extends MonoidInstance with MonoidShortcut {
     //
     final case class Any_(override val get: Bool) extends NewtypeOf[Bool]
 
-    object Any_  extends Newtype0[Any_, Bool, Kind.nil] with ThisIsInstance {
+    object Any_  extends Newtype0[Any_, Bool, Kind.Nil] with ThisIsInstance {
         // Overrrides
         //
         // Newtype0
@@ -122,7 +122,7 @@ object Monoid extends MonoidInstance with MonoidShortcut {
     final case class Sum[a](override val get: a) extends NewtypeOf[a]
 
     object Sum {
-        implicit def _asNewtype0[a]: Newtype0[Sum[a], a, Kind.nil] = new Newtype0[Sum[a], a, Kind.nil] {
+        implicit def _asNewtype0[a]: Newtype0[Sum[a], a, Kind.Nil] = new Newtype0[Sum[a], a, Kind.Nil] {
             override val newOf: newOf = ot => Sum(ot)
             override val oldOf: oldOf = nt => nt.get
         }
@@ -139,7 +139,7 @@ object Monoid extends MonoidInstance with MonoidShortcut {
     final case class Product[a](override val get: a) extends NewtypeOf[a]
 
     object Product {
-        implicit def _asNewtype0[a]: Newtype0[Product[a], a, Kind.nil] = new Newtype0[Product[a], a, Kind.nil] {
+        implicit def _asNewtype0[a]: Newtype0[Product[a], a, Kind.Nil] = new Newtype0[Product[a], a, Kind.Nil] {
             override val newOf: newOf = ot => Product(ot)
             override val oldOf: oldOf = nt => nt.get
         }

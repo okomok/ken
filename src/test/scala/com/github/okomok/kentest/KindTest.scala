@@ -12,9 +12,9 @@ import com.github.okomok.ken._
 
 class KindTezt extends {
 
-    implicitly[Kind.Contains[Num :^: Kind.nil, Num]]
-    implicitly[Kind.Contains[Real :^: Num :^: Floating :^: Kind.nil, Num]]
-    implicitly[Kind.Contains[Num :^: Real :^: Floating :^: Kind.nil, Num]]
-    implicitly[Kind.Contains[Real :^: Floating :^: Num :^: Kind.nil, Num]]
+    implicitly[Kind.MethodList.Contains[Kind.MethodList1[Num], Num]]
+    implicitly[Kind.MethodList.Contains[Kind.MethodList3[Real, Num, Floating], Num]]
+    implicitly[Kind.MethodList.Contains[Kind.MethodList3[Num, Real, Floating], Num]]
+    implicitly[Kind.MethodList.Contains[Kind.MethodList3[Real, Floating, Num], Num]]
 
 }

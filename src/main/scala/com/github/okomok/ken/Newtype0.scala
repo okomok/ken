@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-trait Newtype0[nt, ot, ds <: Kind.List] extends Typeclass with Kind.Newtype0 { outer =>
+trait Newtype0[nt, ot, ds <: Kind.MethodList] extends Typeclass with Kind.Newtype0 { outer =>
     override type apply0 = nt
     override type oldtype0 = ot
     override type deriving0 = ds
@@ -35,7 +35,7 @@ trait Newtype0[nt, ot, ds <: Kind.List] extends Typeclass with Kind.Newtype0 { o
 }
 
 
-trait Newtype0Proxy[nt, ot, ds <: Kind.List] extends Newtype0[nt, ot, ds] {
+trait Newtype0Proxy[nt, ot, ds <: Kind.MethodList] extends Newtype0[nt, ot, ds] {
     def selfNewtype0: Newtype0[nt, ot, ds]
 
     override def newOf: newOf = selfNewtype0.newOf

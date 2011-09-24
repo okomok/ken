@@ -17,7 +17,7 @@ trait Typeclass0[a] extends Typeclass with Kind.Function0 {
 
     // Newtypes
     //
-    def deriving[nt, ds <: Kind.List](implicit i: Newtype0[nt, a, ds]): Typeclass0[nt] = error("abstract me")
+    def deriving[nt, ds <: Kind.MethodList](implicit i: Newtype0[nt, a, ds]): Typeclass0[nt] = error("abstract me")
 }
 
 
