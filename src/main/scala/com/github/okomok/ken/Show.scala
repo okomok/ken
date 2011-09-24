@@ -63,14 +63,14 @@ trait ShowProxy[a] extends Show[a] {
 object Show extends ShowInstance with ShowShortcut {
     def apply[a <: Kind.Function0](implicit i: Show[a#apply0]): Show[a#apply0] = i
 
-    def deriving[nt <: Kind.Function0, ot <: Kind.Function0](implicit i: Show[ot#apply0], j: Newtype0[nt#apply0, ot#apply0]): Show[nt#apply0] = new Show[nt#apply0] {
+    def deriving[nt <: Kind.Newtype0](implicit i: Show[nt#oldtype0], j: Newtype0[nt#apply0, nt#oldtype0]): Show[nt#apply0] = new Show[nt#apply0] {
         override val showsPrec: showsPrec = n => a => i.showsPrec(n)(j.oldOf(a))
         override val show: show = a => i.show(j.oldOf(a))
 
         override val shows: shows = a => i.shows(j.oldOf(a))
     }
 
-    def weak[nt <: Kind.Newtype0](implicit i: Show[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Show[nt#oldtype0] = deriving[Kind.const[nt#oldtype0], nt](i, j.dual)
+    def weak[nt <: Kind.Newtype0](implicit i: Show[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Show[nt#oldtype0] = deriving[Kind.dualNewtype0[nt]](i, j.dual)
 
     val showChar: Char => ShowS = List.op_!::
     val showString: String => ShowS = List.op_!++:

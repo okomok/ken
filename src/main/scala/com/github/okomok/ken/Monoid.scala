@@ -59,13 +59,13 @@ trait MonoidProxy[m] extends Monoid[m] {
 object Monoid extends MonoidInstance with MonoidShortcut {
     def apply[m <: Kind.Function0](implicit i: Monoid[m#apply0]): Monoid[m#apply0] = i
 
-    def deriving[nt <: Kind.Function0, ot <: Kind.Function0](implicit i: Monoid[ot#apply0], j: Newtype0[nt#apply0, ot#apply0]): Monoid[nt#apply0] = new Monoid[nt#apply0] {
+    def deriving[nt <: Kind.Newtype0](implicit i: Monoid[nt#oldtype0], j: Newtype0[nt#apply0, nt#oldtype0]): Monoid[nt#apply0] = new Monoid[nt#apply0] {
         override val mempty: mempty = j.newOf(i.mempty)
         override val mappend: mappend = x => y => j.newOf(i.mappend(j.oldOf(x))(j.oldOf(y)))
-        override val mconcat: mconcat = xs => j.newOf(i.mconcat(List.map[nt#apply0, ot#apply0](j.oldOf)(xs)))
+        override val mconcat: mconcat = xs => j.newOf(i.mconcat(List.map[nt#apply0, nt#oldtype0](j.oldOf)(xs)))
     }
 
-    def weak[nt <: Kind.Newtype0](implicit i: Monoid[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Monoid[nt#oldtype0] = deriving[Kind.const[nt#oldtype0], nt](i, j.dual)
+    def weak[nt <: Kind.Newtype0](implicit i: Monoid[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Monoid[nt#oldtype0] = deriving[Kind.dualNewtype0[nt]](i, j.dual)
 
     // Dual
     //

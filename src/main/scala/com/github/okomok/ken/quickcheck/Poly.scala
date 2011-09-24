@@ -96,7 +96,7 @@ object Poly {
         override val newOf: newOf = ot => OrdA(ot)
         override val oldOf: oldOf = nt => nt.get
         // Ord
-        override val selfOrd = Ord.deriving[OrdA.type, Integer.type]
+        override val selfOrd = Ord.deriving[OrdA.type]
         // Arbitary
         override def arbitary: arbitary = Gen.fmap((x: Integer) => OrdA(Integer.abs(x) + 1))(_ia.arbitary)
         override def shrink: shrink = { case OrdA(x) => for { x_ <- _ia.shrink(x) if x_ > 0 } yield OrdA(x_) }
@@ -120,7 +120,7 @@ object Poly {
         override val newOf: newOf = ot => OrdB(ot)
         override val oldOf: oldOf = nt => nt.get
         // Ord
-        override val selfOrd = Ord.deriving[OrdB.type, Integer.type]
+        override val selfOrd = Ord.deriving[OrdB.type]
         // Arbitary
         override def arbitary: arbitary = Gen.fmap((x: Integer) => OrdB(Integer.abs(x) + 1))(_ia.arbitary)
         override def shrink: shrink = { case OrdB(x) => for { x_ <- _ia.shrink(x) if x_ > 0 } yield OrdB(x_) }
@@ -144,7 +144,7 @@ object Poly {
         override val newOf: newOf = ot => OrdC(ot)
         override val oldOf: oldOf = nt => nt.get
         // Ord
-        override val selfOrd = Ord.deriving[OrdC.type, Integer.type]
+        override val selfOrd = Ord.deriving[OrdC.type]
         // Arbitary
         override def arbitary: arbitary = Gen.fmap((x: Integer) => OrdC(Integer.abs(x) + 1))(_ia.arbitary)
         override def shrink: shrink = { case OrdC(x) => for { x_ <- _ia.shrink(x) if x_ > 0 } yield OrdC(x_) }

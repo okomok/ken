@@ -86,11 +86,11 @@ trait IxProxy[a] extends Ix[a] with OrdProxy[a] {
 object Ix extends IxInstance with IxShortcut {
     def apply[a <: Kind.Function0](implicit i: Ix[a#apply0]): Ix[a#apply0] = i
 
-    def deriving[nt <: Kind.Function0, ot <: Kind.Function0](implicit i: Ix[ot#apply0], j: Newtype0[nt#apply0, ot#apply0]): Ix[nt#apply0] = new Ix[nt#apply0] with OrdProxy[nt#apply0] {
+    def deriving[nt <: Kind.Newtype0](implicit i: Ix[nt#oldtype0], j: Newtype0[nt#apply0, nt#oldtype0]): Ix[nt#apply0] = new Ix[nt#apply0] with OrdProxy[nt#apply0] {
         private type a = nt#apply0
-        override val selfOrd = Ord.deriving[nt, ot]
+        override val selfOrd = Ord.deriving[nt]
 
-        override val range: range = t => List.map[ot#apply0, a](j.newOf)(i.range(j.oldOf(t._1), j.oldOf(t._2)))
+        override val range: range = t => List.map[nt#oldtype0, a](j.newOf)(i.range(j.oldOf(t._1), j.oldOf(t._2)))
         override val index: index = t => x => i.index(j.oldOf(t._1), j.oldOf(t._2))(j.oldOf(x))
         override val unsafeIndex: unsafeIndex = t => x => i.unsafeIndex(j.oldOf(t._1), j.oldOf(t._2))(j.oldOf(x))
         override val inRange: inRange = t => x => i.inRange(j.oldOf(t._1), j.oldOf(t._2))(j.oldOf(x))
@@ -98,7 +98,7 @@ object Ix extends IxInstance with IxShortcut {
         override val unsafeRangeSize: unsafeRangeSize = t => i.unsafeRangeSize(j.oldOf(t._1), j.oldOf(t._2))
     }
 
-    def weak[nt <: Kind.Newtype0](implicit i: Ix[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Ix[nt#oldtype0] = deriving[Kind.const[nt#oldtype0], nt](i, j.dual)
+    def weak[nt <: Kind.Newtype0](implicit i: Ix[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Ix[nt#oldtype0] = deriving[Kind.dualNewtype0[nt]](i, j.dual)
 }
 
 

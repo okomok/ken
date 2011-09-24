@@ -63,6 +63,23 @@ object Kind {
     trait AbstractNewtype2 extends Newtype2 with AbstractFunction2 {
     }
 
+    // Dual of Newtypes
+    //
+    trait dualNewtype0[nt <: Newtype0] extends AbstractNewtype0 {
+        override type apply0 = nt#oldtype0
+        override type oldtype0 = nt#apply0
+    }
+
+    trait dualNewtype1[nt <: Newtype1] extends AbstractNewtype1 {
+        override type apply1[+a] = nt#oldtype1[a]
+        override type oldtype1[+a] = nt#apply1[a]
+    }
+
+    trait dualNewtype2[nt <: Newtype2] extends AbstractNewtype2 {
+        override type apply2[-a, +b] = nt#oldtype2[a, b]
+        override type oldtype2[-a, +b] = nt#apply2[a, b]
+    }
+
     // MonadTrans
     //
     sealed trait MonadTrans extends Newtype1 {

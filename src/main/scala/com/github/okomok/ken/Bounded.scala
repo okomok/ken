@@ -38,12 +38,12 @@ trait BoundedProxy[a] extends Bounded[a] {
 object Bounded extends BoundedInstance with BoundedShortcut with BoundedDetail {
     def apply[a <: Kind.Function0](implicit i: Bounded[a#apply0]): Bounded[a#apply0] = i
 
-    def deriving[nt <: Kind.Function0, ot <: Kind.Function0](implicit i: Bounded[ot#apply0], j: Newtype0[nt#apply0, ot#apply0]): Bounded[nt#apply0] = new Bounded[nt#apply0] {
+    def deriving[nt <: Kind.Newtype0](implicit i: Bounded[nt#oldtype0], j: Newtype0[nt#apply0, nt#oldtype0]): Bounded[nt#apply0] = new Bounded[nt#apply0] {
         override val minBound: minBound = j.newOf(i.minBound)
         override val maxBound: maxBound = j.newOf(i.maxBound)
     }
 
-    def weak[nt <: Kind.Newtype0](implicit i: Bounded[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Bounded[nt#oldtype0] = deriving[Kind.const[nt#oldtype0], nt](i, j.dual)
+    def weak[nt <: Kind.Newtype0](implicit i: Bounded[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Bounded[nt#oldtype0] = deriving[Kind.dualNewtype0[nt]](i, j.dual)
 }
 
 

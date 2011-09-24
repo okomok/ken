@@ -138,10 +138,10 @@ trait IntegralProxy[a] extends Integral[a] with RealProxy[a] with EnumProxy[a] {
 object Integral extends IntegralInstance with IntegralShortcut {
     def apply[a <: Kind.Function0](implicit i: Integral[a#apply0]): Integral[a#apply0] = i
 
-    def deriving[nt <: Kind.Function0, ot <: Kind.Function0](implicit i: Integral[ot#apply0], j: Newtype0[nt#apply0, ot#apply0]): Integral[nt#apply0] = new Integral[nt#apply0] with RealProxy[nt#apply0] with EnumProxy[nt#apply0] {
+    def deriving[nt <: Kind.Newtype0](implicit i: Integral[nt#oldtype0], j: Newtype0[nt#apply0, nt#oldtype0]): Integral[nt#apply0] = new Integral[nt#apply0] with RealProxy[nt#apply0] with EnumProxy[nt#apply0] {
         private type a = nt#apply0
-        override val selfReal = Real.deriving[nt, ot]
-        override val selfEnum = Enum.deriving[nt, ot]
+        override val selfReal = Real.deriving[nt]
+        override val selfEnum = Enum.deriving[nt]
 
         override def quot: quot = x => y => j.newOf(i.quot(j.oldOf(x))(j.oldOf(y)))
         override def rem: rem = x => y => j.newOf(i.rem(j.oldOf(x))(j.oldOf(y)))
@@ -160,7 +160,7 @@ object Integral extends IntegralInstance with IntegralShortcut {
         override def powpow[b](x: b)(n: a)(implicit bf: Fractional[b]): b = i.powpow(x)(j.oldOf(n))(bf)
     }
 
-    def weak[nt <: Kind.Newtype0](implicit i: Integral[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Integral[nt#oldtype0] = deriving[Kind.const[nt#oldtype0], nt](i, j.dual)
+    def weak[nt <: Kind.Newtype0](implicit i: Integral[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Integral[nt#oldtype0] = deriving[Kind.dualNewtype0[nt]](i, j.dual)
 }
 
 

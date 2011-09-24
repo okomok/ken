@@ -14,30 +14,27 @@ package quickcheck
 
 
 object Modifiers {
-/*
+
     // Blind
     //
     final case class Blind[a](override val get: a) extends Strong[a]
 
-    object Blind extends Newtype1[Blind, ({type ot[+a] = a})#ot] with ThisIsInstance {
-        // Overrides
-        //
-        // Newtype1
-        private type nt[+a] = Blind[a]
-        private type ot[+a] = a
-        override def newOf[a](ot: Lazy[ot[a]]): nt[a] = Blind(ot)
-        override def oldOf[a](nt: Lazy[nt[a]]): ot[a] = nt.get
-
+    object Blind {
         // Instances
         //
+        implicit def _asNewType0[a]: Newtype0[Blind[a], a] = new Newtype0[Blind[a], a] {
+            override val newOf: newOf = ot => Blind(ot)
+            override val oldOf: oldOf = nt => nt.get
+        }
+
         implicit def _asArbitary[a](implicit aa: Arbitary[a]): Arbitary[Blind[a]] = new Arbitary[Blind[a]] {
             override val arbitary: arbitary = Gen.fmap((x: a) => Blind(x))(aa.arbitary)
             override val shrink: shrink = { case Blind(x) => for { x_ <- aa.shrink(x) } yield Blind(x_) }
         }
     }
 
-    private[ken] sealed trait Blind_0 { this: Blind.type
-        implicit def _asNum[a](implicit an: Num[a]): Num[Blind[a]] = Num.deriving[Blind.type, Kind.const[a]]
+    private[ken] sealed trait Blind_0 { this: Blind.type =>
+        implicit def _asNum[a](implicit an: Num[a]): Num[Blind[a]] = Num.deriving[Blind[a]]
     }
-*/
+
 }

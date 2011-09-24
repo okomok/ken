@@ -81,10 +81,10 @@ trait RealFracProxy[a] extends RealFrac[a] with RealProxy[a] with FractionalProx
 object RealFrac extends RealFracInstance {
     def apply[a <: Kind.Function0](implicit i: RealFrac[a#apply0]): RealFrac[a#apply0] = i
 
-    def deriving[nt <: Kind.Function0, ot <: Kind.Function0](implicit i: RealFrac[ot#apply0], j: Newtype0[nt#apply0, ot#apply0]): RealFrac[nt#apply0] = new RealFrac[nt#apply0] with RealProxy[nt#apply0] with FractionalProxy[nt#apply0] {
+    def deriving[nt <: Kind.Newtype0](implicit i: RealFrac[nt#oldtype0], j: Newtype0[nt#apply0, nt#oldtype0]): RealFrac[nt#apply0] = new RealFrac[nt#apply0] with RealProxy[nt#apply0] with FractionalProxy[nt#apply0] {
         private type a = nt#apply0
-        override val selfReal = Real.deriving[nt, ot]
-        override val selfFractional = Fractional.deriving[nt, ot]
+        override val selfReal = Real.deriving[nt]
+        override val selfFractional = Fractional.deriving[nt]
 
         override def properFraction[b](x: a)(implicit bi: Integral[b]): (b, a) = i.properFraction(j.oldOf(x))(bi) match { case (b, ot) => (b, j.newOf(ot)) }
         override def truncate[b](x: a)(implicit bi: Integral[b]): b = i.truncate(j.oldOf(x))(bi)
@@ -93,7 +93,7 @@ object RealFrac extends RealFracInstance {
         override def floor[b](x: a)(implicit bi: Integral[b]): b = i.floor(j.oldOf(x))(bi)
     }
 
-    def weak[nt <: Kind.Newtype0](implicit i: RealFrac[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): RealFrac[nt#oldtype0] = deriving[Kind.const[nt#oldtype0], nt](i, j.dual)
+    def weak[nt <: Kind.Newtype0](implicit i: RealFrac[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): RealFrac[nt#oldtype0] = deriving[Kind.dualNewtype0[nt]](i, j.dual)
 }
 
 

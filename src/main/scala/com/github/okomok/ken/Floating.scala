@@ -116,9 +116,9 @@ trait FloatingProxy[a] extends Floating[a] with FractionalProxy[a] {
 object Floating {
     def apply[a <: Kind.Function0](implicit i: Floating[a#apply0]): Floating[a#apply0] = i
 
-    def deriving[nt <: Kind.Function0, ot <: Kind.Function0](implicit i: Floating[ot#apply0], j: Newtype0[nt#apply0, ot#apply0]): Floating[nt#apply0] = new Floating[nt#apply0] with FractionalProxy[nt#apply0] {
+    def deriving[nt <: Kind.Newtype0](implicit i: Floating[nt#oldtype0], j: Newtype0[nt#apply0, nt#oldtype0]): Floating[nt#apply0] = new Floating[nt#apply0] with FractionalProxy[nt#apply0] {
         private type a = nt#apply0
-        override val selfFractional = Fractional.deriving[nt, ot]
+        override val selfFractional = Fractional.deriving[nt]
 
         override val pi: pi = j.newOf(i.pi)
 
@@ -146,7 +146,7 @@ object Floating {
         override val atanh: atanh = x => j.newOf(i.atanh(j.oldOf(x)))
     }
 
-    def weak[nt <: Kind.Newtype0](implicit i: Floating[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Floating[nt#oldtype0] = deriving[Kind.const[nt#oldtype0], nt](i, j.dual)
+    def weak[nt <: Kind.Newtype0](implicit i: Floating[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0]): Floating[nt#oldtype0] = deriving[Kind.dualNewtype0[nt]](i, j.dual)
 }
 
 

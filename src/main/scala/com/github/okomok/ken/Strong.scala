@@ -8,8 +8,14 @@ package com.github.okomok
 package ken
 
 
+import scala.annotation.unchecked.uncheckedVariance
+
+
 // Up is workaround: https://issues.scala-lang.org/browse/SI-4225
-trait Strong[+a] extends Up[Strong[a]] {
+trait Strong[+a] extends Up[Strong[a]] with Kind.AbstractNewtype0 {
+    override type apply0 = this.type
+    override type oldtype0 = a @uncheckedVariance
+
     def get: a
 
     final def run: a = get
