@@ -28,10 +28,10 @@ trait NewtypeOf[+a] extends Up[NewtypeOf[a]] with Kind.Newtype0 {
 }
 
 
-trait StrongProxy[+a] extends NewtypeOf[a] {
-    def selfStrong: NewtypeOf[a]
+trait NewtypeOfProxy[+a] extends NewtypeOf[a] {
+    def selfNewtype: NewtypeOf[a]
 
-    override def get: a = selfStrong.run
+    override def get: a = selfNewtype.get
 }
 
 

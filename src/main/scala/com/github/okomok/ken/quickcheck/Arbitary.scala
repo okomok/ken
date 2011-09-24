@@ -248,7 +248,7 @@ sealed trait ArbitaryInstance { this: Arbitary.type =>
 
 sealed trait ArbitaryShortcut { this: Arbitary.type =>
     def arbitary[a](implicit i: Arbitary[a]): Gen[a] = i.arbitary
-    def shrink[a](implicit i: Arbitary[a]): a => List[a] = i.shrink
+    def shrink[a](x: a)(implicit i: Arbitary[a]): List[a] = i.shrink(x)
 
     def vectorOf[a](k: Int)(implicit i: Arbitary[a]): Gen[List[a]] = i.vectorOf(k)
     def orderedList[a](implicit i: Arbitary[a], j: Ord[a]): Gen[List[a]] = i.orderedList
