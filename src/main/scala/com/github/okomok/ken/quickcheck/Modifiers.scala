@@ -17,10 +17,12 @@ object Modifiers {
 
     // Blind
     //
-    final case class Blind[a](override val get: a) extends NewtypeOf[a]
+    final case class Blind[a](override val get: a) extends NewtypeOf[a] {
+        override def toString: JString = "(*)"
+    }
 
-    object Blind /*extends Blind_*/ {
-        implicit def _asNewType0[a]: Newtype0[Blind[a], a, Num :^: Ord :^: Real :^: Enum :^: Integral :^: Kind.nil] = new Newtype0[Blind[a], a, Num :^: Ord :^: Real :^: Enum :^: Integral :^: Kind.nil] {
+    object Blind {
+        implicit def _asNewType0[a]: Newtype0[Blind[a], a, Ord :^: Num :^: Integral :^: Real :^: Enum :^: Kind.nil] = new Newtype0[Blind[a], a, Ord :^: Num :^: Integral :^: Real :^: Enum :^: Kind.nil] {
             override val newOf: newOf = ot => Blind(ot)
             override val oldOf: oldOf = nt => nt.get
         }
@@ -31,24 +33,12 @@ object Modifiers {
         }
     }
 
-    private[quickcheck] sealed trait Blind_0 { this: Blind.type =>
-        implicit def _asOrd[a](implicit an: Ord[a]): Ord[Blind[a]] = Ord.deriving[Blind[a]]
-        implicit def _asReal[a](implicit an: Real[a]): Real[Blind[a]] = Real.deriving[Blind[a]]
-        implicit def _asEnum[a](implicit an: Enum[a]): Enum[Blind[a]] = Enum.deriving[Blind[a]]
-        implicit def _asIntegral[a](implicit an: Integral[a]): Integral[Blind[a]] = Integral.deriving[Blind[a]]
-    }
-
-    private[quickcheck] sealed trait Blind_ extends Blind_0 { this: Blind.type =>
-        implicit def _asNum[a](implicit an: Num[a]): Num[Blind[a]] = Num.deriving[Blind[a]]
-    }
-
-
     // Fixed
     //
     final case class Fixed[a](override val get: a) extends NewtypeOf[a]
 
-    object Fixed /*extends Fixed_*/ {
-        implicit def _asNewType0[a]: Newtype0[Fixed[a], a, Num :^: Ord :^: Real :^: Enum :^: Integral :^: Kind.nil] = new Newtype0[Fixed[a], a, Num :^: Ord :^: Real :^: Enum :^: Integral :^: Kind.nil] {
+    object Fixed {
+        implicit def _asNewType0[a]: Newtype0[Fixed[a], a, Ord :^: Num :^: Integral :^: Real :^: Enum :^: Kind.nil] = new Newtype0[Fixed[a], a, Ord :^: Num :^: Integral :^: Real :^: Enum :^: Kind.nil] {
             override val newOf: newOf = ot => Fixed(ot)
             override val oldOf: oldOf = nt => nt.get
         }
@@ -58,23 +48,12 @@ object Modifiers {
         }
     }
 
-    private[quickcheck] sealed trait Fixed_0 { this: Fixed.type =>
-        implicit def _asOrd[a](implicit i: Ord[a]): Ord[Fixed[a]] = Ord.deriving[Fixed[a]]
-        implicit def _asReal[a](implicit i: Real[a]): Real[Fixed[a]] = Real.deriving[Fixed[a]]
-        implicit def _asEnum[a](implicit i: Enum[a]): Enum[Fixed[a]] = Enum.deriving[Fixed[a]]
-        implicit def _asIntegral[a](implicit i: Integral[a]): Integral[Fixed[a]] = Integral.deriving[Fixed[a]]
-    }
-
-    private[quickcheck] sealed trait Fixed_ extends Fixed_0 { this: Fixed.type =>
-        implicit def _asNum[a](implicit i: Num[a]): Num[Fixed[a]] = Num.deriving[Fixed[a]]
-    }
-
     // OrderedList
     //
     final case class OrderedList[a](override val get: List[a]) extends NewtypeOf[List[a]]
 
     object OrderedList {
-        implicit def _asNewType0[a]: Newtype0[OrderedList[a], List[a], Kind.nil] = new Newtype0[OrderedList[a], List[a], Kind.nil] {
+        implicit def _asNewType0[a]: Newtype0[OrderedList[a], List[a], Ord :^: Kind.nil] = new Newtype0[OrderedList[a], List[a], Ord :^: Kind.nil] {
             override val newOf: newOf = ot => OrderedList(ot)
             override val oldOf: oldOf = nt => nt.get
         }
@@ -83,8 +62,6 @@ object Modifiers {
             override val arbitary: arbitary = Gen.fmap((xs: List[a]) => OrderedList(xs))(aa.orderedList)
             override val shrink: shrink = { case OrderedList(xs) => for { xs_ <- Arbitary.shrink(xs) if List.sort(xs_) == List.sort(xs_) } yield OrderedList(xs_) }
         }
-
-        implicit def _asOrd[a](implicit i: Ord[a]): Ord[OrderedList[a]] = Ord.deriving[OrderedList[a]]
     }
 
     // NonEmptyList
@@ -92,7 +69,7 @@ object Modifiers {
     final case class NonEmptyList[a](override val get: List[a]) extends NewtypeOf[List[a]]
 
     object NonEmptyList {
-        implicit def _asNewType0[a]: Newtype0[NonEmptyList[a], List[a], Kind.nil] = new Newtype0[NonEmptyList[a], List[a], Kind.nil] {
+        implicit def _asNewType0[a]: Newtype0[NonEmptyList[a], List[a], Ord :^: Kind.nil] = new Newtype0[NonEmptyList[a], List[a], Ord :^: Kind.nil] {
             override val newOf: newOf = ot => NonEmptyList(ot)
             override val oldOf: oldOf = nt => nt.get
         }
@@ -101,16 +78,14 @@ object Modifiers {
             override val arbitary: arbitary = Gen.fmap((xs: List[a]) => NonEmptyList(xs))(Gen.suchThat(Arbitary.arbitary[List[a]])(xs => Bool.not(List.`null`(xs))))
             override val shrink: shrink = { case NonEmptyList(xs) => for { xs_ <- Arbitary.shrink(xs) if Bool.not(List.`null`(xs_)) } yield NonEmptyList(xs_) }
         }
-
-        implicit def _asOrd[a](implicit i: Ord[a]): Ord[NonEmptyList[a]] = Ord.deriving[NonEmptyList[a]]
     }
 
     // Positive
     //
     final case class Positive[a](override val get: a) extends NewtypeOf[a]
 
-    object Positive /*extends Positive_*/ {
-        implicit def _asNewType0[a]: Newtype0[Positive[a], a, Num :^: Ord :^: Real :^: Enum :^: Integral :^: Kind.nil] = new Newtype0[Positive[a], a, Num :^: Ord :^: Real :^: Enum :^: Integral :^: Kind.nil] {
+    object Positive {
+        implicit def _asNewType0[a]: Newtype0[Positive[a], a, Ord :^: Num :^: Integral :^: Real :^: Enum :^: Kind.nil] = new Newtype0[Positive[a], a, Ord :^: Num :^: Integral :^: Real :^: Enum :^: Kind.nil] {
             override val newOf: newOf = ot => Positive(ot)
             override val oldOf: oldOf = nt => nt.get
         }
@@ -122,23 +97,12 @@ object Modifiers {
         }
     }
 
-    private[quickcheck] sealed trait Positive_0 { this: Positive.type =>
-        implicit def _asOrd[a](implicit i: Ord[a]): Ord[Positive[a]] = Ord.deriving[Positive[a]]
-        implicit def _asReal[a](implicit i: Real[a]): Real[Positive[a]] = Real.deriving[Positive[a]]
-        implicit def _asEnum[a](implicit i: Enum[a]): Enum[Positive[a]] = Enum.deriving[Positive[a]]
-        implicit def _asIntegral[a](implicit i: Integral[a]): Integral[Positive[a]] = Integral.deriving[Positive[a]]
-    }
-
-    private[quickcheck] sealed trait Positive_ extends Positive_0 { this: Positive.type =>
-        implicit def _asNum[a](implicit i: Num[a]): Num[Positive[a]] = Num.deriving[Positive[a]]
-    }
-
     // NonZero
     //
     final case class NonZero[a](override val get: a) extends NewtypeOf[a]
 
-    object NonZero /*extends NonZero_*/ {
-        implicit def _asNewType0[a]: Newtype0[NonZero[a], a, Num :^: Ord :^: Real :^: Enum :^: Integral :^: Kind.nil] = new Newtype0[NonZero[a], a, Num :^: Ord :^: Real :^: Enum :^: Integral :^: Kind.nil] {
+    object NonZero {
+        implicit def _asNewType0[a]: Newtype0[NonZero[a], a, Ord :^: Num :^: Integral :^: Real :^: Enum :^: Kind.nil] = new Newtype0[NonZero[a], a, Ord :^: Num :^: Integral :^: Real :^: Enum :^: Kind.nil] {
             override val newOf: newOf = ot => NonZero(ot)
             override val oldOf: oldOf = nt => nt.get
         }
@@ -150,23 +114,12 @@ object Modifiers {
         }
     }
 
-    private[quickcheck] sealed trait NonZero_0 { this: NonZero.type =>
-        implicit def _asOrd[a](implicit i: Ord[a]): Ord[NonZero[a]] = Ord.deriving[NonZero[a]]
-        implicit def _asReal[a](implicit i: Real[a]): Real[NonZero[a]] = Real.deriving[NonZero[a]]
-        implicit def _asEnum[a](implicit i: Enum[a]): Enum[NonZero[a]] = Enum.deriving[NonZero[a]]
-        implicit def _asIntegral[a](implicit i: Integral[a]): Integral[NonZero[a]] = Integral.deriving[NonZero[a]]
-    }
-
-    private[quickcheck] sealed trait NonZero_ extends NonZero_0 { this: NonZero.type =>
-        implicit def _asNum[a](implicit i: Num[a]): Num[NonZero[a]] = Num.deriving[NonZero[a]]
-    }
-
     // NonNegative
     //
     final case class NonNegative[a](override val get: a) extends NewtypeOf[a]
 
-    object NonNegative /*extends NonNegative_*/ {
-        implicit def _asNewType0[a]: Newtype0[NonNegative[a], a, Num :^: Ord :^: Real :^: Enum :^: Integral :^: Kind.nil] = new Newtype0[NonNegative[a], a, Num :^: Ord :^: Real :^: Enum :^: Integral :^: Kind.nil] {
+    object NonNegative {
+        implicit def _asNewType0[a]: Newtype0[NonNegative[a], a, Ord :^: Num :^: Integral :^: Real :^: Enum :^: Kind.nil] = new Newtype0[NonNegative[a], a, Ord :^: Num :^: Integral :^: Real :^: Enum :^: Kind.nil] {
             override val newOf: newOf = ot => NonNegative(ot)
             override val oldOf: oldOf = nt => nt.get
         }
@@ -178,23 +131,12 @@ object Modifiers {
         }
     }
 
-    private[quickcheck] sealed trait NonNegative_0 { this: NonNegative.type =>
-        implicit def _asOrd[a](implicit i: Ord[a]): Ord[NonNegative[a]] = Ord.deriving[NonNegative[a]]
-        implicit def _asReal[a](implicit i: Real[a]): Real[NonNegative[a]] = Real.deriving[NonNegative[a]]
-        implicit def _asEnum[a](implicit i: Enum[a]): Enum[NonNegative[a]] = Enum.deriving[NonNegative[a]]
-        implicit def _asIntegral[a](implicit i: Integral[a]): Integral[NonNegative[a]] = Integral.deriving[NonNegative[a]]
-    }
-
-    private[quickcheck] sealed trait NonNegative_ extends NonNegative_0 { this: NonNegative.type =>
-        implicit def _asNum[a](implicit i: Num[a]): Num[NonNegative[a]] = Num.deriving[NonNegative[a]]
-    }
-
     // Shrink2
     //
     final case class Shrink2[a](override val get: a) extends NewtypeOf[a]
 
-    object Shrink2 /*extends Shrink2_*/ {
-        implicit def _asNewType0[a]: Newtype0[Shrink2[a], a, Num :^: Ord :^: Real :^: Enum :^: Integral :^: Kind.nil] = new Newtype0[Shrink2[a], a, Num :^: Ord :^: Real :^: Enum :^: Integral :^: Kind.nil] {
+    object Shrink2 {
+        implicit def _asNewType0[a]: Newtype0[Shrink2[a], a, Ord :^: Num :^: Integral :^: Real :^: Enum :^: Kind.nil] = new Newtype0[Shrink2[a], a, Ord :^: Num :^: Integral :^: Real :^: Enum :^: Kind.nil] {
             override val newOf: newOf = ot => Shrink2(ot)
             override val oldOf: oldOf = nt => nt.get
         }
@@ -207,17 +149,6 @@ object Modifiers {
                 ( for { y <- shrink_x; z <- aa.shrink(y) } yield Shrink2(y) )
             }
         }
-    }
-
-    private[quickcheck] sealed trait Shrink2_0 { this: Shrink2.type =>
-        implicit def _asOrd[a](implicit i: Ord[a]): Ord[Shrink2[a]] = Ord.deriving[Shrink2[a]]
-        implicit def _asReal[a](implicit i: Real[a]): Real[Shrink2[a]] = Real.deriving[Shrink2[a]]
-        implicit def _asEnum[a](implicit i: Enum[a]): Enum[Shrink2[a]] = Enum.deriving[Shrink2[a]]
-        implicit def _asIntegral[a](implicit i: Integral[a]): Integral[Shrink2[a]] = Integral.deriving[Shrink2[a]]
-    }
-
-    private[quickcheck] sealed trait Shrink2_ extends Shrink2_0 { this: Shrink2.type =>
-        implicit def _asNum[a](implicit i: Num[a]): Num[Shrink2[a]] = Num.deriving[Shrink2[a]]
     }
 
     // Smart
