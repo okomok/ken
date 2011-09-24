@@ -119,9 +119,7 @@ object Monoid extends MonoidInstance with MonoidShortcut {
 
     // Sum
     //
-    final case class Sum[a](override val get: a) extends Strong[a] with Kind.AbstractNewtype0 {
-        override type oldtype0 = a
-    }
+    final case class Sum[a](override val get: a) extends Strong[a]
 
     object Sum {
         implicit def _asNewtype0[a]: Newtype0[Sum[a], a] = new Newtype0[Sum[a], a] {
@@ -138,9 +136,7 @@ object Monoid extends MonoidInstance with MonoidShortcut {
 
     // Product
     //
-    final case class Product[a](override val get: a) extends Strong[a] with Kind.AbstractNewtype0 {
-        override type oldtype0 = a
-    }
+    final case class Product[a](override val get: a) extends Strong[a]
 
     object Product {
         implicit def _asNewtype0[a]: Newtype0[Product[a], a] = new Newtype0[Product[a], a] {

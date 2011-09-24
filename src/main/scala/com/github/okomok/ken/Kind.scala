@@ -23,7 +23,7 @@ object Kind {
 
     sealed trait Function1 extends FunctionLike {
         type apply1[+a]
-        type apply[+a] // alias of apply1
+        type apply[+a] = apply1[a] // alias of apply1
     }
 
     sealed trait Function2 extends FunctionLike {
@@ -34,7 +34,7 @@ object Kind {
     }
 
     trait AbstractFunction1 extends Function1 {
-        override type apply[+a] = apply1[a]
+        //override type apply[+a] = apply1[a]
     }
 
     trait AbstractFunction2 extends Function2 {

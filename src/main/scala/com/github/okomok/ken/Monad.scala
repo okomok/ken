@@ -213,9 +213,9 @@ trait MonadProxy[m[+_]] extends Monad[m] with ApplicativeProxy[m] {
 object Monad {
     def apply[m <: Kind.Function1](implicit i: Monad[m#apply]): Monad[m#apply] = i
 
-    def deriving[nt <: Kind.Function1, ot <: Kind.Function1](implicit i: Monad[ot#apply], j: Newtype1[nt#apply, ot#apply]): Monad[nt#apply] = new Monad[nt#apply] with ApplicativeProxy[nt#apply] {
+    def deriving[nt <: Kind.Newtype1](implicit i: Monad[nt#oldtype1], j: Newtype1[nt#apply, nt#oldtype1]): Monad[nt#apply] = new Monad[nt#apply] with ApplicativeProxy[nt#apply] {
         private type m[+a] = nt#apply[a]
-        override val selfApplicative = Applicative.deriving[nt, ot]
+        override val selfApplicative = Applicative.deriving[nt]
 
         override def `return`[a](x: Lazy[a]): m[a] = j.newOf { i.`return`(x) }
         override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = j.newOf { i.op_>>=(j.oldOf(x))(a => j.oldOf(y(a))) }
@@ -224,5 +224,5 @@ object Monad {
         // TODO
     }
 
-    def weak[nt <: Kind.Newtype1](implicit i: Monad[nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): Monad[nt#oldtype1] = deriving[Kind.quote1[nt#oldtype1], nt](i, j.dual)
+    def weak[nt <: Kind.Newtype1](implicit i: Monad[nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): Monad[nt#oldtype1] = deriving[Kind.dualNewtype1[nt]](i, j.dual)
 }

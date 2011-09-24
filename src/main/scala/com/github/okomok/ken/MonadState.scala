@@ -44,13 +44,13 @@ trait MonadStateProxy[s, m[+_]] extends MonadState[s, m] with MonadProxy[m] {
 object MonadState {
     def apply[s, m <: Kind.Function1](implicit i: MonadState[s, m#apply]): MonadState[s, m#apply] = i
 
-    def deriving[s, nt <: Kind.Function1, ot <: Kind.Function1](implicit i: MonadState[s, ot#apply], j: Newtype1[nt#apply, ot#apply]): MonadState[s, nt#apply] = new MonadState[s, nt#apply] with MonadProxy[nt#apply] {
+    def deriving[s, nt <: Kind.Newtype1](implicit i: MonadState[s, nt#oldtype1], j: Newtype1[nt#apply, nt#oldtype1]): MonadState[s, nt#apply] = new MonadState[s, nt#apply] with MonadProxy[nt#apply] {
         private type m[+a] = nt#apply[a]
-        override val selfMonad = Monad.deriving[nt, ot]
+        override val selfMonad = Monad.deriving[nt]
 
         override def get: m[s] = j.newOf { i.get }
         override def put(s: s): m[Unit] = j.newOf { i.put(s) }
     }
 
-    def weak[s, nt <: Kind.Newtype1](implicit i: MonadState[s, nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): MonadState[s, nt#oldtype1] = deriving[s, Kind.quote1[nt#oldtype1], nt](i, j.dual)
+    def weak[s, nt <: Kind.Newtype1](implicit i: MonadState[s, nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): MonadState[s, nt#oldtype1] = deriving[s, Kind.dualNewtype1[nt]](i, j.dual)
 }

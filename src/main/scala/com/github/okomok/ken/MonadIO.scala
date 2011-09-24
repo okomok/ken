@@ -39,9 +39,9 @@ trait MonadIOProxy[m[+_]] extends MonadIO[m] with MonadProxy[m] {
 object MonadIO {
     def apply[m <: Kind.Function1](implicit i: MonadIO[m#apply]): MonadIO[m#apply] = i
 
-    def deriving[nt <: Kind.Function1, ot <: Kind.Function1](implicit i: MonadIO[ot#apply], j: Newtype1[nt#apply, ot#apply]): MonadIO[nt#apply] = new MonadIO[nt#apply] with MonadProxy[nt#apply] {
+    def deriving[nt <: Kind.Newtype1](implicit i: MonadIO[nt#oldtype1], j: Newtype1[nt#apply, nt#oldtype1]): MonadIO[nt#apply] = new MonadIO[nt#apply] with MonadProxy[nt#apply] {
         private type m[+a] = nt#apply[a]
-        override val selfMonad = Monad.deriving[nt, ot]
+        override val selfMonad = Monad.deriving[nt]
 
         override def liftIO[a](io: IO[a]): m[a] = j.newOf { i.liftIO(io) }
 
@@ -49,5 +49,5 @@ object MonadIO {
         override def ioError(e: IOError): m[Nothing] = j.newOf { i.ioError(e) }
     }
 
-    def weak[nt <: Kind.Newtype1](implicit i: MonadIO[nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): MonadIO[nt#oldtype1] = deriving[Kind.quote1[nt#oldtype1], nt](i, j.dual)
+    def weak[nt <: Kind.Newtype1](implicit i: MonadIO[nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): MonadIO[nt#oldtype1] = deriving[Kind.dualNewtype1[nt]](i, j.dual)
 }

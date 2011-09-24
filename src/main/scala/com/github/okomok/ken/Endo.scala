@@ -8,9 +8,7 @@ package com.github.okomok
 package ken
 
 
-final case class Endo[a](override val get: a => a) extends Strong[a => a] with Kind.AbstractNewtype0 {
-    override type oldtype0 = a => a
-}
+final case class Endo[a](override val get: a => a) extends Strong[a => a]
 
 
 object Endo {

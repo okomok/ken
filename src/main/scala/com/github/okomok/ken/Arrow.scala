@@ -98,9 +98,9 @@ trait ArrowProxy[a[-_, +_]] extends Arrow[a] with CategoryProxy[a] {
 object Arrow {
     def apply[a <: Kind.Function2](implicit i: Arrow[a#apply2]): Arrow[a#apply2] = i
 
-    def deriving[nt <: Kind.Function2, ot <: Kind.Function2](implicit i: Arrow[ot#apply2], j: Newtype2[nt#apply2, ot#apply2]): Arrow[nt#apply2] = new Arrow[nt#apply2] with CategoryProxy[nt#apply2] {
+    def deriving[nt <: Kind.Newtype2](implicit i: Arrow[nt#oldtype2], j: Newtype2[nt#apply2, nt#oldtype2]): Arrow[nt#apply2] = new Arrow[nt#apply2] with CategoryProxy[nt#apply2] {
         private type a[-a, +b] = nt#apply2[a, b]
-        override val selfCategory = Category.deriving[nt, ot]
+        override val selfCategory = Category.deriving[nt]
 
         override def arr[b, c](f: b => c): a[b, c] = j.newOf(i.arr(f))
         override def first[b, c, d](f: a[b, c], * : Type[d] = null): a[(b, d), (c, d)] = j.newOf(Lazy(i.first(j.oldOf(Lazy(f)))))
@@ -115,5 +115,5 @@ object Arrow {
         override def returnA[b]: a[b, b] = j.newOf(i.returnA[b])
     }
 
-    def weak[nt <: Kind.Newtype2](implicit i: Arrow[nt#apply2], j: Newtype2[nt#apply2, nt#oldtype2]): Arrow[nt#oldtype2] = deriving[Kind.quote2[nt#oldtype2], nt](i, j.dual)
+    def weak[nt <: Kind.Newtype2](implicit i: Arrow[nt#apply2], j: Newtype2[nt#apply2, nt#oldtype2]): Arrow[nt#oldtype2] = deriving[Kind.dualNewtype2[nt]](i, j.dual)
 }

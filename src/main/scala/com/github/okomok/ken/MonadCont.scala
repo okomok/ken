@@ -28,16 +28,16 @@ trait MonadContProxy[m[+_]] extends MonadCont[m] with MonadProxy[m] {
 object MonadCont {
     def apply[m <: Kind.Function1](implicit i: MonadCont[m#apply]): MonadCont[m#apply] = i
 
-    def deriving[nt <: Kind.Function1, ot <: Kind.Function1](implicit i: MonadCont[ot#apply], j: Newtype1[nt#apply, ot#apply]): MonadCont[nt#apply] = new MonadCont[nt#apply] with MonadProxy[nt#apply] {
+    def deriving[nt <: Kind.Newtype1](implicit i: MonadCont[nt#oldtype1], j: Newtype1[nt#apply, nt#oldtype1]): MonadCont[nt#apply] = new MonadCont[nt#apply] with MonadProxy[nt#apply] {
         private type m[+a] = nt#apply[a]
-        override val selfMonad = Monad.deriving[nt, ot]
+        override val selfMonad = Monad.deriving[nt]
 
         override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = j.newOf {
-            i.callCC { (c: a => ot#apply[b]) =>
+            i.callCC { (c: a => nt#oldtype1[b]) =>
                 j.oldOf { f( a => j.newOf(c(a)) ) }
             }
         }
     }
 
-    def weak[nt <: Kind.Newtype1](implicit i: MonadCont[nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): MonadCont[nt#oldtype1] = deriving[Kind.quote1[nt#oldtype1], nt](i, j.dual)
+    def weak[nt <: Kind.Newtype1](implicit i: MonadCont[nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): MonadCont[nt#oldtype1] = deriving[Kind.dualNewtype1[nt]](i, j.dual)
 }
