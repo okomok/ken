@@ -39,5 +39,18 @@ object MonadCont {
         }
     }
 
+    def derivingT[e, mt <: Kind.MonadT](implicit i: MonadCont[mt#innerMonad], j: MonadT[mt#apply, mt#innerMonad, mt#baseMonad], um: Monad[mt#baseMonad]): MonadCont[mt#apply] = new MonadCont[mt#apply] with MonadProxy[mt#apply] {
+        private type m[+a] = mt#apply[a]
+        private type n[+a] = mt#innerMonad[a]
+        private type u[+a] = mt#baseMonad[a]
+        override def selfMonad = j
+
+        override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = j.newOf {
+            i.callCC { (c: u[a] => n[u[b]]) =>
+                j.oldOf { f( a => j.newOf { c(um.`return`(a)) } ) }
+            }
+        }
+    }
+
     def weak[nt <: Kind.Newtype1](implicit i: MonadCont[nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): MonadCont[nt#oldtype1] = deriving[Kind.coNewtype1[nt]](i, j.coNewtype)
 }

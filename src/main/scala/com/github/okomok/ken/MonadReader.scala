@@ -51,14 +51,14 @@ object MonadReader {
 
         override def asks[a](f: r => a): m[a] = j.newOf { i.asks(f) }
     }
-/*
-    def derivingT[r, mt <: Kind.MonadTrans](implicit i: MonadReader[r, mt#innerMonad], j: Monad[mt#apply], k: MonadTrans[mt#innerMonad, mt#apply], l: Newtype1[mt#apply, mt#oldtype1]): MonadReader[r, mt#apply] = new MonadReader[r, mt#apply] with MonadProxy[mt#apply] {
+
+    def derivingT[r, mt <: Kind.MonadT](implicit i: MonadReader[r, mt#innerMonad], j: MonadT[mt#apply, mt#innerMonad, mt#baseMonad]): MonadReader[r, mt#apply] = new MonadReader[r, mt#apply] with MonadProxy[mt#apply] {
         private type m[+a] = mt#apply[a]
         override def selfMonad = j
 
-        override def ask: m[r] = k.lift(i.ask)
-        override def local[a](f: r => r)(m: m[a]): m[a] = l.newOf { i.local(f)(l.oldOf(m)) }
+        override def ask: m[r] = j.lift { i.ask }
+        override def local[a](f: r => r)(m: m[a]): m[a] = j.newOf { i.local(f)(j.oldOf(m)) }
     }
-*/
+
     def weak[r, nt <: Kind.Newtype1](implicit i: MonadReader[r, nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): MonadReader[r, nt#oldtype1] = deriving[r, Kind.coNewtype1[nt]](i, j.coNewtype)
 }

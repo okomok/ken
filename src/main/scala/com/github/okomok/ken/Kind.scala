@@ -75,6 +75,13 @@ object Kind {
         type baseResult[+a]
     }
 
+    // MonadT
+    //
+    trait MonadT extends MonadTrans {
+        type oldtype1[+a] = innerMonad[baseMonad[a]]
+        type baseMonad[+a]
+    }
+
     // Misc
     //
     trait const[z] extends Function0 with Function1 with Function2 {

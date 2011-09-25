@@ -33,7 +33,7 @@ object MonadFix {
         override val selfMonad = Monad.deriving[nt]
 
         override def mfix[a](f: Lazy[a] => m[a]): m[a] = {
-            def k(a: Lazy[a]): nt#oldtype1[a] = j.oldOf(f(a))
+            val k: Lazy[a] => nt#oldtype1[a] = a => j.oldOf(f(a))
             j.newOf { i.mfix(k) }
         }
     }

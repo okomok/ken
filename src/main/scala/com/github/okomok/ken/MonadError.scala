@@ -38,5 +38,13 @@ object MonadError {
         override def catchError[a](m: m[a])(h: e => m[a]): m[a] = j.newOf { i.catchError(j.oldOf(m))(e => j.oldOf(h(e))) }
     }
 
+    def derivingT[e, mt <: Kind.MonadT](implicit i: MonadError[e, mt#innerMonad], j: MonadT[mt#apply, mt#innerMonad, mt#baseMonad]): MonadError[e, mt#apply] = new MonadError[e, mt#apply] with MonadProxy[mt#apply] {
+        private type m[+a] = mt#apply[a]
+        override def selfMonad = j
+
+        override def throwError[a](e: e): m[a] = j.lift { i.throwError(e) }
+        override def catchError[a](m: m[a])(h: e => m[a]): m[a] = j.newOf { i.catchError(j.oldOf(m))(e => j.oldOf(h(e))) }
+    }
+
     def weak[e, nt <: Kind.Newtype1](implicit i: MonadError[e, nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): MonadError[e, nt#oldtype1] = deriving[e, Kind.coNewtype1[nt]](i, j.coNewtype)
 }

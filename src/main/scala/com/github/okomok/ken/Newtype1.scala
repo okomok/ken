@@ -40,6 +40,16 @@ trait Newtype1Proxy[nt[+_], ot[+_]] extends Newtype1[nt, ot] {
 }
 
 
-object Newtype1 {
+object Newtype1 extends Newtype1Instance {
     def apply[nt <: Kind.Function1, ot <: Kind.Function1](implicit i: Newtype1[nt#apply, ot#apply]): Newtype1[nt#apply, ot#apply] = i
+}
+
+
+sealed trait Newtype1Instance { this: Newtype1.type =>
+    implicit def ofMonadT[m[+_], n[+_], u[+_]](implicit i: MonadT[m, n, u]): Newtype1[m, ({type ot[+a] = n[u[a]]})#ot] = new Newtype1[m, ({type ot[+a] = n[u[a]]})#ot] {
+        private type nt[+a] = m[a]
+        private type ot[+a] = n[u[a]]
+        override def newOf[a](ot: Lazy[ot[a]]): nt[a] = i.newOf(ot)
+        override def oldOf[a](nt: Lazy[nt[a]]): ot[a] = i.oldOf(nt)
+    }
 }

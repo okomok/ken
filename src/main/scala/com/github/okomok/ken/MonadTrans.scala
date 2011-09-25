@@ -28,7 +28,7 @@ trait MonadTransProxy[n[+_], m[+_]] extends MonadTrans[n, m] {
 }
 
 
-object MonadTrans {
+object MonadTrans extends MonadTransInstance {
     def apply[m <: Kind.MonadTrans](implicit i: MonadTrans[m#innerMonad, m#apply]): MonadTrans[m#innerMonad, m#apply] = i
 
     def deriving[nt <: Kind.Function1, ot <: Kind.MonadTrans](implicit i: MonadTrans[ot#innerMonad, ot#apply], j: Newtype1[nt#apply, ot#apply]): MonadTrans[ot#innerMonad, nt#apply] = new MonadTrans[ot#innerMonad, nt#apply] {
@@ -38,4 +38,11 @@ object MonadTrans {
     }
 
     def weak[nt <: Kind.MonadTrans](implicit i: MonadTrans[nt#innerMonad, nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): MonadTrans[nt#innerMonad, nt#oldtype1] = deriving[Kind.quote1[nt#oldtype1], nt](i, j.coNewtype)
+}
+
+
+sealed trait MonadTransInstance { this: MonadTrans.type =>
+    implicit def ofMonadT[m[+_], n[+_], u[+_]](implicit i: MonadT[m, n, u]): MonadTrans[n, m] = new MonadTrans[n, m] {
+        override def lift[a](n: n[a]): m[a] = i.lift(n)
+    }
 }
