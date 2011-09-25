@@ -90,7 +90,6 @@ private[ken] final class _ListTs[n[+_]](override val inner: Monad[n]) extends Mo
         implicit def _asMonadError[e](implicit i: MonadError[e, n]): MonadError[e, _ListT] = new MonadError[e, _ListT] with MonadProxy[_ListT] {
             private type m[+a] = _ListT[a]
             override val selfMonad = _asMonadPlus
-            override def errorClass: ErrorClass[e] = i.errorClass
             override def throwError[a](e: e): m[a] = _asMonadTrans.lift(i.throwError(e))
             override def catchError[a](m: m[a])(h: e => m[a]): m[a] = _ListT {
                 i.catchError(run(m)) { e => run(h(e)) }

@@ -117,7 +117,6 @@ private[ken] final class _WriterTs[n[+_]](override val inner: Monad[n]) extends 
         implicit def _asMonadError[w, e](implicit i: MonadError[e, n], j: Monoid[w]): MonadError[e, ({type m[+a] = _WriterT[w, a]})#m] = new MonadError[e, ({type m[+a] = _WriterT[w, a]})#m] with MonadProxy[({type m[+a] = _WriterT[w, a]})#m] {
             private type m[+a] = _WriterT[w, a]
             override val selfMonad = _asMonadWriter[w]
-            override def errorClass: ErrorClass[e] = i.errorClass
             override def throwError[a](e: e): m[a] = _asMonadTrans.lift(i.throwError(e))
             override def catchError[a](m: m[a])(h: e => m[a]): m[a] = _WriterT {
                 i.catchError(run(m)) { e =>

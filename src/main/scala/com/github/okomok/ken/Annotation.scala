@@ -33,4 +33,9 @@ object Annotation {
      * Unused name
      */
     class unused extends StaticAnnotation
+
+    /**
+     * Scalac is a good compiler.
+     */
+    class compilerWorkaround(version: String) extends StaticAnnotation
 }

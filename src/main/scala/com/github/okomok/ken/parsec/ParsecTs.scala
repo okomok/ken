@@ -106,7 +106,6 @@ private[parsec] trait _ParsecTs[s, u, n[+_]] extends MonadTs[n]
         implicit def _asMonadError[e](implicit i: MonadError[e, n]): MonadError[e, ParsecT] = new MonadError[e, ParsecT] with MonadProxy[ParsecT] {
             private type m[+a] = ParsecT[a]
             override def selfMonad = _asMonadPlus
-            override def errorClass: ErrorClass[e] = i.errorClass
             override def throwError[a](e: e): m[a] = _asMonadTrans.lift(i.throwError(e))
             override def catchError[a](p: m[a])(h: e => m[a]): m[a] = mkPT { s =>
                 i.catchError(runParsecT(p)(s)) { e =>

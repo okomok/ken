@@ -123,7 +123,6 @@ private[ken] final class _ReaderTs[n[+_]](override val inner: Monad[n]) extends 
         implicit def _asMonadError[r, e](implicit i: MonadError[e, n]): MonadError[e, ({type m[+a] = _ReaderT[r, a]})#m] = new MonadError[e, ({type m[+a] = _ReaderT[r, a]})#m] with MonadProxy[({type m[+a] = _ReaderT[r, a]})#m] {
             private type m[+a] = _ReaderT[r, a]
             override val selfMonad = _asMonadReader[r]
-            override def errorClass: ErrorClass[e] = i.errorClass
             override def throwError[a](e: e): m[a] = _asMonadTrans.lift(i.throwError(e))
             override def catchError[a](m: m[a])(h: e => m[a]): m[a] = _ReaderT { r =>
                 i.catchError(run(m)(r)) { e => run(h(e))(r) }

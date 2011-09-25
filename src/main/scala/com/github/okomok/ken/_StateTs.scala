@@ -112,7 +112,6 @@ private[ken] final class _StateTs[n[+_]](override val inner: Monad[n]) extends M
         implicit def _asMonadError[s, e](implicit i: MonadError[e, n]): MonadError[e, ({type m[+a] = _StateT[s, a]})#m] = new MonadError[e, ({type m[+a] = _StateT[s, a]})#m] with MonadProxy[({type m[+a] = _StateT[s, a]})#m] {
             private type m[+a] = _StateT[s, a]
             override val selfMonad = _asMonadState[s]
-            override def errorClass: ErrorClass[e] = i.errorClass
             override def throwError[a](e: e): m[a] = _asMonadTrans.lift(i.throwError(e))
             override def catchError[a](m: m[a])(h: e => m[a]): m[a] = _StateT { s =>
                 i.catchError(run(m)(s)) { e => run(h(e))(s) }
