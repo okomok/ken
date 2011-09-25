@@ -49,5 +49,12 @@ object MonadIO {
         override def ioError(e: IOError): m[Nothing] = j.newOf { i.ioError(e) }
     }
 
+    def derivingT[mt <: Kind.MonadTrans](implicit i: MonadIO[mt#innerMonad], j: Monad[mt#apply], k: MonadTrans[mt#innerMonad, mt#apply]): MonadIO[mt#apply] = new MonadIO[mt#apply] with MonadProxy[mt#apply] {
+        private type m[+a] = mt#apply[a]
+        override def selfMonad = j
+
+        override def liftIO[a](io: IO[a]): m[a] = k.lift(i.liftIO(io))
+    }
+
     def weak[nt <: Kind.Newtype1](implicit i: MonadIO[nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): MonadIO[nt#oldtype1] = deriving[Kind.coNewtype1[nt]](i, j.coNewtype)
 }
