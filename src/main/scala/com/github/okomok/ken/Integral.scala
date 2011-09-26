@@ -138,10 +138,10 @@ trait IntegralProxy[a] extends Integral[a] with RealProxy[a] with EnumProxy[a] {
 object Integral extends IntegralInstance with IntegralShortcut {
     def apply[a <: Kind.Function0](implicit i: Integral[a#apply0]): Integral[a#apply0] = i
 
-    def deriving[nt <: Kind.Newtype0](implicit i: Integral[nt#oldtype0], j: Newtype0[nt#apply0, nt#oldtype0, _]): Integral[nt#apply0] = new Integral[nt#apply0] with RealProxy[nt#apply0] with EnumProxy[nt#apply0] {
+    def deriving[nt <: Kind.Newtype0](implicit j: Newtype0[nt#apply0, nt#oldtype0, _], i: Integral[nt#oldtype0]): Integral[nt#apply0] = new Integral[nt#apply0] with RealProxy[nt#apply0] with EnumProxy[nt#apply0] {
         private type a = nt#apply0
-        override val selfReal = Real.deriving[nt](i, j)
-        override val selfEnum = Enum.deriving[nt](i, j)
+        override val selfReal = Real.deriving[nt]
+        override val selfEnum = Enum.deriving[nt]
 
         override def quot: quot = x => y => j.newOf(i.quot(j.oldOf(x))(j.oldOf(y)))
         override def rem: rem = x => y => j.newOf(i.rem(j.oldOf(x))(j.oldOf(y)))
@@ -160,7 +160,7 @@ object Integral extends IntegralInstance with IntegralShortcut {
         override def powpow[b](x: b)(n: a)(implicit bf: Fractional[b]): b = i.powpow(x)(j.oldOf(n))(bf)
     }
 
-    def weak[nt <: Kind.Newtype0](implicit i: Integral[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0, _]): Integral[nt#oldtype0] = deriving[Kind.coNewtype0[nt]](i, j.coNewtype)
+    def weak[nt <: Kind.Newtype0](implicit j: Newtype0[nt#apply0, nt#oldtype0, _], i: Integral[nt#apply0]): Integral[nt#oldtype0] = deriving[Kind.coNewtype0[nt]](j.coNewtype, i)
 }
 
 
@@ -181,7 +181,7 @@ sealed trait IntegralInstance { this: Integral.type =>
         override val toInteger: toInteger = i.toInt
     }
 
-    implicit def ofNewtype0[nt, ot, ds <: Kind.MethodList](implicit i: Newtype0[nt, ot, ds], j: Integral[ot], k: Kind.MethodList.Contains[ds, Integral]): Integral[nt] = deriving[Newtype0[nt, ot, _]]
+    implicit def ofNewtype0[nt, ot, ds <: Kind.MethodList](implicit j: Newtype0[nt, ot, ds], i: Integral[ot], k: Kind.MethodList.Contains[ds, Integral]): Integral[nt] = deriving[Newtype0[nt, ot, _]]
 }
 
 

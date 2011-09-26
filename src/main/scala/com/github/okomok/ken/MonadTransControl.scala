@@ -40,11 +40,11 @@ trait MonadTransControlProxy[n[+_], m[+_], u[+_]] extends MonadTransControl[n, m
 object MonadTransControl {
     def apply[m <: Kind.MonadTransControl](implicit i: MonadTransControl[m#innerMonad, m#apply, m#baseResult]): MonadTransControl[m#innerMonad, m#apply, m#baseResult] = i
 
-    def deriving[nt <: Kind.Function1, ot <: Kind.MonadTransControl](implicit i: MonadTransControl[ot#innerMonad, ot#apply, ot#baseResult], j: Newtype1[nt#apply, ot#apply]): MonadTransControl[ot#innerMonad, nt#apply, ot#baseResult] = new MonadTransControl[ot#innerMonad, nt#apply, ot#baseResult] with MonadTransProxy[ot#innerMonad, nt#apply] {
+    def deriving[nt <: Kind.Function1, ot <: Kind.MonadTransControl](implicit j: Newtype1[nt#apply, ot#apply], i: MonadTransControl[ot#innerMonad, ot#apply, ot#baseResult]): MonadTransControl[ot#innerMonad, nt#apply, ot#baseResult] = new MonadTransControl[ot#innerMonad, nt#apply, ot#baseResult] with MonadTransProxy[ot#innerMonad, nt#apply] {
         type n[+a] = ot#innerMonad[a]
         type m[+a] = nt#apply[a]
         type u[+a] = ot#baseResult[a]
-        override val selfMonadTrans = MonadTrans.deriving[nt, ot](i, j)
+        override val selfMonadTrans = MonadTrans.deriving[nt, ot]
 
         override def liftControl[a](f: Run => n[a]): m[a] = j.newOf {
             i.liftControl { run =>
@@ -57,7 +57,7 @@ object MonadTransControl {
         }
     }
 
-    def weak[nt <: Kind.MonadTransControl](implicit i: MonadTransControl[nt#innerMonad, nt#apply, nt#baseResult], j: Newtype1[nt#apply, nt#oldtype1]): MonadTransControl[nt#innerMonad, nt#oldtype1, nt#baseResult] = deriving[Kind.quote1[nt#oldtype1], nt](i, j.coNewtype)
+    def weak[nt <: Kind.MonadTransControl](implicit j: Newtype1[nt#apply, nt#oldtype1], i: MonadTransControl[nt#innerMonad, nt#apply, nt#baseResult]): MonadTransControl[nt#innerMonad, nt#oldtype1, nt#baseResult] = deriving[Kind.quote1[nt#oldtype1], nt](j.coNewtype, i)
 
     // Run types
     //

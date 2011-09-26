@@ -47,7 +47,7 @@ trait CategoryProxy[cat[-_, +_]] extends Category[cat] {
 object Category extends CategoryInstance {
     def apply[cat <: Kind.Function2](implicit i: Category[cat#apply2]): Category[cat#apply2] = i
 
-    def deriving[nt <: Kind.Newtype2](implicit i: Category[nt#oldtype2], j: Newtype2[nt#apply2, nt#oldtype2]): Category[nt#apply2] = new Category[nt#apply2] {
+    def deriving[nt <: Kind.Newtype2](implicit j: Newtype2[nt#apply2, nt#oldtype2], i: Category[nt#oldtype2]): Category[nt#apply2] = new Category[nt#apply2] {
         private type cat[-a, +b] = nt#apply2[a, b]
 
         override def cid[a]: cat[a, a] = j.newOf(i.cid[a])
@@ -56,7 +56,7 @@ object Category extends CategoryInstance {
         override def op_>>>:[a, b, c](f: cat[a, b])(g: cat[b, c]): cat[a, c] = j.newOf(i.op_>>>:(j.oldOf(f))(j.oldOf(g)))
     }
 
-    def weak[nt <: Kind.Newtype2](implicit i: Category[nt#apply2], j: Newtype2[nt#apply2, nt#oldtype2]): Category[nt#oldtype2] = deriving[Kind.coNewtype2[nt]](i, j.coNewtype)
+    def weak[nt <: Kind.Newtype2](implicit j: Newtype2[nt#apply2, nt#oldtype2], i: Category[nt#apply2]): Category[nt#oldtype2] = deriving[Kind.coNewtype2[nt]](j.coNewtype, i)
 }
 
 

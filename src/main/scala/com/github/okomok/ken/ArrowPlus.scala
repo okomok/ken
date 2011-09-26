@@ -35,12 +35,12 @@ trait ArrowPlusProxy[a[-_, +_]] extends ArrowPlus[a] with ArrowZeroProxy[a] {
 object ArrowPlus {
     def apply[a <: Kind.Function2](implicit i: ArrowPlus[a#apply2]): ArrowPlus[a#apply2] = i
 
-    def deriving[nt <: Kind.Newtype2](implicit i: ArrowPlus[nt#oldtype2], j: Newtype2[nt#apply2, nt#oldtype2]): ArrowPlus[nt#apply2] = new ArrowPlus[nt#apply2] with ArrowZeroProxy[nt#apply2] {
+    def deriving[nt <: Kind.Newtype2](implicit j: Newtype2[nt#apply2, nt#oldtype2], i: ArrowPlus[nt#oldtype2]): ArrowPlus[nt#apply2] = new ArrowPlus[nt#apply2] with ArrowZeroProxy[nt#apply2] {
         private type a[-a, +b] = nt#apply2[a, b]
-        override val selfArrowZero = ArrowZero.deriving[nt](i, j)
+        override val selfArrowZero = ArrowZero.deriving[nt]
 
         override def op_<+>:[b, c](f: a[b, c])(g: Lazy[a[b, c]]): a[b, c] = j.newOf(i.op_<+>:(j.oldOf(f))(j.oldOf(g)))
     }
 
-    def weak[nt <: Kind.Newtype2](implicit i: ArrowPlus[nt#apply2], j: Newtype2[nt#apply2, nt#oldtype2]): ArrowPlus[nt#oldtype2] = deriving[Kind.coNewtype2[nt]](i, j.coNewtype)
+    def weak[nt <: Kind.Newtype2](implicit j: Newtype2[nt#apply2, nt#oldtype2], i: ArrowPlus[nt#apply2]): ArrowPlus[nt#oldtype2] = deriving[Kind.coNewtype2[nt]](j.coNewtype, i)
 }

@@ -62,9 +62,9 @@ trait MonadPlusProxy[m[+_]] extends MonadPlus[m] with MonadProxy[m] with Alterna
 object MonadPlus extends MonadPlusInstance {
     def apply[m <: Kind.Function1](implicit i: MonadPlus[m#apply]): MonadPlus[m#apply] = i
 
-    def deriving[nt <: Kind.Newtype1](implicit i: MonadPlus[nt#oldtype1], j: Newtype1[nt#apply, nt#oldtype1]): MonadPlus[nt#apply] = new MonadPlus[nt#apply] with MonadProxy[nt#apply] {
+    def deriving[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply, nt#oldtype1], i: MonadPlus[nt#oldtype1]): MonadPlus[nt#apply] = new MonadPlus[nt#apply] with MonadProxy[nt#apply] {
         private type m[+a] = nt#apply[a]
-        override val selfMonad = Monad.deriving[nt](i, j)
+        override val selfMonad = Monad.deriving[nt]
 
         override def mzero: m[Nothing] = j.newOf { i.mzero }
         override def mplus[a](x: m[a])(y: Lazy[m[a]]): m[a] = j.newOf { i.mplus(j.oldOf(x))(j.oldOf(y)) }
@@ -73,7 +73,7 @@ object MonadPlus extends MonadPlusInstance {
         override def msum[a](xs: List[m[a]]): m[a] = j.newOf { i.msum( for { nt <- xs } yield j.oldOf(nt) ) }
     }
 
-    def weak[nt <: Kind.Newtype1](implicit i: MonadPlus[nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): MonadPlus[nt#oldtype1] = deriving[Kind.coNewtype1[nt]](i, j.coNewtype)
+    def weak[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply, nt#oldtype1], i: MonadPlus[nt#apply]): MonadPlus[nt#oldtype1] = deriving[Kind.coNewtype1[nt]](j.coNewtype, i)
 }
 
 

@@ -45,28 +45,28 @@ object NewtypeOf /*extends Newtype0Of_*/ {
 
 /*
 private[ken] sealed trait Newtype0Of_0 { this: NewtypeOf.type =>
-    implicit def _asOrd[nt, ot, ds <: Kind.MethodList](implicit i: Newtype0[nt, ot, ds], j: Ord[ot], k: Kind.MethodList.Contains[ds, Real]): Ord[nt] = Ord.deriving[Newtype0[nt, ot, _]]
-    implicit def _asEnum[nt, ot, ds <: Kind.MethodList](implicit i: Newtype0[nt, ot, ds], j: Enum[ot], k: Kind.MethodList.Contains[ds, Enum]): Enum[nt] = Enum.deriving[Newtype0[nt, ot, _]]
-    implicit def _asBounded[nt, ot, ds <: Kind.MethodList](implicit i: Newtype0[nt, ot, ds], j: Bounded[ot], k: Kind.MethodList.Contains[ds, Bounded]): Bounded[nt] = Bounded.deriving[Newtype0[nt, ot, _]]
+    implicit def _asOrd[nt, ot, ds <: Kind.MethodList](implicit j: Newtype0[nt, ot, ds], i: Ord[ot], k: Kind.MethodList.Contains[ds, Real]): Ord[nt] = Ord.deriving[Newtype0[nt, ot, _]]
+    implicit def _asEnum[nt, ot, ds <: Kind.MethodList](implicit j: Newtype0[nt, ot, ds], i: Enum[ot], k: Kind.MethodList.Contains[ds, Enum]): Enum[nt] = Enum.deriving[Newtype0[nt, ot, _]]
+    implicit def _asBounded[nt, ot, ds <: Kind.MethodList](implicit j: Newtype0[nt, ot, ds], i: Bounded[ot], k: Kind.MethodList.Contains[ds, Bounded]): Bounded[nt] = Bounded.deriving[Newtype0[nt, ot, _]]
 }
 
 private[ken] sealed trait Newtype0Of_1 extends Newtype0Of_0 { this: NewtypeOf.type =>
-    implicit def _asNum[nt, ot, ds <: Kind.MethodList](implicit i: Newtype0[nt, ot, ds], j: Num[ot], k: Kind.MethodList.Contains[ds, Num]): Num[nt] = Num.deriving[Newtype0[nt, ot, _]]
-    implicit def _asReal[nt, ot, ds <: Kind.MethodList](implicit i: Newtype0[nt, ot, ds], j: Real[ot], k: Kind.MethodList.Contains[ds, Real]): Real[nt] = Real.deriving[Newtype0[nt, ot, _]]
+    implicit def _asNum[nt, ot, ds <: Kind.MethodList](implicit j: Newtype0[nt, ot, ds], i: Num[ot], k: Kind.MethodList.Contains[ds, Num]): Num[nt] = Num.deriving[Newtype0[nt, ot, _]]
+    implicit def _asReal[nt, ot, ds <: Kind.MethodList](implicit j: Newtype0[nt, ot, ds], i: Real[ot], k: Kind.MethodList.Contains[ds, Real]): Real[nt] = Real.deriving[Newtype0[nt, ot, _]]
 }
 
 private[ken] sealed trait Newtype0Of_2 extends Newtype0Of_1 { this: NewtypeOf.type =>
-    implicit def _asIx[nt, ot, ds <: Kind.MethodList](implicit i: Newtype0[nt, ot, ds], j: Ix[ot], k: Kind.MethodList.Contains[ds, Ix]): Ix[nt] = Ix.deriving[Newtype0[nt, ot, _]]
-    implicit def _asFractional[nt, ot, ds <: Kind.MethodList](implicit i: Newtype0[nt, ot, ds], j: Fractional[ot], k: Kind.MethodList.Contains[ds, Real]): Fractional[nt] = Fractional.deriving[Newtype0[nt, ot, _]]
-    implicit def _asIntegral[nt, ot, ds <: Kind.MethodList](implicit i: Newtype0[nt, ot, ds], j: Integral[ot], k: Kind.MethodList.Contains[ds, Integral]): Integral[nt] = Integral.deriving[Newtype0[nt, ot, _]]
+    implicit def _asIx[nt, ot, ds <: Kind.MethodList](implicit j: Newtype0[nt, ot, ds], i: Ix[ot], k: Kind.MethodList.Contains[ds, Ix]): Ix[nt] = Ix.deriving[Newtype0[nt, ot, _]]
+    implicit def _asFractional[nt, ot, ds <: Kind.MethodList](implicit j: Newtype0[nt, ot, ds], i: Fractional[ot], k: Kind.MethodList.Contains[ds, Real]): Fractional[nt] = Fractional.deriving[Newtype0[nt, ot, _]]
+    implicit def _asIntegral[nt, ot, ds <: Kind.MethodList](implicit j: Newtype0[nt, ot, ds], i: Integral[ot], k: Kind.MethodList.Contains[ds, Integral]): Integral[nt] = Integral.deriving[Newtype0[nt, ot, _]]
 }
 
 private[ken] sealed trait Newtype0Of_3 extends Newtype0Of_2 { this: NewtypeOf.type =>
-    implicit def _asRealFrac[nt, ot, ds <: Kind.MethodList](implicit i: Newtype0[nt, ot, ds], j: RealFrac[ot], k: Kind.MethodList.Contains[ds, RealFrac]): RealFrac[nt] = RealFrac.deriving[Newtype0[nt, ot, _]]
+    implicit def _asRealFrac[nt, ot, ds <: Kind.MethodList](implicit j: Newtype0[nt, ot, ds], i: RealFrac[ot], k: Kind.MethodList.Contains[ds, RealFrac]): RealFrac[nt] = RealFrac.deriving[Newtype0[nt, ot, _]]
 }
 
 private[ken] sealed trait Newtype0Of_  extends Newtype0Of_3 { this: NewtypeOf.type =>
-    implicit def _asFloating[nt, ot, ds <: Kind.MethodList](implicit i: Newtype0[nt, ot, ds], j: Floating[ot], k: Kind.MethodList.Contains[ds, Real]): Floating[nt] = Floating.deriving[Newtype0[nt, ot, _]]
-    implicit def _asRealFloat[nt, ot, ds <: Kind.MethodList](implicit i: Newtype0[nt, ot, ds], j: RealFloat[ot], k: Kind.MethodList.Contains[ds, RealFloat]): RealFloat[nt] = RealFloat.deriving[Newtype0[nt, ot, _]]
+    implicit def _asFloating[nt, ot, ds <: Kind.MethodList](implicit j: Newtype0[nt, ot, ds], i: Floating[ot], k: Kind.MethodList.Contains[ds, Real]): Floating[nt] = Floating.deriving[Newtype0[nt, ot, _]]
+    implicit def _asRealFloat[nt, ot, ds <: Kind.MethodList](implicit j: Newtype0[nt, ot, ds], i: RealFloat[ot], k: Kind.MethodList.Contains[ds, RealFloat]): RealFloat[nt] = RealFloat.deriving[Newtype0[nt, ot, _]]
 }
 */

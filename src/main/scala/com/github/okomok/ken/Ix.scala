@@ -86,9 +86,9 @@ trait IxProxy[a] extends Ix[a] with OrdProxy[a] {
 object Ix extends IxInstance with IxShortcut {
     def apply[a <: Kind.Function0](implicit i: Ix[a#apply0]): Ix[a#apply0] = i
 
-    def deriving[nt <: Kind.Newtype0](implicit i: Ix[nt#oldtype0], j: Newtype0[nt#apply0, nt#oldtype0, _]): Ix[nt#apply0] = new Ix[nt#apply0] with OrdProxy[nt#apply0] {
+    def deriving[nt <: Kind.Newtype0](implicit j: Newtype0[nt#apply0, nt#oldtype0, _], i: Ix[nt#oldtype0]): Ix[nt#apply0] = new Ix[nt#apply0] with OrdProxy[nt#apply0] {
         private type a = nt#apply0
-        override val selfOrd = Ord.deriving[nt](i, j)
+        override val selfOrd = Ord.deriving[nt]
 
         override val range: range = t => List.map[nt#oldtype0, a](j.newOf)(i.range(j.oldOf(t._1), j.oldOf(t._2)))
         override val index: index = t => x => i.index(j.oldOf(t._1), j.oldOf(t._2))(j.oldOf(x))
@@ -98,7 +98,7 @@ object Ix extends IxInstance with IxShortcut {
         override val unsafeRangeSize: unsafeRangeSize = t => i.unsafeRangeSize(j.oldOf(t._1), j.oldOf(t._2))
     }
 
-    def weak[nt <: Kind.Newtype0](implicit i: Ix[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0, _]): Ix[nt#oldtype0] = deriving[Kind.coNewtype0[nt]](i, j.coNewtype)
+    def weak[nt <: Kind.Newtype0](implicit j: Newtype0[nt#apply0, nt#oldtype0, _], i: Ix[nt#apply0]): Ix[nt#oldtype0] = deriving[Kind.coNewtype0[nt]](j.coNewtype, i)
 }
 
 
@@ -122,7 +122,7 @@ sealed trait IxInstance { this: Ix.type =>
         override val inRange: inRange = { case (n, m) => k => i.lteq(n, k) && i.lteq(k, m) }
     }
 
-    implicit def ofNewtype0[nt, ot, ds <: Kind.MethodList](implicit i: Newtype0[nt, ot, ds], j: Ix[ot], k: Kind.MethodList.Contains[ds, Ix]): Ix[nt] = deriving[Newtype0[nt, ot, _]]
+    implicit def ofNewtype0[nt, ot, ds <: Kind.MethodList](implicit j: Newtype0[nt, ot, ds], i: Ix[ot], k: Kind.MethodList.Contains[ds, Ix]): Ix[nt] = deriving[Newtype0[nt, ot, _]]
 }
 
 

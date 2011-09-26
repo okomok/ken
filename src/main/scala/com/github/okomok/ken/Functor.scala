@@ -47,12 +47,12 @@ trait FunctorProxy[f[+_]] extends Functor[f] {
 object Functor extends FunctorInstance {
     def apply[f <: Kind.Function1](implicit i: Functor[f#apply]): Functor[f#apply] = i
 
-    def deriving[nt <: Kind.Newtype1](implicit i: Functor[nt#oldtype1], j: Newtype1[nt#apply, nt#oldtype1]): Functor[nt#apply] = new Functor[nt#apply] {
+    def deriving[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply, nt#oldtype1], i: Functor[nt#oldtype1]): Functor[nt#apply] = new Functor[nt#apply] {
         private type f[+a] = nt#apply[a]
         override def fmap[a, b](f: a => b)(m: f[a]): f[b] = j.newOf { i.fmap(f)(j.oldOf(m)) }
     }
 
-    def weak[nt <: Kind.Newtype1](implicit i: Functor[nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): Functor[nt#oldtype1] = deriving[Kind.coNewtype1[nt]](i, j.coNewtype)
+    def weak[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply, nt#oldtype1], i: Functor[nt#apply]): Functor[nt#oldtype1] = deriving[Kind.coNewtype1[nt]](j.coNewtype, i)
 }
 
 

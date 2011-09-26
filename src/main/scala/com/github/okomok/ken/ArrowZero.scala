@@ -28,12 +28,12 @@ trait ArrowZeroProxy[a[-_, +_]] extends ArrowZero[a] with ArrowProxy[a] {
 object ArrowZero {
     def apply[a <: Kind.Function2](implicit i: ArrowZero[a#apply2]): ArrowZero[a#apply2] = i
 
-    def deriving[nt <: Kind.Newtype2](implicit i: ArrowZero[nt#oldtype2], j: Newtype2[nt#apply2, nt#oldtype2]): ArrowZero[nt#apply2] = new ArrowZero[nt#apply2] with ArrowProxy[nt#apply2] {
+    def deriving[nt <: Kind.Newtype2](implicit j: Newtype2[nt#apply2, nt#oldtype2], i: ArrowZero[nt#oldtype2]): ArrowZero[nt#apply2] = new ArrowZero[nt#apply2] with ArrowProxy[nt#apply2] {
         private type a[-a, +b] = nt#apply2[a, b]
-        override val selfArrow = Arrow.deriving[nt](i, j)
+        override val selfArrow = Arrow.deriving[nt]
 
         override def zeroArrow[b, c]: a[b, c] = j.newOf(i.zeroArrow[b, c])
     }
 
-    def weak[nt <: Kind.Newtype2](implicit i: ArrowZero[nt#apply2], j: Newtype2[nt#apply2, nt#oldtype2]): ArrowZero[nt#oldtype2] = deriving[Kind.coNewtype2[nt]](i, j.coNewtype)
+    def weak[nt <: Kind.Newtype2](implicit j: Newtype2[nt#apply2, nt#oldtype2], i: ArrowZero[nt#apply2]): ArrowZero[nt#oldtype2] = deriving[Kind.coNewtype2[nt]](j.coNewtype, i)
 }

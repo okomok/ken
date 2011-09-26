@@ -116,9 +116,9 @@ trait FloatingProxy[a] extends Floating[a] with FractionalProxy[a] {
 object Floating extends FloatingInstance with FloatingShortcut {
     def apply[a <: Kind.Function0](implicit i: Floating[a#apply0]): Floating[a#apply0] = i
 
-    def deriving[nt <: Kind.Newtype0](implicit i: Floating[nt#oldtype0], j: Newtype0[nt#apply0, nt#oldtype0, _]): Floating[nt#apply0] = new Floating[nt#apply0] with FractionalProxy[nt#apply0] {
+    def deriving[nt <: Kind.Newtype0](implicit j: Newtype0[nt#apply0, nt#oldtype0, _], i: Floating[nt#oldtype0]): Floating[nt#apply0] = new Floating[nt#apply0] with FractionalProxy[nt#apply0] {
         private type a = nt#apply0
-        override val selfFractional = Fractional.deriving[nt](i, j)
+        override val selfFractional = Fractional.deriving[nt]
 
         override val pi: pi = j.newOf(i.pi)
 
@@ -146,7 +146,7 @@ object Floating extends FloatingInstance with FloatingShortcut {
         override val atanh: atanh = x => j.newOf(i.atanh(j.oldOf(x)))
     }
 
-    def weak[nt <: Kind.Newtype0](implicit i: Floating[nt#apply0], j: Newtype0[nt#apply0, nt#oldtype0, _]): Floating[nt#oldtype0] = deriving[Kind.coNewtype0[nt]](i, j.coNewtype)
+    def weak[nt <: Kind.Newtype0](implicit j: Newtype0[nt#apply0, nt#oldtype0, _], i: Floating[nt#apply0]): Floating[nt#oldtype0] = deriving[Kind.coNewtype0[nt]](j.coNewtype, i)
 }
 
 
@@ -154,7 +154,7 @@ sealed trait FloatingInstance { this: Floating.type =>
     implicit val ofDouble: Floating[Double] = Double
     implicit val ofFloat: Floating[Float] = Float
 
-    implicit def ofNewtype0[nt, ot, ds <: Kind.MethodList](implicit i: Newtype0[nt, ot, ds], j: Floating[ot], k: Kind.MethodList.Contains[ds, Real]): Floating[nt] = deriving[Newtype0[nt, ot, _]]
+    implicit def ofNewtype0[nt, ot, ds <: Kind.MethodList](implicit j: Newtype0[nt, ot, ds], i: Floating[ot], k: Kind.MethodList.Contains[ds, Real]): Floating[nt] = deriving[Newtype0[nt, ot, _]]
 }
 
 
