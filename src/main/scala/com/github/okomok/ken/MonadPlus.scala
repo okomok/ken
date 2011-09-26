@@ -59,7 +59,7 @@ trait MonadPlusProxy[m[+_]] extends MonadPlus[m] with MonadProxy[m] with Alterna
 }
 
 
-object MonadPlus {
+object MonadPlus extends MonadPlusInstance {
     def apply[m <: Kind.Function1](implicit i: MonadPlus[m#apply]): MonadPlus[m#apply] = i
 
     def deriving[nt <: Kind.Newtype1](implicit i: MonadPlus[nt#oldtype1], j: Newtype1[nt#apply, nt#oldtype1]): MonadPlus[nt#apply] = new MonadPlus[nt#apply] with MonadProxy[nt#apply] {
@@ -74,4 +74,8 @@ object MonadPlus {
     }
 
     def weak[nt <: Kind.Newtype1](implicit i: MonadPlus[nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): MonadPlus[nt#oldtype1] = deriving[Kind.coNewtype1[nt]](i, j.coNewtype)
+}
+
+
+sealed trait MonadPlusInstance { this: MonadPlus.type =>
 }

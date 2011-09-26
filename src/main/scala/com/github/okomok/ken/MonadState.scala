@@ -41,7 +41,7 @@ trait MonadStateProxy[s, m[+_]] extends MonadState[s, m] with MonadProxy[m] {
 }
 
 
-object MonadState {
+object MonadState extends MonadStateInstance {
     def apply[s, m <: Kind.Function1](implicit i: MonadState[s, m#apply]): MonadState[s, m#apply] = i
 
     def deriving[s, nt <: Kind.Newtype1](implicit i: MonadState[s, nt#oldtype1], j: Newtype1[nt#apply, nt#oldtype1]): MonadState[s, nt#apply] = new MonadState[s, nt#apply] with MonadProxy[nt#apply] {
@@ -61,4 +61,9 @@ object MonadState {
     }
 
     def weak[s, nt <: Kind.Newtype1](implicit i: MonadState[s, nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): MonadState[s, nt#oldtype1] = deriving[s, Kind.coNewtype1[nt]](i, j.coNewtype)
+}
+
+
+sealed trait MonadStateInstance { this: MonadState.type =>
+     implicit def ofMonadT[s, mt <: Kind.MonadT](implicit i: MonadState[s, mt#innerMonad], j: MonadT[mt#apply, mt#innerMonad, mt#baseMonad]): MonadState[s, mt#apply] = derivingT(i, j)
 }

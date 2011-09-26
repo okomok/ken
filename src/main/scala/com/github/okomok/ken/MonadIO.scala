@@ -36,7 +36,7 @@ trait MonadIOProxy[m[+_]] extends MonadIO[m] with MonadProxy[m] {
 }
 
 
-object MonadIO {
+object MonadIO extends MonadIOInstance {
     def apply[m <: Kind.Function1](implicit i: MonadIO[m#apply]): MonadIO[m#apply] = i
 
     def deriving[nt <: Kind.Newtype1](implicit i: MonadIO[nt#oldtype1], j: Newtype1[nt#apply, nt#oldtype1]): MonadIO[nt#apply] = new MonadIO[nt#apply] with MonadProxy[nt#apply] {
@@ -57,4 +57,9 @@ object MonadIO {
     }
 
     def weak[nt <: Kind.Newtype1](implicit i: MonadIO[nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): MonadIO[nt#oldtype1] = deriving[Kind.coNewtype1[nt]](i, j.coNewtype)
+}
+
+
+sealed trait MonadIOInstance { this: MonadIO.type =>
+    implicit def ofMonadT[mt <: Kind.MonadT](implicit i: MonadIO[mt#innerMonad], j: MonadT[mt#apply, mt#innerMonad, mt#baseMonad]): MonadIO[mt#apply] = derivingT(i, j)
 }

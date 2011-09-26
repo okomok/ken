@@ -25,7 +25,7 @@ trait MonadContProxy[m[+_]] extends MonadCont[m] with MonadProxy[m] {
 }
 
 
-object MonadCont {
+object MonadCont extends MonadContInstance {
     def apply[m <: Kind.Function1](implicit i: MonadCont[m#apply]): MonadCont[m#apply] = i
 
     def deriving[nt <: Kind.Newtype1](implicit i: MonadCont[nt#oldtype1], j: Newtype1[nt#apply, nt#oldtype1]): MonadCont[nt#apply] = new MonadCont[nt#apply] with MonadProxy[nt#apply] {
@@ -53,4 +53,9 @@ object MonadCont {
     }
 
     def weak[nt <: Kind.Newtype1](implicit i: MonadCont[nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): MonadCont[nt#oldtype1] = deriving[Kind.coNewtype1[nt]](i, j.coNewtype)
+}
+
+
+sealed trait MonadContInstance { this: MonadCont.type =>
+    implicit def monadT[e, mt <: Kind.MonadT](implicit i: MonadCont[mt#innerMonad], j: MonadT[mt#apply, mt#innerMonad, mt#baseMonad], um: Monad[mt#baseMonad]): MonadCont[mt#apply] = derivingT(i, j, um)
 }

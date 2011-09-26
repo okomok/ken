@@ -27,7 +27,7 @@ trait MonadErrorProxy[e, m[+_]] extends MonadError[e, m] with MonadProxy[m] {
 }
 
 
-object MonadError {
+object MonadError extends MonadErrorInstance {
     def apply[e, m <: Kind.Function1](implicit i: MonadError[e, m#apply]): MonadError[e, m#apply] = i
 
     def deriving[e, nt <: Kind.Newtype1](implicit i: MonadError[e, nt#oldtype1], j: Newtype1[nt#apply, nt#oldtype1]): MonadError[e, nt#apply] = new MonadError[e, nt#apply] with MonadProxy[nt#apply] {
@@ -47,4 +47,9 @@ object MonadError {
     }
 
     def weak[e, nt <: Kind.Newtype1](implicit i: MonadError[e, nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): MonadError[e, nt#oldtype1] = deriving[e, Kind.coNewtype1[nt]](i, j.coNewtype)
+}
+
+
+sealed trait MonadErrorInstance { this: MonadError.type =>
+    implicit def ofMonadT[e, mt <: Kind.MonadT](implicit i: MonadError[e, mt#innerMonad], j: MonadT[mt#apply, mt#innerMonad, mt#baseMonad]): MonadError[e, mt#apply] = derivingT(i, j)
 }

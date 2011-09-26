@@ -25,7 +25,7 @@ trait MonadFixProxy[m[+_]] extends MonadFix[m] with MonadProxy[m] {
 }
 
 
-object MonadFix {
+object MonadFix extends MonadFixInstance {
     def apply[m <: Kind.Function1](implicit i: MonadFix[m#apply]): MonadFix[m#apply] = i
 
     def deriving[nt <: Kind.Newtype1](implicit i: MonadFix[nt#oldtype1], j: Newtype1[nt#apply, nt#oldtype1]): MonadFix[nt#apply] = new MonadFix[nt#apply] with MonadProxy[nt#apply] {
@@ -39,4 +39,8 @@ object MonadFix {
     }
 
     def weak[nt <: Kind.Newtype1](implicit i: MonadFix[nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): MonadFix[nt#oldtype1] = deriving[Kind.coNewtype1[nt]](i, j.coNewtype)
+}
+
+
+sealed trait MonadFixInstance { this: MonadFix.type =>
 }

@@ -39,7 +39,7 @@ trait MonadReaderProxy[r, m[+_]] extends MonadReader[r, m] with MonadProxy[m] {
 }
 
 
-object MonadReader {
+object MonadReader extends MonadReaderInstance {
     def apply[r, m <: Kind.Function1](implicit i: MonadReader[r, m#apply]): MonadReader[r, m#apply] = i
 
     def deriving[r, nt <: Kind.Newtype1](implicit i: MonadReader[r, nt#oldtype1], j: Newtype1[nt#apply, nt#oldtype1]): MonadReader[r, nt#apply] = new MonadReader[r, nt#apply] with MonadProxy[nt#apply] {
@@ -61,4 +61,9 @@ object MonadReader {
     }
 
     def weak[r, nt <: Kind.Newtype1](implicit i: MonadReader[r, nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): MonadReader[r, nt#oldtype1] = deriving[r, Kind.coNewtype1[nt]](i, j.coNewtype)
+}
+
+
+sealed trait MonadReaderInstance { this: MonadReader.type =>
+    implicit def ofMonadT[r, mt <: Kind.MonadT](implicit i: MonadReader[r, mt#innerMonad], j: MonadT[mt#apply, mt#innerMonad, mt#baseMonad]): MonadReader[r, mt#apply] = derivingT(i, j)
 }
