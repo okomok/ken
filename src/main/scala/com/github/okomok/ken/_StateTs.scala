@@ -63,7 +63,7 @@ private[ken] final class _StateTs[n[+_]](override val inner: Monad[n]) extends M
             override def put(s: s): m[Unit] = _StateT { _ => inner.`return`((), s) }
         }
 
-        implicit def _asMonadTrans[s]: MonadTrans[n, ({type m[+a] = _StateT[s, a]})#m] = new MonadTrans[n, ({type m[+a] = _StateT[s, a]})#m] {
+        implicit def _asMonadTrans[s]: MonadTrans[({type m[+a] = _StateT[s, a]})#m, n] = new MonadTrans[({type m[+a] = _StateT[s, a]})#m, n] {
             private type m[+a] = _StateT[s, a]
             override def lift[a](n: n[a]): m[a] = _StateT { s => for { a <- n } yield (a, s) }
         }

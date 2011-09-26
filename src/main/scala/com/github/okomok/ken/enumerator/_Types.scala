@@ -107,7 +107,7 @@ private[enumerator] trait _Types[n[+_]] { this: _Enumerators[n] =>
             }.apply(m0)
         }
 
-        implicit def _asMonadTrans[z]: MonadTrans[n, ({type m[+a] = Iteratee[z, a]})#m] = new MonadTrans[n, ({type m[+a] = Iteratee[z, a]})#m] {
+        implicit def _asMonadTrans[z]: MonadTrans[({type m[+a] = Iteratee[z, a]})#m, n] = new MonadTrans[({type m[+a] = Iteratee[z, a]})#m, n] {
             private type m[+a] = Iteratee[z, a]
             override def lift[a](n: n[a]): m[a] = Iteratee {
                 n >>= { runIteratee[z, a]_ `.` _asMonad[z].`return`[a] }

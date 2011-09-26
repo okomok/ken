@@ -65,7 +65,7 @@ private[ken] final class _WriterTs[n[+_]](override val inner: Monad[n]) extends 
             }
         }
 
-        implicit def _asMonadTrans[w](implicit i: Monoid[w]): MonadTrans[n, ({type m[+a] = _WriterT[w, a]})#m] = new MonadTrans[n, ({type m[+a] = _WriterT[w, a]})#m] {
+        implicit def _asMonadTrans[w](implicit i: Monoid[w]): MonadTrans[({type m[+a] = _WriterT[w, a]})#m, n] = new MonadTrans[({type m[+a] = _WriterT[w, a]})#m, n] {
             private type m[+a] = _WriterT[w, a]
             override def lift[a](n: n[a]): m[a] = _WriterT {
                 for { a <- n } yield (a, i.mempty)

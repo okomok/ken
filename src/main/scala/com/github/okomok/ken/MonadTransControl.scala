@@ -8,15 +8,15 @@ package com.github.okomok
 package ken
 
 
-// n: inner
 // m: transformer (MaybeT etc)
+// n: inner
 // u: base (Maybe etc)
 //
-trait MonadTransControl[n[+_], m[+_], u[+_]] extends MonadTrans[n, m] with Kind.MonadTransControl {
+trait MonadTransControl[m[+_], n[+_], u[+_]] extends MonadTrans[m, n] with Kind.MonadTransControl {
     override type baseResult[+a] = u[a]
     type Run = MonadTransControl.Run[n, m, u]
 
-    final val asMonadTransControl: MonadTransControl[innerMonad, apply, baseResult] = this
+    final val asMonadTransControl: MonadTransControl[apply, innerMonad, baseResult] = this
 
     // Core
     //
@@ -28,9 +28,9 @@ trait MonadTransControl[n[+_], m[+_], u[+_]] extends MonadTrans[n, m] with Kind.
 }
 
 
-trait MonadTransControlProxy[n[+_], m[+_], u[+_]] extends MonadTransControl[n, m, u] with MonadTransProxy[n, m] {
-    def selfMonadTransControl: MonadTransControl[n, m, u]
-    override def selfMonadTrans: MonadTrans[n, m] = selfMonadTransControl
+trait MonadTransControlProxy[m[+_], n[+_], u[+_]] extends MonadTransControl[m, n, u] with MonadTransProxy[m, n] {
+    def selfMonadTransControl: MonadTransControl[m, n, u]
+    override def selfMonadTrans: MonadTrans[m, n] = selfMonadTransControl
 
     override def liftControl[a](f: Run => n[a]): m[a] = selfMonadTransControl.liftControl(f)
     override def control[a](f: Run => n[m[a]])(implicit j: Monad[m]): m[a] = selfMonadTransControl.control(f)(j)
@@ -38,9 +38,9 @@ trait MonadTransControlProxy[n[+_], m[+_], u[+_]] extends MonadTransControl[n, m
 
 
 object MonadTransControl {
-    def apply[m <: Kind.MonadTransControl](implicit i: MonadTransControl[m#innerMonad, m#apply, m#baseResult]): MonadTransControl[m#innerMonad, m#apply, m#baseResult] = i
+    def apply[m <: Kind.MonadTransControl](implicit i: MonadTransControl[m#apply, m#innerMonad, m#baseResult]): MonadTransControl[m#apply, m#innerMonad, m#baseResult] = i
 
-    def deriving[nt <: Kind.Function1, ot <: Kind.MonadTransControl](implicit j: Newtype1[nt#apply, ot#apply], i: MonadTransControl[ot#innerMonad, ot#apply, ot#baseResult]): MonadTransControl[ot#innerMonad, nt#apply, ot#baseResult] = new MonadTransControl[ot#innerMonad, nt#apply, ot#baseResult] with MonadTransProxy[ot#innerMonad, nt#apply] {
+    def deriving[nt <: Kind.Function1, ot <: Kind.MonadTransControl](implicit j: Newtype1[nt#apply, ot#apply], i: MonadTransControl[ot#apply, ot#innerMonad, ot#baseResult]): MonadTransControl[nt#apply, ot#innerMonad, ot#baseResult] = new MonadTransControl[nt#apply, ot#innerMonad, ot#baseResult] with MonadTransProxy[nt#apply, ot#innerMonad] {
         type n[+a] = ot#innerMonad[a]
         type m[+a] = nt#apply[a]
         type u[+a] = ot#baseResult[a]
@@ -57,7 +57,7 @@ object MonadTransControl {
         }
     }
 
-    def weak[nt <: Kind.MonadTransControl](implicit j: Newtype1[nt#apply, nt#oldtype1], i: MonadTransControl[nt#innerMonad, nt#apply, nt#baseResult]): MonadTransControl[nt#innerMonad, nt#oldtype1, nt#baseResult] = deriving[Kind.quote1[nt#oldtype1], nt](j.coNewtype, i)
+    def weak[nt <: Kind.MonadTransControl](implicit j: Newtype1[nt#apply, nt#oldtype1], i: MonadTransControl[nt#apply, nt#innerMonad, nt#baseResult]): MonadTransControl[nt#oldtype1, nt#innerMonad, nt#baseResult] = deriving[Kind.quote1[nt#oldtype1], nt](j.coNewtype, i)
 
     // Run types
     //

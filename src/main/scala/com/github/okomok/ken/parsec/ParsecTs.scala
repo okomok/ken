@@ -50,7 +50,7 @@ private[parsec] trait _ParsecTs[s, u, n[+_]] extends MonadTs[n]
     private[parsec] trait ParsecT_0 { this: ParsecT.type =>
         implicit val _asMonadPlus: MonadPlus[ParsecT] = this
 
-        implicit val _asMonadTrans: MonadTrans[n, ParsecT] = new MonadTrans[n, ParsecT] {
+        implicit val _asMonadTrans: MonadTrans[ParsecT, n] = new MonadTrans[ParsecT, n] {
             private type m[+a] = ParsecT[a]
             override def lift[a](amb: n[a]): m[a] = ParsecT { new UnParser[s, u, n, a] {
                 override def apply[b](v: UnParserParam[s, u, n, a, b]): n[b] = {

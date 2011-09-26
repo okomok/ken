@@ -58,7 +58,7 @@ private[ken] final class _ListTs[n[+_]](override val inner: Monad[n]) extends Mo
 
         implicit val _asMonadPlus: MonadPlus[_ListT] = this
 
-        implicit val _asMonadTrans: MonadTrans[n, _ListT] = new MonadTrans[n, _ListT] {
+        implicit val _asMonadTrans: MonadTrans[_ListT, n] = new MonadTrans[_ListT, n] {
             private type m[+a] = _ListT[a]
             override def lift[a](n: n[a]): m[a] = _ListT {
                 for { a <- n } yield List(a)
