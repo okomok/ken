@@ -17,17 +17,17 @@ object Annotation {
     /**
      * Alias of a name
      */
-    class aliasOf(what: String) extends StaticAnnotation
+    class aliasOf(what: JString) extends StaticAnnotation
 
     /**
      * Method whose parameters are flipped from a method.
      */
-    class flipOf(what: String) extends StaticAnnotation
+    class flipOf(what: JString) extends StaticAnnotation
 
     /**
      * No special effects in Scala
      */
-    class ceremonial(why: String) extends StaticAnnotation
+    class ceremonial(why: JString) extends StaticAnnotation
 
     /**
      * Unused name
@@ -37,5 +37,5 @@ object Annotation {
     /**
      * Scalac is a good compiler.
      */
-    class compilerWorkaround(version: String) extends StaticAnnotation
+    class compilerWorkaround(version: JString) extends StaticAnnotation
 }

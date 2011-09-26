@@ -8,6 +8,9 @@ package com.github.okomok
 package ken
 
 
+// Unused for now.
+
+
 // Monad-Transformer (stateless only...)
 //
 trait MonadT[m[+_], n[+_], u[+_]] extends /*Newtype1[m, ({type ot[+a] = n[u[a]]})#ot] with*/ Monad[m] with MonadTrans[n, m] with Kind.MonadT {
