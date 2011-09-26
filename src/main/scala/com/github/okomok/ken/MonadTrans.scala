@@ -42,7 +42,4 @@ object MonadTrans extends MonadTransInstance {
 
 
 sealed trait MonadTransInstance { this: MonadTrans.type =>
-    implicit def ofMonadT[m[+_], n[+_], u[+_]](implicit i: MonadT[m, n, u]): MonadTrans[n, m] = new MonadTrans[n, m] {
-        override def lift[a](n: n[a]): m[a] = i.lift(n)
-    }
 }

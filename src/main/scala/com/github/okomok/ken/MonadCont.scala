@@ -30,7 +30,7 @@ object MonadCont extends MonadContInstance {
 
     def deriving[nt <: Kind.Newtype1](implicit i: MonadCont[nt#oldtype1], j: Newtype1[nt#apply, nt#oldtype1]): MonadCont[nt#apply] = new MonadCont[nt#apply] with MonadProxy[nt#apply] {
         private type m[+a] = nt#apply[a]
-        override val selfMonad = Monad.deriving[nt]
+        override val selfMonad = Monad.deriving[nt](i, j)
 
         override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = j.newOf {
             i.callCC { (c: a => nt#oldtype1[b]) =>
@@ -39,7 +39,7 @@ object MonadCont extends MonadContInstance {
         }
     }
 
-    def derivingT[e, mt <: Kind.MonadT](implicit i: MonadCont[mt#innerMonad], j: MonadT[mt#apply, mt#innerMonad, mt#baseMonad], um: Monad[mt#baseMonad]): MonadCont[mt#apply] = new MonadCont[mt#apply] with MonadProxy[mt#apply] {
+    def derivingT[mt <: Kind.MonadT](implicit i: MonadCont[mt#innerMonad], j: MonadT[mt#apply, mt#innerMonad, mt#baseMonad], um: Monad[mt#baseMonad]): MonadCont[mt#apply] = new MonadCont[mt#apply] with MonadProxy[mt#apply] {
         private type m[+a] = mt#apply[a]
         private type n[+a] = mt#innerMonad[a]
         private type u[+a] = mt#baseMonad[a]
@@ -57,5 +57,5 @@ object MonadCont extends MonadContInstance {
 
 
 sealed trait MonadContInstance { this: MonadCont.type =>
-    implicit def monadT[e, mt <: Kind.MonadT](implicit i: MonadCont[mt#innerMonad], j: MonadT[mt#apply, mt#innerMonad, mt#baseMonad], um: Monad[mt#baseMonad]): MonadCont[mt#apply] = derivingT(i, j, um)
+    //implicit def ofMonadT[m[+_], n[+_], u[+_]](implicit i: MonadCont[n], j: MonadT[m, n, u], um: Monad[u]): MonadCont[m] = derivingT[MonadT[m, n, u]](i, j, um)
 }

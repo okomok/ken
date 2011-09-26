@@ -125,8 +125,8 @@ object RealFloat extends RealFloatInstance with RealFloatShortcut with RealFloat
 
     def deriving[nt <: Kind.Newtype0](implicit i: RealFloat[nt#oldtype0], j: Newtype0[nt#apply0, nt#oldtype0, _]): RealFloat[nt#apply0] = new RealFloat[nt#apply0] with RealFracProxy[nt#apply0] with FloatingProxy[nt#apply0] {
         private type a = nt#apply0
-        override val selfRealFrac = RealFrac.deriving[nt]
-        override val selfFloating = Floating.deriving[nt]
+        override val selfRealFrac = RealFrac.deriving[nt](i, j)
+        override val selfFloating = Floating.deriving[nt](i, j)
 
         override def floatRadix: floatRadix = i.floatRadix
         override def floatDigits: floatDigits = i.floatDigits

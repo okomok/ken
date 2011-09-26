@@ -83,8 +83,8 @@ object RealFrac extends RealFracInstance with RealFracShortcut {
 
     def deriving[nt <: Kind.Newtype0](implicit i: RealFrac[nt#oldtype0], j: Newtype0[nt#apply0, nt#oldtype0, _]): RealFrac[nt#apply0] = new RealFrac[nt#apply0] with RealProxy[nt#apply0] with FractionalProxy[nt#apply0] {
         private type a = nt#apply0
-        override val selfReal = Real.deriving[nt]
-        override val selfFractional = Fractional.deriving[nt]
+        override val selfReal = Real.deriving[nt](i, j)
+        override val selfFractional = Fractional.deriving[nt](i, j)
 
         override def properFraction[b](x: a)(implicit bi: Integral[b]): (b, a) = i.properFraction(j.oldOf(x))(bi) match { case (b, ot) => (b, j.newOf(ot)) }
         override def truncate[b](x: a)(implicit bi: Integral[b]): b = i.truncate(j.oldOf(x))(bi)

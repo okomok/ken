@@ -76,7 +76,7 @@ object Applicative {
 
     def deriving[nt <: Kind.Newtype1](implicit i: Applicative[nt#oldtype1], j: Newtype1[nt#apply, nt#oldtype1]): Applicative[nt#apply] = new Applicative[nt#apply] with FunctorProxy[nt#apply] {
         private type f[+a] = nt#apply[a]
-        override val selfFunctor = Functor.deriving[nt]
+        override val selfFunctor = Functor.deriving[nt](i, j)
 
         override def pure[a](x: Lazy[a]): f[a] = j.newOf { i.pure(x) }
         override def op_<*>[a, b](x: f[a => b])(y: f[a]): f[b] = j.newOf { i.op_<*>(j.oldOf(x))(j.oldOf(y)) }

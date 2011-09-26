@@ -88,7 +88,7 @@ object Ix extends IxInstance with IxShortcut {
 
     def deriving[nt <: Kind.Newtype0](implicit i: Ix[nt#oldtype0], j: Newtype0[nt#apply0, nt#oldtype0, _]): Ix[nt#apply0] = new Ix[nt#apply0] with OrdProxy[nt#apply0] {
         private type a = nt#apply0
-        override val selfOrd = Ord.deriving[nt]
+        override val selfOrd = Ord.deriving[nt](i, j)
 
         override val range: range = t => List.map[nt#oldtype0, a](j.newOf)(i.range(j.oldOf(t._1), j.oldOf(t._2)))
         override val index: index = t => x => i.index(j.oldOf(t._1), j.oldOf(t._2))(j.oldOf(x))

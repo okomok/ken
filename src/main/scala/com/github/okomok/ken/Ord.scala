@@ -92,7 +92,7 @@ object Ord extends OrdInstance with OrdShortcut {
     def apply[a <: Kind.Function0](implicit i: Ord[a#apply0]): Ord[a#apply0] = i
 
     def deriving[nt <: Kind.Newtype0](implicit i: Ord[nt#oldtype0], j: Newtype0[nt#apply0, nt#oldtype0, _]): Ord[nt#apply0] = new Ord[nt#apply0] with EqProxy[nt#apply0] {
-        override val selfEq = Eq.deriving[nt]
+        override val selfEq = Eq.deriving[nt](i, j)
 
         override val compare: compare = x => y => i.compare(j.oldOf(x))(j.oldOf(y))
         override val op_< : op_< = x => y => i.op_<(j.oldOf(x))(j.oldOf(y))

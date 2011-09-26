@@ -41,7 +41,7 @@ object MonadIO extends MonadIOInstance {
 
     def deriving[nt <: Kind.Newtype1](implicit i: MonadIO[nt#oldtype1], j: Newtype1[nt#apply, nt#oldtype1]): MonadIO[nt#apply] = new MonadIO[nt#apply] with MonadProxy[nt#apply] {
         private type m[+a] = nt#apply[a]
-        override val selfMonad = Monad.deriving[nt]
+        override val selfMonad = Monad.deriving[nt](i, j)
 
         override def liftIO[a](io: IO[a]): m[a] = j.newOf { i.liftIO(io) }
 
@@ -61,5 +61,5 @@ object MonadIO extends MonadIOInstance {
 
 
 sealed trait MonadIOInstance { this: MonadIO.type =>
-    implicit def ofMonadT[mt <: Kind.MonadT](implicit i: MonadIO[mt#innerMonad], j: MonadT[mt#apply, mt#innerMonad, mt#baseMonad]): MonadIO[mt#apply] = derivingT(i, j)
+    //implicit def ofMonadT[m[+_], n[+_], u[+_]](implicit i: MonadIO[n], j: MonadT[m, n, u]): MonadIO[m] = derivingT[MonadT[m, n, u]](i, j)
 }

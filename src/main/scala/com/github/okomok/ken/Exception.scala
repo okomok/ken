@@ -102,7 +102,7 @@ object Exception extends ExceptionInstance with ExceptionShortcut {
     def deriving[nt <: Kind.Newtype0](implicit i: Exception[nt#oldtype0], j: Newtype0[nt#apply0, nt#oldtype0, _], k: Typeable[nt#apply0]): Exception[nt#apply0] = new Exception[nt#apply0] with TypeableProxy[nt#apply0] with ShowProxy[nt#apply0] {
         type e = nt#apply0
         override val selfTypeable = k
-        override val selfShow = Show.deriving[nt]
+        override val selfShow = Show.deriving[nt](i, j)
 
         override val toException: toException = e => i.toException(j.oldOf(e))
         override val fromException: fromException = se => for { ot <- i.fromException(se) } yield j.newOf(ot)

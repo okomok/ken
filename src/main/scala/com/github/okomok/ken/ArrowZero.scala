@@ -30,7 +30,7 @@ object ArrowZero {
 
     def deriving[nt <: Kind.Newtype2](implicit i: ArrowZero[nt#oldtype2], j: Newtype2[nt#apply2, nt#oldtype2]): ArrowZero[nt#apply2] = new ArrowZero[nt#apply2] with ArrowProxy[nt#apply2] {
         private type a[-a, +b] = nt#apply2[a, b]
-        override val selfArrow = Arrow.deriving[nt]
+        override val selfArrow = Arrow.deriving[nt](i, j)
 
         override def zeroArrow[b, c]: a[b, c] = j.newOf(i.zeroArrow[b, c])
     }

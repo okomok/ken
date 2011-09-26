@@ -44,7 +44,7 @@ object MonadTransControl {
         type n[+a] = ot#innerMonad[a]
         type m[+a] = nt#apply[a]
         type u[+a] = ot#baseResult[a]
-        override val selfMonadTrans = MonadTrans.deriving[nt, ot]
+        override val selfMonadTrans = MonadTrans.deriving[nt, ot](i, j)
 
         override def liftControl[a](f: Run => n[a]): m[a] = j.newOf {
             i.liftControl { run =>

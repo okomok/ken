@@ -53,7 +53,7 @@ object Fractional extends FractionalInstance with FractionalShortcut {
 
     def deriving[nt <: Kind.Newtype0](implicit i: Fractional[nt#oldtype0], j: Newtype0[nt#apply0, nt#oldtype0, _]): Fractional[nt#apply0] = new Fractional[nt#apply0] with NumProxy[nt#apply0] {
         private type a = nt#apply0
-        override val selfNum = Num.deriving[nt]
+        override val selfNum = Num.deriving[nt](i, j)
 
         override val op_/ : op_/ = x => y => j.newOf(i.op_/(j.oldOf(x))(j.oldOf(y)))
         override val recip: recip = x => j.newOf(i.recip(j.oldOf(x)))

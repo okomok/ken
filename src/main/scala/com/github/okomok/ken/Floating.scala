@@ -118,7 +118,7 @@ object Floating extends FloatingInstance with FloatingShortcut {
 
     def deriving[nt <: Kind.Newtype0](implicit i: Floating[nt#oldtype0], j: Newtype0[nt#apply0, nt#oldtype0, _]): Floating[nt#apply0] = new Floating[nt#apply0] with FractionalProxy[nt#apply0] {
         private type a = nt#apply0
-        override val selfFractional = Fractional.deriving[nt]
+        override val selfFractional = Fractional.deriving[nt](i, j)
 
         override val pi: pi = j.newOf(i.pi)
 

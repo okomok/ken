@@ -140,8 +140,8 @@ object Integral extends IntegralInstance with IntegralShortcut {
 
     def deriving[nt <: Kind.Newtype0](implicit i: Integral[nt#oldtype0], j: Newtype0[nt#apply0, nt#oldtype0, _]): Integral[nt#apply0] = new Integral[nt#apply0] with RealProxy[nt#apply0] with EnumProxy[nt#apply0] {
         private type a = nt#apply0
-        override val selfReal = Real.deriving[nt]
-        override val selfEnum = Enum.deriving[nt]
+        override val selfReal = Real.deriving[nt](i, j)
+        override val selfEnum = Enum.deriving[nt](i, j)
 
         override def quot: quot = x => y => j.newOf(i.quot(j.oldOf(x))(j.oldOf(y)))
         override def rem: rem = x => y => j.newOf(i.rem(j.oldOf(x))(j.oldOf(y)))
