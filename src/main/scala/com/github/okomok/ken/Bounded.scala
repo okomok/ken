@@ -52,6 +52,8 @@ sealed trait BoundedInstance { this: Bounded.type =>
     implicit val ofChar: Bounded[Char] = Char
     implicit val ofInt: Bounded[Int] = Int
     implicit val ofUnit: Bounded[Unit] = Unit
+
+    implicit def ofNewtype0[nt, ot, ds <: Kind.MethodList](implicit i: Newtype0[nt, ot, ds], j: Bounded[ot], k: Kind.MethodList.Contains[ds, Bounded]): Bounded[nt] = deriving[Newtype0[nt, ot, _]]
 }
 
 

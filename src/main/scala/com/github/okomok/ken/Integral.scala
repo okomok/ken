@@ -180,6 +180,8 @@ sealed trait IntegralInstance { this: Integral.type =>
         override val quotRem: quotRem = x => y => (i.quot(x, y), i.rem(x, y))
         override val toInteger: toInteger = i.toInt
     }
+
+    implicit def ofNewtype0[nt, ot, ds <: Kind.MethodList](implicit i: Newtype0[nt, ot, ds], j: Integral[ot], k: Kind.MethodList.Contains[ds, Integral]): Integral[nt] = deriving[Newtype0[nt, ot, _]]
 }
 
 

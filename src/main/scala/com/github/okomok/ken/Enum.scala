@@ -100,6 +100,8 @@ sealed trait EnumInstance { this: Enum.type =>
         override val toEnum: toEnum = n => i.fromInt(n)
         override val fromEnum: fromEnum = x => i.toInt(x)
     }
+
+    implicit def ofNewtype0[nt, ot, ds <: Kind.MethodList](implicit i: Newtype0[nt, ot, ds], j: Enum[ot], k: Kind.MethodList.Contains[ds, Enum]): Enum[nt] = deriving[Newtype0[nt, ot, _]]
 }
 
 

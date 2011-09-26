@@ -129,6 +129,8 @@ sealed trait OrdInstance { this: Ord.type =>
         override val max: max = x => y => i.max(x, y)
         override val min: min = x => y => i.min(x, y)
     }
+
+    implicit def ofNewtype0[nt, ot, ds <: Kind.MethodList](implicit i: Newtype0[nt, ot, ds], j: Ord[ot], k: Kind.MethodList.Contains[ds, Real]): Ord[nt] = deriving[Newtype0[nt, ot, _]]
 }
 
 

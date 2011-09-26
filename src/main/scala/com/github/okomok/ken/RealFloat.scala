@@ -120,7 +120,7 @@ trait RealFloatProxy[a] extends RealFloat[a] with RealFracProxy[a] with Floating
 }
 
 
-object RealFloat extends RealFloatInstance with RealFloatDetail {
+object RealFloat extends RealFloatInstance with RealFloatShortcut with RealFloatDetail {
     def apply[a <: Kind.Function0](implicit i: RealFloat[a#apply0]): RealFloat[a#apply0] = i
 
     def deriving[nt <: Kind.Newtype0](implicit i: RealFloat[nt#oldtype0], j: Newtype0[nt#apply0, nt#oldtype0, _]): RealFloat[nt#apply0] = new RealFloat[nt#apply0] with RealFracProxy[nt#apply0] with FloatingProxy[nt#apply0] {
@@ -156,6 +156,12 @@ object RealFloat extends RealFloatInstance with RealFloatDetail {
 sealed trait RealFloatInstance { this: RealFloat.type =>
     implicit val ofDouble: RealFloat[Double] = Double
     implicit val ofFloat: RealFloat[Float] = Float
+
+    implicit def ofNewtype0[nt, ot, ds <: Kind.MethodList](implicit i: Newtype0[nt, ot, ds], j: RealFloat[ot], k: Kind.MethodList.Contains[ds, RealFloat]): RealFloat[nt] = deriving[Newtype0[nt, ot, _]]
+}
+
+
+sealed trait RealFloatShortcut { this: RealFloat.type =>
 }
 
 

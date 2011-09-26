@@ -46,4 +46,6 @@ sealed trait RealInstance { this: Real.type =>
     implicit val ofFloat: Real[Float] = Float
     implicit val ofInt: Real[Int] = Int
     implicit val ofInteger: Real[Integer] = _Integer
+
+    implicit def ofNewtype0[nt, ot, ds <: Kind.MethodList](implicit i: Newtype0[nt, ot, ds], j: Real[ot], k: Kind.MethodList.Contains[ds, Real]): Real[nt] = deriving[Newtype0[nt, ot, _]]
 }

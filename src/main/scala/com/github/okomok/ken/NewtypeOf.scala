@@ -36,13 +36,14 @@ trait NewtypeOfProxy[+a] extends NewtypeOf[a] {
 }
 
 
-object NewtypeOf extends Newtype0Of_ {
+object NewtypeOf /*extends Newtype0Of_*/ {
     def apply[a](a: a): NewtypeOf[a] = new NewtypeOf[a] {
         override def get: a = a
     }
 }
 
 
+/*
 private[ken] sealed trait Newtype0Of_0 { this: NewtypeOf.type =>
     implicit def _asOrd[nt, ot, ds <: Kind.MethodList](implicit i: Newtype0[nt, ot, ds], j: Ord[ot], k: Kind.MethodList.Contains[ds, Real]): Ord[nt] = Ord.deriving[Newtype0[nt, ot, _]]
     implicit def _asEnum[nt, ot, ds <: Kind.MethodList](implicit i: Newtype0[nt, ot, ds], j: Enum[ot], k: Kind.MethodList.Contains[ds, Enum]): Enum[nt] = Enum.deriving[Newtype0[nt, ot, _]]
@@ -68,3 +69,4 @@ private[ken] sealed trait Newtype0Of_  extends Newtype0Of_3 { this: NewtypeOf.ty
     implicit def _asFloating[nt, ot, ds <: Kind.MethodList](implicit i: Newtype0[nt, ot, ds], j: Floating[ot], k: Kind.MethodList.Contains[ds, Real]): Floating[nt] = Floating.deriving[Newtype0[nt, ot, _]]
     implicit def _asRealFloat[nt, ot, ds <: Kind.MethodList](implicit i: Newtype0[nt, ot, ds], j: RealFloat[ot], k: Kind.MethodList.Contains[ds, RealFloat]): RealFloat[nt] = RealFloat.deriving[Newtype0[nt, ot, _]]
 }
+*/

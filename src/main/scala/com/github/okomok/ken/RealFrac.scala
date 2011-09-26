@@ -78,7 +78,7 @@ trait RealFracProxy[a] extends RealFrac[a] with RealProxy[a] with FractionalProx
 }
 
 
-object RealFrac extends RealFracInstance {
+object RealFrac extends RealFracInstance with RealFracShortcut {
     def apply[a <: Kind.Function0](implicit i: RealFrac[a#apply0]): RealFrac[a#apply0] = i
 
     def deriving[nt <: Kind.Newtype0](implicit i: RealFrac[nt#oldtype0], j: Newtype0[nt#apply0, nt#oldtype0, _]): RealFrac[nt#apply0] = new RealFrac[nt#apply0] with RealProxy[nt#apply0] with FractionalProxy[nt#apply0] {
@@ -100,4 +100,15 @@ object RealFrac extends RealFracInstance {
 sealed trait RealFracInstance { this: RealFrac.type =>
     implicit val ofDouble: RealFrac[Double] = Double
     implicit val ofFloat: RealFrac[Float] = Float
+
+    implicit def ofNewtype0[nt, ot, ds <: Kind.MethodList](implicit i: Newtype0[nt, ot, ds], j: RealFrac[ot], k: Kind.MethodList.Contains[ds, RealFrac]): RealFrac[nt] = deriving[Newtype0[nt, ot, _]]
+}
+
+
+sealed trait RealFracShortcut { this: RealFrac.type =>
+    def properFraction[a, b](x: a)(implicit i: RealFrac[a], j: Integral[b]): (b, a) = i.properFraction(x)(j)
+    def truncate[a, b](x: a)(implicit i: RealFrac[a], j: Integral[b]): b = i.truncate(x)(j)
+    def round[a, b](x: a)(implicit i: RealFrac[a], j: Integral[b]): b = i.round(x)(j)
+    def ceiling[a, b](x: a)(implicit i: RealFrac[a], j: Integral[b]): b = i.ceiling(x)(j)
+    def floor[a, b](x: a)(implicit i: RealFrac[a], j: Integral[b]): b = i.floor(x)(j)
 }

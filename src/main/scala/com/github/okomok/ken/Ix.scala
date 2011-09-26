@@ -121,6 +121,8 @@ sealed trait IxInstance { this: Ix.type =>
         }
         override val inRange: inRange = { case (n, m) => k => i.lteq(n, k) && i.lteq(k, m) }
     }
+
+    implicit def ofNewtype0[nt, ot, ds <: Kind.MethodList](implicit i: Newtype0[nt, ot, ds], j: Ix[ot], k: Kind.MethodList.Contains[ds, Ix]): Ix[nt] = deriving[Newtype0[nt, ot, _]]
 }
 
 

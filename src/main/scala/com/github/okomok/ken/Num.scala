@@ -128,6 +128,9 @@ sealed trait NumInstance { this: Num.type =>
         override val signum: signum = x => fromInteger(i.signum(x))
         override val fromInteger: fromInteger = n => i.fromInt(n.toInt)
     }
+
+    implicit def ofNewtype0[nt, ot, ds <: Kind.MethodList](implicit i: Newtype0[nt, ot, ds], j: Num[ot], k: Kind.MethodList.Contains[ds, Num]): Num[nt] = deriving[Newtype0[nt, ot, _]]
+
 /*
     implicit def _Fractional_ofScalaFractional[a](implicit i: scala.math.Fractional[a]): Fractional[a] = new Fractional[a] with NumProxy[a] {
         override val selfNum = ofScalaNumeric[a]
