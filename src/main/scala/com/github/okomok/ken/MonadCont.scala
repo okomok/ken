@@ -39,7 +39,7 @@ object MonadCont extends MonadContInstance {
         }
     }
 
-    def derivingT[mt <: Kind.MonadT](implicit j: MonadT[mt#apply, mt#innerMonad, mt#baseMonad], i: MonadCont[mt#innerMonad], um: Monad[mt#baseMonad]): MonadCont[mt#apply] = new MonadCont[mt#apply] with MonadProxy[mt#apply] {
+    def derivingT[mt <: Kind.MonadT](implicit j: MonadT[mt#apply, mt#innerMonad, mt#baseMonad], i: MonadCont[mt#innerMonad]): MonadCont[mt#apply] = new MonadCont[mt#apply] with MonadProxy[mt#apply] {
         private type m[+a] = mt#apply[a]
         private type n[+a] = mt#innerMonad[a]
         private type u[+a] = mt#baseMonad[a]
@@ -47,7 +47,7 @@ object MonadCont extends MonadContInstance {
 
         override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = j.newOf {
             i.callCC { (c: u[a] => n[u[b]]) =>
-                j.oldOf { f( a => j.newOf { c(um.`return`(a)) } ) }
+                j.oldOf { f( a => j.newOf { c(j.baseMonad.`return`(a)) } ) }
             }
         }
     }
@@ -57,5 +57,5 @@ object MonadCont extends MonadContInstance {
 
 
 sealed trait MonadContInstance { this: MonadCont.type =>
-    implicit def ofMonadT[m[+_], n[+_], u[+_]](implicit j: MonadT[m, n, u], i: MonadCont[n], um: Monad[u]): MonadCont[m] = derivingT[MonadT[m, n, u]]
+    implicit def ofMonadT[m[+_], n[+_], u[+_]](implicit j: MonadT[m, n, u], i: MonadCont[n]): MonadCont[m] = derivingT[MonadT[m, n, u]]
 }

@@ -33,10 +33,9 @@ private[ken] final class _LazyTs[n[+_]](override val inner: Monad[n]) extends Mo
         override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = _LazyT {
             for { a <- run(m); * <- run(k(a.!)) } yield *
         }
-        // MonadTrans
-        private type u[+a] = Lazy[a]
-        override def lift[a](n: n[a]): m[a] = _LazyT {
-            for { a <- n } yield Lazy(a)
-        }
+        // MonadT
+        /*private*/ type u[+a] = Lazy[a]
+        override val innerMonad: Monad[n] = inner
+        override val baseMonad: Monad[u] = Monad[Lazy.type]
     }
 }

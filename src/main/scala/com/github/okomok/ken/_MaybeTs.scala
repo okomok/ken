@@ -48,9 +48,9 @@ private[ken] final class _MaybeTs[n[+_]](override val inner: Monad[n]) extends M
                 }
             } yield *
         }
-        // MonadTrans
-        override def lift[a](n: n[a]): m[a] = _MaybeT {
-            for { a <- n } yield Just(a)
-        }
+        // MonadT
+        /*private*/ type u[+a] = Maybe[a]
+        override val innerMonad: Monad[n] = inner
+        override val baseMonad: Monad[u] = Monad[Maybe.type]
     }
 }

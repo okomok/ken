@@ -8,6 +8,9 @@ package com.github.okomok
 package ken
 
 
+// Pending...
+
+
 // m: transformer (MaybeT etc)
 // n: inner
 // u: base (Maybe etc)

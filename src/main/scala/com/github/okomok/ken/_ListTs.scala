@@ -44,9 +44,9 @@ private[ken] final class _ListTs[n[+_]](override val inner: Monad[n]) extends Mo
         override def mplus[a](m: m[a])(n: Lazy[m[a]]): m[a] = _ListT {
             for { a <- run(m); b <- run(n) } yield a ++: b
         }
-        // MonadTrans
-        override def lift[a](n: n[a]): m[a] = _ListT {
-            for { a <- n } yield List(a)
-        }
+        // MonadT
+        /*private*/ type u[+a] = List[a]
+        override val innerMonad: Monad[n] = inner
+        override val baseMonad: Monad[u] = Monad[List.type]
     }
 }

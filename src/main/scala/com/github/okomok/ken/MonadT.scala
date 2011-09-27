@@ -17,6 +17,18 @@ trait MonadT[m[+_], n[+_], u[+_]] extends Newtype1[m, ({type ot[+a] = n[u[a]]})#
 
     final val asMonadT: MonadT[m, n, u] = this
 
+    // Core
+    //
+    def innerMonad: Monad[n]
+    def baseMonad: Monad[u]
+
+    // Overrides
+    //
+    // MonadTrans
+    override def lift[a](n: n[a]): m[a] = newOf { innerMonad.liftM((a: a) => baseMonad.`return`(a))(n) }
+
+    // Extra
+    //
     def map[n_[+_], a, b](f: n[u[a]] => n_[u[b]])(n: m[a]): NewtypeOf[n_[u[b]]] = NewtypeOf { f(oldOf(n)) }
     implicit def dependent[a](n: NewtypeOf[n[u[a]]]): m[a] = newOf { n.get }
 }
@@ -29,6 +41,9 @@ trait MonadTProxy[m[+_], n[+_], u[+_]] extends Newtype1Proxy[m, ({type ot[+a] = 
     override def selfNewtype1: Newtype1[m, ({type ot[+a] = n[u[a]]})#ot] = selfMonadT
     override def selfMonad: Monad[m] = selfMonadT
     override def selfMonadTrans: MonadTrans[m, n] = selfMonadT
+
+    override def innerMonad: Monad[n] = selfMonadT.innerMonad
+    override def baseMonad: Monad[u] = selfMonadT.baseMonad
 
     override def map[n_[+_], a, b](f: n[u[a]] => n_[u[b]])(n: m[a]): NewtypeOf[n_[u[b]]] = selfMonadT.map(f)(n)
     override def dependent[a](n: NewtypeOf[n[u[a]]]): m[a] = selfMonadT.dependent(n)

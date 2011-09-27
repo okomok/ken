@@ -37,9 +37,21 @@ class MonadTransTest extends org.scalatest.junit.JUnit3Suite {
         ()
     }
 
+    def testErrorT {
+        MonadError[String, WeakIdentity.ErrorT.apply[String]]
+        MonadError[String, IO.ErrorT.apply[String]]
+        MonadIO[IO.ListT.type]
+        MonadIO[IO.ErrorT.apply[String]]
+
+        val wr = MonadWriter[Monoid.All, Writer.apply[Monoid.All]]
+        MonadWriter[Monoid.All, wr.ErrorT.apply[String]]
+    }
+
+/*
     def testControlInstance {
         val i1 = MonadTransControl[IO.ReaderT.apply[Int]]
         val i2 = MonadTransControl[List.ErrorT.apply[String]]
         ()
     }
+*/
 }

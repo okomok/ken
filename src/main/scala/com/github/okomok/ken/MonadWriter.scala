@@ -46,7 +46,7 @@ trait MonadWriterProxy[w, m[+_]] extends MonadWriter[w, m] with MonadProxy[m] {
 
 
 object MonadWriter {
-    def apply[w, m[+_]](implicit i: MonadWriter[w, m]) = i
+    def apply[w, m <: Kind.Function1](implicit i: MonadWriter[w, m#apply]): MonadWriter[w, m#apply] = i
 
     def deriving[w, nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply, nt#oldtype1], i: MonadWriter[w, nt#oldtype1]): MonadWriter[w, nt#apply] = new MonadWriter[w, nt#apply] with MonadProxy[nt#apply] {
         private type m[+a] = nt#apply[a]
