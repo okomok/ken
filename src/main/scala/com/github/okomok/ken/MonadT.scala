@@ -8,28 +8,30 @@ package com.github.okomok
 package ken
 
 
-// Unused for now.
-
-
 // Monad-Transformer (stateless only...)
 //
-trait MonadT[m[+_], n[+_], u[+_]] extends /*Newtype1[m, ({type ot[+a] = n[u[a]]})#ot] with*/ Monad[m] with MonadTrans[m, n] with Kind.MonadT {
+trait MonadT[m[+_], n[+_], u[+_]] extends Newtype1[m, ({type ot[+a] = n[u[a]]})#ot]
+    with Monad[m] with MonadTrans[m, n] with Kind.MonadT
+{
     override type baseMonad[+a] = u[a]
 
     final val asMonadT: MonadT[m, n, u] = this
 
-    def newOf[a](n: n[u[a]]): m[a]
-    def oldOf[a](m: m[a]): n[u[a]]
+    def map[n_[+_], a, b](f: n[u[a]] => n_[u[b]])(n: m[a]): NewtypeOf[n_[u[b]]] = NewtypeOf { f(oldOf(n)) }
+    implicit def dependent[a](n: NewtypeOf[n[u[a]]]): m[a] = newOf { n.get }
 }
 
 
-trait MonadTProxy[m[+_], n[+_], u[+_]] extends MonadT[m, n, u] with MonadProxy[m] with MonadTransProxy[m, n] {
+trait MonadTProxy[m[+_], n[+_], u[+_]] extends Newtype1Proxy[m, ({type ot[+a] = n[u[a]]})#ot]
+    with MonadT[m, n, u] with MonadProxy[m] with MonadTransProxy[m, n]
+{
     def selfMonadT: MonadT[m, n, u]
+    override def selfNewtype1: Newtype1[m, ({type ot[+a] = n[u[a]]})#ot] = selfMonadT
     override def selfMonad: Monad[m] = selfMonadT
     override def selfMonadTrans: MonadTrans[m, n] = selfMonadT
 
-    override def newOf[a](n: n[u[a]]): m[a] = selfMonadT.newOf(n)
-    override def oldOf[a](m: m[a]): n[u[a]] = selfMonadT.oldOf(m)
+    override def map[n_[+_], a, b](f: n[u[a]] => n_[u[b]])(n: m[a]): NewtypeOf[n_[u[b]]] = selfMonadT.map(f)(n)
+    override def dependent[a](n: NewtypeOf[n[u[a]]]): m[a] = selfMonadT.dependent(n)
 }
 
 

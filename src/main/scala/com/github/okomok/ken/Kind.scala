@@ -78,7 +78,7 @@ object Kind {
     // MonadT
     //
     trait MonadT extends MonadTrans {
-        type oldtype1[+a] = innerMonad[baseMonad[a]]
+        //type oldtype1[+a] = innerMonad[baseMonad[a]]
         type baseMonad[+a]
     }
 
