@@ -100,7 +100,7 @@ object Poly {
         // Arbitary
         override def arbitary: arbitary = Gen.fmap((x: Integer) => OrdA(Integer.abs(x) + 1))(_ia.arbitary)
         override def shrink: shrink = { case OrdA(x) => for { x_ <- _ia.shrink(x) if x_ > 0 } yield OrdA(x_) }
-        // OrdAoArbitary
+        // CoArbitary
         type a = OrdA
         override def coarbitary[c](a: a)(gen: Gen[c]): Gen[c] = _ic.coarbitary(unOrdA(a))(gen)
 
@@ -124,7 +124,7 @@ object Poly {
         // Arbitary
         override def arbitary: arbitary = Gen.fmap((x: Integer) => OrdB(Integer.abs(x) + 1))(_ia.arbitary)
         override def shrink: shrink = { case OrdB(x) => for { x_ <- _ia.shrink(x) if x_ > 0 } yield OrdB(x_) }
-        // OrdBoArbitary
+        // CoArbitary
         type a = OrdB
         override def coarbitary[c](a: a)(gen: Gen[c]): Gen[c] = _ic.coarbitary(unOrdB(a))(gen)
 
@@ -148,7 +148,7 @@ object Poly {
         // Arbitary
         override def arbitary: arbitary = Gen.fmap((x: Integer) => OrdC(Integer.abs(x) + 1))(_ia.arbitary)
         override def shrink: shrink = { case OrdC(x) => for { x_ <- _ia.shrink(x) if x_ > 0 } yield OrdC(x_) }
-        // OrdCoArbitary
+        // CoArbitary
         type a = OrdC
         override def coarbitary[c](a: a)(gen: Gen[c]): Gen[c] = _ic.coarbitary(unOrdC(a))(gen)
 

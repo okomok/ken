@@ -38,4 +38,10 @@ object Annotation {
      * Scalac is a good compiler.
      */
     class compilerWorkaround(version: JString) extends StaticAnnotation
+
+    /**
+     * Without a named value in case class `copy`,
+     * scalac complains "java.lang.Error: symbol value xxx does not exist".
+     */
+    class CaseClassCopyWorkaround extends compilerWorkaround("2.9.1")
 }

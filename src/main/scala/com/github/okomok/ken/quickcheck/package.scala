@@ -22,4 +22,8 @@ package object quickcheck {
         import IO.>>=
         SomeException.`try`(m >>= Exception.evaluate)
     }
+
+    // Property
+    //
+    type Property = Gen[Prop]
 }
