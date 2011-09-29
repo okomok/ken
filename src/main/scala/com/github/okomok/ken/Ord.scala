@@ -104,6 +104,20 @@ object Ord extends OrdInstance with OrdShortcut {
     }
 
     def weak[nt <: Kind.Newtype0](implicit j: Newtype0[nt#apply0, nt#oldtype0, _], i: Ord[nt#apply0]): Ord[nt#oldtype0] = deriving[Kind.coNewtype0[nt]](j.coNewtype, i)
+
+    def asScalaOrdering[a](implicit i: Ord[a]): scala.Ordering[a] = new scala.Ordering[a] {
+        override def compare(x: a, y: a): Int = i.compare(x)(y) match {
+            case EQ => 0
+            case LT => -1
+            case GT => 1
+        }
+        override def lteq(x: a, y: a): Boolean = i.op_<=(x)(y)
+        override def gteq(x: a, y: a): Boolean = i.op_>=(x)(y)
+        override def lt(x: a, y: a): Boolean = i.op_<(x)(y)
+        override def gt(x: a, y: a): Boolean = i.op_>(x)(y)
+        override def max(x: a, y: a): a = i.max(x)(y)
+        override def min(x: a, y: a): a = i.min(x)(y)
+    }
 }
 
 

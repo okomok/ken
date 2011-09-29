@@ -16,9 +16,13 @@ package quickcheck
 trait Testable[prop] extends Typeclass0[prop] {
     final val asTestable: Testable[prop] = this
 
+    // Core
+    //
     type property = prop => Property
     def property: property
 
+    // Extra
+    //
     type mapResult = (Result => Result) => prop => Property
     def mapResult: mapResult = f => {
         val wrap: (Result => Result) => Result => IO[Result] = f => res => for {
@@ -101,8 +105,8 @@ trait Testable[prop] extends Typeclass0[prop] {
         }
     }
 
-    type op_==> = Bool => prop => Property
-    def op_==> : op_==> = {
+    type op_==>: = Bool => prop => Property
+    def op_==>: : op_==>: = {
         case False => _ => Testable.property()
         case True => p => property(p)
     }
@@ -127,7 +131,68 @@ trait Testable[prop] extends Typeclass0[prop] {
         }
     }
 
+    def op_:&:[prop2](p1: prop)(p2: prop2)(implicit j: Testable[prop2]): Property = {
+        import Gen.>>=
+        Arbitary.ofBool.arbitary >>= { (b: Bool) =>
+            Testable.ofProperty.whenFail(IO.putStrLn(if (b) "LHS" else "RHS")) {
+                if (b) property(p1) else j.property(p2)
+            }
+        }
+    }
 
+    // Operators
+    //
+    private[quickcheck] sealed class Op_==>:(b: Bool) {
+        def ==>:(p: prop): Property = op_==>:(b)(p)
+    }
+    final implicit def ==>:(b: Bool): Op_==>: = new Op_==>:(b)
+
+    private[quickcheck] sealed class Op_:&:(p1: prop) {
+        def :&:[prop2](p2: prop2)(implicit j: Testable[prop2]): Property = op_:&:(p1)(p2)
+    }
+    final implicit def ==>:(p1: prop): Op_:&: = new Op_:&:(p1)
+
+    // Test
+    //
+    type quickCheck = prop => IO[Unit]
+    def quickCheck: quickCheck = p => quickCheckWith(Test.stdArgs)(p)
+
+    type quickCheckWith = Test.Args => prop => IO[Unit]
+    def quickCheckWith: quickCheckWith = args => p => {
+        import IO.>>
+        quickCheckWithResult(args)(p) >> IO.`return`()
+    }
+
+    type quickCheckWithResult = Test.Args => prop => IO[Test.Result]
+    def quickCheckWithResult: quickCheckWithResult = args => p => for {
+        tm <- Str.newTerminal
+        rnd <- args.replay match {
+            case Nothing => Random.newStdGen
+            case Just((rnd, _)) => IO.`return`(rnd)
+        }
+        * <- Test.test(
+            State(
+                terminal = tm,
+                maxSuccessTests = args.maxSuccess,
+                maxDiscardedTests = args.maxDiscard,
+                computeSize = args.replay match {
+                    case Nothing => n => d => {
+                        import Int._div_
+                        (n * args.maxSize) _div_ (args.maxSuccess + (d _div_ 10))
+                    }
+                    case Just((_, s)) => _ => _ => s
+                },
+                numSuccessTests = 0,
+                numDiscardedTests = 0,
+                collected = Nil,
+                expectedFailure = False,
+                randomSeed = rnd,
+                isShrinking = False,
+                numSuccessShrinks = 0,
+                numTryShrinks = 0
+            )
+        )(property(p).get)
+    } yield *
 }
 
 

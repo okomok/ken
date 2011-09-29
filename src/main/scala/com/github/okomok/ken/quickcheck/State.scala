@@ -13,19 +13,37 @@ package ken
 package quickcheck
 
 
+import Random.StdGen
+
+
 final case class State(
     terminal: Terminal,
     maxSuccessTests: Int,
-    maxDiscardTests: Int,
+    maxDiscardedTests: Int,
     computeSize: Int => Int => Int,
 
     numSuccessTests: Int,
     numDiscardedTests: Int,
     collected: List[List[(String, Int)]],
     expectedFailure: Bool,
-    randomSeed: Random.StdGen,
+    randomSeed: StdGen,
 
     isShrinking: Bool,
     numSuccessShrinks: Int,
     numTryShrinks: Int
 )
+
+
+object State {
+    val terminal: State => Terminal = _.terminal
+    val maxSuccessTests: State => Int = _.maxSuccessTests
+    val computeSize: State => Int => Int => Int = _.computeSize
+    val numSuccessTests: State => Int = _.numSuccessTests
+    val numDiscardedTests: State => Int = _.numDiscardedTests
+    val collected: State => List[List[(String, Int)]] = _.collected
+    val expectedFailure: State => Bool = _.expectedFailure
+    val randomSeed: State => StdGen =_.randomSeed
+    val isShrinking: State => Bool = _.isShrinking
+    val numSuccessShrinks: State => Int = _.numSuccessShrinks
+    val numTryShrinks: State => Int = _.numTryShrinks
+}

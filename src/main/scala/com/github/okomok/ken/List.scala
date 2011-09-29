@@ -151,6 +151,8 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
         }
     }
 
+    implicit def _asScalaOrdering[a](implicit i: scala.Ordering[a]): scala.Ordering[List[a]] = Ord.asScalaOrdering(_asOrd[a])
+
     // Conversions
     //
     def from[a](that: List[a]): List[a] = that

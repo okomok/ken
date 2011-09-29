@@ -17,6 +17,9 @@ package quickcheck
 
 
 object Property {
+
+    // Lifting
+    //
     val liftBool: Bool => Property = b => liftResult {
         Result.result.copy(ok = Just(b), reason = if (b) "" else "Falsifiable")
     }

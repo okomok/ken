@@ -35,6 +35,8 @@ object Gen extends Monad[Gen] with ThisIsInstance {
         m_(r2)(n)
     }
 
+    def unGen[a](g: Gen[a]): StdGen => Int => a = g.get
+
     def variant[n, a](k: n)(g: Gen[a])(implicit i: Integral[n]): Gen[a] = {
         import i._
         val k_ = k _div_ 2
