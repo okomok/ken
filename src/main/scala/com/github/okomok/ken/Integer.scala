@@ -15,7 +15,7 @@ package ken
 
 
 // `object Integer` crashes scalac.
-private[ken] object _Integer extends Enum[Integer] with Eq.Of[Integer]
+private[ken] object _Integer extends Enum[Integer] with Eq.Default[Integer]
     with Integral[Integer] with Ix[Integer] with Random[Integer] with Show[Integer]
 {
     // Overrides

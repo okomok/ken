@@ -81,7 +81,7 @@ trait Testable[prop] extends Typeclass0[prop] {
     type label = String => prop => Property
     def label: label = s => classify(True)(s)
 
-    def collect[a](x: a): prop => Property = label(Show.show(x))
+    def collect[a](x: a)(implicit i: Show[a]): prop => Property = label(Show.show(x))
 
     type classify = Bool => String => prop => Property
     def classify: classify = b => s => cover(b)(0)(s)
@@ -110,7 +110,7 @@ trait Testable[prop] extends Typeclass0[prop] {
         case True => p => property(p)
     }
 
-    def forAll[a](gen: Gen[a])(pf: a => prop): Property = {
+    def forAll[a](gen: Gen[a])(pf: a => prop)(implicit i: Show[a]): Property = {
         gen >>= { (x: a) =>
             Testable.ofProperty.whenFail(IO.putStrLn(Show.show(x))) {
                 property(pf(x))
@@ -118,7 +118,7 @@ trait Testable[prop] extends Typeclass0[prop] {
         }
     }
 
-    def forAllShrink[a](gen: Gen[a])(shrink: a => List[a])(pf: a => prop): Property = {
+    def forAllShrink[a](gen: Gen[a])(shrink: a => List[a])(pf: a => prop)(implicit i: Show[a]): Property = {
         gen >>= { (x: a) =>
             Testable.ofProperty.shrinking(shrink)(x) { (x_ : a) =>
                 Testable.ofProperty.whenFail(IO.putStrLn(Show.show(x_))) {
@@ -220,7 +220,7 @@ sealed trait TestableInstance { this: Testable.type =>
         override val property: property = mp => for { p <- mp; * <- i.property(p) } yield *
     }
 
-    implicit def ofFunction[a, prop](implicit i: Testable[prop], j: Arbitary[a]): Testable[a => prop] = new Testable[a => prop] {
+    implicit def ofFunction[a, prop](implicit i: Testable[prop], j: Arbitary[a], k: Show[a]): Testable[a => prop] = new Testable[a => prop] {
         override val property: property = f => i.forAllShrink(j.arbitary)(j.shrink)(f)
     }
 }

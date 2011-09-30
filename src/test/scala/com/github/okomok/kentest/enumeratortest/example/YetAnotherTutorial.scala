@@ -57,7 +57,7 @@ class YetAnotherTutorialTest extends org.scalatest.junit.JUnit3Suite {
     def testTrivial {
         val my = new My[IO.type]
         import IO.>>=
-        val io = my.run_(my.sum8) >>= IO.print
+        val io = my.run_(my.sum8) >>= (x => IO.print(x))
         io.!
     }
 }

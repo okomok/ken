@@ -67,7 +67,7 @@ object Ratio {
         gcd_(abs(x))(abs(y))
     }
 
-    implicit def _asRealFrac[z](implicit i: Integral[z]): RealFrac[Ratio[z]] = new RealFrac[Ratio[z]] with Eq.Of[Ratio[z]] {
+    implicit def _asRealFrac[z](implicit i: Integral[z]): RealFrac[Ratio[z]] = new RealFrac[Ratio[z]] with Eq.Default[Ratio[z]] {
         // Ord
         override val op_< : op_< = { case Ratio(x, y) => { case Ratio(x_, y_) =>
             i.op_<(i.op_*(x)(y_))(i.op_*(x_)(y))
@@ -114,5 +114,9 @@ object Ratio {
         override val pred: a => a = x => j.op_-(x)(j.fromIntegral(1))
         override val toEnum: Int => a = n => new Ratio(i.fromIntegral(n), i.fromIntegral(1))
         override val fromEnum: a => Int = Num[Kind.const[Int]].fromInteger `.` j.truncate[Integer]
+    }
+
+    implicit def _asShow[a](implicit i: Show[a]): Show[Ratio[a]] = new Show[Ratio[a]] {
+        override val showsPrec: showsPrec = _ => { case Ratio(x, y) => Show.showString("Ratio(") `.` i.shows(x) `.` Show.showChar(',') `.` i.shows(y) `.` Show.showString(")") }
     }
 }

@@ -36,7 +36,7 @@ object CoArbitary extends CoArbitaryInstance with CoArbitaryShortcut {
 
     def coarbitaryReal[a, b](x: a)(g: Gen[b])(implicit i: Real[a]): Gen[b] = coarbitary(i.toRational(x))(g)
 
-    def coarbitaryShow[a, b](x: a)(g: Gen[b]): Gen[b] = coarbitary(Show.show(x))(g)
+    def coarbitaryShow[a, b](x: a)(g: Gen[b])(implicit i: Show[a]): Gen[b] = coarbitary(Show.show(x))(g)
 }
 
 

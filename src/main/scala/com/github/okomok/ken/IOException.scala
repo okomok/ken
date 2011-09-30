@@ -11,7 +11,7 @@ package ken
 final case class IOException(rep: java.io.IOException)
 
 
-object IOException extends Eq.Of[IOException] with Show.Of[IOException]
+object IOException extends Eq.Default[IOException] with Show.Default[IOException]
     with Exception[IOException] with TypeableProxy[IOException] with ThisIsInstance
 {
     override val selfTypeable = Typeable.of[IOException]

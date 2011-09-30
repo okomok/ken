@@ -17,7 +17,7 @@ package ken
 import java.lang.{Integer => JInt}
 
 
-object Int extends Bounded[Int] with Enum[Int] with Eq.Of[Int]
+object Int extends Bounded[Int] with Enum[Int] with Eq.Default[Int]
     with Integral[Int] with Ix[Int] with Random[Int] with Show[Int]
 {
     // Overrides

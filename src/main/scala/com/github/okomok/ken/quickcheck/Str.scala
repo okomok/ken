@@ -22,7 +22,7 @@ final case class Str(override val get: String) extends NewtypeOf[String] {
 
 
 object Str {
-    def ranges[a](k: a)(n: a)(implicit i: Integral[a]): Str = {
+    def ranges[a](k: a)(n: a)(implicit i: Integral[a], j: Show[a]): Str = {
         import i._
         val n_ = k * (n _div_ k)
         Str(Show.show(n_) ++: " -- " ++: Show.show(n_ + k - 1))
@@ -39,8 +39,7 @@ object Str {
         else s
     }
 
-    // def showErr[a](x: a)(implicit i: Show[a]): String = List.unwords(List.words(i.show(x)))
-    val showErr: Any => String = x => List.unwords(List.words(Show.show(x)))
+    def showErr[a](x: a)(implicit i: Show[a]): String = List.unwords(List.words(i.show(x)))
 
     val bold: String => String = s => s
 

@@ -14,7 +14,6 @@ package com.github.okomok
 package ken
 
 
-// @Annotation.ceremonial("shall be equivalent to `Any.toString`") // comment out for weird `xs` name collision
 trait Show[a] extends Typeclass0[a] {
     final val asShow: Show[apply0] = this
 
@@ -27,7 +26,6 @@ trait Show[a] extends Typeclass0[a] {
     def show: show = x => shows(x)("")
 
     type showList = List[a] => ShowS
-    // @Annotation.ceremonial("hard-coded in `List.toString`") // comment out for duplicate field
     final def showList: showList = ls => s => showList__(shows)(ls)(s)
 
     // Extra
@@ -77,14 +75,17 @@ object Show extends ShowInstance with ShowShortcut {
     val showParen: Bool => ShowS => ShowS = b => p => if (b) showChar('(') `.` p `.` showChar(')') else p
     val showSpace: ShowS = xs => ' ' :: xs
 
-    trait Of[a] extends Show[a] {
+    trait Default[a] extends Show[a] {
         override val showsPrec: showsPrec = _ => a => showString(a.toString)
+    }
+
+    private[ken] val show_tuple: List[ShowS] => ShowS = ss => {
+        showChar('(') `.` List.foldr1((s: ShowS) => (r: Lazy[ShowS]) => s `.` showChar(',') `.` r)(ss) `.` showChar(')')
     }
 }
 
 
 sealed trait ShowInstance { this: Show.type =>
-/*
     implicit val ofBool: Show[Bool] = _Bool
     implicit val ofChar: Show[Char] = Char
     implicit val ofDouble: Show[Double] = Double
@@ -92,16 +93,31 @@ sealed trait ShowInstance { this: Show.type =>
     implicit val ofInt: Show[Int] = Int
     implicit val ofInteger: Show[Integer] = _Integer
     implicit val ofUnit: Show[Unit] = Unit
-    implicit val ofNothing: Show[Nothing] = of[Nothing]
-*/
-    implicit def of[a]: Show[a] = new Of[a] {}
+    implicit val ofNothing: Show[Nothing] = default[Nothing]
+
+    /*implicit*/ def default[a]: Show[a] = new Default[a] {}
+
+    implicit def ofTuple2[a, b](implicit i1: Show[a], i2: Show[b]): Show[(a, b)] = new Show[(a, b)] {
+        override val showsPrec: showsPrec = _ => { case (a, b) => show_tuple(List(i1.shows(a), i2.shows(b))) }
+    }
+
+    implicit def ofTuple3[a, b, c](implicit i1: Show[a], i2: Show[b], i3: Show[c]): Show[(a, b, c)] = new Show[(a, b, c)] {
+        override val showsPrec: showsPrec = _ => { case (a, b, c) => show_tuple(List(i1.shows(a), i2.shows(b), i3.shows(c))) }
+    }
+
+    implicit def ofTuple4[a, b, c, d](implicit i1: Show[a], i2: Show[b], i3: Show[c], i4: Show[d]): Show[(a, b, c, d)] = new Show[(a, b, c, d)] {
+        override val showsPrec: showsPrec = _ => { case (a, b, c, d) => show_tuple(List(i1.shows(a), i2.shows(b), i3.shows(c), i4.shows(d))) }
+    }
+
+    implicit def ofTuple5[a, b, c, d, e](implicit i1: Show[a], i2: Show[b], i3: Show[c], i4: Show[d], i5: Show[e]): Show[(a, b, c, d, e)] = new Show[(a, b, c, d, e)] {
+        override val showsPrec: showsPrec = _ => { case (a, b, c, d, e) => show_tuple(List(i1.shows(a), i2.shows(b), i3.shows(c), i4.shows(d), i5.shows(e))) }
+    }
 }
 
 
 sealed trait ShowShortcut { this: Show.type =>
     def showsPrec[a](x: Int)(s: a)(implicit i: Show[a]): ShowS = i.showsPrec(x)(s)
-    // def show[a](s: a)(implicit i: Show[a]): String = i.show(s)
-    val show: Any => String = s => of[Any].show(s)
+    def show[a](s: a)(implicit i: Show[a]): String = i.show(s)
     def showList[a](ls: List[a])(implicit i: Show[a]): ShowS = i.showList(ls)
     def shows[a](x: a)(implicit i: Show[a]): ShowS = i.shows(x)
 }

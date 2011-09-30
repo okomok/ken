@@ -69,8 +69,7 @@ object IO extends MonadControlIO[IO] with ThisIsInstance {
         for { _ <- putStr(s); _ <- putChar('\n') } yield ()
     }
 
-    // def print[a](x: a)(implicit i: Show[a]): IO[Unit] = putStrLn(i.show(x))
-    val print: Any => IO[Unit] = x => putStrLn(Show.show(x))
+    def print[a](x: a)(implicit i: Show[a]): IO[Unit] = putStrLn(i.show(x))
 
     // Input functions
     //
@@ -147,11 +146,11 @@ object IO extends MonadControlIO[IO] with ThisIsInstance {
         case _ => ioError(userError("non-flushable handle"))
     }
 
-    val hPrint: Handle => Any => IO[Unit] = {
-        case Handle(rep: java.io.PrintStream) => x => returnIO { rep.print(Show.show(x)) }
-        case _ => _ => ioError(userError("non-printable handle"))
+    def hPrint[a](h: Handle)(x: a)(implicit i: Show[a]): IO[Unit] = h match {
+        case Handle(rep: java.io.PrintStream) => returnIO { rep.print(Show.show(x)) }
+        case _ => ioError(userError("non-printable handle"))
     }
 
-    val hPutStr: Handle => String => IO[Unit] = hPrint
+    val hPutStr: Handle => String => IO[Unit] = h => x => hPrint(h)(x)
     val hPutStrLn: Handle => String => IO[Unit] = h => s => hPutStr(h)(s ++: List.from("\n"))
 }

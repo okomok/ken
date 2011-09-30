@@ -73,10 +73,10 @@ object Gen extends Monad[Gen] with ThisIsInstance {
         }
     }
 
-    val sample: Gen[Any] => IO[Unit] = g => {
+    def sample[a](g: Gen[a])(implicit i: Show[a]): IO[Unit] = {
         for {
             cases <- `sample'`(g)
-            * <- IO.sequence_(List.map(IO.print)(cases))
+            * <- IO.sequence_(List.map((x: a) => IO.print(x))(cases))
         } yield *
     }
 

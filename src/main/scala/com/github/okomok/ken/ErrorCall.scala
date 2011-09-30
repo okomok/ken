@@ -11,7 +11,7 @@ package ken
 final case class ErrorCall(s: String)
 
 
-object ErrorCall extends Eq.Of[ErrorCall] with Show.Of[ErrorCall]
+object ErrorCall extends Eq.Default[ErrorCall] with Show.Default[ErrorCall]
     with Exception[ErrorCall] with TypeableProxy[ErrorCall] with ThisIsInstance
 {
     override val selfTypeable = Typeable.of[ErrorCall]

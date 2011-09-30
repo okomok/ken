@@ -114,14 +114,13 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
 
     // Instances
     //
-/*
     implicit def _asShow[a](implicit i: Show[a]): Show[List[a]] = new Show[List[a]] {
         override val showsPrec: showsPrec = _ => x => i.showList(x)
     }
 
-    // Workaround for 2.9.1
+    @Annotation.compilerWorkaround("2.9.1")
     implicit val _asShowNothing: Show[List[Nothing]] = _asShow[Nothing](Show.ofNothing)
-*/
+
     implicit def _asMonoid[a]: Monoid[List[a]] = new Monoid[List[a]] {
         private type m = List[a]
         override val mempty: m = Nil
@@ -129,7 +128,7 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
     }
 
     implicit def _asOrd[a](implicit i: Ord[a]): Ord[List[a]] = new Ord[List[a]] with EqProxy[List[a]] {
-        override val selfEq = Eq.of[List[a]]
+        override val selfEq = Eq.default[List[a]]
         override val compare: List[a] => List[a] => Ordering = {
             @tailrec
             def impl(x: List[a])(y: List[a]): Ordering = (x, y) match {

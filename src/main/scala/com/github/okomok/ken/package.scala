@@ -14,6 +14,23 @@ package object ken {
     type Eq[a] = _Eq[a]
     val Eq = _Eq
 
+    def op_===[a](x: a)(y: a)(implicit i: _Eq[a]): Bool = i.op_===(x)(y)
+    def op_/==[a](x: a)(y: a)(implicit i: _Eq[a]): Bool = i.op_/==(x)(y)
+
+    private[ken] class _Op_===[a](x: a)(implicit i: _Eq[a]) {
+        def ===(y: a): Bool = op_===(x)(y)
+    }
+    implicit def ===[a](x: a)(implicit i: _Eq[a]): _Op_===[a] = new _Op_===(x)
+
+    private[ken] class _Op_/==[a](x: a)(implicit i: _Eq[a]) {
+        def /==(y: a): Bool = op_/==(x)(y)
+    }
+    implicit def /==[a](x: a)(implicit i: _Eq[a]): _Op_/==[a] = new _Op_/==(x)
+
+    // Show
+    //
+    def show[a](s: a)(implicit i: Show[a]): String = i.show(s)
+
     // Miscellaneous functions
     //
     def id[a]: a => a = x => x

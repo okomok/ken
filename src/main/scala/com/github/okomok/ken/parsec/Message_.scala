@@ -25,7 +25,7 @@ final case class Expect(s: String) extends Message_
 final case class Message(s: String) extends Message_
 
 
-object Message_ extends Enum[Message_] with Eq.Of[Message_] with Ord[Message_] with ThisIsInstance {
+object Message_ extends Enum[Message_] with Eq.Default[Message_] with Ord[Message_] with ThisIsInstance {
     // Overrides
     //
     // Enum

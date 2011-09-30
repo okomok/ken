@@ -32,7 +32,7 @@ class MainTezt {
 
         for {
             _ <- io
-            _ <- IO.print("\n\n")
+            _ <- IO.print("\n\n")(Show.default[JString])
         } yield ()
     }
 

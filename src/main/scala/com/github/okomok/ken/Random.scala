@@ -63,7 +63,7 @@ object Random extends RandomInstance with RandomShortcut {
         override def toString = "StdGen(" + s + ")"
     }
 
-    object StdGen extends RandomGen[StdGen] with Show.Of[StdGen] with ThisIsInstance {
+    object StdGen extends RandomGen[StdGen] with Show.Default[StdGen] with ThisIsInstance {
         def apply(s: Int): StdGen = new StdGen(s)
 
         // Overrides

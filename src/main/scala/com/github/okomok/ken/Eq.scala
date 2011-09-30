@@ -12,7 +12,6 @@ package ken
 // (Toplevel identifier is case-insensitive under the influence of file-system.)
 
 
-// @Annotation.ceremonial("shall be equivalent to `Any.==`") // comment out for weird `xs` name collision
 trait _Eq[a] extends Typeclass0[a] {
     final val asEq: _Eq[apply0] = this
 
@@ -56,12 +55,12 @@ object _Eq extends EqInstance with EqShortcut {
 
     def weak[nt <: Kind.Newtype0](implicit j: Newtype0[nt#apply0, nt#oldtype0, _], i: _Eq[nt#apply0]): _Eq[nt#oldtype0] = deriving[Kind.coNewtype0[nt]](j.coNewtype, i)
 
-    trait Of[a] extends _Eq[a] {
+    trait Default[a] extends _Eq[a] {
         override val op_=== : op_=== = x => y => x == y
         override val op_/== : op_/== = x => y => x != y
     }
 
-    def of[a]: _Eq[a] = new Of[a] {}
+    def default[a]: _Eq[a] = new Default[a] {}
 
     def byRef[a <: AnyRef]: _Eq[a] = new _Eq[a] {
         override val op_=== : op_=== = x => y => x eq y
@@ -81,19 +80,6 @@ sealed trait EqInstance { this: _Eq.type =>
 
 
 sealed trait EqShortcut { this: _Eq.type =>
-    def op_===[a](x: a)(y: a): Bool = Eq.of[a].op_===(x)(y)
-    def op_/==[a](x: a)(y: a): Bool = Eq.of[a].op_/==(x)(y)
-
-    private[ken] class _Op_===[a](x: a) {
-        def ===(y: a): Bool = op_===(x)(y)
-    }
-    implicit def ===[a](x: a): _Op_===[a] = new _Op_===(x)
-
-    private[ken] class _Op_/==[a](x: a) {
-        def /==(y: a): Bool = op_/==(x)(y)
-    }
-    implicit def /==[a](x: a): _Op_/==[a] = new _Op_/==(x)
-/*
     def op_===[a](x: a)(y: a)(implicit i: _Eq[a]): Bool = i.op_===(x)(y)
     def op_/==[a](x: a)(y: a)(implicit i: _Eq[a]): Bool = i.op_/==(x)(y)
 
@@ -106,5 +92,4 @@ sealed trait EqShortcut { this: _Eq.type =>
         def /==(y: a): Bool = op_/==(x)(y)
     }
     implicit def /==[a](x: a)(implicit i: _Eq[a]): _Op_/==[a] = new _Op_/==(x)
-*/
 }

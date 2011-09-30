@@ -17,7 +17,7 @@ package ken
 final case class SomeException(rep: (e, Exception[e]) forSome { type e }) extends Throwable
 
 
-object SomeException extends Eq.Of[SomeException] with Show.Of[SomeException]
+object SomeException extends Eq.Default[SomeException] with Show.Default[SomeException]
     with Exception[SomeException] with TypeableProxy[SomeException] with ThisIsInstance
 {
     def apply[e](e: e)(implicit i: Exception[e]): SomeException = new SomeException(e, i)

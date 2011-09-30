@@ -16,7 +16,7 @@ class ExceptionTest extends org.scalatest.junit.JUnit3Suite {
     case object ThisException extends MyException
     case object ThatException extends MyException
 
-    object MyException extends Exception[MyException] with Eq.Of[MyException] with Show.Of[MyException] with
+    object MyException extends Exception[MyException] with Eq.Default[MyException] with Show.Default[MyException] with
         ThisIsInstance
     {
         override val typeOf: typeOf = _ => implicitly[ClassManifest[MyException]]
