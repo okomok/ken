@@ -75,7 +75,7 @@ object Arbitary extends ArbitaryInstance with ArbitaryShortcut {
         import Integer._
         val mn = Int.minBound
         val mx = Int.maxBound
-        val k: Integer = Int.toInteger(2) _pow_ (Int.toInteger(s) _div_ 5)
+        val k: Integer = Int.toInteger(2) _pow_ ((Int.toInteger(s)*2) _div_ 5)
         for {
             n <- Gen.choose((Int.toInteger(mn) _max_ (-k), Int.toInteger(mx) _min_ k))
         } yield Int.fromInteger(n)

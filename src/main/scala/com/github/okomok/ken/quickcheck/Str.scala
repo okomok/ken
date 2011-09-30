@@ -76,6 +76,9 @@ object Str {
     }
 
     val putTemp: Terminal => String => IO[Unit] = tm => s => {
+        //IO.`return`()
+         IO.`return` { println(s) }
+        /*
         val h = IO.stderr
         for {
             _ <- flush(tm)
@@ -90,6 +93,7 @@ object Str {
                 } yield *
             }
         } yield *
+        */
     }
 
     val putLine: Terminal => String => IO[Unit] = tm => s => {

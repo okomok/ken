@@ -54,7 +54,7 @@ object Test {
         case _ => False
     }
 
-    val stdArgs: Args = Args(null, 100, 500, 100)
+    val stdArgs: Args = Args(Nothing, 100, 500, 100)
 
     // main test loop
     //
@@ -68,14 +68,75 @@ object Test {
         _ <- if (st.expectedFailure) Str.putPart(st.terminal)("+++ OK, passed " ++: Show.show(st.numSuccessTests) ++: List.from(" tests"))
              else Str.putPart(st.terminal)(Str.bold("*** Failed!") ++: " Passed " ++: Show.show(st.numSuccessTests) ++: List.from(" tests (expected failure)"))
         _ <- success(st)
-    } yield GaveUp(numTests = st.numSuccessTests, labels = summary(st))
+    } yield {
+        if (st.expectedFailure) Success(labels = summary(st))
+        else NoExpectedFailure(labels = summary(st))
+    }
 
     val giveUp: State => (StdGen => Int => Prop) => IO[Result] = st => f => for {
         _ <- Str.putPart(st.terminal)(Str.bold("*** Gave up!") ++: " Passed only " ++: Show.show(st.numSuccessTests) ++: List.from(" tests"))
         _ <- success(st)
     } yield GaveUp(numTests = st.numSuccessTests, labels = summary(st))
 
-    val runATest: State => (StdGen => Int => Prop) => IO[Result] = st => f => error("todo")
+    val runATest: State => (StdGen => Int => Prop) => IO[Result] = st => f => {
+        val (rnd1, rnd2) = RandomGen.split(st.randomSeed)
+        for {
+            _ <- Str.putTemp(st.terminal)(
+                "(" ++:
+                Str.number(st.numSuccessTests)("test") ++:
+                List.concat {
+                    for {
+                        _ <- List(())
+                        if st.numDiscardedTests > 0
+                    } yield {
+                        "; " ++: Show.show(st.numDiscardedTests) ++: List.from(" discarded")
+                    }
+                } ++:
+                List.from(")") )
+            size = st.computeSize(st.numSuccessTests)(st.numDiscardedTests)
+            (res, ts) <- run(f(rnd1)(size).get)
+            * <- res.ok match {
+                case Just(True) => {
+                    test(
+                        st.copy(
+                            numSuccessTests = st.numSuccessTests + 1,
+                            randomSeed = rnd2,
+                            collected = res.stamp :: st.collected,
+                            expectedFailure = res.expect
+                        )
+                    )(f)
+                }
+                case Nothing => {
+                    test(
+                        st.copy(
+                            numDiscardedTests = st.numDiscardedTests + 1,
+                            randomSeed = rnd2,
+                            expectedFailure = res.expect
+                        )
+                    )(f)
+                }
+                case Just(False) => {
+                    for {
+                        _ <- if (res.expect) Str.putPart(st.terminal)(Str.bold("*** Failed! "))
+                             else Str.putPart(st.terminal)("+++ OK, failed as expected. ")
+                        _ <- Str.putTemp(st.terminal)(
+                            Str.short(30)(res.reason)
+                            ++: " (after "
+                            ++: Str.number(st.numSuccessTests+1)("test")
+                            ++: List.from(")...") )
+                        _ <- foundFailure(st)(res)(ts)
+                    } yield {
+                        if (Bool.not(res.expect)) Success(labels = summary(st))
+                         else Failure(
+                             usedSeed = st.randomSeed,
+                             usedSize = size,
+                             reason = res.reason,
+                             labels = summary(st) )
+                    }
+                }
+            }
+        } yield *
+    }
 
     val summary: State => List[(String, Int)] = st => {
         import Int._div_
@@ -87,7 +148,7 @@ object Test {
             for {
                 s <- st.collected
                 s_ = for { (t, _) <- s } yield t
-                if (Bool.not(List.`null`(s_)))
+                if Bool.not(List.`null`(s_))
             } yield List.concat(List.intersperse(List.from(", "))(s_))
         }))))
     }
@@ -105,7 +166,7 @@ object Test {
             List.sort(
                 for {
                     s <- st.collected
-                    s_ = for { (t, _) <- s } yield t
+                    s_ = for { (t, 0) <- s } yield t
                     if Bool.not(List.`null`(s_))
                 } yield List.concat(List.intersperse(List.from(", "))(s_))
             )))))
@@ -221,6 +282,7 @@ object Test {
                                 "." ++: List.from(Show.show(st.numTryShrinks))
                             }
                         } ++:
+                        " shrink" ++:
                         List.from( if (st.numSuccessShrinks == 1 && st.numTryShrinks == 0) "" else "s" )
                      }
                 } ++:

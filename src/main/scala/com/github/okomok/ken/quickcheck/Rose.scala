@@ -13,7 +13,9 @@ package ken
 package quickcheck
 
 
-final case class Rose[+a](x: a, ts: Lazy[List[Rose[a]]])
+final case class Rose[+a](x: a, ts: Lazy[List[Rose[a]]]) {
+    override def toString: JString = "Rose(" + x + "," + ts.! + ")"
+}
 
 
 object Rose extends Monad[Rose] with ThisIsInstance {
@@ -30,6 +32,6 @@ object Rose extends Monad[Rose] with ThisIsInstance {
     override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = join(fmap(k)(m))
 
     override def join[a](rs: Rose[Rose[a]]): Rose[a] = rs match {
-        case Rose(Rose(x, ts), tts) => Rose(x, List.map((x: Rose[Rose[a]]) => join(x))(tts.!) ++: ts.!)
+        case Rose(Rose(x, ts), tts) => Rose(x, List.map((y: Rose[Rose[a]]) => join(y))(tts.!) ++: ts.!)
     }
 }

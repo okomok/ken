@@ -19,7 +19,6 @@ package object quickcheck {
     def tryEvaluate[a](x: a): IO[Either[SomeException, a]] = tryEvaluateIO(IO.`return`(x))
 
     def tryEvaluateIO[a](m: IO[a]): IO[Either[SomeException, a]] = {
-        import IO.>>=
         SomeException.`try`(m >>= Exception.evaluate)
     }
 

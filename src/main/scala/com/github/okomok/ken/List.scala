@@ -49,14 +49,8 @@ sealed abstract class List[+a] extends Up[List[a]] {
         List.foldl[scala.collection.mutable.Builder[a, To], a](b => x => seq(b += x)(b))(bf())(this).result
     }
 
-    final def toScalaList: scala.List[a] = this match {
-        case Nil => scala.Nil
-        case x :: xs => scala.::(x, xs.!.toScalaList)
-    }
-    final def toScalaStream: scala.Stream[a] = this match {
-        case Nil => scala.Stream.empty
-        case x :: xs => scala.Stream.cons(x, xs.!.toScalaStream)
-    }
+    final def toScalaList: scala.List[a] = breakOut[scala.List[a]]
+    final def toScalaStream: scala.Stream[a] = breakOut[scala.Stream[a]]
 }
 
 

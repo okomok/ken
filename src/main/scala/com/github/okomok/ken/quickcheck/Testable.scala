@@ -35,7 +35,6 @@ trait Testable[prop] extends Typeclass0[prop] {
                 }
             }
         }
-        import IO.>>=
         mapIOResult(io => io >>= wrap(f))
     }
 
@@ -60,13 +59,13 @@ trait Testable[prop] extends Typeclass0[prop] {
     type mapSize = (Int => Int) => prop => Property
     def mapSize: mapSize = f => p => Gen.sized(n => Gen.resize(f(n))(property(p)))
 
-    def shrinking[a](shrink: a => List[a])(x: a)(pf: a => prop): Property = {
+    def shrinking[a](shrink: a => List[a])(a: a)(pf: a => prop): Property = {
         lazy val props: a => Rose[Property] = x => Rose(property(pf(x)), for { x_ <- shrink(x) } yield props(x_))
-        Gen.fmap((ps: Rose[Prop]) => Prop(Rose.join(Rose.fmap(Prop.unProp)(ps))))(Gen.promote(props(x)))
+        Gen.fmap((ps: Rose[Prop]) => Prop(Rose.join(Rose.fmap(Prop.unProp)(ps): Rose[Rose[IO[Result]]]): Rose[IO[Result]]))(Gen.promote(props(a)): Gen[Rose[Prop]])
     }
 
     type callback = Callback => prop => Property
-    def callback: callback = cb => mapResult(res => res.copy(callbacks = cb :: Result.callbacks(res)))
+    def callback: callback = cb => mapResult(res => res.copy(callbacks = cb :: res.callbacks))
 
     type whenFail = IO[Unit] => prop => Property
     def whenFail: whenFail = m => callback { PostFinalFailure { st => res => m } }
@@ -112,7 +111,6 @@ trait Testable[prop] extends Typeclass0[prop] {
     }
 
     def forAll[a](gen: Gen[a])(pf: a => prop): Property = {
-        import Gen.>>=
         gen >>= { (x: a) =>
             Testable.ofProperty.whenFail(IO.putStrLn(Show.show(x))) {
                 property(pf(x))
@@ -121,7 +119,6 @@ trait Testable[prop] extends Typeclass0[prop] {
     }
 
     def forAllShrink[a](gen: Gen[a])(shrink: a => List[a])(pf: a => prop): Property = {
-        import Gen.>>=
         gen >>= { (x: a) =>
             Testable.ofProperty.shrinking(shrink)(x) { (x_ : a) =>
                 Testable.ofProperty.whenFail(IO.putStrLn(Show.show(x_))) {
@@ -132,7 +129,6 @@ trait Testable[prop] extends Typeclass0[prop] {
     }
 
     def op_:&:[prop2](p1: prop)(p2: prop2)(implicit j: Testable[prop2]): Property = {
-        import Gen.>>=
         Arbitary.ofBool.arbitary >>= { (b: Bool) =>
             Testable.ofProperty.whenFail(IO.putStrLn(if (b) "LHS" else "RHS")) {
                 if (b) property(p1) else j.property(p2)
@@ -159,7 +155,6 @@ trait Testable[prop] extends Typeclass0[prop] {
 
     type quickCheckWith = Test.Args => prop => IO[Unit]
     def quickCheckWith: quickCheckWith = args => p => {
-        import IO.>>
         quickCheckWithResult(args)(p) >> IO.`return`()
     }
 
@@ -178,7 +173,7 @@ trait Testable[prop] extends Typeclass0[prop] {
                 computeSize = args.replay match {
                     case Nothing => n => d => {
                         import Int._div_
-                        (n * args.maxSize) _div_ (args.maxSuccess + (d _div_ 10))
+                        ((n * args.maxSize) _div_ args.maxSuccess) + (d _div_ 10)
                     }
                     case Just((_, s)) => _ => _ => s
                 },

@@ -70,7 +70,10 @@ object Random extends RandomInstance with RandomShortcut {
         //
         // RandomGen
         override val next: next = g => (g.rep.nextInt, g)
-        override val split: split = g => (new StdGen(g.s + 1), new StdGen(g.s - 1)) // TODO
+        override val split: split = g => {
+            val (t, _) = next(g)
+            (new StdGen(g.s - t.toLong), new StdGen(g.s + t.toLong))
+        }
     }
 
     val setStdGen: StdGen => IO[Unit] = sgen => IORef.write(theStdGen)(sgen)
@@ -95,7 +98,7 @@ object Random extends RandomInstance with RandomShortcut {
         case (l, h) => {
             import Integer._mod_
             val k: Integer = h - l + 1
-            val b: Integer = 2147483561
+            val b: Integer = 2147483561L
             val n: Integer = iLogBase(b)(k)
             lazy val f: Integer => Integer => g => (Integer, g) = n_ => acc => g => {
                 if (n_ == 0) {

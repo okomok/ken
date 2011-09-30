@@ -9,24 +9,6 @@ package com.github.okomok.kentest
 
 import com.github.okomok.ken._
 
-object StackTraceString {
-    def apply(): Predef.String = {
-        var that: Predef.String = null
-        try {
-            throw new RuntimeException("StackTraceString")
-        } catch {
-            case t: Throwable => that = fromThrowable(t)
-        }
-        that
-    }
-
-    def fromThrowable(t: Throwable): Predef.String = {
-        val w = new java.io.StringWriter()
-        t.printStackTrace(new java.io.PrintWriter(w))
-        w.toString
-    }
-}
-
 
 class MaybeTest extends org.scalatest.junit.JUnit3Suite {
     /*
