@@ -26,7 +26,7 @@ trait Show[a] extends Typeclass0[a] {
     def show: show = x => shows(x)("")
 
     type showList = List[a] => ShowS
-    final def showList: showList = ls => s => showList__(shows)(ls)(s)
+    def showList: showList = ls => s => showList__(shows)(ls)(s)
 
     // Extra
     //
@@ -53,6 +53,7 @@ trait ShowProxy[a] extends Show[a] {
 
     override val showsPrec: showsPrec = selfShow.showsPrec
     override val show: show = selfShow.show
+    override val showList: showList = selfShow.showList
 
     override val shows: shows = selfShow.shows
 }
@@ -64,6 +65,7 @@ object Show extends ShowInstance with ShowShortcut {
     def deriving[nt <: Kind.Newtype0](implicit j: Newtype0[nt#apply0, nt#oldtype0, _], i: Show[nt#oldtype0]): Show[nt#apply0] = new Show[nt#apply0] {
         override val showsPrec: showsPrec = n => a => i.showsPrec(n)(j.oldOf(a))
         override val show: show = a => i.show(j.oldOf(a))
+        override val showList: showList = ls => i.showList(List.map((x: nt#apply0) => j.oldOf(x))(ls))
 
         override val shows: shows = a => i.shows(j.oldOf(a))
     }
@@ -93,9 +95,8 @@ sealed trait ShowInstance { this: Show.type =>
     implicit val ofInt: Show[Int] = Int
     implicit val ofInteger: Show[Integer] = _Integer
     implicit val ofUnit: Show[Unit] = Unit
-    implicit val ofNothing: Show[Nothing] = default[Nothing]
 
-    /*implicit*/ def default[a]: Show[a] = new Default[a] {}
+    implicit def ofDefault[a]: Show[a] = new Default[a] {}
 
     implicit def ofTuple2[a, b](implicit i1: Show[a], i2: Show[b]): Show[(a, b)] = new Show[(a, b)] {
         override val showsPrec: showsPrec = _ => { case (a, b) => show_tuple(List(i1.shows(a), i2.shows(b))) }

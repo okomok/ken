@@ -29,6 +29,8 @@ package object ken {
 
     // Show
     //
+    type ShowS = String => String
+
     def show[a](s: a)(implicit i: Show[a]): String = i.show(s)
 
     // Miscellaneous functions
@@ -118,8 +120,6 @@ package object ken {
     type Rational = Ratio[Integer]
 
     type ReadS[+a] = String => List[(a, String)]
-
-    type ShowS = String => String
 
     type IOError = IOException
     val IOError = IOException

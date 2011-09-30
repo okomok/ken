@@ -48,6 +48,8 @@ object Char extends Bounded[Char] with Enum[Char] with Eq.Default[Char] with Ord
         }
     }
     override def random[g](g: g)(implicit i: RandomGen[g]): (a, g) = randomR(minBound, maxBound)(g)
+    // Show
+    override val showList: showList = cs => Show.showString(cs.toScalaList.mkString("\"", "", "\""))
 
     // Utilities
     //
