@@ -88,6 +88,8 @@ object Show extends ShowInstance with ShowShortcut {
 
 
 sealed trait ShowInstance { this: Show.type =>
+    implicit def ofDefault[a]: Show[a] = new Default[a] {}
+
     implicit val ofBool: Show[Bool] = _Bool
     implicit val ofChar: Show[Char] = Char
     implicit val ofDouble: Show[Double] = Double
@@ -96,20 +98,18 @@ sealed trait ShowInstance { this: Show.type =>
     implicit val ofInteger: Show[Integer] = _Integer
     implicit val ofUnit: Show[Unit] = Unit
 
-    implicit def ofDefault[a]: Show[a] = new Default[a] {}
-
+    implicit def ofTuple1[a](implicit i1: Show[a]): Show[Tuple1[a]] = new Show[Tuple1[a]] {
+        override val showsPrec: showsPrec = _ => { case Tuple1(a) => show_tuple(List(i1.shows(a))) }
+    }
     implicit def ofTuple2[a, b](implicit i1: Show[a], i2: Show[b]): Show[(a, b)] = new Show[(a, b)] {
         override val showsPrec: showsPrec = _ => { case (a, b) => show_tuple(List(i1.shows(a), i2.shows(b))) }
     }
-
     implicit def ofTuple3[a, b, c](implicit i1: Show[a], i2: Show[b], i3: Show[c]): Show[(a, b, c)] = new Show[(a, b, c)] {
         override val showsPrec: showsPrec = _ => { case (a, b, c) => show_tuple(List(i1.shows(a), i2.shows(b), i3.shows(c))) }
     }
-
     implicit def ofTuple4[a, b, c, d](implicit i1: Show[a], i2: Show[b], i3: Show[c], i4: Show[d]): Show[(a, b, c, d)] = new Show[(a, b, c, d)] {
         override val showsPrec: showsPrec = _ => { case (a, b, c, d) => show_tuple(List(i1.shows(a), i2.shows(b), i3.shows(c), i4.shows(d))) }
     }
-
     implicit def ofTuple5[a, b, c, d, e](implicit i1: Show[a], i2: Show[b], i3: Show[c], i4: Show[d], i5: Show[e]): Show[(a, b, c, d, e)] = new Show[(a, b, c, d, e)] {
         override val showsPrec: showsPrec = _ => { case (a, b, c, d, e) => show_tuple(List(i1.shows(a), i2.shows(b), i3.shows(c), i4.shows(d), i5.shows(e))) }
     }

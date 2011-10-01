@@ -130,8 +130,8 @@ trait Foldable[t[+_]] extends Typeclass1[t] { outer =>
         foldl1(min_)(xs)
     }
 
-    def elem[a](x: a)(xs: t[a]): Bool = any(Eq[Kind.const[a]].op_===(x))(xs)
-    def notElem[a](x: a)(xs: t[a]): Bool = Bool.not(elem(x)(xs))
+    def elem[a](x: a)(xs: t[a])(implicit j: Eq[a]): Bool = any(op_===[a](x))(xs)
+    def notElem[a](x: a)(xs: t[a])(implicit j: Eq[a]): Bool = Bool.not(elem(x)(xs))
 
     def find[a](p: a => Bool)(xs: t[a]): Maybe[a] = {
         Maybe.listToMaybe(concatMap((x: a) => if (p(x)) List(x) else Nil)(xs))
@@ -189,8 +189,8 @@ trait FoldableProxy[t[+_]] extends Foldable[t] {
     override def maximumBy[a](cmp: a => a => Ordering)(xs: t[a]): a = selfFoldable.maximumBy(cmp)(xs)
     override def minimum[a](xs: t[a])(implicit i: Ord[a]): a = selfFoldable.minimum(xs)(i)
     override def minimumBy[a](cmp: a => a => Ordering)(xs: t[a]): a = selfFoldable.minimumBy(cmp)(xs)
-    override def elem[a](x: a)(xs: t[a]): Bool = selfFoldable.elem(x)(xs)
-    override def notElem[a](x: a)(xs: t[a]): Bool = selfFoldable.notElem(x)(xs)
+    override def elem[a](x: a)(xs: t[a])(implicit j: Eq[a]): Bool = selfFoldable.elem(x)(xs)(j)
+    override def notElem[a](x: a)(xs: t[a])(implicit j: Eq[a]): Bool = selfFoldable.notElem(x)(xs)(j)
     override def find[a](p: a => Bool)(xs: t[a]): Maybe[a] = selfFoldable.find(p)(xs)
 }
 

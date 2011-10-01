@@ -136,7 +136,7 @@ private[parsec] trait _Prim[s, u, n[+_]] { this: _ParsecTs[s, u, n] =>
     def tokens[t](showTokens: List[t] => String)
         (nextposs: SourcePos => List[t] => SourcePos)
         (tts: List[t])
-        (implicit i: Stream[s, n, t]/*, j: Eq[t]*/): ParsecT[List[t]] = tts match
+        (implicit i: Stream[s, n, t], j: Eq[t]): ParsecT[List[t]] = tts match
     {
         case Nil => ParsecT { new UnParser[s, u, n, List[t]] {
             override def apply[b](v: UnParserParam[s, u, n, List[t], b]): n[b] = v.eok(Nil)(v.state) { unknownError(v.state) }

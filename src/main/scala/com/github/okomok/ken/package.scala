@@ -17,12 +17,12 @@ package object ken {
     def op_===[a](x: a)(y: a)(implicit i: _Eq[a]): Bool = i.op_===(x)(y)
     def op_/==[a](x: a)(y: a)(implicit i: _Eq[a]): Bool = i.op_/==(x)(y)
 
-    private[ken] class _Op_===[a](x: a)(implicit i: _Eq[a]) {
+    private[ken] sealed class _Op_===[a](x: a)(implicit i: _Eq[a]) {
         def ===(y: a): Bool = op_===(x)(y)
     }
     implicit def ===[a](x: a)(implicit i: _Eq[a]): _Op_===[a] = new _Op_===(x)
 
-    private[ken] class _Op_/==[a](x: a)(implicit i: _Eq[a]) {
+    private[ken] sealed class _Op_/==[a](x: a)(implicit i: _Eq[a]) {
         def /==(y: a): Bool = op_/==(x)(y)
     }
     implicit def /==[a](x: a)(implicit i: _Eq[a]): _Op_/==[a] = new _Op_/==(x)

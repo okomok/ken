@@ -31,7 +31,7 @@ sealed abstract class List[+a] extends Up[List[a]] {
     final def !!(n: Int): a = List.op_!!(this)(n)
     final def !::[b >: a](x: b): List[b] = List.op_!::[b](x)(this)
 
-    final def \\[b >: a](that: List[b]): List[b] = List.op_\\[b](this)(that)
+    final def \\[b >: a](that: List[b])(implicit j: Eq[b]): List[b] = List.op_\\[b](this)(that)
 
     final def filter(p: a => Bool): List[a] = List.filter(p)(this)
     final def withFilter(p: a => Bool): List[a] = List.filter(p)(this)
@@ -60,13 +60,16 @@ case object Nil extends List[Nothing] {
 
 final case class ::[+a](head: a, tail: Lazy[List[a]]) extends List[a] {
     override def equals(that: Any): Bool = that match {
-        case that: List[_] => List.equal(this)(that)
+        case that: List[_] => List._asEq(Eq.ofDefault[Any]).op_===(this)(that)
         case _ => False
     }
 }
 
 
-object !:: { // strict extractor
+/**
+ * Strict extractor
+ */
+object !:: {
     def unapply[a](xs: List[a]): Option[(a, List[a])] = xs match {
         case Nil => None
         case x :: xs => Some(x, xs.!)
@@ -75,14 +78,6 @@ object !:: { // strict extractor
 
 
 object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
-    @tailrec
-    def equal(xs: List[_])(ys: List[_]): Bool = (xs, ys) match {
-        case (Nil, Nil) => True
-        case (Nil, _) => False
-        case (_, Nil) => False
-        case (x :: xs, y :: ys) => if (x == y) equal(xs.!)(ys.!) else False
-    }
-
     def op_::[a](x: a)(xs: Lazy[List[a]]): List[a] = ::(x, Lazy(xs))
     def op_!::[a](x: a)(xs: List[a]): List[a] = op_::(x)(xs)
 
@@ -128,9 +123,24 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
         override val mappend: m => Lazy[m] => m = op_++:[a]
     }
 
+    implicit def _asEq[a](implicit i: Eq[a]): Eq[List[a]] = new Eq[List[a]] {
+        override val op_=== : op_=== = {
+            @tailrec
+            def impl(x: List[a])(y: List[a]): Bool = (x, y) match {
+                case (Nil, Nil) => True
+                case (x :: xs, y :: ys) => {
+                    if (i.op_/==(x)(y)) False
+                    else impl(xs)(ys)
+                }
+                case _ => False
+            }
+            impl _
+        }
+    }
+
     implicit def _asOrd[a](implicit i: Ord[a]): Ord[List[a]] = new Ord[List[a]] with EqProxy[List[a]] {
-        override val selfEq = Eq.default[List[a]]
-        override val compare: List[a] => List[a] => Ordering = {
+        override val selfEq = _asEq[a]
+        override val compare: compare = {
             @tailrec
             def impl(x: List[a])(y: List[a]): Ordering = (x, y) match {
                 case (Nil, Nil) => EQ
@@ -143,6 +153,11 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
             }
             impl _
         }
+    }
+
+    implicit def _asOrdNil: Ord[Nil.type] = new Ord[Nil.type] {
+        override val op_=== : op_=== = x => y => True
+        override val compare: compare = x => y => EQ
     }
 
     implicit def _asScalaOrdering[a](implicit i: scala.Ordering[a]): scala.Ordering[List[a]] = Ord.asScalaOrdering(_asOrd[a])
@@ -441,13 +456,13 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
     def break[a](p: a => Bool)(xs: List[a]): (List[a], List[a]) = span[a](!p(_))(xs)
 
     @tailrec
-    def stripPrefix[a](xs: List[a])(ys: List[a]): Maybe[List[a]] = (xs, ys) match {
+    def stripPrefix[a](xs: List[a])(ys: List[a])(implicit j: Eq[a]): Maybe[List[a]] = (xs, ys) match {
         case (Nil, ys) => Just(ys)
-        case (x :: xs, y :: ys) if x == y => stripPrefix(xs.!)(ys.!)
+        case (x :: xs, y :: ys) if x === y => stripPrefix(xs.!)(ys.!)
         case _ => Nothing
     }
 
-    def group[a](xs: List[a]): List[List[a]] = groupBy(Eq[Kind.const[a]].op_===)(xs)
+    def group[a](xs: List[a])(implicit j: Eq[a]): List[List[a]] = groupBy(op_===[a])(xs)
 
     def inits[a](xs: List[a]): List[List[a]] = xs match {
         case Nil => List(Nil)
@@ -473,9 +488,9 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
 
     // Searching by equality
     //
-    override def elem[a](x: a)(xs: List[a]): Bool = any[a](x == _)(xs)
+    override def elem[a](x: a)(xs: List[a])(implicit j: Eq[a]): Bool = any[a](x === _)(xs)
 
-    override def notElem[a](x: a)(xs: List[a]): Bool = all[a](x != _)(xs)
+    override def notElem[a](x: a)(xs: List[a])(implicit j: Eq[a]): Bool = all[a](x /== _)(xs)
 
     @tailrec
     def lookup[a, b](key: a)(xs: List[(a, b)]): Maybe[b] = xs match {
@@ -520,9 +535,9 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
         case (_ :: xs, n) => op_!!(xs.!)(n-1)
     }
 
-    def elemIndex[a](x: a)(xs: List[a]): Maybe[Int] = findIndex(Eq[Kind.const[a]].op_===(x))(xs)
+    def elemIndex[a](x: a)(xs: List[a])(implicit j: Eq[a]): Maybe[Int] = findIndex(op_===[a](x))(xs)
 
-    def elemIndices[a](x: a)(xs: List[a]): List[Int] = findIndices(Eq[Kind.const[a]].op_===(x))(xs)
+    def elemIndices[a](x: a)(xs: List[a])(implicit j: Eq[a]): List[Int] = findIndices(op_===[a](x))(xs)
 
     def findIndex[a](p: a => Bool)(xs: List[a]): Maybe[Int] = Maybe.listToMaybe(findIndices(p)(xs))
 
@@ -562,15 +577,15 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
 
     // Set operations
     //
-    def nub[a](xs: List[a]): List[a] = nubBy(Eq[Kind.const[a]].op_===)(xs)
+    def nub[a](xs: List[a])(implicit j: Eq[a]): List[a] = nubBy(op_===[a])(xs)
 
-    def delete[a](x: a)(xs: List[a]) = deleteBy(Eq[Kind.const[a]].op_===)(x)(xs)
+    def delete[a](x: a)(xs: List[a])(implicit j: Eq[a]) = deleteBy(op_===[a])(x)(xs)
 
-    def op_\\[a](xs: List[a])(ys: List[a]): List[a] = foldl(flip(delete[a]))(xs)(ys)
+    def op_\\[a](xs: List[a])(ys: List[a])(implicit j: Eq[a]): List[a] = foldl(flip(delete[a]))(xs)(ys)
 
-    def union[a](xs: List[a])(ys: List[a]): List[a] = unionBy(Eq[Kind.const[a]].op_===)(xs)(ys)
+    def union[a](xs: List[a])(ys: List[a])(implicit j: Eq[a]): List[a] = unionBy(op_===[a])(xs)(ys)
 
-    def intersect[a](xs: List[a])(ys: List[a]): List[a] = intersectBy(Eq[Kind.const[a]].op_===)(xs)(ys)
+    def intersect[a](xs: List[a])(ys: List[a])(implicit j: Eq[a]): List[a] = intersectBy(op_===[a])(xs)(ys)
 
     // Ordered lists
     //

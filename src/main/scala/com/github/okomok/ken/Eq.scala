@@ -60,8 +60,6 @@ object _Eq extends EqInstance with EqShortcut {
         override val op_/== : op_/== = x => y => x != y
     }
 
-    def default[a]: _Eq[a] = new Default[a] {}
-
     def byRef[a <: AnyRef]: _Eq[a] = new _Eq[a] {
         override val op_=== : op_=== = x => y => x eq y
     }
@@ -73,7 +71,38 @@ object _Eq extends EqInstance with EqShortcut {
 
 
 sealed trait EqInstance { this: _Eq.type =>
-    implicit def ofScalaEquiv[a](implicit i: scala.Equiv[a]): _Eq[a] = new _Eq[a] {
+    implicit def ofDefault[a]: _Eq[a] = new Default[a] {}
+
+    implicit val ofBool: _Eq[Bool] = _Bool
+    implicit val ofChar: _Eq[Char] = Char
+    implicit val ofDouble: _Eq[Double] = Double
+    implicit val ofFloat: _Eq[Float] = Float
+    implicit val ofInt: _Eq[Int] = Int
+    implicit val ofInteger: _Eq[Integer] = _Integer
+    implicit val ofUnit: _Eq[Unit] = Unit
+
+    implicit def ofTuple1[a](implicit i1: _Eq[a]): _Eq[Tuple1[a]] = new _Eq[Tuple1[a]] {
+        override val op_=== : op_=== = x => y => i1.op_===(x._1)(y._1)
+        override val op_/== : op_/== = x => y => i1.op_/==(x._1)(y._1)
+    }
+    implicit def ofTuple2[a, b](implicit i1: _Eq[a], i2: _Eq[b]): _Eq[(a, b)] = new _Eq[(a, b)] {
+        override val op_=== : op_=== = x => y => i1.op_===(x._1)(y._1) && i2.op_===(x._2)(y._2)
+        override val op_/== : op_/== = x => y => i1.op_/==(x._1)(y._1) || i2.op_/==(x._2)(y._2)
+    }
+    implicit def ofTuple3[a, b, c](implicit i1: _Eq[a], i2: _Eq[b], i3: _Eq[c]): _Eq[(a, b, c)] = new _Eq[(a, b, c)] {
+        override val op_=== : op_=== = x => y => i1.op_===(x._1)(y._1) && i2.op_===(x._2)(y._2) && i3.op_===(x._3)(y._3)
+        override val op_/== : op_/== = x => y => i1.op_/==(x._1)(y._1) || i2.op_/==(x._2)(y._2) || i3.op_/==(x._3)(y._3)
+    }
+    implicit def ofTuple4[a, b, c, d](implicit i1: _Eq[a], i2: _Eq[b], i3: _Eq[c], i4: _Eq[d]): _Eq[(a, b, c, d)] = new _Eq[(a, b, c, d)] {
+        override val op_=== : op_=== = x => y => i1.op_===(x._1)(y._1) && i2.op_===(x._2)(y._2) && i3.op_===(x._3)(y._3) && i4.op_===(x._4)(y._4)
+        override val op_/== : op_/== = x => y => i1.op_/==(x._1)(y._1) || i2.op_/==(x._2)(y._2) || i3.op_/==(x._3)(y._3) || i4.op_/==(x._4)(y._4)
+    }
+    implicit def ofTuple5[a, b, c, d, e](implicit i1: _Eq[a], i2: _Eq[b], i3: _Eq[c], i4: _Eq[d], i5: _Eq[e]): _Eq[(a, b, c, d, e)] = new _Eq[(a, b, c, d, e)] {
+        override val op_=== : op_=== = x => y => i1.op_===(x._1)(y._1) && i2.op_===(x._2)(y._2) && i3.op_===(x._3)(y._3) && i4.op_===(x._4)(y._4) && i5.op_===(x._5)(y._5)
+        override val op_/== : op_/== = x => y => i1.op_/==(x._1)(y._1) || i2.op_/==(x._2)(y._2) || i3.op_/==(x._3)(y._3) || i4.op_/==(x._4)(y._4) || i5.op_/==(x._5)(y._5)
+    }
+
+    def ofScalaEquiv[a](implicit i: scala.Equiv[a]): _Eq[a] = new _Eq[a] {
         override val op_=== : op_=== = x => y => i.equiv(x, y)
     }
 }
@@ -83,12 +112,12 @@ sealed trait EqShortcut { this: _Eq.type =>
     def op_===[a](x: a)(y: a)(implicit i: _Eq[a]): Bool = i.op_===(x)(y)
     def op_/==[a](x: a)(y: a)(implicit i: _Eq[a]): Bool = i.op_/==(x)(y)
 
-    private[ken] class _Op_===[a](x: a)(implicit i: _Eq[a]) {
+    private[ken] sealed class _Op_===[a](x: a)(implicit i: _Eq[a]) {
         def ===(y: a): Bool = op_===(x)(y)
     }
     implicit def ===[a](x: a)(implicit i: _Eq[a]): _Op_===[a] = new _Op_===(x)
 
-    private[ken] class _Op_/==[a](x: a)(implicit i: _Eq[a]) {
+    private[ken] sealed class _Op_/==[a](x: a)(implicit i: _Eq[a]) {
         def /==(y: a): Bool = op_/==(x)(y)
     }
     implicit def /==[a](x: a)(implicit i: _Eq[a]): _Op_/==[a] = new _Op_/==(x)
