@@ -16,7 +16,7 @@ class ShowTest extends org.scalatest.junit.JUnit3Suite {
         val s = List.toJString(Show.show(List(1,2)))
         expect("List(1,2)")(s)
     }
-/*
+
     def testListNothing {
         val s = List.toJString(Show.show(Nil.up))
         expect("Nil")(s)
@@ -26,7 +26,7 @@ class ShowTest extends org.scalatest.junit.JUnit3Suite {
         val s = List.toJString(Show.show(Nil))
         expect("Nil")(s)
     }
-*/
+
     def testNested {
         val s = List.toJString(Show.show(List(List(1,2), List(3,4,5))))
         expect("List(List(1,2),List(3,4,5))")(s)
@@ -45,5 +45,19 @@ class ShowTest extends org.scalatest.junit.JUnit3Suite {
     def testNestedString_ {
         val s = List.toJString((Show.show(List(List('1','2'), List('3','4','5')))))
         expect("List(\"12\",\"345\")")(s)
+    }
+
+    def testHmmm {
+        instance[Eq[Nothing]]
+        instance[Ord[Nothing]]
+        instance[Show[Nothing]]
+
+        instance[Eq[List[Nothing]]]
+        instance[Ord[List[Nothing]]]
+        instance[Show[List[Nothing]]]
+
+        instance[Show[Nil.type]]
+        instance[Eq[Nil.type]]
+        instance[Ord[Nil.type]]
     }
 }

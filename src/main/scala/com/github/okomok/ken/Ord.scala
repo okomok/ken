@@ -115,7 +115,10 @@ object Ord extends OrdInstance with OrdShortcut {
 }
 
 
-sealed trait OrdInstance { this: Ord.type =>
+private[ken] sealed trait OrdInstance0 { this: Ord.type =>
+
+    // Primitives
+    //
     implicit val ofBool: Ord[Bool] = _Bool
     implicit val ofChar: Ord[Char] = Char
     implicit val ofDouble: Ord[Double] = Double
@@ -136,7 +139,45 @@ sealed trait OrdInstance { this: Ord.type =>
         override val op_>= : op_>= = x => y => i.gteq(x, y)
     }
 
+    // Tuples
+    //
+    implicit def ofTuple2[T1, T2](implicit ord1: Ord[T1], ord2: Ord[T2]): Ord[(T1, T2)] = new Ord[(T1, T2)]{
+        override val compare: compare = x => y => {
+            val compare1 = ord1.compare(x._1)(y._1)
+            if (compare1 != EQ) compare1
+            else {
+                val compare2 = ord2.compare(x._2)(y._2)
+                if (compare2 != EQ) compare2
+                else {
+                    EQ
+                }
+            }
+        }
+    }
+
+    implicit def Tuple3[T1, T2, T3](implicit ord1: Ord[T1], ord2: Ord[T2], ord3: Ord[T3]) : Ord[(T1, T2, T3)] = new Ord[(T1, T2, T3)]{
+        override val compare: compare = x => y => {
+            val compare1 = ord1.compare(x._1)(y._1)
+            if (compare1 != EQ) compare1
+            else {
+                val compare2 = ord2.compare(x._2)(y._2)
+                if (compare2 != EQ) compare2
+                else {
+                    val compare3 = ord3.compare(x._3)(y._3)
+                    if (compare3 != EQ) compare3
+                    else {
+                        EQ
+                    }
+                }
+            }
+        }
+    }
+
     implicit def ofNewtype0[nt, ot, ds <: Kind.MethodList](implicit j: Newtype0[nt, ot, ds], i: Ord[ot], k: Kind.MethodList.Contains[ds, Real]): Ord[nt] = deriving[Newtype0[nt, ot, _]]
+}
+
+sealed trait OrdInstance extends OrdInstance0 { this: Ord.type =>
+    implicit val ofNothing: Ord[Nothing] with HighPriority = new Ord[Nothing] with HighPriority {}
 }
 
 

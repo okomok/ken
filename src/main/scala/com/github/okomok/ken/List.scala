@@ -77,7 +77,7 @@ object !:: {
 }
 
 
-object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
+object List extends ListAs with MonadPlus[List] with Traversable[List] with ThisIsInstance {
     def op_::[a](x: a)(xs: Lazy[List[a]]): List[a] = ::(x, Lazy(xs))
     def op_!::[a](x: a)(xs: List[a]): List[a] = op_::(x)(xs)
 
@@ -106,61 +106,6 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
         foldr(cons_f)(i.pure(Nil))(t)
     }
     override def mapM[m_[+_], a, b](f: a => m_[b])(t: t[a])(implicit i: Monad[m_]): m_[t[b]] = i.mapM(f)(t)
-
-    // Instances
-    //
-    implicit def _asShow[a](implicit i: Show[a]): Show[List[a]] = new Show[List[a]] {
-        override val showsPrec: showsPrec = _ => x => i.showList(x)
-    }
-
-    implicit val _asShowNil: Show[Nil.type] = new Show[Nil.type] {
-        override val showsPrec: showsPrec = _ => _ => Show.showString("Nil")
-    }
-
-    implicit def _asMonoid[a]: Monoid[List[a]] = new Monoid[List[a]] {
-        private type m = List[a]
-        override val mempty: m = Nil
-        override val mappend: m => Lazy[m] => m = op_++:[a]
-    }
-
-    implicit def _asEq[a](implicit i: Eq[a]): Eq[List[a]] = new Eq[List[a]] {
-        override val op_=== : op_=== = {
-            @tailrec
-            def impl(x: List[a])(y: List[a]): Bool = (x, y) match {
-                case (Nil, Nil) => True
-                case (x :: xs, y :: ys) => {
-                    if (i.op_/==(x)(y)) False
-                    else impl(xs)(ys)
-                }
-                case _ => False
-            }
-            impl _
-        }
-    }
-
-    implicit def _asOrd[a](implicit i: Ord[a]): Ord[List[a]] = new Ord[List[a]] with EqProxy[List[a]] {
-        override val selfEq = _asEq[a]
-        override val compare: compare = {
-            @tailrec
-            def impl(x: List[a])(y: List[a]): Ordering = (x, y) match {
-                case (Nil, Nil) => EQ
-                case (Nil, _ :: _) => LT
-                case (_ :: _, Nil) => GT
-                case (x :: xs, y :: ys) => i.compare(x)(y) match {
-                    case EQ => impl(xs.!)(ys.!)
-                    case other => other
-                }
-            }
-            impl _
-        }
-    }
-
-    implicit def _asOrdNil: Ord[Nil.type] = new Ord[Nil.type] {
-        override val op_=== : op_=== = x => y => True
-        override val compare: compare = x => y => EQ
-    }
-
-    implicit def _asScalaOrdering[a](implicit i: scala.Ordering[a]): scala.Ordering[List[a]] = Ord.asScalaOrdering(_asOrd[a])
 
     // Conversions
     //
@@ -738,4 +683,57 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
             case x :: xs => x :: List.step(n)(List.drop(n - 1)(xs.!))
         }
     }
+}
+
+
+private[ken] sealed trait ListAs { this: List.type =>
+    implicit def _asShow[a](implicit i: Show[a]): Show[List[a]] = new Show[List[a]] {
+        override val showsPrec: showsPrec = _ => x => i.showList(x)
+    }
+
+    implicit def _asMonoid[a]: Monoid[List[a]] = new Monoid[List[a]] {
+        private type m = List[a]
+        override val mempty: m = Nil
+        override val mappend: m => Lazy[m] => m = op_++:[a]
+    }
+
+    implicit def _asEq[a](implicit i: Eq[a]): Eq[List[a]] = new Eq[List[a]] {
+        override val op_=== : op_=== = {
+            @tailrec
+            def impl(x: List[a])(y: List[a]): Bool = (x, y) match {
+                case (Nil, Nil) => True
+                case (x :: xs, y :: ys) => {
+                    if (i.op_/==(x)(y)) False
+                    else impl(xs)(ys)
+                }
+                case _ => False
+            }
+            impl _
+        }
+    }
+
+    implicit def _asOrd[a](implicit i: Ord[a]): Ord[List[a]] = new Ord[List[a]] with EqProxy[List[a]] {
+        override val selfEq = _asEq[a]
+        override val compare: compare = {
+            @tailrec
+            def impl(x: List[a])(y: List[a]): Ordering = (x, y) match {
+                case (Nil, Nil) => EQ
+                case (Nil, _ :: _) => LT
+                case (_ :: _, Nil) => GT
+                case (x :: xs, y :: ys) => i.compare(x)(y) match {
+                    case EQ => impl(xs.!)(ys.!)
+                    case other => other
+                }
+            }
+            impl _
+        }
+    }
+
+    @Annotation.compilerWorkaround("2.9.1") // SI-4982
+    implicit val _NilAsOrd: Ord[List[Nothing]] = new Ord[List[Nothing]] {
+        override val op_=== : op_=== = x => y => True
+        override val compare: compare = x => y => EQ
+    }
+
+    //implicit def _asScalaOrdering[a](implicit i: scala.Ordering[a]): scala.Ordering[List[a]] = Ord.asScalaOrdering(_asOrd[a])
 }

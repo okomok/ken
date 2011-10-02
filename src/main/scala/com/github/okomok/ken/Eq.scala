@@ -72,7 +72,7 @@ object _Eq extends EqInstance with EqShortcut {
 }
 
 
-sealed trait EqInstance { this: _Eq.type =>
+private[ken] sealed trait EqInstance0 { this: _Eq.type =>
     val ofAny: _Eq[Any] = new Default[Any] {}
 
     implicit def ofDefault[a]: _Eq[a] = ofAny
@@ -138,6 +138,10 @@ sealed trait EqInstance { this: _Eq.type =>
     def ofScalaEquiv[a](implicit i: scala.Equiv[a]): _Eq[a] = new _Eq[a] {
         override val op_=== : op_=== = x => y => i.equiv(x, y)
     }
+}
+
+sealed trait EqInstance extends EqInstance0 { this: Eq.type =>
+    implicit val ofNothing: Eq[Nothing] with HighPriority = new Eq[Nothing] with HighPriority {}
 }
 
 

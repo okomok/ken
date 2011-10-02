@@ -89,7 +89,7 @@ object Show extends ShowInstance with ShowShortcut {
 }
 
 
-sealed trait ShowInstance { this: Show.type =>
+private[ken] sealed trait ShowInstance0 { this: Show.type =>
     val ofAny: Show[Any] = new Default[Any] {}
 
     implicit def ofDefault[a]: Show[a] = ofAny
@@ -141,6 +141,10 @@ sealed trait ShowInstance { this: Show.type =>
     implicit def ofTuple5[a, b, c, d, e](implicit i1: Show[a], i2: Show[b], i3: Show[c], i4: Show[d], i5: Show[e]): Show[Tuple5[a, b, c, d, e]] = new Show[Tuple5[a, b, c, d, e]] {
         override val showsPrec: showsPrec = _ => x => show_tuple(List(i1.shows(x._1), i2.shows(x._2), i3.shows(x._3), i4.shows(x._4), i5.shows(x._5)))
     }
+}
+
+sealed trait ShowInstance extends ShowInstance0 { this: Show.type =>
+    implicit val ofNothing: Show[Nothing] with HighPriority = new Show[Nothing] with HighPriority
 }
 
 
