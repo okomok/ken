@@ -129,8 +129,6 @@ package object ken {
 
     type TypeRep = ClassManifest[_]
 
-    type :^:[x, xs <: Kind.List] = Kind.Cons[x, xs]
-
     // Unsafe.Coerce
     //
     def unsafeCoerce[a, b](a: a, * : Type[b] = null): b = a.asInstanceOf[b]
@@ -140,4 +138,9 @@ package object ken {
     val ignore: (=> Any) => Unit = _ => ()
 
     def instance[a](implicit i: a): a = i
+
+    // Kind
+    //
+    type ^:[x, xs <: Kind.List] = Kind.^:[x, xs]
+    type ^::[f[_], fs <: Kind.MethodList] = Kind.^::[f, fs]
 }

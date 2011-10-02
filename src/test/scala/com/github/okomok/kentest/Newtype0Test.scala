@@ -15,7 +15,7 @@ class Newtype0Test extends org.scalatest.junit.JUnit3Suite {
     final case class Wrap[a](override val get: a) extends NewtypeOf[a]
 
     object Wrap {
-        implicit def _asNewType0[a]: Newtype0[Wrap[a], a, Kind.MethodList5[Num, Ord, Real, Enum, Floating]] = new Newtype0[Wrap[a], a, Kind.MethodList5[Num, Ord, Real, Enum, Floating]] {
+        implicit def _asNewType0[a]: Newtype0[Wrap[a], a, Num ^:: Ord ^:: Real ^:: Enum ^:: Floating ^:: Show ^:: Eq ^:: Kind.Nil] = new Newtype0[Wrap[a], a, Num ^:: Ord ^:: Real ^:: Enum ^:: Floating ^:: Show ^:: Eq ^:: Kind.Nil] {
             override val newOf: newOf = ot => Wrap(ot)
             override val oldOf: oldOf = nt => nt.get
         }
@@ -34,4 +34,23 @@ class Newtype0Test extends org.scalatest.junit.JUnit3Suite {
 
     }
 
+    def testShow {
+        val ws = Show[Wrap[Int]]
+        expect(false)(ws.isInstanceOf[Show.Default[_]])
+        expect("Wrap(3)")(List.toJString(ws.show(Wrap(3))))
+
+    }
+
+    def testShowList {
+        val ws = Show[Wrap[String]]
+        expect(false)(ws.isInstanceOf[Show.Default[_]])
+        expect("Wrap(\"hello\")")(List.toJString(ws.show(Wrap[String]("hello"))))
+    }
+
+    def testEq {
+        val ws = Eq[Wrap[Int]]
+        expect(false)(ws.isInstanceOf[Eq.Default[_]])
+        expect(true)(ws.op_===(Wrap(3))(Wrap(3)))
+        expect(false)(ws.op_===(Wrap(3))(Wrap(4)))
+    }
 }

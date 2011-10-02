@@ -22,7 +22,7 @@ sealed abstract class List[+a] extends Up[List[a]] {
 
     final override def toString: JString = {
         if (this eq Nil) "Nil"
-        else if (List.all((_: a).isInstanceOf[Char])(this)) toScalaList.mkString("\"", "", "\"")
+        // else if (List.all((_: a).isInstanceOf[Char])(this)) toScalaList.mkString("\"", "", "\"")
         else toScalaList.mkString("List(", ",", ")")
     }
 

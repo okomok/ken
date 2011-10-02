@@ -112,6 +112,8 @@ object Ord extends OrdInstance with OrdShortcut {
         override def lt(x: a, y: a): Boolean = i.op_<(x)(y)
         override def gt(x: a, y: a): Boolean = i.op_>(x)(y)
     }
+
+    trait Deriving
 }
 
 
@@ -139,9 +141,10 @@ private[ken] sealed trait OrdInstance0 { this: Ord.type =>
         override val op_>= : op_>= = x => y => i.gteq(x, y)
     }
 
-    // Tuples
+    // Products
     //
-    implicit def ofTuple2[T1, T2](implicit ord1: Ord[T1], ord2: Ord[T2]): Ord[(T1, T2)] = new Ord[(T1, T2)]{
+    implicit def ofProduct2[a, b](implicit ord1: Ord[a], ord2: Ord[b]): Ord[Product2[a, b] with Deriving] = new Ord[Product2[a, b] with Deriving] with EqProxy[Product2[a, b] with Eq.Deriving] {
+        override val selfEq = Eq.ofProduct2[a, b]
         override val compare: compare = x => y => {
             val compare1 = ord1.compare(x._1)(y._1)
             if (compare1 != EQ) compare1
@@ -155,7 +158,44 @@ private[ken] sealed trait OrdInstance0 { this: Ord.type =>
         }
     }
 
-    implicit def Tuple3[T1, T2, T3](implicit ord1: Ord[T1], ord2: Ord[T2], ord3: Ord[T3]) : Ord[(T1, T2, T3)] = new Ord[(T1, T2, T3)]{
+    implicit def ofProduct3[a, b, c](implicit ord1: Ord[a], ord2: Ord[b], ord3: Ord[c]) : Ord[Product3[a, b, c] with Deriving] = new Ord[Product3[a, b, c] with Deriving] with EqProxy[Product3[a, b, c] with Eq.Deriving] {
+        override val selfEq = Eq.ofProduct3[a, b, c]
+        override val compare: compare = x => y => {
+            val compare1 = ord1.compare(x._1)(y._1)
+            if (compare1 != EQ) compare1
+            else {
+                val compare2 = ord2.compare(x._2)(y._2)
+                if (compare2 != EQ) compare2
+                else {
+                    val compare3 = ord3.compare(x._3)(y._3)
+                    if (compare3 != EQ) compare3
+                    else {
+                        EQ
+                    }
+                }
+            }
+        }
+    }
+
+    // Tuples
+    //
+    implicit def ofTuple2[a, b](implicit ord1: Ord[a], ord2: Ord[b]): Ord[Tuple2[a, b]] = new Ord[Tuple2[a, b]] with EqProxy[Tuple2[a, b]] {
+        override val selfEq = Eq.ofTuple2[a, b]
+        override val compare: compare = x => y => {
+            val compare1 = ord1.compare(x._1)(y._1)
+            if (compare1 != EQ) compare1
+            else {
+                val compare2 = ord2.compare(x._2)(y._2)
+                if (compare2 != EQ) compare2
+                else {
+                    EQ
+                }
+            }
+        }
+    }
+
+    implicit def ofTuple3[a, b, c](implicit ord1: Ord[a], ord2: Ord[b], ord3: Ord[c]) : Ord[(a, b, c)] = new Ord[(a, b, c)] with EqProxy[Tuple3[a, b, c]] {
+        override val selfEq = Eq.ofTuple3[a, b, c]
         override val compare: compare = x => y => {
             val compare1 = ord1.compare(x._1)(y._1)
             if (compare1 != EQ) compare1

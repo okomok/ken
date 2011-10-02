@@ -68,15 +68,17 @@ object _Eq extends EqInstance with EqShortcut {
         override val op_=== : op_=== = x => y => f(x, y)
     }
 
-    trait Deriving
+    trait Deriving extends Ord.Deriving // disambiguates `Ord.ofProductN` vs `Eq.ofProductN`
 }
 
 
 private[ken] sealed trait EqInstance0 { this: _Eq.type =>
     val ofAny: _Eq[Any] = new Default[Any] {}
 
-    implicit def ofDefault[a]: _Eq[a] = ofAny
+    implicit def ofDefault[a]: _Eq[a] = ofAny // vs `ofNewtype0`
+}
 
+private[ken] sealed trait EqInstance1 extends EqInstance0 { this: _Eq.type =>
     // Primitives
     //
     implicit val ofBool: _Eq[Bool] = _Bool
@@ -140,7 +142,7 @@ private[ken] sealed trait EqInstance0 { this: _Eq.type =>
     }
 }
 
-sealed trait EqInstance extends EqInstance0 { this: Eq.type =>
+sealed trait EqInstance extends EqInstance1 { this: Eq.type =>
     implicit val ofNothing: Eq[Nothing] with HighPriority = new Eq[Nothing] with HighPriority {}
 }
 

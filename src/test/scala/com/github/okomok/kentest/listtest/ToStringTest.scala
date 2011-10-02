@@ -20,11 +20,11 @@ class ToStringTest extends org.scalatest.junit.JUnit3Suite {
     def testNonChar {
         expect("List(1,2,3)")(List(1,2,3).toString)
     }
-
+/* Rejected:
     def testChar {
         expect("\"123\"")(List('1','2','3').toString)
     }
-
+*/
     def testEllipse {
         //println(List.repeat(3))
     }

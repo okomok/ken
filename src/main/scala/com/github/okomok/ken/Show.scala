@@ -63,11 +63,11 @@ object Show extends ShowInstance with ShowShortcut {
     def apply[a <: Kind.Function0](implicit i: Show[a#apply0]): Show[a#apply0] = i
 
     def deriving[nt <: Kind.Newtype0](implicit j: Newtype0[nt#apply0, nt#oldtype0, _], i: Show[nt#oldtype0]): Show[nt#apply0] = new Show[nt#apply0] {
-        override val showsPrec: showsPrec = n => a => i.showsPrec(n)(j.oldOf(a))
-        override val show: show = a => i.show(j.oldOf(a))
-        override val showList: showList = ls => i.showList(List.map((x: nt#apply0) => j.oldOf(x))(ls))
+        override val showsPrec: showsPrec = _ => x => show_prefix(x) `.` showChar('(') `.` i.shows(j.oldOf(x)) `.` showChar(')')
+        //override val show: show = a => show_prefix(a) `.` showChar('(') `.` i.show(j.oldOf(a)) `.` showChar(')')
+        //override val showList: showList = ls => show_prefix(a) `.` showChar('(') `.` i.showList(List.map((x: nt#apply0) => j.oldOf(x))(ls)) `.` showChar(')')
 
-        override val shows: shows = a => i.shows(j.oldOf(a))
+        //override val shows: shows = a => i.shows(j.oldOf(a))
     }
 
     def weak[nt <: Kind.Newtype0](implicit j: Newtype0[nt#apply0, nt#oldtype0, _], i: Show[nt#apply0]): Show[nt#oldtype0] = deriving[Kind.coNewtype0[nt]](j.coNewtype, i)
@@ -85,6 +85,12 @@ object Show extends ShowInstance with ShowShortcut {
         showChar('(') `.` List.foldr1((s: ShowS) => (r: Lazy[ShowS]) => s `.` showChar(',') `.` r)(ss) `.` showChar(')')
     }
 
+    private[ken] val show_product: List[ShowS] => ShowS => ShowS = ss => prefix => {
+        prefix `.` showChar('(') `.` List.foldr1((s: ShowS) => (r: Lazy[ShowS]) => s `.` showChar(',') `.` r)(ss) `.` showChar(')')
+    }
+
+    private[ken] val show_prefix: Any => ShowS = x => xs => List.takeWhile[Char](_ /== '(')(x.toString) ++: xs
+
     trait Deriving
 }
 
@@ -92,7 +98,10 @@ object Show extends ShowInstance with ShowShortcut {
 private[ken] sealed trait ShowInstance0 { this: Show.type =>
     val ofAny: Show[Any] = new Default[Any] {}
 
-    implicit def ofDefault[a]: Show[a] = ofAny
+    implicit def ofDefault[a]: Show[a] = ofAny // vs `ofNewtype0`
+}
+
+private[ken] sealed trait ShowInstance1 extends ShowInstance0 { this: Show.type =>
 
     // Primitives
     //
@@ -109,19 +118,19 @@ private[ken] sealed trait ShowInstance0 { this: Show.type =>
     // Products
     //
     implicit def ofProduct1[a](implicit i1: Show[a]): Show[Product1[a] with Deriving] = new Show[Product1[a] with Deriving] {
-        override val showsPrec: showsPrec = _ => x => show_tuple(List(i1.shows(x._1)))
+        override val showsPrec: showsPrec = _ => x => show_product(List(i1.shows(x._1)))(show_prefix(x))
     }
     implicit def ofProduct2[a, b](implicit i1: Show[a], i2: Show[b]): Show[Product2[a, b] with Deriving] = new Show[Product2[a, b] with Deriving] {
-        override val showsPrec: showsPrec = _ => x => show_tuple(List(i1.shows(x._1), i2.shows(x._2)))
+        override val showsPrec: showsPrec = _ => x => show_product(List(i1.shows(x._1), i2.shows(x._2)))(show_prefix(x))
     }
     implicit def ofProduct3[a, b, c](implicit i1: Show[a], i2: Show[b], i3: Show[c]): Show[Product3[a, b, c] with Deriving] = new Show[Product3[a, b, c] with Deriving] {
-        override val showsPrec: showsPrec = _ => x => show_tuple(List(i1.shows(x._1), i2.shows(x._2), i3.shows(x._3)))
+        override val showsPrec: showsPrec = _ => x => show_product(List(i1.shows(x._1), i2.shows(x._2), i3.shows(x._3)))(show_prefix(x))
     }
     implicit def ofProduct4[a, b, c, d](implicit i1: Show[a], i2: Show[b], i3: Show[c], i4: Show[d]): Show[Product4[a, b, c, d] with Deriving] = new Show[Product4[a, b, c, d] with Deriving] {
-        override val showsPrec: showsPrec = _ => x => show_tuple(List(i1.shows(x._1), i2.shows(x._2), i3.shows(x._3), i4.shows(x._4)))
+        override val showsPrec: showsPrec = _ => x => show_product(List(i1.shows(x._1), i2.shows(x._2), i3.shows(x._3), i4.shows(x._4)))(show_prefix(x))
     }
     implicit def ofProduct5[a, b, c, d, e](implicit i1: Show[a], i2: Show[b], i3: Show[c], i4: Show[d], i5: Show[e]): Show[Product5[a, b, c, d, e] with Deriving] = new Show[Product5[a, b, c, d, e] with Deriving] {
-        override val showsPrec: showsPrec = _ => x => show_tuple(List(i1.shows(x._1), i2.shows(x._2), i3.shows(x._3), i4.shows(x._4), i5.shows(x._5)))
+        override val showsPrec: showsPrec = _ => x => show_product(List(i1.shows(x._1), i2.shows(x._2), i3.shows(x._3), i4.shows(x._4), i5.shows(x._5)))(show_prefix(x))
     }
 
     // Tuples
@@ -143,7 +152,7 @@ private[ken] sealed trait ShowInstance0 { this: Show.type =>
     }
 }
 
-sealed trait ShowInstance extends ShowInstance0 { this: Show.type =>
+sealed trait ShowInstance extends ShowInstance1 { this: Show.type =>
     implicit val ofNothing: Show[Nothing] with HighPriority = new Show[Nothing] with HighPriority
 }
 

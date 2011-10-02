@@ -113,41 +113,29 @@ object Kind {
     // List
     //
     sealed trait List
-    sealed trait Cons[x, xs <: List] extends List
+    sealed trait ^:[x, xs <: List] extends List
     sealed trait Nil extends List with MethodList
-
-    type List1[x1] = Cons[x1, Nil]
-    type List2[x1, x2] = Cons[x1, Cons[x2, Nil]]
-    type List3[x1, x2, x3] = Cons[x1, Cons[x2, Cons[x3, Nil]]]
-    type List4[x1, x2, x3, x4] = Cons[x1, Cons[x2, Cons[x3, Cons[x4, Nil]]]]
-    type List5[x1, x2, x3, x4, x5] = Cons[x1, Cons[x2, Cons[x3, Cons[x4, Cons[x5, Nil]]]]]
 
     object List {
         trait Contains[xs <: List, y]
 
         object Contains {
-            implicit def ofHead[x, xs <: List]: Contains[Cons[x, xs], x] = new Contains[Cons[x, xs], x] {}
-            implicit def ofTail[x, xs <: List, y](implicit ev: Contains[xs, y]): Contains[Cons[x, xs], y] = new Contains[Cons[x, xs], y] {}
+            implicit def ofHead[x, xs <: List]: Contains[x ^: xs, x] = new Contains[x ^: xs, x] {}
+            implicit def ofTail[x, xs <: List, y](implicit ev: Contains[xs, y]): Contains[x ^: xs, y] = new Contains[x ^: xs, y] {}
         }
     }
 
     // MethodList (for cute syntax, but may be rejected.)
     //
     sealed trait MethodList
-    sealed trait MethodCons[f[_], fs <: MethodList] extends MethodList
-
-    type MethodList1[f1[_]] = MethodCons[f1, Nil]
-    type MethodList2[f1[_], f2[_]] = MethodCons[f1, MethodCons[f2, Nil]]
-    type MethodList3[f1[_], f2[_], f3[_]] = MethodCons[f1, MethodCons[f2, MethodCons[f3, Nil]]]
-    type MethodList4[f1[_], f2[_], f3[_], f4[_]] = MethodCons[f1, MethodCons[f2, MethodCons[f3, MethodCons[f4, Nil]]]]
-    type MethodList5[f1[_], f2[_], f3[_], f4[_], f5[_]] = MethodCons[f1, MethodCons[f2, MethodCons[f3, MethodCons[f4, MethodCons[f5, Nil]]]]]
+    sealed trait ^::[f[_], fs <: MethodList] extends MethodList
 
     object MethodList {
-        trait Contains[fs <: MethodList, y[_]]
+        trait Contains[fs <: MethodList, g[_]]
 
         object Contains {
-            implicit def ofHead[f[_], fs <: MethodList]: Contains[MethodCons[f, fs], f] = new Contains[MethodCons[f, fs], f] {}
-            implicit def ofTail[f[_], fs <: MethodList, y[_]](implicit ev: Contains[fs, y]): Contains[MethodCons[f, fs], y] = new Contains[MethodCons[f, fs], y] {}
+            implicit def ofHead[f[_], fs <: MethodList]: Contains[f ^:: fs, f] = new Contains[f ^:: fs, f] {}
+            implicit def ofTail[f[_], fs <: MethodList, g[_]](implicit ev: Contains[fs, g]): Contains[f ^:: fs, g] = new Contains[f ^:: fs, g] {}
         }
     }
 }
