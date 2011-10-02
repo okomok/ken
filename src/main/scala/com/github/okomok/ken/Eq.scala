@@ -67,8 +67,6 @@ object _Eq extends EqInstance with EqShortcut {
     def byPredicate[a](f: Pair[a, a] => Bool): _Eq[a] = new _Eq[a] {
         override val op_=== : op_=== = x => y => f(x, y)
     }
-
-    trait Deriving extends Ord.Deriving // disambiguates `Ord.ofProductN` vs `Eq.ofProductN`
 }
 
 
@@ -89,27 +87,27 @@ private[ken] sealed trait EqInstance1 extends EqInstance0 { this: _Eq.type =>
     implicit val ofInteger: _Eq[Integer] = _Integer
     implicit val ofUnit: _Eq[Unit] = Unit
 
-    implicit def ofNewtype0[nt, ot, ds <: Kind.MethodList](implicit j: Newtype0[nt, ot, ds], i: _Eq[ot], k: Kind.MethodList.Contains[ds, Real]): _Eq[nt] = deriving[Newtype0[nt, ot, _]]
+    implicit def ofNewtype0[nt, ot, ds <: Kind.MethodList](implicit j: Newtype0[nt, ot, ds], i: _Eq[ot], k: Kind.MethodList.Contains[ds, Eq]): _Eq[nt] = deriving[Newtype0[nt, ot, _]]
 
     // Products
     //
-    implicit def ofProduct1[a](implicit i1: _Eq[a]): _Eq[Product1[a] with Deriving] = new _Eq[Product1[a] with Deriving] {
+    implicit def ofProduct1[a, ds <: Kind.MethodList](implicit i1: _Eq[a], k: Kind.MethodList.Contains[ds, Eq]): _Eq[Product1[a] with Deriving[ds]] = new _Eq[Product1[a] with Deriving[ds]] {
         override val op_=== : op_=== = x => y => i1.op_===(x._1)(y._1)
         override val op_/== : op_/== = x => y => i1.op_/==(x._1)(y._1)
     }
-    implicit def ofProduct2[a, b](implicit i1: _Eq[a], i2: _Eq[b]): _Eq[Product2[a, b] with Deriving] = new _Eq[Product2[a, b] with Deriving] {
+    implicit def ofProduct2[a, b, ds <: Kind.MethodList](implicit i1: _Eq[a], i2: _Eq[b], k: Kind.MethodList.Contains[ds, Eq]): _Eq[Product2[a, b] with Deriving[ds]] = new _Eq[Product2[a, b] with Deriving[ds]] {
         override val op_=== : op_=== = x => y => i1.op_===(x._1)(y._1) && i2.op_===(x._2)(y._2)
         override val op_/== : op_/== = x => y => i1.op_/==(x._1)(y._1) || i2.op_/==(x._2)(y._2)
     }
-    implicit def ofProduct3[a, b, c](implicit i1: _Eq[a], i2: _Eq[b], i3: _Eq[c]): _Eq[Product3[a, b, c] with Deriving] = new _Eq[Product3[a, b, c] with Deriving] {
+    implicit def ofProduct3[a, b, c, ds <: Kind.MethodList](implicit i1: _Eq[a], i2: _Eq[b], i3: _Eq[c], k: Kind.MethodList.Contains[ds, Eq]): _Eq[Product3[a, b, c] with Deriving[ds]] = new _Eq[Product3[a, b, c] with Deriving[ds]] {
         override val op_=== : op_=== = x => y => i1.op_===(x._1)(y._1) && i2.op_===(x._2)(y._2) && i3.op_===(x._3)(y._3)
         override val op_/== : op_/== = x => y => i1.op_/==(x._1)(y._1) || i2.op_/==(x._2)(y._2) || i3.op_/==(x._3)(y._3)
     }
-    implicit def ofProduct4[a, b, c, d](implicit i1: _Eq[a], i2: _Eq[b], i3: _Eq[c], i4: _Eq[d]): _Eq[Product4[a, b, c, d] with Deriving] = new _Eq[Product4[a, b, c, d] with Deriving] {
+    implicit def ofProduct4[a, b, c, d, ds <: Kind.MethodList](implicit i1: _Eq[a], i2: _Eq[b], i3: _Eq[c], i4: _Eq[d], k: Kind.MethodList.Contains[ds, Eq]): _Eq[Product4[a, b, c, d] with Deriving[ds]] = new _Eq[Product4[a, b, c, d] with Deriving[ds]] {
         override val op_=== : op_=== = x => y => i1.op_===(x._1)(y._1) && i2.op_===(x._2)(y._2) && i3.op_===(x._3)(y._3) && i4.op_===(x._4)(y._4)
         override val op_/== : op_/== = x => y => i1.op_/==(x._1)(y._1) || i2.op_/==(x._2)(y._2) || i3.op_/==(x._3)(y._3) || i4.op_/==(x._4)(y._4)
     }
-    implicit def ofProduct5[a, b, c, d, e](implicit i1: _Eq[a], i2: _Eq[b], i3: _Eq[c], i4: _Eq[d], i5: _Eq[e]): _Eq[Product5[a, b, c, d, e] with Deriving] = new _Eq[Product5[a, b, c, d, e] with Deriving] {
+    implicit def ofProduct5[a, b, c, d, e, ds <: Kind.MethodList](implicit i1: _Eq[a], i2: _Eq[b], i3: _Eq[c], i4: _Eq[d], i5: _Eq[e], k: Kind.MethodList.Contains[ds, Eq]): _Eq[Product5[a, b, c, d, e] with Deriving[ds]] = new _Eq[Product5[a, b, c, d, e] with Deriving[ds]] {
         override val op_=== : op_=== = x => y => i1.op_===(x._1)(y._1) && i2.op_===(x._2)(y._2) && i3.op_===(x._3)(y._3) && i4.op_===(x._4)(y._4) && i5.op_===(x._5)(y._5)
         override val op_/== : op_/== = x => y => i1.op_/==(x._1)(y._1) || i2.op_/==(x._2)(y._2) || i3.op_/==(x._3)(y._3) || i4.op_/==(x._4)(y._4) || i5.op_/==(x._5)(y._5)
     }

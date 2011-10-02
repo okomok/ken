@@ -154,7 +154,7 @@ sealed trait FloatingInstance { this: Floating.type =>
     implicit val ofDouble: Floating[Double] = Double
     implicit val ofFloat: Floating[Float] = Float
 
-    implicit def ofNewtype0[nt, ot, ds <: Kind.MethodList](implicit j: Newtype0[nt, ot, ds], i: Floating[ot], k: Kind.MethodList.Contains[ds, Real]): Floating[nt] = deriving[Newtype0[nt, ot, _]]
+    implicit def ofNewtype0[nt, ot, ds <: Kind.MethodList](implicit j: Newtype0[nt, ot, ds], i: Floating[ot], k: Kind.MethodList.Contains[ds, Floating]): Floating[nt] = deriving[Newtype0[nt, ot, _]]
 }
 
 

@@ -24,7 +24,7 @@ class EqTest extends org.scalatest.junit.JUnit3Suite {
         expect(true)(me.isInstanceOf[Eq.Default[_]])
     }
 
-    final case class Your(override val _1: Int, override val _2: String) extends Product2[Int, String] with Eq.Deriving
+    final case class Your(override val _1: Int, override val _2: String) extends Product2[Int, String] with Deriving[Eq ^:: Kind.Nil]
 
     def testEqDeriving {
         val me = Eq[Kind.const[Your]]

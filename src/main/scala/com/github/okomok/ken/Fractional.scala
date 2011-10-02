@@ -70,7 +70,7 @@ sealed trait FractionalInstance { this: Fractional.type =>
     implicit val ofDouble: Fractional[Double] = Double
     implicit val ofFloat: Fractional[Float] = Float
 
-    implicit def ofNewtype0[nt, ot, ds <: Kind.MethodList](implicit j: Newtype0[nt, ot, ds], i: Fractional[ot], k: Kind.MethodList.Contains[ds, Real]): Fractional[nt] = deriving[Newtype0[nt, ot, _]]
+    implicit def ofNewtype0[nt, ot, ds <: Kind.MethodList](implicit j: Newtype0[nt, ot, ds], i: Fractional[ot], k: Kind.MethodList.Contains[ds, Fractional]): Fractional[nt] = deriving[Newtype0[nt, ot, _]]
 }
 
 

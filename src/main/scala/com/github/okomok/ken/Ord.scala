@@ -112,8 +112,6 @@ object Ord extends OrdInstance with OrdShortcut {
         override def lt(x: a, y: a): Boolean = i.op_<(x)(y)
         override def gt(x: a, y: a): Boolean = i.op_>(x)(y)
     }
-
-    trait Deriving
 }
 
 
@@ -141,10 +139,12 @@ private[ken] sealed trait OrdInstance0 { this: Ord.type =>
         override val op_>= : op_>= = x => y => i.gteq(x, y)
     }
 
+    implicit def ofNewtype0[nt, ot, ds <: Kind.MethodList](implicit j: Newtype0[nt, ot, ds], i: Ord[ot], k: Kind.MethodList.Contains[ds, Ord]): Ord[nt] = deriving[Newtype0[nt, ot, _]]
+
     // Products
     //
-    implicit def ofProduct2[a, b](implicit ord1: Ord[a], ord2: Ord[b]): Ord[Product2[a, b] with Deriving] = new Ord[Product2[a, b] with Deriving] with EqProxy[Product2[a, b] with Eq.Deriving] {
-        override val selfEq = Eq.ofProduct2[a, b]
+    implicit def ofProduct2[a, b, ds <: Kind.MethodList](implicit ord1: Ord[a], ord2: Ord[b], k: Kind.MethodList.Contains[ds, Ord]): Ord[Product2[a, b] with Deriving[ds]] = new Ord[Product2[a, b] with Deriving[ds]] with EqProxy[Product2[a, b] with Deriving[ds]] {
+        override val selfEq = Eq.ofProduct2[a, b, ds](ord1, ord2, null)
         override val compare: compare = x => y => {
             val compare1 = ord1.compare(x._1)(y._1)
             if (compare1 != EQ) compare1
@@ -158,8 +158,8 @@ private[ken] sealed trait OrdInstance0 { this: Ord.type =>
         }
     }
 
-    implicit def ofProduct3[a, b, c](implicit ord1: Ord[a], ord2: Ord[b], ord3: Ord[c]) : Ord[Product3[a, b, c] with Deriving] = new Ord[Product3[a, b, c] with Deriving] with EqProxy[Product3[a, b, c] with Eq.Deriving] {
-        override val selfEq = Eq.ofProduct3[a, b, c]
+    implicit def ofProduct3[a, b, c, ds <: Kind.MethodList](implicit ord1: Ord[a], ord2: Ord[b], ord3: Ord[c], k: Kind.MethodList.Contains[ds, Ord]) : Ord[Product3[a, b, c] with Deriving[ds]] = new Ord[Product3[a, b, c] with Deriving[ds]] with EqProxy[Product3[a, b, c] with Deriving[ds]] {
+        override val selfEq = Eq.ofProduct3[a, b, c, ds](ord1, ord2, ord3, null)
         override val compare: compare = x => y => {
             val compare1 = ord1.compare(x._1)(y._1)
             if (compare1 != EQ) compare1
@@ -212,8 +212,6 @@ private[ken] sealed trait OrdInstance0 { this: Ord.type =>
             }
         }
     }
-
-    implicit def ofNewtype0[nt, ot, ds <: Kind.MethodList](implicit j: Newtype0[nt, ot, ds], i: Ord[ot], k: Kind.MethodList.Contains[ds, Real]): Ord[nt] = deriving[Newtype0[nt, ot, _]]
 }
 
 sealed trait OrdInstance extends OrdInstance0 { this: Ord.type =>

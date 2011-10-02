@@ -90,8 +90,6 @@ object Show extends ShowInstance with ShowShortcut {
     }
 
     private[ken] val show_prefix: Any => ShowS = x => xs => List.takeWhile[Char](_ /== '(')(x.toString) ++: xs
-
-    trait Deriving
 }
 
 
@@ -113,23 +111,23 @@ private[ken] sealed trait ShowInstance1 extends ShowInstance0 { this: Show.type 
     implicit val ofInteger: Show[Integer] = _Integer
     implicit val ofUnit: Show[Unit] = Unit
 
-    implicit def ofNewtype0[nt, ot, ds <: Kind.MethodList](implicit j: Newtype0[nt, ot, ds], i: Show[ot], k: Kind.MethodList.Contains[ds, Real]): Show[nt] = deriving[Newtype0[nt, ot, _]]
+    implicit def ofNewtype0[nt, ot, ds <: Kind.MethodList](implicit j: Newtype0[nt, ot, ds], i: Show[ot], k: Kind.MethodList.Contains[ds, Show]): Show[nt] = deriving[Newtype0[nt, ot, _]]
 
     // Products
     //
-    implicit def ofProduct1[a](implicit i1: Show[a]): Show[Product1[a] with Deriving] = new Show[Product1[a] with Deriving] {
+    implicit def ofProduct1[a, ds <: Kind.MethodList](implicit i1: Show[a], k: Kind.MethodList.Contains[ds, Show]): Show[Product1[a] with Deriving[ds]] = new Show[Product1[a] with Deriving[ds]] {
         override val showsPrec: showsPrec = _ => x => show_product(List(i1.shows(x._1)))(show_prefix(x))
     }
-    implicit def ofProduct2[a, b](implicit i1: Show[a], i2: Show[b]): Show[Product2[a, b] with Deriving] = new Show[Product2[a, b] with Deriving] {
+    implicit def ofProduct2[a, b, ds <: Kind.MethodList](implicit i1: Show[a], i2: Show[b], k: Kind.MethodList.Contains[ds, Show]): Show[Product2[a, b] with Deriving[ds]] = new Show[Product2[a, b] with Deriving[ds]] {
         override val showsPrec: showsPrec = _ => x => show_product(List(i1.shows(x._1), i2.shows(x._2)))(show_prefix(x))
     }
-    implicit def ofProduct3[a, b, c](implicit i1: Show[a], i2: Show[b], i3: Show[c]): Show[Product3[a, b, c] with Deriving] = new Show[Product3[a, b, c] with Deriving] {
+    implicit def ofProduct3[a, b, c, ds <: Kind.MethodList](implicit i1: Show[a], i2: Show[b], i3: Show[c], k: Kind.MethodList.Contains[ds, Show]): Show[Product3[a, b, c] with Deriving[ds]] = new Show[Product3[a, b, c] with Deriving[ds]] {
         override val showsPrec: showsPrec = _ => x => show_product(List(i1.shows(x._1), i2.shows(x._2), i3.shows(x._3)))(show_prefix(x))
     }
-    implicit def ofProduct4[a, b, c, d](implicit i1: Show[a], i2: Show[b], i3: Show[c], i4: Show[d]): Show[Product4[a, b, c, d] with Deriving] = new Show[Product4[a, b, c, d] with Deriving] {
+    implicit def ofProduct4[a, b, c, d, ds <: Kind.MethodList](implicit i1: Show[a], i2: Show[b], i3: Show[c], i4: Show[d], k: Kind.MethodList.Contains[ds, Show]): Show[Product4[a, b, c, d] with Deriving[ds]] = new Show[Product4[a, b, c, d] with Deriving[ds]] {
         override val showsPrec: showsPrec = _ => x => show_product(List(i1.shows(x._1), i2.shows(x._2), i3.shows(x._3), i4.shows(x._4)))(show_prefix(x))
     }
-    implicit def ofProduct5[a, b, c, d, e](implicit i1: Show[a], i2: Show[b], i3: Show[c], i4: Show[d], i5: Show[e]): Show[Product5[a, b, c, d, e] with Deriving] = new Show[Product5[a, b, c, d, e] with Deriving] {
+    implicit def ofProduct5[a, b, c, d, e, ds <: Kind.MethodList](implicit i1: Show[a], i2: Show[b], i3: Show[c], i4: Show[d], i5: Show[e], k: Kind.MethodList.Contains[ds, Show]): Show[Product5[a, b, c, d, e] with Deriving[ds]] = new Show[Product5[a, b, c, d, e] with Deriving[ds]] {
         override val showsPrec: showsPrec = _ => x => show_product(List(i1.shows(x._1), i2.shows(x._2), i3.shows(x._3), i4.shows(x._4), i5.shows(x._5)))(show_prefix(x))
     }
 

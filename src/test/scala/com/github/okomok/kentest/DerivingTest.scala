@@ -14,7 +14,7 @@ class DerivingTest extends org.scalatest.junit.JUnit3Suite {
 
     // `Deriving` supports only Eq, Show, and Ord.
     //
-    final case class WrapSimple[a](override val _1: a, override val _2: a) extends Product2[a, a] with Eq.Deriving with Show.Deriving with Ord.Deriving with Kind.constThis
+    final case class WrapSimple[a](override val _1: a, override val _2: a) extends Product2[a, a] with Deriving[Eq ^:: Show ^:: Ord ^:: Kind.Nil]
 
     def testDerivingShow {
         val ws = Show[WrapSimple[Int]]
