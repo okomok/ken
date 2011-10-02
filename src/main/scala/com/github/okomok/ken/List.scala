@@ -60,7 +60,7 @@ case object Nil extends List[Nothing] {
 
 final case class ::[+a](head: a, tail: Lazy[List[a]]) extends List[a] {
     override def equals(that: Any): Bool = that match {
-        case that: List[_] => List._asEq(Eq.ofDefault[Any]).op_===(this)(that)
+        case that: List[_] => List._asEq(Eq.ofAny).op_===(this)(that)
         case _ => False
     }
 }
@@ -326,12 +326,12 @@ object List extends MonadPlus[List] with Traversable[List] with ThisIsInstance {
 
     override def maximum[a](xs: List[a])(implicit i: Ord[a]): a = xs match {
         case Nil => error("empty List")
-        case xs => foldl1(i.max)(xs)
+        case xs => foldl1(i.max[a])(xs)
     }
 
     override def minimum[a](xs: List[a])(implicit i: Ord[a]): a = xs match {
         case Nil => error("empty List")
-        case xs => foldl1(i.min)(xs)
+        case xs => foldl1(i.min[a])(xs)
     }
 
     // Building lists

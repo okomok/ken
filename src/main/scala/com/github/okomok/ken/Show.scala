@@ -14,7 +14,7 @@ package com.github.okomok
 package ken
 
 
-trait Show[a] extends Typeclass0[a] {
+trait Show[-a] extends Typeclass0[a] {
     final val asShow: Show[apply0] = this
 
     // Core
@@ -48,7 +48,7 @@ trait Show[a] extends Typeclass0[a] {
 }
 
 
-trait ShowProxy[a] extends Show[a] {
+trait ShowProxy[-a] extends Show[a] {
     def selfShow: Show[a]
 
     override val showsPrec: showsPrec = selfShow.showsPrec
@@ -84,12 +84,18 @@ object Show extends ShowInstance with ShowShortcut {
     private[ken] val show_tuple: List[ShowS] => ShowS = ss => {
         showChar('(') `.` List.foldr1((s: ShowS) => (r: Lazy[ShowS]) => s `.` showChar(',') `.` r)(ss) `.` showChar(')')
     }
+
+    trait Deriving
 }
 
 
 sealed trait ShowInstance { this: Show.type =>
-    implicit def ofDefault[a]: Show[a] = new Default[a] {}
+    val ofAny: Show[Any] = new Default[Any] {}
 
+    implicit def ofDefault[a]: Show[a] = ofAny
+
+    // Primitives
+    //
     implicit val ofBool: Show[Bool] = _Bool
     implicit val ofChar: Show[Char] = Char
     implicit val ofDouble: Show[Double] = Double
@@ -98,20 +104,42 @@ sealed trait ShowInstance { this: Show.type =>
     implicit val ofInteger: Show[Integer] = _Integer
     implicit val ofUnit: Show[Unit] = Unit
 
+    implicit def ofNewtype0[nt, ot, ds <: Kind.MethodList](implicit j: Newtype0[nt, ot, ds], i: Show[ot], k: Kind.MethodList.Contains[ds, Real]): Show[nt] = deriving[Newtype0[nt, ot, _]]
+
+    // Products
+    //
+    implicit def ofProduct1[a](implicit i1: Show[a]): Show[Product1[a] with Deriving] = new Show[Product1[a] with Deriving] {
+        override val showsPrec: showsPrec = _ => x => show_tuple(List(i1.shows(x._1)))
+    }
+    implicit def ofProduct2[a, b](implicit i1: Show[a], i2: Show[b]): Show[Product2[a, b] with Deriving] = new Show[Product2[a, b] with Deriving] {
+        override val showsPrec: showsPrec = _ => x => show_tuple(List(i1.shows(x._1), i2.shows(x._2)))
+    }
+    implicit def ofProduct3[a, b, c](implicit i1: Show[a], i2: Show[b], i3: Show[c]): Show[Product3[a, b, c] with Deriving] = new Show[Product3[a, b, c] with Deriving] {
+        override val showsPrec: showsPrec = _ => x => show_tuple(List(i1.shows(x._1), i2.shows(x._2), i3.shows(x._3)))
+    }
+    implicit def ofProduct4[a, b, c, d](implicit i1: Show[a], i2: Show[b], i3: Show[c], i4: Show[d]): Show[Product4[a, b, c, d] with Deriving] = new Show[Product4[a, b, c, d] with Deriving] {
+        override val showsPrec: showsPrec = _ => x => show_tuple(List(i1.shows(x._1), i2.shows(x._2), i3.shows(x._3), i4.shows(x._4)))
+    }
+    implicit def ofProduct5[a, b, c, d, e](implicit i1: Show[a], i2: Show[b], i3: Show[c], i4: Show[d], i5: Show[e]): Show[Product5[a, b, c, d, e] with Deriving] = new Show[Product5[a, b, c, d, e] with Deriving] {
+        override val showsPrec: showsPrec = _ => x => show_tuple(List(i1.shows(x._1), i2.shows(x._2), i3.shows(x._3), i4.shows(x._4), i5.shows(x._5)))
+    }
+
+    // Tuples
+    //
     implicit def ofTuple1[a](implicit i1: Show[a]): Show[Tuple1[a]] = new Show[Tuple1[a]] {
-        override val showsPrec: showsPrec = _ => { case Tuple1(a) => show_tuple(List(i1.shows(a))) }
+        override val showsPrec: showsPrec = _ => x => show_tuple(List(i1.shows(x._1)))
     }
-    implicit def ofTuple2[a, b](implicit i1: Show[a], i2: Show[b]): Show[(a, b)] = new Show[(a, b)] {
-        override val showsPrec: showsPrec = _ => { case (a, b) => show_tuple(List(i1.shows(a), i2.shows(b))) }
+    implicit def ofTuple2[a, b](implicit i1: Show[a], i2: Show[b]): Show[Tuple2[a, b]] = new Show[Tuple2[a, b]] {
+        override val showsPrec: showsPrec = _ => x => show_tuple(List(i1.shows(x._1), i2.shows(x._2)))
     }
-    implicit def ofTuple3[a, b, c](implicit i1: Show[a], i2: Show[b], i3: Show[c]): Show[(a, b, c)] = new Show[(a, b, c)] {
-        override val showsPrec: showsPrec = _ => { case (a, b, c) => show_tuple(List(i1.shows(a), i2.shows(b), i3.shows(c))) }
+    implicit def ofTuple3[a, b, c](implicit i1: Show[a], i2: Show[b], i3: Show[c]): Show[Tuple3[a, b, c]] = new Show[Tuple3[a, b, c]] {
+        override val showsPrec: showsPrec = _ => x => show_tuple(List(i1.shows(x._1), i2.shows(x._2), i3.shows(x._3)))
     }
-    implicit def ofTuple4[a, b, c, d](implicit i1: Show[a], i2: Show[b], i3: Show[c], i4: Show[d]): Show[(a, b, c, d)] = new Show[(a, b, c, d)] {
-        override val showsPrec: showsPrec = _ => { case (a, b, c, d) => show_tuple(List(i1.shows(a), i2.shows(b), i3.shows(c), i4.shows(d))) }
+    implicit def ofTuple4[a, b, c, d](implicit i1: Show[a], i2: Show[b], i3: Show[c], i4: Show[d]): Show[Tuple4[a, b, c, d]] = new Show[Tuple4[a, b, c, d]] {
+        override val showsPrec: showsPrec = _ => x => show_tuple(List(i1.shows(x._1), i2.shows(x._2), i3.shows(x._3), i4.shows(x._4)))
     }
-    implicit def ofTuple5[a, b, c, d, e](implicit i1: Show[a], i2: Show[b], i3: Show[c], i4: Show[d], i5: Show[e]): Show[(a, b, c, d, e)] = new Show[(a, b, c, d, e)] {
-        override val showsPrec: showsPrec = _ => { case (a, b, c, d, e) => show_tuple(List(i1.shows(a), i2.shows(b), i3.shows(c), i4.shows(d), i5.shows(e))) }
+    implicit def ofTuple5[a, b, c, d, e](implicit i1: Show[a], i2: Show[b], i3: Show[c], i4: Show[d], i5: Show[e]): Show[Tuple5[a, b, c, d, e]] = new Show[Tuple5[a, b, c, d, e]] {
+        override val showsPrec: showsPrec = _ => x => show_tuple(List(i1.shows(x._1), i2.shows(x._2), i3.shows(x._3), i4.shows(x._4), i5.shows(x._5)))
     }
 }
 

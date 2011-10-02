@@ -12,7 +12,7 @@ package ken
 // (Toplevel identifier is case-insensitive under the influence of file-system.)
 
 
-trait _Eq[a] extends Typeclass0[a] {
+trait _Eq[-a] extends Typeclass0[a] {
     final val asEq: _Eq[apply0] = this
 
     // Core
@@ -37,7 +37,7 @@ trait _Eq[a] extends Typeclass0[a] {
 }
 
 
-trait EqProxy[a] extends _Eq[a] {
+trait EqProxy[-a] extends _Eq[a] {
     def selfEq: _Eq[a]
 
     override def op_=== : op_=== = selfEq.op_===
@@ -67,12 +67,18 @@ object _Eq extends EqInstance with EqShortcut {
     def byPredicate[a](f: Pair[a, a] => Bool): _Eq[a] = new _Eq[a] {
         override val op_=== : op_=== = x => y => f(x, y)
     }
+
+    trait Deriving
 }
 
 
 sealed trait EqInstance { this: _Eq.type =>
-    implicit def ofDefault[a]: _Eq[a] = new Default[a] {}
+    val ofAny: _Eq[Any] = new Default[Any] {}
 
+    implicit def ofDefault[a]: _Eq[a] = ofAny
+
+    // Primitives
+    //
     implicit val ofBool: _Eq[Bool] = _Bool
     implicit val ofChar: _Eq[Char] = Char
     implicit val ofDouble: _Eq[Double] = Double
@@ -81,23 +87,50 @@ sealed trait EqInstance { this: _Eq.type =>
     implicit val ofInteger: _Eq[Integer] = _Integer
     implicit val ofUnit: _Eq[Unit] = Unit
 
+    implicit def ofNewtype0[nt, ot, ds <: Kind.MethodList](implicit j: Newtype0[nt, ot, ds], i: _Eq[ot], k: Kind.MethodList.Contains[ds, Real]): _Eq[nt] = deriving[Newtype0[nt, ot, _]]
+
+    // Products
+    //
+    implicit def ofProduct1[a](implicit i1: _Eq[a]): _Eq[Product1[a] with Deriving] = new _Eq[Product1[a] with Deriving] {
+        override val op_=== : op_=== = x => y => i1.op_===(x._1)(y._1)
+        override val op_/== : op_/== = x => y => i1.op_/==(x._1)(y._1)
+    }
+    implicit def ofProduct2[a, b](implicit i1: _Eq[a], i2: _Eq[b]): _Eq[Product2[a, b] with Deriving] = new _Eq[Product2[a, b] with Deriving] {
+        override val op_=== : op_=== = x => y => i1.op_===(x._1)(y._1) && i2.op_===(x._2)(y._2)
+        override val op_/== : op_/== = x => y => i1.op_/==(x._1)(y._1) || i2.op_/==(x._2)(y._2)
+    }
+    implicit def ofProduct3[a, b, c](implicit i1: _Eq[a], i2: _Eq[b], i3: _Eq[c]): _Eq[Product3[a, b, c] with Deriving] = new _Eq[Product3[a, b, c] with Deriving] {
+        override val op_=== : op_=== = x => y => i1.op_===(x._1)(y._1) && i2.op_===(x._2)(y._2) && i3.op_===(x._3)(y._3)
+        override val op_/== : op_/== = x => y => i1.op_/==(x._1)(y._1) || i2.op_/==(x._2)(y._2) || i3.op_/==(x._3)(y._3)
+    }
+    implicit def ofProduct4[a, b, c, d](implicit i1: _Eq[a], i2: _Eq[b], i3: _Eq[c], i4: _Eq[d]): _Eq[Product4[a, b, c, d] with Deriving] = new _Eq[Product4[a, b, c, d] with Deriving] {
+        override val op_=== : op_=== = x => y => i1.op_===(x._1)(y._1) && i2.op_===(x._2)(y._2) && i3.op_===(x._3)(y._3) && i4.op_===(x._4)(y._4)
+        override val op_/== : op_/== = x => y => i1.op_/==(x._1)(y._1) || i2.op_/==(x._2)(y._2) || i3.op_/==(x._3)(y._3) || i4.op_/==(x._4)(y._4)
+    }
+    implicit def ofProduct5[a, b, c, d, e](implicit i1: _Eq[a], i2: _Eq[b], i3: _Eq[c], i4: _Eq[d], i5: _Eq[e]): _Eq[Product5[a, b, c, d, e] with Deriving] = new _Eq[Product5[a, b, c, d, e] with Deriving] {
+        override val op_=== : op_=== = x => y => i1.op_===(x._1)(y._1) && i2.op_===(x._2)(y._2) && i3.op_===(x._3)(y._3) && i4.op_===(x._4)(y._4) && i5.op_===(x._5)(y._5)
+        override val op_/== : op_/== = x => y => i1.op_/==(x._1)(y._1) || i2.op_/==(x._2)(y._2) || i3.op_/==(x._3)(y._3) || i4.op_/==(x._4)(y._4) || i5.op_/==(x._5)(y._5)
+    }
+
+    // Tuples
+    //
     implicit def ofTuple1[a](implicit i1: _Eq[a]): _Eq[Tuple1[a]] = new _Eq[Tuple1[a]] {
         override val op_=== : op_=== = x => y => i1.op_===(x._1)(y._1)
         override val op_/== : op_/== = x => y => i1.op_/==(x._1)(y._1)
     }
-    implicit def ofTuple2[a, b](implicit i1: _Eq[a], i2: _Eq[b]): _Eq[(a, b)] = new _Eq[(a, b)] {
+    implicit def ofTuple2[a, b](implicit i1: _Eq[a], i2: _Eq[b]): _Eq[Tuple2[a, b]] = new _Eq[Tuple2[a, b]] {
         override val op_=== : op_=== = x => y => i1.op_===(x._1)(y._1) && i2.op_===(x._2)(y._2)
         override val op_/== : op_/== = x => y => i1.op_/==(x._1)(y._1) || i2.op_/==(x._2)(y._2)
     }
-    implicit def ofTuple3[a, b, c](implicit i1: _Eq[a], i2: _Eq[b], i3: _Eq[c]): _Eq[(a, b, c)] = new _Eq[(a, b, c)] {
+    implicit def ofTuple3[a, b, c](implicit i1: _Eq[a], i2: _Eq[b], i3: _Eq[c]): _Eq[Tuple3[a, b, c]] = new _Eq[Tuple3[a, b, c]] {
         override val op_=== : op_=== = x => y => i1.op_===(x._1)(y._1) && i2.op_===(x._2)(y._2) && i3.op_===(x._3)(y._3)
         override val op_/== : op_/== = x => y => i1.op_/==(x._1)(y._1) || i2.op_/==(x._2)(y._2) || i3.op_/==(x._3)(y._3)
     }
-    implicit def ofTuple4[a, b, c, d](implicit i1: _Eq[a], i2: _Eq[b], i3: _Eq[c], i4: _Eq[d]): _Eq[(a, b, c, d)] = new _Eq[(a, b, c, d)] {
+    implicit def ofTuple4[a, b, c, d](implicit i1: _Eq[a], i2: _Eq[b], i3: _Eq[c], i4: _Eq[d]): _Eq[Tuple4[a, b, c, d]] = new _Eq[Tuple4[a, b, c, d]] {
         override val op_=== : op_=== = x => y => i1.op_===(x._1)(y._1) && i2.op_===(x._2)(y._2) && i3.op_===(x._3)(y._3) && i4.op_===(x._4)(y._4)
         override val op_/== : op_/== = x => y => i1.op_/==(x._1)(y._1) || i2.op_/==(x._2)(y._2) || i3.op_/==(x._3)(y._3) || i4.op_/==(x._4)(y._4)
     }
-    implicit def ofTuple5[a, b, c, d, e](implicit i1: _Eq[a], i2: _Eq[b], i3: _Eq[c], i4: _Eq[d], i5: _Eq[e]): _Eq[(a, b, c, d, e)] = new _Eq[(a, b, c, d, e)] {
+    implicit def ofTuple5[a, b, c, d, e](implicit i1: _Eq[a], i2: _Eq[b], i3: _Eq[c], i4: _Eq[d], i5: _Eq[e]): _Eq[Tuple5[a, b, c, d, e]] = new _Eq[Tuple5[a, b, c, d, e]] {
         override val op_=== : op_=== = x => y => i1.op_===(x._1)(y._1) && i2.op_===(x._2)(y._2) && i3.op_===(x._3)(y._3) && i4.op_===(x._4)(y._4) && i5.op_===(x._5)(y._5)
         override val op_/== : op_/== = x => y => i1.op_/==(x._1)(y._1) || i2.op_/==(x._2)(y._2) || i3.op_/==(x._3)(y._3) || i4.op_/==(x._4)(y._4) || i5.op_/==(x._5)(y._5)
     }

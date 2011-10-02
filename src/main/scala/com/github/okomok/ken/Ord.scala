@@ -14,7 +14,7 @@ package com.github.okomok
 package ken
 
 
-trait Ord[a] extends Eq[a] { outer =>
+trait Ord[-a] extends Eq[a] {
     final val asOrd: Ord[apply0] = this
 
     // Core
@@ -34,11 +34,8 @@ trait Ord[a] extends Eq[a] { outer =>
     type op_>= = a => a => Bool
     def op_>= : op_>= = x => y => compare(x)(y) match { case LT => False; case _ => True }
 
-    type max = a => a => a
-    def max: max = x => y => if (op_<=(x)(y)) y else x
-
-    type min = a => a => a
-    def min: min = x => y => if (op_<=(x)(y)) x else y
+    def max[b <: a](x: b)(y: b): b = if (op_<=(x)(y)) y else x
+    def min[b <: a](x: b)(y: b): b = if (op_<=(x)(y)) x else y
 
     // Operators
     //
@@ -62,19 +59,19 @@ trait Ord[a] extends Eq[a] { outer =>
     }
     final implicit def >=(x: a): Op_>= = new Op_>=(x)
 
-    private[ken] sealed class Op_max_(x: a) {
-        def _max_(y: a): a = max(x)(y)
+    private[ken] sealed class Op_max_[b <: a](x: b) {
+        def _max_(y: b): b = max(x)(y)
     }
-    final implicit def _max_(x: a): Op_max_ = new Op_max_(x)
+    final implicit def _max_[b <: a](x: b): Op_max_[b] = new Op_max_(x)
 
-    private[ken] sealed class Op_min_(x: a) {
-        def _min_(y: a): a = min(x)(y)
+    private[ken] sealed class Op_min_[b <: a](x: b) {
+        def _min_(y: b): b = min(x)(y)
     }
-    final implicit def _min_(x: a): Op_min_ = new Op_min_(x)
+    final implicit def _min_[b <: a](x: b): Op_min_[b] = new Op_min_(x)
 }
 
 
-trait OrdProxy[a] extends Ord[a] with EqProxy[a] {
+trait OrdProxy[-a] extends Ord[a] with EqProxy[a] {
     def selfOrd: Ord[a]
     override def selfEq: Eq[a] = selfOrd
 
@@ -83,8 +80,8 @@ trait OrdProxy[a] extends Ord[a] with EqProxy[a] {
     override def op_<= : op_<= = selfOrd.op_<=
     override def op_> : op_> = selfOrd.op_>
     override def op_>= : op_>= = selfOrd.op_>=
-    override def max: max = selfOrd.max
-    override def min: min = selfOrd.min
+    override def max[b <: a](x: b)(y: b): b = selfOrd.max(x)(y)
+    override def min[b <: a](x: b)(y: b): b = selfOrd.min(x)(y)
 }
 
 
@@ -93,14 +90,13 @@ object Ord extends OrdInstance with OrdShortcut {
 
     def deriving[nt <: Kind.Newtype0](implicit j: Newtype0[nt#apply0, nt#oldtype0, _], i: Ord[nt#oldtype0]): Ord[nt#apply0] = new Ord[nt#apply0] with EqProxy[nt#apply0] {
         override val selfEq = Eq.deriving[nt]
+        private type a = nt#apply0
 
         override val compare: compare = x => y => i.compare(j.oldOf(x))(j.oldOf(y))
         override val op_< : op_< = x => y => i.op_<(j.oldOf(x))(j.oldOf(y))
         override val op_<= : op_<= = x => y => i.op_<=(j.oldOf(x))(j.oldOf(y))
         override val op_> : op_> = x => y => i.op_>(j.oldOf(x))(j.oldOf(y))
         override val op_>= : op_>= = x => y => i.op_>=(j.oldOf(x))(j.oldOf(y))
-        override val max: max = x => y => j.newOf(i.max(j.oldOf(x))(j.oldOf(y)))
-        override val min: min = x => y => j.newOf(i.min(j.oldOf(x))(j.oldOf(y)))
     }
 
     def weak[nt <: Kind.Newtype0](implicit j: Newtype0[nt#apply0, nt#oldtype0, _], i: Ord[nt#apply0]): Ord[nt#oldtype0] = deriving[Kind.coNewtype0[nt]](j.coNewtype, i)
@@ -115,8 +111,6 @@ object Ord extends OrdInstance with OrdShortcut {
         override def gteq(x: a, y: a): Boolean = i.op_>=(x)(y)
         override def lt(x: a, y: a): Boolean = i.op_<(x)(y)
         override def gt(x: a, y: a): Boolean = i.op_>(x)(y)
-        override def max(x: a, y: a): a = i.max(x)(y)
-        override def min(x: a, y: a): a = i.min(x)(y)
     }
 }
 
@@ -140,8 +134,6 @@ sealed trait OrdInstance { this: Ord.type =>
         override val op_<= : op_<= = x => y => i.lteq(x, y)
         override val op_> : op_> = x => y => i.gt(x, y)
         override val op_>= : op_>= = x => y => i.gteq(x, y)
-        override val max: max = x => y => i.max(x, y)
-        override val min: min = x => y => i.min(x, y)
     }
 
     implicit def ofNewtype0[nt, ot, ds <: Kind.MethodList](implicit j: Newtype0[nt, ot, ds], i: Ord[ot], k: Kind.MethodList.Contains[ds, Real]): Ord[nt] = deriving[Newtype0[nt, ot, _]]

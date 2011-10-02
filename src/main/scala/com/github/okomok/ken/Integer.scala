@@ -47,6 +47,7 @@ private[ken] object _Integer extends Enum[Integer] with Eq.Default[Integer]
         }
     }
     // Ord
+    private type a = Integer
     override val compare: compare = x => y => {
         if (x < y) LT
         else if (x == y) EQ
@@ -56,8 +57,6 @@ private[ken] object _Integer extends Enum[Integer] with Eq.Default[Integer]
     override val op_<= : op_<= = x => y => x <= y
     override val op_> : op_> = x => y => x > y
     override val op_>= : op_>= = x => y => x >= y
-    override val max: max = x => y => x.max(y)
-    override val min: min = x => y => x.min(y)
     // Num
     override val op_+ : op_+ = x => y => x + y
     override val op_- : op_- = x => y => x - y
@@ -82,7 +81,6 @@ private[ken] object _Integer extends Enum[Integer] with Eq.Default[Integer]
     }
     override val inRange: inRange = { case (m, n) => i => m <= i && i <= n }
     // Random
-    private type a = Integer
     override def randomR[g](ival: (a, a))(g: g)(implicit i: RandomGen[g]): (a, g) = Random.randomIvalInteger[g, a](ival)(g)
     override def random[g](g: g)(implicit i: RandomGen[g]): (a, g) = randomR(Int.toInteger(Int.minBound), Int.toInteger(Int.maxBound))(g)
     // Show

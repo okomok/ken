@@ -40,13 +40,12 @@ object Unit extends Bounded[Unit] with Enum[Unit] with Eq.Default[Unit]
     override val inRange: inRange = _ => _ => True
     override val index: index = unsafeIndex
     // Ord
+    private type a = Unit
     override val compare: compare = _ => _ => EQ
     override val op_< : op_< = _ => _ => False
     override val op_<= : op_<= = _ => _ => True
     override val op_> : op_> = _ => _ => False
     override val op_>= : op_>= = _ => _ => True
-    override val max: max = _ => _ => ()
-    override val min: min = _ => _ => ()
     // Monoid
     override val mempty: mempty = ()
     override val mappend: mappend = _ => _ => ()

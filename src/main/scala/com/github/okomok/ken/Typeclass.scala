@@ -8,16 +8,15 @@ package com.github.okomok
 package ken
 
 
+import scala.annotation.unchecked.uncheckedVariance
+
+
 @Annotation.marker
 trait Typeclass
 
 
-trait Typeclass0[a] extends Typeclass with Kind.Function0 {
-    override type apply0 = a
-
-    // Newtypes
-    //
-    def deriving[nt, ds <: Kind.MethodList](implicit i: Newtype0[nt, a, ds]): Typeclass0[nt] = error("abstract me")
+trait Typeclass0[-a] extends Typeclass with Kind.Function0 {
+    override type apply0 = a @uncheckedVariance
 }
 
 
