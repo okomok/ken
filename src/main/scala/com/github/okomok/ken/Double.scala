@@ -19,7 +19,7 @@ import java.lang.{Double => JDouble}
 import scala.annotation.tailrec
 
 
-object Double extends Enum[Double] with Eq.Default[Double] with RealFloat[Double] with Show.Default[Double] {
+object Double extends Enum[Double] with Eq.Default[Double] with RealFloat[Double] with Show.Default[Double] with Random[Double] {
     // Overrides
     //
     // Ord
@@ -107,6 +107,9 @@ object Double extends Enum[Double] with Eq.Default[Double] with RealFloat[Double
     override val isNegativeZero: isNegativeZero = x => (x == 0.0D) && (_signBits(x) == 1)
     override val isIEEE: isIEEE = _ => True
     override val atan2: atan2 = x => y => JMath.atan2(x, y)
+    // Random
+    override def randomR[g](ival: (a, a))(g: g)(implicit i: RandomGen[g]): (a, g) = Random.randomIvalDouble(ival)(id[Double])(g)
+    override def random[g](g: g)(implicit i: RandomGen[g]): (a, g) = randomR(0D, 1D)(g)
 
     // Details
     //

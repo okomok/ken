@@ -41,4 +41,34 @@ class RandomTest extends org.scalatest.junit.JUnit3Suite {
         //printFor(Type[Bool])(Random.StdGen(981))(False, True)(100)
     }
 
+    def testDouble {
+        def assertInRange[g](g: g)(ival: (Double, Double))(c: Double)(implicit i: RandomGen[g]) {
+            if (c != 0) {
+                val xg = Double.randomR(ival)(g)
+                assert(ival._1 <= xg._1 && xg._1 <= ival._2)
+                assertInRange(xg._2)(ival)(c - 1)
+            }
+        }
+        assertInRange(Random.StdGen(789))(100, 200)(1000)
+        assertInRange(Random.StdGen(789))(-100, -30)(1000)
+        assertInRange(Random.StdGen(789))(-100, 30)(1000)
+        assertInRange(Random.StdGen(789))(0, 1)(1000)
+        assertInRange(Random.StdGen(789))(0, 0)(1000)
+    }
+
+    def testFloat {
+        def assertInRange[g](g: g)(ival: (Float, Float))(c: Float)(implicit i: RandomGen[g]) {
+            if (c != 0) {
+                val xg = Float.randomR(ival)(g)
+                assert(ival._1 <= xg._1 && xg._1 <= ival._2)
+                assertInRange(xg._2)(ival)(c - 1)
+            }
+        }
+        assertInRange(Random.StdGen(789))(100, 200)(1000)
+        assertInRange(Random.StdGen(789))(-100, -30)(1000)
+        assertInRange(Random.StdGen(789))(-100, 30)(1000)
+        assertInRange(Random.StdGen(789))(0, 1)(1000)
+        assertInRange(Random.StdGen(789))(0, 0)(1000)
+    }
+
 }

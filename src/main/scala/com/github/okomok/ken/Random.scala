@@ -114,6 +114,17 @@ object Random extends RandomInstance with RandomShortcut {
         }
     }
 
+    private[ken] def randomIvalDouble[g, a](ival: (Double, Double))(fromDouble: Double => a)(rng: g)(implicit i: RandomGen[g], j: Fractional[a]): (a, g) = ival match {
+        case (l, h) if l > h => randomIvalDouble(h, l)(fromDouble)(rng)
+        case (l, h) => randomIvalInteger[g, Int](Int.minBound, Int.maxBound)(rng) match {
+            case (x, rng_) => {
+                import j.{+, *}
+                val scaled_x: a = fromDouble((l+h)/2) + fromDouble((h-l) / Double.realToFrac(int32Count)) * j.fromIntegral(x)
+                (scaled_x, rng_)
+            }
+        }
+    }
+
     private val iLogBase: Integer => Integer => Integer = b => i => {
         import Integer._div_
         if (i < b) 1 else (1 + iLogBase(b)(i _div_ b))
