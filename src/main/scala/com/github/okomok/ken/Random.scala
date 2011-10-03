@@ -36,9 +36,9 @@ trait Random[a] extends Typeclass0[a] {
     }
 
     type randomRIO = Pair[a, a] => IO[a]
-    def randomRIO: randomRIO = range => Random.getStdRandom(randomR(range))
+    def randomRIO: randomRIO = range => IO.getStdRandom(randomR(range))
 
-    def randomIO: IO[a] = Random.getStdRandom { g => random(g) }
+    def randomIO: IO[a] = IO.getStdRandom { g => random(g) }
 }
 
 
@@ -54,45 +54,28 @@ trait RandomProxy[a] extends Random[a] {
 }
 
 
-object Random extends RandomInstance with RandomShortcut {
+object Random extends RandomInstance with RandomShortcut with RandomDetail
 
-    // StdGen
-    //
-    final class StdGen private[Random] (private val s: Long = java.lang.System.currentTimeMillis) {
-        private val rep = new java.util.Random(s)
-        override def toString = "StdGen(" + s + ")"
-    }
 
-    object StdGen extends RandomGen[StdGen] with Show.Default[StdGen] with ThisIsInstance {
-        def apply(s: Int): StdGen = new StdGen(s)
+sealed trait RandomInstance { this: Random.type =>
+    implicit val ofBool: Random[Bool] = _Bool
+    implicit val ofChar: Random[Char] = Char
+    implicit val ofInt: Random[Int] = Int
+    implicit val ofInteger: Random[Integer] = _Integer
+}
 
-        // Overrides
-        //
-        // RandomGen
-        override val next: next = g => (g.rep.nextInt, g)
-        override val split: split = g => {
-            val (t, _) = next(g)
-            (new StdGen(g.s - t.toLong), new StdGen(g.s + t.toLong))
-        }
-    }
 
-    val setStdGen: StdGen => IO[Unit] = sgen => IORef.write(theStdGen)(sgen)
-    val getStdGen: IO[StdGen] = IORef.read(theStdGen)
+sealed trait RandomShortcut { this: Random.type =>
+    def randomR[a, g](ival: (a, a))(g: g)(implicit ir: Random[a], i: RandomGen[g]): (a, g) = ir.randomR(ival)(g)(i)
+    def random[a, g](g: g)(implicit ir: Random[a], i: RandomGen[g]): (a, g) = ir.random(g)(i)
+    def randomRs[a, g](ival: (a, a))(g: g)(implicit ir: Random[a], i: RandomGen[g]): List[a] = ir.randomRs(ival)(g)(i)
+    def randoms[a, g](g: g)(implicit ir: Random[a], i: RandomGen[g]): List[a] = ir.randoms(g)(i)
+    def randomRIO[a](ival: (a, a))(implicit ir: Random[a]): IO[a] = ir.randomRIO(ival)
+    def randomIO[a](implicit ir: Random[a]): IO[a] = ir.randomIO
+}
 
-    val theStdGen: IORef[StdGen] = IO.unsafePerformIO {
-        for {
-            rng <- IO.`return`(new StdGen())
-            * <- IORef.`new`(rng)
-        } yield *
-    }
 
-    val newStdGen: IO[StdGen] = IORef.atomicModify(theStdGen)(StdGen.split)
-
-    def getStdRandom[a](f: StdGen => (a, StdGen)): IO[a] = {
-        val swap: Pair[a, StdGen] => (StdGen, a) = { case (v, g) => (g, v) }
-        IORef.atomicModify(theStdGen)(swap `.` f)
-    }
-
+private[ken] sealed trait RandomDetail { this: Random.type =>
     private[ken] def randomIvalInteger[g, a](ival: (Integer, Integer))(rng: g)(implicit i: RandomGen[g], j: Num[a]): (a, g) = ival match {
         case (l, h) if l > h => randomIvalInteger(h, l)(rng)
         case (l, h) => {
@@ -132,22 +115,4 @@ object Random extends RandomInstance with RandomShortcut {
 
     private val int32Count: Integer = Int.toInteger(Int.maxBound) - Int.toInteger(Int.minBound)
     private val stdRange: (Int, Int) = (0, 2147483562)
-}
-
-
-sealed trait RandomInstance { this: Random.type =>
-    implicit val ofBool: Random[Bool] = _Bool
-    implicit val ofChar: Random[Char] = Char
-    implicit val ofInt: Random[Int] = Int
-    implicit val ofInteger: Random[Integer] = _Integer
-}
-
-
-sealed trait RandomShortcut { this: Random.type =>
-    def randomR[a, g](ival: (a, a))(g: g)(implicit ir: Random[a], i: RandomGen[g]): (a, g) = ir.randomR(ival)(g)(i)
-    def random[a, g](g: g)(implicit ir: Random[a], i: RandomGen[g]): (a, g) = ir.random(g)(i)
-    def randomRs[a, g](ival: (a, a))(g: g)(implicit ir: Random[a], i: RandomGen[g]): List[a] = ir.randomRs(ival)(g)(i)
-    def randoms[a, g](g: g)(implicit ir: Random[a], i: RandomGen[g]): List[a] = ir.randoms(g)(i)
-    def randomRIO[a](ival: (a, a))(implicit ir: Random[a]): IO[a] = ir.randomRIO(ival)
-    def randomIO[a](implicit ir: Random[a]): IO[a] = ir.randomIO
 }

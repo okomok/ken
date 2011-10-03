@@ -28,17 +28,17 @@ class RandomTest extends org.scalatest.junit.JUnit3Suite {
                 assertInRange(xg._2)(ival)(c - 1)
             }
         }
-        assertInRange(Random.StdGen(789))(100, 200)(1000)
-        assertInRange(Random.StdGen(789))(-100, -30)(1000)
-        assertInRange(Random.StdGen(789))(-100, 30)(1000)
-        assertInRange(Random.StdGen(789))(0, 1)(1000)
-        assertInRange(Random.StdGen(789))(0, 0)(1000)
+        assertInRange(StdGen(789))(100, 200)(100)
+        assertInRange(StdGen(789))(-100, -30)(100)
+        assertInRange(StdGen(789))(-100, 30)(100)
+        assertInRange(StdGen(789))(0, 1)(100)
+        assertInRange(StdGen(789))(0, 0)(100)
     }
 
     def testTrivial {
-        //printFor(Type[Bool])(Random.StdGen(981))(True, True)(100)
-        //printFor(Type[Bool])(Random.StdGen(981))(False, False)(100)
-        //printFor(Type[Bool])(Random.StdGen(981))(False, True)(100)
+        //printFor(Type[Bool])(StdGen(981))(True, True)(100)
+        //printFor(Type[Bool])(StdGen(981))(False, False)(100)
+        //printFor(Type[Bool])(StdGen(981))(False, True)(100)
     }
 
     def testDouble {
@@ -49,11 +49,11 @@ class RandomTest extends org.scalatest.junit.JUnit3Suite {
                 assertInRange(xg._2)(ival)(c - 1)
             }
         }
-        assertInRange(Random.StdGen(789))(100, 200)(1000)
-        assertInRange(Random.StdGen(789))(-100, -30)(1000)
-        assertInRange(Random.StdGen(789))(-100, 30)(1000)
-        assertInRange(Random.StdGen(789))(0, 1)(1000)
-        assertInRange(Random.StdGen(789))(0, 0)(1000)
+        assertInRange(StdGen(789))(100, 200)(100)
+        assertInRange(StdGen(789))(-100, -30)(100)
+        assertInRange(StdGen(789))(-100, 30)(100)
+        assertInRange(StdGen(789))(0, 1)(100)
+        assertInRange(StdGen(789))(0, 0)(100)
     }
 
     def testFloat {
@@ -64,11 +64,11 @@ class RandomTest extends org.scalatest.junit.JUnit3Suite {
                 assertInRange(xg._2)(ival)(c - 1)
             }
         }
-        assertInRange(Random.StdGen(789))(100, 200)(1000)
-        assertInRange(Random.StdGen(789))(-100, -30)(1000)
-        assertInRange(Random.StdGen(789))(-100, 30)(1000)
-        assertInRange(Random.StdGen(789))(0, 1)(1000)
-        assertInRange(Random.StdGen(789))(0, 0)(1000)
+        assertInRange(StdGen(789))(100, 200)(100)
+        assertInRange(StdGen(789))(-100, -30)(100)
+        assertInRange(StdGen(789))(-100, 30)(100)
+        assertInRange(StdGen(789))(0, 1)(100)
+        assertInRange(StdGen(789))(0, 0)(100)
     }
 
 }

@@ -13,9 +13,6 @@ package ken
 package quickcheck
 
 
-import Random.StdGen
-
-
 object Test {
 
     // Args

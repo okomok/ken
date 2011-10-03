@@ -153,4 +153,25 @@ object IO extends MonadControlIO[IO] with ThisIsInstance {
 
     val hPutStr: Handle => String => IO[Unit] = h => x => hPrint(h)(x)
     val hPutStrLn: Handle => String => IO[Unit] = h => s => hPutStr(h)(s ++: List.from("\n"))
+
+    // StdGen
+    //
+    import RealWorld.IORef
+
+    val setStdGen: StdGen => IO[Unit] = sgen => IORef.write(theStdGen)(sgen)
+    val getStdGen: IO[StdGen] = IORef.read(theStdGen)
+
+    val theStdGen: IORef[StdGen] = unsafePerformIO {
+        for {
+            rng <- `return`(new StdGen())
+            * <- IORef.`new`(rng)
+        } yield *
+    }
+
+    val newStdGen: IO[StdGen] = IORef.atomicModify(theStdGen)(StdGen.split)
+
+    def getStdRandom[a](f: StdGen => (a, StdGen)): IO[a] = {
+        val swap: Pair[a, StdGen] => (StdGen, a) = { case (v, g) => (g, v) }
+        IORef.atomicModify(theStdGen)(swap `.` f)
+    }
 }

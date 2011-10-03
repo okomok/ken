@@ -13,9 +13,6 @@ package ken
 package quickcheck
 
 
-import Random.StdGen
-
-
 final case class State(
     terminal: Terminal,
     maxSuccessTests: Int,

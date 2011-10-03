@@ -162,7 +162,7 @@ trait Testable[prop] extends Typeclass0[prop] {
     def quickCheckWithResult: quickCheckWithResult = args => p => for {
         tm <- Str.newTerminal
         rnd <- args.replay match {
-            case Nothing => Random.newStdGen
+            case Nothing => IO.newStdGen
             case Just((rnd, _)) => IO.`return`(rnd)
         }
         * <- Test.test(

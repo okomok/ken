@@ -14,7 +14,6 @@ package quickcheck
 
 
 import scala.annotation.tailrec
-import Random.StdGen
 
 
 final case class Gen[+a](override val get: StdGen => Int => a) extends NewtypeOf[StdGen => Int => a]
@@ -61,7 +60,7 @@ object Gen extends Monad[Gen] with ThisIsInstance {
 
     def `sample'`[a](gen: Gen[a]): IO[List[a]] = {
         for {
-            rnd <- Random.newStdGen
+            rnd <- IO.newStdGen
         } yield {
             lazy val rnds: StdGen => List[StdGen] = rnd => {
                 val (rnd1, rnd2) = StdGen.split(rnd)
