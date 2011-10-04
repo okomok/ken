@@ -94,11 +94,11 @@ package object ken {
     type State[s, +a] = StateT[s, WeakIdentity.apply, a]
     val State = _State
 
-    type Reader[r, +a] = WeakIdentity.ReaderT[r, a]
-    val Reader = WeakIdentity.ReaderT
+    type Reader[r, +a] = ReaderT[r, WeakIdentity.apply, a]
+    val Reader = _Reader
 
-    type Writer[w, +a] = WeakIdentity.WriterT[w, a]
-    val Writer = WeakIdentity.WriterT
+    type Writer[w, +a] = WriterT[w, WeakIdentity.apply, a]
+    val Writer = _Writer
 
     // Aliases
     //

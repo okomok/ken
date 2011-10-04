@@ -134,14 +134,6 @@ trait Monad[m[+_]] extends Applicative[m] {
     type MaybeT[+a] = _inMaybeTs._MaybeT[a]
     final lazy val MaybeT = _inMaybeTs._MaybeT
 
-    final lazy val _inReaderTs = new _ReaderTs[m](this)
-    type ReaderT[r, +a] = _inReaderTs._ReaderT[r, a]
-    final lazy val ReaderT = _inReaderTs._ReaderT
-
-    final lazy val _inWriterTs = new _WriterTs[m](this)
-    type WriterT[w, +a] = _inWriterTs._WriterT[w, a]
-    final lazy val WriterT = _inWriterTs._WriterT
-
     final lazy val _inListTs = new _ListTs[m](this)
     type ListT[+a] = _inListTs._ListT[a]
     final lazy val ListT = _inListTs._ListT

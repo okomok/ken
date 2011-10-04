@@ -17,7 +17,7 @@ package ken
 final case class ErrorT[e, n[+_], +a](override val get: n[Either[e, a]]) extends NewtypeOf[n[Either[e, a]]]
 
 
-object ErrorT extends ErrorTAs with ErrorTOp with Kind.FunctionLike {
+object ErrorT extends ErrorTOp with ErrorTAs with Kind.FunctionLike {
     sealed trait apply1[e] extends Kind.MonadTransX {
         override type monadTrans[n[+_], +a] = ErrorT[e, n, a]
     }

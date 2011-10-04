@@ -17,7 +17,7 @@ package ken
 final case class StateT[s, n[+_], +a](override val get: s => n[(a, s)]) extends NewtypeOf[s => n[(a, s)]]
 
 
-object StateT extends StateTAs with StateTOp with Kind.FunctionLike {
+object StateT extends StateTOp with StateTAs with Kind.FunctionLike {
     sealed trait apply1[s] extends Kind.MonadTransX {
         override type monadTrans[n[+_], +a] = StateT[s, n, a]
     }
