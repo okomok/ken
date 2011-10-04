@@ -69,6 +69,10 @@ object Kind {
         type innerMonad[+a]
     }
 
+    trait MonadTransX {
+        type monadTrans[m[+_], +a]
+    }
+
     // MonadTransControl
     //
     trait MonadTransControl extends MonadTrans {

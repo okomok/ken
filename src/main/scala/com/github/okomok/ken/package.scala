@@ -91,8 +91,8 @@ package object ken {
     type Error[e, +a] = WeakIdentity.ErrorT[e, a]
     val Error = WeakIdentity.ErrorT
 
-    type State[s, +a] = WeakIdentity.StateT[s, a]
-    val State = WeakIdentity.StateT
+    type State[s, +a] = StateT[s, WeakIdentity.apply, a]
+    val State = _State
 
     type Reader[r, +a] = WeakIdentity.ReaderT[r, a]
     val Reader = WeakIdentity.ReaderT

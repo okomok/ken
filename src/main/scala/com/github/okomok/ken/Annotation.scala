@@ -37,7 +37,7 @@ object Annotation {
     /**
      * Scalac is a good compiler.
      */
-    class compilerWorkaround(version: JString) extends StaticAnnotation
+    class compilerWorkaround(version: JString, siNumber: Int = 0) extends StaticAnnotation
 
     /**
      * Without a named value in case class `copy`,

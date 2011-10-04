@@ -138,10 +138,6 @@ trait Monad[m[+_]] extends Applicative[m] {
     type ErrorT[e, +a] = _inErrorTs._ErrorT[e, a]
     final lazy val ErrorT = _inErrorTs._ErrorT
 
-    final lazy val _inStateTs = new _StateTs[m](this)
-    type StateT[s, +a] = _inStateTs._StateT[s, a]
-    final lazy val StateT = _inStateTs._StateT
-
     final lazy val _inReaderTs = new _ReaderTs[m](this)
     type ReaderT[r, +a] = _inReaderTs._ReaderT[r, a]
     final lazy val ReaderT = _inReaderTs._ReaderT
