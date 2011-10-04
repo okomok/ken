@@ -32,7 +32,7 @@ class TypeclassTest extends org.scalatest.junit.JUnit3Suite {
         val im = Monad[Identity.type]
         val lm = Monad[List.type]
         val wim = Monad[WeakIdentity.type]
-        val mit = Monad[Identity.ListT.type]
+        val mit = Monad[ListT.apply[Identity]]
 
         def infer[m[+_]](m: Monad[m]) = ()
 
@@ -48,7 +48,7 @@ class TypeclassTest extends org.scalatest.junit.JUnit3Suite {
         implicit val im = Monad[Identity.type]
         implicit val lm = Monad[List.type]
         implicit val wim = Monad[WeakIdentity.type]
-        implicit val mit = Monad[Identity.ListT.type]
+        implicit val mit = Monad[ListT.apply[Identity]]
 
         def infer[a, m[+_]](f: m[a])(implicit m: Monad[m]) = ()
         def makeM[a, m[+_]]: m[a] = throw new java.lang.Error

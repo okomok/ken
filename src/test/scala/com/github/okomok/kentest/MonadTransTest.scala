@@ -40,7 +40,7 @@ class MonadTransTest extends org.scalatest.junit.JUnit3Suite {
     def testErrorT {
         MonadError[String, ErrorT.apply2[String, WeakIdentity.apply]]
         MonadError[String, ErrorT.apply2[String, IO]]
-        MonadIO[IO.ListT.type]
+        MonadIO[ListT.apply[IO]]
         MonadIO[ErrorT.apply2[String, IO]]
 
         val wr = MonadWriter[Monoid.All, Writer.apply[Monoid.All]]
