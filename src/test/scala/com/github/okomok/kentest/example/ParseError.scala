@@ -26,10 +26,7 @@ class ParseErrorTest extends org.scalatest.junit.JUnit3Suite {
         override def strMsg = s => Err(0)(s)
     }
 
-    //implicit val ParseMonad = Error._monad[ParseError] // Monad[({type m[+a] = ErrorT[ParseError, a]})#m]
-    //type ParseMonad[+a] = ParseMonad.apply[a] // ErrorT[ParseError, a] == Either[ParseError, a]
-
-    implicit val ParseMonad = MonadError.weak[ParseError, Error.apply[ParseError]]
+    implicit val ParseMonad = MonadError[ParseError, Error.apply[ParseError]]
     type ParseMonad[+a] = ParseMonad.apply[a]
 
     import ParseMonad._
@@ -56,10 +53,11 @@ class ParseErrorTest extends org.scalatest.junit.JUnit3Suite {
     def toString_ : Int => ParseMonad[String] = n => `return` { Show.show(n) }
 
     def convert: String => String = s => {
-        val Right(str) = catchError( for { n <- parseHex(s); * <- toString_(n) } yield * ) { e =>
+        val printError: ParseError => ParseMonad[String] = e => {
             `return` { "At Index " ++: Show.show(e.location) ++: ": " ++: e.reason }
-        } //run
+        }
 
+        val Right(str) = catchError( for { n <- parseHex(s); * <- toString_(n) } yield * )(printError).run
         str
     }
 

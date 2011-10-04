@@ -134,10 +134,6 @@ trait Monad[m[+_]] extends Applicative[m] {
     type MaybeT[+a] = _inMaybeTs._MaybeT[a]
     final lazy val MaybeT = _inMaybeTs._MaybeT
 
-    final lazy val _inErrorTs = new _ErrorTs[m](this)
-    type ErrorT[e, +a] = _inErrorTs._ErrorT[e, a]
-    final lazy val ErrorT = _inErrorTs._ErrorT
-
     final lazy val _inReaderTs = new _ReaderTs[m](this)
     type ReaderT[r, +a] = _inReaderTs._ReaderT[r, a]
     final lazy val ReaderT = _inReaderTs._ReaderT

@@ -94,7 +94,7 @@ trait Testable[prop] extends Typeclass0[prop] {
         } yield {
             eeb match {
                 case Left(err) => {
-                    @Annotation.CaseClassCopyWorkaround
+                    @Annotation.caseClassCopyWorkaround
                     val tmp = "Exception: \'" ++: Str.showErr(err) ++: List.from("\'")
                     res.copy(ok = Just(False), reason = tmp)
                 }

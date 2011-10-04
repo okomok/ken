@@ -31,17 +31,21 @@ object StateT extends StateTAs with StateTOp with Kind.FunctionLike {
 
 
 private[ken] trait StateTOp {
-    def run[s, n[+_], a](x: StateT[s, n, a]): s => n[(a, s)] = x.run
+    def run[s, n[+_], a](m: StateT[s, n, a]): s => n[(a, s)] = m.run
 
-    def eval[s, n[+_], a](x: StateT[s, n, a])(s: s)(implicit i: Monad[n]): n[a] = {
+    def eval[s, n[+_], a](m: StateT[s, n, a])(s: s)(implicit i: Monad[n]): n[a] = {
         import i.`for`
-        for { (a, _) <- run(x)(s) } yield a
+        for { (a, _) <- run(m)(s) } yield a
     }
 
-    def exec[s, n[+_], a](x: StateT[s, n, a])(s: s)(implicit i: Monad[n]): n[s] = {
+    def exec[s, n[+_], a](m: StateT[s, n, a])(s: s)(implicit i: Monad[n]): n[s] = {
         import i.`for`
-        for { (_, s) <- run(x)(s) } yield s
+        for { (_, s) <- run(m)(s) } yield s
     }
+
+    def map[s, n[+_], u[+_], a, b](f: n[(a, s)] => u[(b, s)])(m: StateT[s, n, a]): StateT[s, u, b] = StateT { f `.` run(m) }
+
+    def `with`[s, n[+_], a](f: s => s)(m: StateT[s, n, a]): StateT[s, n, a] = StateT { run(m) `.` f }
 }
 
 
@@ -53,7 +57,7 @@ private[ken] sealed trait StateTAs0 { this: StateT.type =>
         override def oldOf[a](nt: Lazy[nt[a]]): ot[a] = nt.run
     }
 
-    implicit def _asMonadTransX[s]: MonadTransX[apply1[s]#monadTrans] = new MonadTransX[apply1[s]#monadTrans] {
+    implicit def _asMonadTrans[s]: MonadTransX[apply1[s]#monadTrans] = new MonadTransX[apply1[s]#monadTrans] {
         private type t[n[+_], +a] = StateT[s, n, a]
         override def lift[n[+_], a](n: n[a])(implicit i: Monad[n]): t[n, a] = StateT { s => {
             import i.`for`
@@ -65,8 +69,8 @@ private[ken] sealed trait StateTAs0 { this: StateT.type =>
         private type m[+a] = StateT[s, n, a]
         override val selfMonad = _asMonadState[s, n]
         override def mzero: m[Nothing] = StateT { _ => i.mzero }
-        override def mplus[a](m: m[a])(n: Lazy[m[a]]): m[a] = StateT { s =>
-            i.mplus(run(m)(s))(run(n)(s))
+        override def mplus[a](m1: m[a])(m2: Lazy[m[a]]): m[a] = StateT { s =>
+            i.mplus(run(m1)(s))(run(m2)(s))
         }
     }
 
@@ -81,7 +85,7 @@ private[ken] sealed trait StateTAs0 { this: StateT.type =>
     implicit def _asMonadIO[s, n[+_]](implicit i: MonadIO[n]): MonadIO[apply2[s, n]#apply1] = new MonadIO[apply2[s, n]#apply1] with MonadProxy[apply2[s, n]#apply1] {
         private type m[+a] = StateT[s, n, a]
         override val selfMonad = _asMonadState[s, n]
-        override def liftIO[a](io: IO[a]): m[a] = _asMonadTransX.lift(i.liftIO(io))
+        override def liftIO[a](io: IO[a]): m[a] = _asMonadTrans.lift(i.liftIO(io))
     }
 
     implicit def _asMonadCont[s, n[+_]](implicit i: MonadCont[n]): MonadCont[apply2[s, n]#apply1] = new MonadCont[apply2[s, n]#apply1] with MonadProxy[apply2[s, n]#apply1] {
@@ -97,7 +101,7 @@ private[ken] sealed trait StateTAs0 { this: StateT.type =>
     implicit def _asMonadError[s, n[+_], e](implicit i: MonadError[e, n]): MonadError[e, apply2[s, n]#apply1] = new MonadError[e, apply2[s, n]#apply1] with MonadProxy[apply2[s, n]#apply1] {
         private type m[+a] = StateT[s, n, a]
         override val selfMonad = _asMonadState[s, n]
-        override def throwError[a](e: e): m[a] = _asMonadTransX.lift(i.throwError(e))
+        override def throwError[a](e: e): m[a] = _asMonadTrans.lift(i.throwError(e))
         override def catchError[a](m: m[a])(h: e => m[a]): m[a] = StateT { s =>
             i.catchError(run(m)(s)) { e => run(h(e))(s) }
         }
@@ -106,7 +110,7 @@ private[ken] sealed trait StateTAs0 { this: StateT.type =>
     implicit def _asMonadReader[s, n[+_], r](implicit i: MonadReader[r, n]): MonadReader[r, apply2[s, n]#apply1] = new MonadReader[r, apply2[s, n]#apply1] with MonadProxy[apply2[s, n]#apply1] {
         private type m[+a] = StateT[s, n, a]
         override val selfMonad = _asMonadState[s, n]
-        override def ask: m[r] = _asMonadTransX.lift(i.ask)
+        override def ask: m[r] = _asMonadTrans.lift(i.ask)
         override def local[a](f: r => r)(m: m[a]): m[a] = StateT { s => i.local(f)(run(m)(s)) }
     }
 
@@ -114,7 +118,7 @@ private[ken] sealed trait StateTAs0 { this: StateT.type =>
         private type m[+a] = StateT[s, n, a]
         override val selfMonad = _asMonadState[s, n]
         override def monoid: Monoid[w] = i.monoid
-        override def tell(x: w): m[Unit] = _asMonadTransX.lift(i.tell(x))
+        override def tell(x: w): m[Unit] = _asMonadTrans.lift(i.tell(x))
         override def listen[a](m: m[a]): m[(a, w)] = StateT { s => {
             import i.`for`
             for { ((a, s_), w) <- i.listen(run(m)(s)) } yield ((a, w), s_)

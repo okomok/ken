@@ -17,13 +17,14 @@ package ken
 // type State[s, +a] = StateT[s, WeakIdentity.apply, a]
 
 
-@Annotation.compilerWorkaround("2.9.1", 5031) // `State` instead of `State`_ crashes scalac in user-site.
+@Annotation.compilerWorkaround("2.9.1", 5031)
 object _State extends StateTOp with Kind.FunctionLike {
-    sealed trait apply1[s] extends Kind.Function1 {
+    sealed trait apply1[s] extends Kind.Newtype1 {
         override type apply1[+a] = State[s, a]
+        override type oldtype1[+a] = s => (a, s)
     }
     type apply[s] = apply1[s]
 
-    def apply[s, a](z: s => (a, s)): State[s, a] = new StateT[s, WeakIdentity.apply, a](z)
-    def unapply[s, a](x: State[s, a]): Option[s => (a, s)] = Some(x.get)
+    def apply[s, a](n: s => (a, s)): State[s, a] = new StateT[s, WeakIdentity.apply, a](n)
+    def unapply[s, a](m: State[s, a]): Option[s => (a, s)] = Some(m.run)
 }

@@ -41,7 +41,7 @@ trait Newtype1Proxy[nt[+_], ot[+_]] extends Newtype1[nt, ot] {
 
 
 object Newtype1 extends Newtype1Instance {
-    def apply[nt <: Kind.Function1, ot <: Kind.Function1](implicit i: Newtype1[nt#apply, ot#apply]): Newtype1[nt#apply, ot#apply] = i
+    def apply[nt <: Kind.Newtype1](implicit i: Newtype1[nt#apply, nt#oldtype1]): Newtype1[nt#apply, nt#oldtype1] = i
 }
 
 

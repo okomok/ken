@@ -88,8 +88,8 @@ package object ken {
 
     // Trivial transformers
     //
-    type Error[e, +a] = WeakIdentity.ErrorT[e, a]
-    val Error = WeakIdentity.ErrorT
+    type Error[e, +a] = ErrorT[e, WeakIdentity.apply, a]
+    val Error = _Error
 
     type State[s, +a] = StateT[s, WeakIdentity.apply, a]
     val State = _State

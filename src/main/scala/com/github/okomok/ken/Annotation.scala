@@ -43,5 +43,11 @@ object Annotation {
      * Without a named value in case class `copy`,
      * scalac complains "java.lang.Error: symbol value xxx does not exist".
      */
-    class CaseClassCopyWorkaround extends compilerWorkaround("2.9.1")
+    class caseClassCopyWorkaround extends compilerWorkaround("2.9.1")
+
+    /**
+     * Avoid type-aliases. Scalac crashes unconditionally in user-site with:
+     *   java.lang.IllegalArgumentException: transpose requires all collections have the same size
+     */
+    class typeAliasWorkaround extends compilerWorkaround("2.9.1")
 }

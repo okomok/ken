@@ -33,7 +33,7 @@ object Result extends Testable[Result] {
     val failed: Result = result.copy(ok = Just(False))
 
     def exception[a](err: a)(implicit i: Show[a]): Result = {
-        @Annotation.CaseClassCopyWorkaround
+        @Annotation.caseClassCopyWorkaround
         val tmp = "Exception: \'" ++: Str.showErr(err) ++: List.from("\'")
         failed.copy(reason = tmp)
     }

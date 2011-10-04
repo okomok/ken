@@ -209,7 +209,7 @@ object Test {
 
     val run: Rose[IO[quickcheck.Result]] => IO[(quickcheck.Result, List[Rose[IO[quickcheck.Result]]])] = rose => {
         val errResult: quickcheck.Result => SomeException => quickcheck.Result = res => err => {
-            @Annotation.CaseClassCopyWorkaround
+            @Annotation.caseClassCopyWorkaround
             val tmp = "Exception: \'" ++: Str.showErr(err) ++: List.from("\'")
             res.copy(reason = tmp)
         }
