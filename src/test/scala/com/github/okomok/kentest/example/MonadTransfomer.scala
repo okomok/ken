@@ -17,23 +17,21 @@ class MonadTransformerTezt { // extends org.scalatest.junit.JUnit3Suite {
 
     // Strongly-typed monad; Haskell way.
     def testStrongMonadT {
-        import IO.MaybeT
-
         // Pull the monad explicitly.
-        val m = MonadPlus[MaybeT.type]
+        val m = MonadPlus[MaybeT.apply[IO]]
         import m._
 
-        val mt = MonadTrans[MaybeT.type]
+        val mt = MonadTransX[MaybeT.type]
         import mt.lift
 
-        def getValidPassword: MaybeT[String] = {
+        def getValidPassword: m.apply[String] = {
             for {
                 s <- lift(IO.getLine)
                 _ <- guard(isValid(s))
             } yield s
         }
 
-        def askPassword: MaybeT[Unit] = for {
+        def askPassword: m.apply[Unit] = for {
             _ <- lift { IO.putStrLn("Insert your new password") }
             value <- msum { List.repeat(getValidPassword) }
             _ <- lift { IO.putStrLn("Storing in database...") }
@@ -41,12 +39,10 @@ class MonadTransformerTezt { // extends org.scalatest.junit.JUnit3Suite {
 
         askPassword.run.!
     }
-
+/*
     // Weakly-typed monad; Power of Scala (any pitfall?)
     def testWeakMonadT {
-        import IO.MaybeT
-
-        val wm = MonadPlus.weak[MaybeT.type]
+        val wm = MonadPlus.weak[MaybeT.apply[IO]]
         import wm._ // hides the default IO monad.
 
         // No wrappers, no lifts.
@@ -64,4 +60,5 @@ class MonadTransformerTezt { // extends org.scalatest.junit.JUnit3Suite {
         // No runs
         askPassword.!
     }
+*/
 }

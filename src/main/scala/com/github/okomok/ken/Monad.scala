@@ -128,16 +128,6 @@ trait Monad[m[+_]] extends Applicative[m] {
     }
     final implicit def <=<:[a, b](f: a => m[b]): Op_<=<:[a, b] = new Op_<=<:(f)
 
-    // Transformers
-    //
-    final lazy val _inMaybeTs = new _MaybeTs[m](this)
-    type MaybeT[+a] = _inMaybeTs._MaybeT[a]
-    final lazy val MaybeT = _inMaybeTs._MaybeT
-
-    final lazy val _inLazyTs = new _LazyTs[m](this)
-    type LazyT[+a] = _inLazyTs._LazyT[a]
-    final lazy val LazyT = _inLazyTs._LazyT
-
     // Arrows
     //
     final lazy val _inKleislis = new _Kleislis[m](this)

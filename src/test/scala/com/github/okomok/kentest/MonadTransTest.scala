@@ -13,11 +13,12 @@ import com.github.okomok.ken._
 class MonadTransTest extends org.scalatest.junit.JUnit3Suite {
 
     def testGetInstance {
-        val i = MonadIO[IO.MaybeT.type]
+        val i = MonadIO[MaybeT.apply[IO]]
         val me = Monad[Error.apply[String]]
-        val j = MonadError[String, me.MaybeT.type]
+        val j = MonadError[String, MaybeT.apply[me.apply]]
     }
-
+/*
+    Legacy
     def testDependent {
         def testIt[n[+_]](n1: Monad[n], n2: Monad[n]) {
             val m1 = Monad[n1.MaybeT.type]
@@ -36,7 +37,7 @@ class MonadTransTest extends org.scalatest.junit.JUnit3Suite {
         }
         ()
     }
-
+*/
     def testErrorT {
         MonadError[String, ErrorT.apply2[String, WeakIdentity.apply]]
         MonadError[String, ErrorT.apply2[String, IO]]

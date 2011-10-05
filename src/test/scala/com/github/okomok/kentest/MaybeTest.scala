@@ -37,11 +37,13 @@ class MaybeTest extends org.scalatest.junit.JUnit3Suite {
         }
     }
     */
+
+/*
     def testWeakMonadT2 {
-        val wm = MonadPlus.weak[IO.MaybeT.type]
+        val wm = MonadPlus.weak[MaybeT.apply[IO]]
         import wm._
 
-        val wmt = MonadTrans.weak[IO.MaybeT.type]
+        val wmt = MonadTrans.weak[MaybeT.apply[IO]]
         import wmt.lift
 
         def isValid(s: String): Boolean = Eq[Kind.const[String]].op_===(s)("valid")
@@ -74,27 +76,27 @@ class MaybeTest extends org.scalatest.junit.JUnit3Suite {
             askPassword.!
         }
     }
+*/
 
     def testStrongMonadT2 {
-        import IO.MaybeT
 
-        val m = MonadPlus[MaybeT.type]
+        val m = MonadPlus[MaybeT.apply[IO]]
         import m._
 
-        val mt = MonadTrans[MaybeT.type]
+        val mt = MonadTransX[MaybeT.type]
         import mt.lift
 
         var valid = false
         def isValid(s: String): Boolean = Eq[Kind.const[String]].op_===(s)("valid")
 
-        def getValidPassword: MaybeT[String] = {
+        def getValidPassword: m.apply[String] = {
             for {
                 s <- lift(IO.getLine)
                 _ <- guard(isValid(s))
             } yield s
         }
 
-        def askPassword: MaybeT[Unit] = for {
+        def askPassword: m.apply[Unit] = for {
             _ <- lift(IO.putStrLn("Insert your new password"))
             value <- msum { List.repeat(getValidPassword) }
             _ <- lift(IO.putStrLn("Storing in database..."))

@@ -62,15 +62,15 @@ class TypeclassTest extends org.scalatest.junit.JUnit3Suite {
 
     def testMonadTrans {
         //val mt1 = MonadTrans[IO.StateT.apply[Int]]
-        val mt2 = MonadTrans[IO.LazyT.type]
+        val mt2 = MonadTransX[LazyT.type]
 
-        val io1 = MonadIO[IO.LazyT.type]
+        val io1 = MonadIO[LazyT.apply[IO]]
     }
-
+/*
     def testImply1 {
-        val wt1 = Monad.weak[IO.LazyT.type]
+        val wt1 = Monad.weak[LazyT.apply[IO]]
     }
-
+*/
     def testEq {
         val i = implicitly[Eq[Int]]
         val j = implicitly[Ord[Int]]
