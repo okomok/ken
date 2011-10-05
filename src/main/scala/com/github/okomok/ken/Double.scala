@@ -19,7 +19,7 @@ import java.lang.{Double => JDouble}
 import scala.annotation.tailrec
 
 
-object Double extends Enum[Double] with Eq.Default[Double] with RealFloat[Double] with Show.Default[Double] with Random[Double] {
+object Double extends Enum[Double] with Eq.Default[Double] with RealFloat[Double] with Random[Double] {
     // Overrides
     //
     // Ord

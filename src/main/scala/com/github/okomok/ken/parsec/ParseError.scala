@@ -17,7 +17,7 @@ final case class ParseError(pos: SourcePos, msgs: List[Message_]) {
 }
 
 
-object ParseError extends Eq.Default[ParseError] with Show[ParseError] with ThisIsInstance {
+object ParseError extends Show[ParseError] with ThisIsInstance {
     // Overrides
     //
     // Show

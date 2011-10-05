@@ -20,7 +20,7 @@ final class StdGen private[ken] (private val s: Long = java.lang.System.currentT
 }
 
 
-object StdGen extends RandomGen[StdGen] with Show.Default[StdGen] with ThisIsInstance {
+object StdGen extends RandomGen[StdGen] with ThisIsInstance {
     def apply(s: Int): StdGen = new StdGen(s)
 
     // Overrides

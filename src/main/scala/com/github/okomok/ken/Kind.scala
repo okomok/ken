@@ -114,6 +114,12 @@ object Kind {
         }
     }
 
+    type *[+a] = Any
+    type **[-a, +b] = Any
+
+    type Nothing1[+a] = Nothing
+    type Nothing2[-a, +b] = Nothing
+
     // List
     //
     sealed trait List

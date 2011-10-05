@@ -22,7 +22,7 @@ case object GT extends Ordering
 
 
 object Ordering extends Bounded[Ordering] with Enum[Ordering] with Ix[Ordering]
-    with Monoid[Ordering] with Show.Default[Ordering] with ThisIsInstance
+    with Monoid[Ordering] with ThisIsInstance
 {
     // Overrides
     //

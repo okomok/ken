@@ -103,13 +103,9 @@ private[ken] sealed trait ShowInstance1 extends ShowInstance0 { this: Show.type 
 
     // Primitives
     //
-    implicit val ofBool: Show[Bool] = _Bool
     implicit val ofChar: Show[Char] = Char
-    implicit val ofDouble: Show[Double] = Double
-    implicit val ofFloat: Show[Float] = Float
     implicit val ofInt: Show[Int] = Int
     implicit val ofInteger: Show[Integer] = _Integer
-    implicit val ofUnit: Show[Unit] = Unit
 
     implicit def ofNewtype0[nt, ot, ds <: Kind.MethodList](implicit j: Newtype0[nt, ot, ds], i: Show[ot], k: Kind.MethodList.Contains[ds, Show]): Show[nt] = deriving[Newtype0[nt, ot, _]]
 

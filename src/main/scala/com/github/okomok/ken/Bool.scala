@@ -16,7 +16,7 @@ package ken
 
 // `object Bool` crashes scalac.
 private[ken] object _Bool extends Bounded[Bool] with Enum[Bool] with Eq.Default[Bool]
-    with Ord[Bool] with Ix[Bool] with Random[Bool] with Show.Default[Bool]
+    with Ord[Bool] with Ix[Bool] with Random[Bool]
 {
     // Overrides
     //

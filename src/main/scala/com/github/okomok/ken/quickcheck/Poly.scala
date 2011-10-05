@@ -21,9 +21,7 @@ object Poly {
     //
     final case class A(override val get: Integer) extends NewtypeOf[Integer]
 
-    object A extends Newtype0[A, Integer, Kind.Nil]
-        with Arbitary[A] with CoArbitary[A] with Eq.Default[A] with Show.Default[A] with ThisIsInstance
-    {
+    object A extends Newtype0[A, Integer, Kind.Nil] with Arbitary[A] with CoArbitary[A] with ThisIsInstance {
         // Overrides
         //
         // Newtype0
@@ -43,9 +41,7 @@ object Poly {
     //
     final case class B(override val get: Integer) extends NewtypeOf[Integer]
 
-    object B extends Newtype0[B, Integer, Kind.Nil]
-        with Arbitary[B] with CoArbitary[B] with Eq.Default[B] with Show.Default[B] with ThisIsInstance
-    {
+    object B extends Newtype0[B, Integer, Kind.Nil] with Arbitary[B] with CoArbitary[B] with ThisIsInstance {
         // Overrides
         //
         // Newtype0
@@ -65,9 +61,7 @@ object Poly {
     //
     final case class C(override val get: Integer) extends NewtypeOf[Integer]
 
-    object C extends Newtype0[C, Integer, Kind.Nil]
-        with Arbitary[C] with CoArbitary[C] with Eq.Default[C] with Show.Default[C] with ThisIsInstance
-    {
+    object C extends Newtype0[C, Integer, Kind.Nil] with Arbitary[C] with CoArbitary[C] with ThisIsInstance {
         // Overrides
         //
         // Newtype0
@@ -88,7 +82,7 @@ object Poly {
     final case class OrdA(override val get: Integer) extends NewtypeOf[Integer]
 
     object OrdA extends Newtype0[OrdA, Integer, Kind.Nil]
-        with Arbitary[OrdA] with CoArbitary[OrdA] with OrdProxy[OrdA] with Show.Default[OrdA] with ThisIsInstance
+        with Arbitary[OrdA] with CoArbitary[OrdA] with OrdProxy[OrdA] with ThisIsInstance
     {
         // Overrides
         //
@@ -112,7 +106,7 @@ object Poly {
     final case class OrdB(override val get: Integer) extends NewtypeOf[Integer]
 
     object OrdB extends Newtype0[OrdB, Integer, Kind.Nil]
-        with Arbitary[OrdB] with CoArbitary[OrdB] with OrdProxy[OrdB] with Show.Default[OrdB] with ThisIsInstance
+        with Arbitary[OrdB] with CoArbitary[OrdB] with OrdProxy[OrdB] with ThisIsInstance
     {
         // Overrides
         //
@@ -136,7 +130,7 @@ object Poly {
     final case class OrdC(override val get: Integer) extends NewtypeOf[Integer]
 
     object OrdC extends Newtype0[OrdC, Integer, Kind.Nil]
-        with Arbitary[OrdC] with CoArbitary[OrdC] with OrdProxy[OrdC] with Show.Default[OrdC] with ThisIsInstance
+        with Arbitary[OrdC] with CoArbitary[OrdC] with OrdProxy[OrdC] with ThisIsInstance
     {
         // Overrides
         //
