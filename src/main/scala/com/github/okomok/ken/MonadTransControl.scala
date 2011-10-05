@@ -22,16 +22,15 @@ trait MonadTransControl[t[_[+_], +_]] extends MonadTrans[t] {
 
     // Extra
     //
-    def control[n[+_], a](f: Run => n[t[n, a]])(implicit i: Monad[n], j: Monad[({type m[+a] = t[n, a]})#m]): t[n, a] = i.join(liftControl(f))
+    final def control[n[+_], a](f: Run => n[t[n, a]])(implicit i: Monad[n], j: Monad[({type m[+a] = t[n, a]})#m]): t[n, a] = j.join(liftControl(f))
 }
 
 
 trait MonadTransControlProxy[t[_[+_], +_]] extends MonadTransControl[t] with MonadTransProxy[t] {
-    def selfMonadTransControl: MonadTransControl[m, n, u]
-    override def selfMonadTrans: MonadTrans[m, n] = selfMonadTransControl
+    def selfMonadTransControl: MonadTransControl[t]
+    override def selfMonadTrans: MonadTrans[t] = selfMonadTransControl
 
     override def liftControl[n[+_], a](f: Run => n[a])(implicit i: Monad[n]): t[n, a] = selfMonadTransControl.liftControl(f)(i)
-    override def control[n[+_], a](f: Run => n[t[n, a]])(implicit i: Monad[n], j: Monad[({type m[+a] = t[n, a]})#m]): t[n, a] = selfMonadTransControl.control(f)(i, j)
 }
 
 
@@ -60,7 +59,7 @@ object MonadTransControl {
     // Run types
     //
     trait Run[t[_[+_], +_]] {
-        def apply[n[+_], o[+_], b](t: t[n, b])(implicit i: Monad[n], j: Monad[o], k: Monad[({type m[+a] = t[o, a]})#m]): n[t[o, b]]
+        def apply[n_[+_], o[+_], b](t: t[n_, b])(implicit ri: Monad[n_], rj: Monad[o], rk: Monad[({type m[+a] = t[o, a]})#m]): n_[t[o, b]]
     }
 
     trait RunInBase[m[+_], base[+_]] {

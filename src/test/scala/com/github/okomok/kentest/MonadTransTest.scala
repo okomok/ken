@@ -48,11 +48,9 @@ class MonadTransTest extends org.scalatest.junit.JUnit3Suite {
         MonadWriter[Monoid.All, ErrorT.apply2[String, wr.apply]]
     }
 
-/*
     def testControlInstance {
-        val i1 = MonadTransControl[IO.ReaderT.apply[Int]]
-        val i2 = MonadTransControl[List.ErrorT.apply[String]]
+        val i1 = MonadTransControl[ReaderT.apply1[Int]]
+        val i2 = MonadTransControl[ErrorT.apply1[String]]
         ()
     }
-*/
 }

@@ -38,6 +38,7 @@ private[ken] trait ErrorTOp {
 
 
 private[ken] sealed trait ErrorTAs0 { this: ErrorT.type =>
+/*
     // No longer works...
     @Annotation.typeAliasWorkaround
     implicit def _asNewtype1[e, n[+_]]: Newtype1[apply2[e, n]#apply1, apply2[e, n]#oldtype1] = new Newtype1[apply2[e, n]#apply1, apply2[e, n]#oldtype1] {
@@ -46,12 +47,26 @@ private[ken] sealed trait ErrorTAs0 { this: ErrorT.type =>
         override def newOf[a](ot: Lazy[n[Either[e, a]]]): ErrorT[e, n, a] = ErrorT(ot)
         override def oldOf[a](nt: Lazy[ErrorT[e, n, a]]): n[Either[e, a]] = nt.run
     }
-
-    implicit def _asMonadTrans[e, n[+_]]: MonadTrans[apply1[e]#monadTrans] = new MonadTrans[apply1[e]#monadTrans] {
+*/
+    implicit def _asMonadTrans[e, n[+_]]: MonadTransControl[apply1[e]#monadTrans] = new MonadTransControl[apply1[e]#monadTrans] {
+        // MonadTrans
         private type t[n[+_], +a] = ErrorT[e, n, a]
         override def lift[n[+_], a](n: n[a])(implicit i: Monad[n]): t[n, a] = ErrorT {
             import i.`for`
             for { a <- n } yield Right(a)
+        }
+        // MonadTransControl
+        override def liftControl[n[+_], a](f: Run => n[a])(implicit i: Monad[n]): t[n, a] = ErrorT {
+            val em = Monad[Either.apply[e]]
+            i.liftM[a, Either[e, a]](em.`return`[a]) {
+                f {
+                    new Run {
+                        override def apply[n_[+_], o[+_], b](t: t[n_, b])(implicit ri: Monad[n_], rj: Monad[o], rk: Monad[({type m[+a] = t[o, a]})#m]): n_[t[o, b]] = {
+                            ri.liftM((x: Either[e, b]) => ErrorT(rj.`return`(x)))(run(t))
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -135,30 +150,30 @@ private[ken] sealed trait ErrorTAs0 { this: ErrorT.type =>
             } yield *
         }
     }
+}
 
-    /*
+@Annotation.compilerWorkaround("2.9.1") // ambiguous with `_asMonadIO` for some reason.
+private[ken] sealed trait ErrorTAs1 extends ErrorTAs0 { this: ErrorT.type =>
     @Annotation.compilerWorkaround("2.9.1") // `e` instead of `e_` confuses scalac.
-    implicit def _asMonadControlIO[e_](implicit i: MonadControlIO[n]): MonadControlIO[({type m[+a] = ErrorT[e_, a]})#m] = new MonadControlIO[({type m[+a] = ErrorT[e_, a]})#m] with MonadIOProxy[({type m[+a] = ErrorT[e_, a]})#m] {
-        private type m[+a] = ErrorT[e_, a]
-        private val mt = _asMonadTrans[e_]
-        override val selfMonadIO = _asMonadIO[e_](i)
+    implicit def _asMonadControlIO[e_, n[+_]](implicit i: MonadControlIO[n]): MonadControlIO[apply2[e_, n]#apply1] = new MonadControlIO[apply2[e_, n]#apply1] with MonadIOProxy[apply2[e_, n]#apply1] {
+        private type m[+a] = ErrorT[e_, n, a]
+        private val mt = _asMonadTrans[e_, n]
+        override val selfMonadIO = _asMonadIO[e_, n]
         override def liftControlIO[a](f: RunInIO => IO[a]): m[a] = {
-            def dep[b](x: n[n[Either[e_, b]]]): n[m[b]] = for { n <- x } yield ErrorT(n)
             mt.liftControl { run1 =>
                 i.liftControlIO { runInBase =>
                     f {
                         new RunInIO {
-                            override def apply[b](t: m[b]): IO[m[b]] = IO.liftM((x: n[m[b]]) => join(mt.lift(x)))(runInBase(dep(run1[n, b](t))))
+                            override def apply[b](t: m[b]): IO[m[b]] = IO.liftM((x: n[m[b]]) => join(mt.lift(x)))(runInBase(run1[n, n, b](t)))
                         }
                     }
                 }
             }
         }
     }
-    */
 }
 
-private[ken] sealed trait ErrorTAs extends ErrorTAs0 { this: ErrorT.type =>
+private[ken] sealed trait ErrorTAs extends ErrorTAs1 { this: ErrorT.type =>
     implicit def _asMonadError[e, n[+_]](implicit i: Monad[n]): MonadError[e, apply2[e, n]#apply1] = new MonadError[e, apply2[e, n]#apply1] {
         // Functor
         private type f[+a] = ErrorT[e, n, a]

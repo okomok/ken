@@ -19,12 +19,12 @@ class MonadControlTest extends org.scalatest.junit.JUnit3Suite {
     type MyError = String
     val MyError = List.from("my error")
 
-    val mt = MonadTransControl[IO.ErrorT.apply[MyError]]
-    val me = MonadError[MyError, IO.ErrorT.apply[MyError]]
+    val mt = MonadTransControl[ErrorT.apply1[MyError]]
+    val me = MonadError[MyError, ErrorT.apply2[MyError, IO]]
 
     def simple {
         val sayHi: IO[Unit] = IO.putStrLn("Hello")
-        val sayHiError: IO.ErrorT[MyError, Unit] = mt.lift { IO.putStrLn("Hello") }
+        val sayHiError: ErrorT[MyError, IO, Unit] = mt.lift { IO.putStrLn("Hello") }
     }
 
     def withMyFile[a](f: IO.Handle => IO[a]): IO[a] = IO.ioError(IO.userError("todo"))
@@ -34,7 +34,7 @@ class MonadControlTest extends org.scalatest.junit.JUnit3Suite {
         val useMyFile: IO[Unit] = withMyFile(sayHi)
     }
 
-    val sayHiError: IO.Handle => IO.ErrorT[MyError, Unit] = handle => {
+    val sayHiError: IO.Handle => ErrorT[MyError, IO, Unit] = handle => {
         import me.`for`
         for {
             _ <- mt.lift { IO.hPutStrLn(handle)("Hi there, error!") }
@@ -44,24 +44,25 @@ class MonadControlTest extends org.scalatest.junit.JUnit3Suite {
 
     // val useMyFileErrorBad: IO.ErrorT[MyError, Unit] = withMyFile(sayHiError) // doesn't compile.
 
-    val useMyFileError: IO.ErrorT[MyError, Unit] = {
-        val unwrapped: IO.Handle => IO[Either[MyError, Unit]] = handle => IO.ErrorT.run {
+    val useMyFileError: ErrorT[MyError, IO, Unit] = {
+        val unwrapped: IO.Handle => IO[Either[MyError, Unit]] = handle => ErrorT.run {
             sayHiError(handle)
         }
         val applied: IO[Either[MyError, Unit]] = withMyFile(unwrapped)
-        val rewrapped: IO.ErrorT[MyError, Unit] = IO.ErrorT(applied)
+        val rewrapped: ErrorT[MyError, IO, Unit] = ErrorT(applied)
         rewrapped
     }
 
-    val useMyFileError6: IO.ErrorT[MyError, Unit] = mt.control { run =>
+    val useMyFileError6: ErrorT[MyError, IO, Unit] = mt.control { run =>
         withMyFile { h =>
-            for { // This `for` is IO.for.
-                u <- run[IO, Unit](sayHiError(h))
-            } yield IO.ErrorT(u) // makes it dependent...
+            for { // This `for` is `IO.for`.
+                u <- run[IO, IO, Unit](sayHiError(h))
+            } yield u
             // IO.liftM((x: IO[Either[MyError, Unit]]) => IO.ErrorT(x))(run[IO, Unit](sayHiError(h)))
         }
     }
-
+/*
+    No longer works.
     // Weak way of Scala
     //
     val mtw = MonadTransControl.weak[IO.ErrorT.apply[MyError]]
@@ -80,4 +81,5 @@ class MonadControlTest extends org.scalatest.junit.JUnit3Suite {
             run[IO, Unit](sayHiErrorWeak(h))
         }
     }
+*/
 }
