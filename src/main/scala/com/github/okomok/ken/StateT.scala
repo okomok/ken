@@ -18,7 +18,7 @@ final case class StateT[s, n[+_], +a](override val get: s => n[(a, s)]) extends 
 
 
 object StateT extends StateTOp with StateTAs with Kind.FunctionLike {
-    trait apply1[s] extends Kind.MonadTransX {
+    trait apply1[s] extends Kind.MonadTrans {
         override type monadTrans[n[+_], +a] = StateT[s, n, a]
     }
     trait apply[s] extends apply1[s]
@@ -57,7 +57,7 @@ private[ken] sealed trait StateTAs0 { this: StateT.type =>
         override def oldOf[a](nt: Lazy[nt[a]]): ot[a] = nt.run
     }
 
-    implicit def _asMonadTrans[s]: MonadTransX[apply1[s]#monadTrans] = new MonadTransX[apply1[s]#monadTrans] {
+    implicit def _asMonadTrans[s]: MonadTrans[apply1[s]#monadTrans] = new MonadTrans[apply1[s]#monadTrans] {
         private type t[n[+_], +a] = StateT[s, n, a]
         override def lift[n[+_], a](n: n[a])(implicit i: Monad[n]): t[n, a] = StateT { s => {
             import i.`for`

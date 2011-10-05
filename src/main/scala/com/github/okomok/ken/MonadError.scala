@@ -38,18 +38,9 @@ object MonadError extends MonadErrorInstance {
         override def catchError[a](m: m[a])(h: e => m[a]): m[a] = j.newOf { i.catchError(j.oldOf(m))(e => j.oldOf(h(e))) }
     }
 
-    def derivingT[e, mt <: Kind.MonadT](implicit j: MonadT[mt#apply, mt#innerMonad, mt#baseMonad], i: MonadError[e, mt#innerMonad]): MonadError[e, mt#apply] = new MonadError[e, mt#apply] with MonadProxy[mt#apply] {
-        private type m[+a] = mt#apply[a]
-        override def selfMonad = j
-
-        override def throwError[a](e: e): m[a] = j.lift { i.throwError(e) }
-        override def catchError[a](m: m[a])(h: e => m[a]): m[a] = j.newOf { i.catchError(j.oldOf(m))(e => j.oldOf(h(e))) }
-    }
-
     def weak[e, nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply, nt#oldtype1], i: MonadError[e, nt#apply]): MonadError[e, nt#oldtype1] = deriving[e, Kind.coNewtype1[nt]](j.coNewtype, i)
 }
 
 
 sealed trait MonadErrorInstance { this: MonadError.type =>
-    implicit def ofMonadT[e, m[+_], n[+_], u[+_]](implicit j: MonadT[m, n, u], i: MonadError[e, n]): MonadError[e, m] = derivingT[e, MonadT[m, n, u]]
 }

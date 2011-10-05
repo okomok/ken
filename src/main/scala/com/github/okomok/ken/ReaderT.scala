@@ -18,7 +18,7 @@ final case class ReaderT[r, n[+_], +a](override val get: r => n[a]) extends Newt
 
 
 object ReaderT extends ReaderTOp with ReaderTAs with Kind.FunctionLike {
-    trait apply1[r] extends Kind.MonadTransX {
+    trait apply1[r] extends Kind.MonadTrans {
         override type monadTrans[n[+_], +a] = ReaderT[r, n, a]
     }
     trait apply[r] extends apply1[r]
@@ -40,8 +40,7 @@ private[ken] trait ReaderTOp {
 
 
 private[ken] sealed trait ReaderTAs0 { this: ReaderT.type =>
-    implicit def _asMonadTrans[r]: MonadTransX[apply1[r]#monadTrans] = new MonadTransX[apply1[r]#monadTrans] {
-        // MonadTrans
+    implicit def _asMonadTrans[r]: MonadTrans[apply1[r]#monadTrans] = new MonadTrans[apply1[r]#monadTrans] {
         private type t[n[+_], +a] = ReaderT[r, n, a]
         override def lift[n[+_], a](n: n[a])(implicit i: Monad[n]): t[n, a] = ReaderT { _ => n }
     }

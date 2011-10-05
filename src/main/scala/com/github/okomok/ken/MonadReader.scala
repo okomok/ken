@@ -52,18 +52,9 @@ object MonadReader extends MonadReaderInstance {
         override def asks[a](f: r => a): m[a] = j.newOf { i.asks(f) }
     }
 
-    def derivingT[r, mt <: Kind.MonadT](implicit i: MonadReader[r, mt#innerMonad], j: MonadT[mt#apply, mt#innerMonad, mt#baseMonad]): MonadReader[r, mt#apply] = new MonadReader[r, mt#apply] with MonadProxy[mt#apply] {
-        private type m[+a] = mt#apply[a]
-        override def selfMonad = j
-
-        override def ask: m[r] = j.lift { i.ask }
-        override def local[a](f: r => r)(m: m[a]): m[a] = j.newOf { i.local(f)(j.oldOf(m)) }
-    }
-
     def weak[r, nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply, nt#oldtype1], i: MonadReader[r, nt#apply]): MonadReader[r, nt#oldtype1] = deriving[r, Kind.coNewtype1[nt]](j.coNewtype, i)
 }
 
 
 sealed trait MonadReaderInstance { this: MonadReader.type =>
-    implicit def ofMonadT[r, m[+_], n[+_], u[+_]](implicit j: MonadT[m, n, u], i: MonadReader[r, n]): MonadReader[r, m] = derivingT[r, MonadT[m, n, u]]
 }

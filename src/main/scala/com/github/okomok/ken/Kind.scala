@@ -65,25 +65,8 @@ object Kind {
 
     // MonadTrans
     //
-    trait MonadTrans extends Newtype1 {
-        type innerMonad[+a]
-    }
-
-    trait MonadTransX {
+    trait MonadTrans {
         type monadTrans[m[+_], +a]
-    }
-
-    // MonadTransControl
-    //
-    trait MonadTransControl extends MonadTrans {
-        type baseResult[+a]
-    }
-
-    // MonadT
-    //
-    trait MonadT extends MonadTrans {
-        //type oldtype1[+a] = innerMonad[baseMonad[a]]
-        type baseMonad[+a]
     }
 
     // Misc

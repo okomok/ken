@@ -18,7 +18,7 @@ final case class WriterT[w, n[+_], +a](override val get: n[(a, w)]) extends Newt
 
 
 object WriterT extends WriterTOp with WriterTAs with Kind.FunctionLike {
-    trait apply1[w] extends Kind.MonadTransX {
+    trait apply1[w] extends Kind.MonadTrans {
         override type monadTrans[n[+_], +a] = WriterT[w, n, a]
     }
     trait apply[w] extends apply1[w]
@@ -43,7 +43,7 @@ private[ken] trait WriterTOp {
 
 
 private[ken] trait WriterTAs0 { this: WriterT.type =>
-    implicit def _asMonadTrans[w](implicit j: Monoid[w]): MonadTransX[apply1[w]#monadTrans] = new MonadTransX[apply1[w]#monadTrans] {
+    implicit def _asMonadTrans[w](implicit j: Monoid[w]): MonadTrans[apply1[w]#monadTrans] = new MonadTrans[apply1[w]#monadTrans] {
         private type t[n[+_], +a] = WriterT[w, n, a]
         override def lift[n[+_], a](n: n[a])(implicit i: Monad[n]): t[n, a] = WriterT {
             import i.`for`

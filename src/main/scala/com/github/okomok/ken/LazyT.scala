@@ -17,7 +17,7 @@ package ken
 final case class LazyT[n[+_], +a](override val get: n[Lazy[a]]) extends NewtypeOf[n[Lazy[a]]]
 
 
-object LazyT extends LazyTOp with LazyTAs with MonadTransX[LazyT] {
+object LazyT extends LazyTOp with LazyTAs with MonadTrans[LazyT] {
     sealed trait apply1[n[+_]] extends Kind.Newtype1 {
         override type apply1[+a] = LazyT[n, a]
         override type oldtype1[+a] = n[Lazy[a]]
@@ -26,7 +26,7 @@ object LazyT extends LazyTOp with LazyTAs with MonadTransX[LazyT] {
 
     // Overrides
     //
-    // MonadTransX
+    // MonadTrans
     private type t[n[+_], +a] = LazyT[n, a]
     override def lift[n[+_], a](n: n[a])(implicit i: Monad[n]): t[n, a] = LazyT {
         import i.`for`
@@ -53,7 +53,7 @@ private[ken] sealed trait LazyTAs0 { this: LazyT.type =>
     }
     */
 
-    implicit val _asMonadTrans: MonadTransX[LazyT] = this
+    implicit val _asMonadTrans: MonadTrans[LazyT] = this
 
     implicit def _asMonadIO[n[+_]](implicit i: MonadIO[n]): MonadIO[apply1[n]#apply1] = new MonadIO[apply1[n]#apply1] with MonadProxy[apply1[n]#apply1] {
         private type m[+a] = LazyT[n, a]

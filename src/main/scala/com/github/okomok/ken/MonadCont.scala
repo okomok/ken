@@ -39,23 +39,9 @@ object MonadCont extends MonadContInstance {
         }
     }
 
-    def derivingT[mt <: Kind.MonadT](implicit j: MonadT[mt#apply, mt#innerMonad, mt#baseMonad], i: MonadCont[mt#innerMonad]): MonadCont[mt#apply] = new MonadCont[mt#apply] with MonadProxy[mt#apply] {
-        private type m[+a] = mt#apply[a]
-        private type n[+a] = mt#innerMonad[a]
-        private type u[+a] = mt#baseMonad[a]
-        override def selfMonad = j
-
-        override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = j.newOf {
-            i.callCC { (c: u[a] => n[u[b]]) =>
-                j.oldOf { f( a => j.newOf { c(j.baseMonad.`return`(a)) } ) }
-            }
-        }
-    }
-
     def weak[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply, nt#oldtype1], i: MonadCont[nt#apply]): MonadCont[nt#oldtype1] = deriving[Kind.coNewtype1[nt]](j.coNewtype, i)
 }
 
 
 sealed trait MonadContInstance { this: MonadCont.type =>
-    implicit def ofMonadT[m[+_], n[+_], u[+_]](implicit j: MonadT[m, n, u], i: MonadCont[n]): MonadCont[m] = derivingT[MonadT[m, n, u]]
 }

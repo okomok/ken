@@ -52,18 +52,9 @@ object MonadState extends MonadStateInstance {
         override def put(s: s): m[Unit] = j.newOf { i.put(s) }
     }
 
-    def derivingT[s, mt <: Kind.MonadT](implicit j: MonadT[mt#apply, mt#innerMonad, mt#baseMonad], i: MonadState[s, mt#innerMonad]): MonadState[s, mt#apply] = new MonadState[s, mt#apply] with MonadProxy[mt#apply] {
-        private type m[+a] = mt#apply[a]
-        override def selfMonad = j
-
-        override def get: m[s] = j.lift { i.get }
-        override def put(s: s): m[Unit] = j.lift { i.put(s) }
-    }
-
     def weak[s, nt <: Kind.Newtype1](implicit i: MonadState[s, nt#apply], j: Newtype1[nt#apply, nt#oldtype1]): MonadState[s, nt#oldtype1] = deriving[s, Kind.coNewtype1[nt]](j.coNewtype, i)
 }
 
 
 sealed trait MonadStateInstance { this: MonadState.type =>
-     implicit def ofMonadT[s, m[+_], n[+_], u[+_]](implicit j: MonadT[m, n, u], i: MonadState[s, n]): MonadState[s, m] = derivingT[s, MonadT[m, n, u]]
 }

@@ -18,7 +18,7 @@ final case class ErrorT[e, n[+_], +a](override val get: n[Either[e, a]]) extends
 
 
 object ErrorT extends ErrorTOp with ErrorTAs with Kind.FunctionLike {
-    trait apply1[e] extends Kind.MonadTransX {
+    trait apply1[e] extends Kind.MonadTrans {
         override type monadTrans[n[+_], +a] = ErrorT[e, n, a]
     }
     trait apply[e] extends apply1[e]
@@ -47,7 +47,7 @@ private[ken] sealed trait ErrorTAs0 { this: ErrorT.type =>
         override def oldOf[a](nt: Lazy[ErrorT[e, n, a]]): n[Either[e, a]] = nt.run
     }
 
-    implicit def _asMonadTrans[e, n[+_]]: MonadTransX[apply1[e]#monadTrans] = new MonadTransX[apply1[e]#monadTrans] {
+    implicit def _asMonadTrans[e, n[+_]]: MonadTrans[apply1[e]#monadTrans] = new MonadTrans[apply1[e]#monadTrans] {
         private type t[n[+_], +a] = ErrorT[e, n, a]
         override def lift[n[+_], a](n: n[a])(implicit i: Monad[n]): t[n, a] = ErrorT {
             import i.`for`

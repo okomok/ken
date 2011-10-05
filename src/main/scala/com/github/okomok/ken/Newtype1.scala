@@ -46,12 +46,4 @@ object Newtype1 extends Newtype1Instance {
 
 
 sealed trait Newtype1Instance { this: Newtype1.type =>
-    /* With this, scalac unconditionally crashes in user-site.
-    implicit def ofMonadT[m[+_], n[+_], u[+_]](implicit i: MonadT[m, n, u]): Newtype1[m, ({type ot[+a] = n[u[a]]})#ot] = new Newtype1[m, ({type ot[+a] = n[u[a]]})#ot] {
-        private type nt[+a] = m[a]
-        private type ot[+a] = n[u[a]]
-        override def newOf[a](ot: Lazy[ot[a]]): nt[a] = i.newOf(ot)
-        override def oldOf[a](nt: Lazy[nt[a]]): ot[a] = i.oldOf(nt)
-    }
-    */
 }

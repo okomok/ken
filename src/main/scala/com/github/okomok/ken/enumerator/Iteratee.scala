@@ -16,7 +16,7 @@ final case class Iteratee[-a, +n[+_], +b](override val get: n[Step[a, n, b]]) ex
 
 
 object Iteratee extends IterateeAs with Kind.FunctionLike {
-    trait apply1[z] extends Kind.MonadTransX {
+    trait apply1[z] extends Kind.MonadTrans {
         override type monadTrans[n[+_], +a] = Iteratee[z, n, a]
     }
     trait apply[z] extends apply1[z]
@@ -58,7 +58,7 @@ private[enumerator] sealed trait IterateeAs0 { this: Iteratee.type =>
         }.apply(m0)
     }
 
-    implicit def _asMonadTrans[z]: MonadTransX[apply1[z]#monadTrans] = new MonadTransX[apply1[z]#monadTrans] {
+    implicit def _asMonadTrans[z]: MonadTrans[apply1[z]#monadTrans] = new MonadTrans[apply1[z]#monadTrans] {
         private type t[n[+_], +a] = Iteratee[z, n, a]
         override def lift[n[+_], a](n: n[a])(implicit i: Monad[n]): t[n, a] = Iteratee {
             import i.>>=

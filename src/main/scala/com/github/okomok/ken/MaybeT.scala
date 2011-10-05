@@ -17,7 +17,7 @@ package ken
 final case class MaybeT[n[+_], +a](override val get: n[Maybe[a]]) extends NewtypeOf[n[Maybe[a]]]
 
 
-object MaybeT extends MaybeTOp with MaybeTAs with MonadTransX[MaybeT] {
+object MaybeT extends MaybeTOp with MaybeTAs with MonadTrans[MaybeT] {
     sealed trait apply1[n[+_]] extends Kind.Newtype1 {
         override type apply1[+a] = MaybeT[n, a]
         override type oldtype1[+a] = n[Maybe[a]]
@@ -26,7 +26,7 @@ object MaybeT extends MaybeTOp with MaybeTAs with MonadTransX[MaybeT] {
 
     // Overrides
     //
-    // MonadTransX
+    // MonadTrans
     private type t[n[+_], +a] = MaybeT[n, a]
     override def lift[n[+_], a](n: n[a])(implicit i: Monad[n]): t[n, a] = MaybeT {
         import i.`for`
@@ -53,7 +53,7 @@ private[ken] sealed trait MaybeTAs0 { this: MaybeT.type =>
     }
     */
 
-    implicit val _asMonadTrans: MonadTransX[MaybeT] = this
+    implicit val _asMonadTrans: MonadTrans[MaybeT] = this
 
     implicit def _asMonadIO[n[+_]](implicit i: MonadIO[n]): MonadIO[apply1[n]#apply1] = new MonadIO[apply1[n]#apply1] with MonadProxy[apply1[n]#apply1] {
         private type m[+a] = MaybeT[n, a]

@@ -17,7 +17,7 @@ package ken
 final case class ListT[n[+_], +a](override val get: n[List[a]]) extends NewtypeOf[n[List[a]]]
 
 
-object ListT extends ListTOp with ListTAs with MonadTransX[ListT] {
+object ListT extends ListTOp with ListTAs with MonadTrans[ListT] {
     sealed trait apply1[n[+_]] extends Kind.Newtype1 {
         override type apply1[+a] = ListT[n, a]
         override type oldtype1[+a] = n[List[a]]
@@ -26,7 +26,7 @@ object ListT extends ListTOp with ListTAs with MonadTransX[ListT] {
 
     // Overrides
     //
-    // MonadTransX
+    // MonadTrans
     private type t[n[+_], +a] = ListT[n, a]
     override def lift[n[+_], a](n: n[a])(implicit i: Monad[n]): t[n, a] = ListT {
         import i.`for`
@@ -52,7 +52,7 @@ private[ken] sealed trait ListTAs0 { this: ListT.type =>
         override def oldOf[a](nt: Lazy[ListT[n, a]]): n[List[a]] = nt.run
     }
     */
-    implicit val _asMonadTrans: MonadTransX[ListT] = this
+    implicit val _asMonadTrans: MonadTrans[ListT] = this
 
     implicit def _asMonadIO[n[+_]](implicit i: MonadIO[n]): MonadIO[apply1[n]#apply1] = new MonadIO[apply1[n]#apply1] with MonadProxy[apply1[n]#apply1] {
         private type m[+a] = ListT[n, a]

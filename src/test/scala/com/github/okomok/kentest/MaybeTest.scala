@@ -83,7 +83,7 @@ class MaybeTest extends org.scalatest.junit.JUnit3Suite {
         val m = MonadPlus[MaybeT.apply[IO]]
         import m._
 
-        val mt = MonadTransX[MaybeT.type]
+        val mt = MonadTrans[MaybeT.type]
         import mt.lift
 
         var valid = false
