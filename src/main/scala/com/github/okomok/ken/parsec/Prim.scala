@@ -12,14 +12,14 @@ package ken
 package parsec
 
 
-private[parsec] trait _Prim[s, u, n[+_]] { this: _ParsecTs[s, u, n] =>
-    lazy val unexpected: String => ParsecT[Nothing] = msg => ParsecT { new UnParser[s, u, n, Nothing] {
+private[parsec] trait Prim[s, u, n[+_]] { this: ParsecTOp[s, u, n] =>
+    lazy val unexpected: String => ParsecT[s, u, n, Nothing] = msg => ParsecT { new UnParser[s, u, n, Nothing] {
         override def apply[b](v: UnParserParam[s, u, n, Nothing, b]): n[b] = {
             v.eerr { newErrorMessage(UnExpect(msg))(statePos(v.state)) }
         }
     } }
 
-    def unParser[a, b](p: ParsecT[a])(s: State[s, u])
+    def unParser[a, b](p: ParsecT[s, u, n, a])(s: State[s, u])
         (cok_ : a => State[s, u] => ParseError => n[b])
         (cerr_ : ParseError => n[b])
         (eok_ : a => State[s, u] => ParseError => n[b])
@@ -36,8 +36,8 @@ private[parsec] trait _Prim[s, u, n[+_]] { this: _ParsecTs[s, u, n] =>
         }
     }
 
-    def runParsecT[a](p: ParsecT[a])(s: State[s, u]): n[Consumed_[n[Reply[s, u, a]]]] = {
-        import inner.`return`
+    def runParsecT[a](p: ParsecT[s, u, n, a])(s: State[s, u]): n[Consumed_[n[Reply[s, u, a]]]] = {
+        import innerMonad.`return`
         def cok(a: a)(s_ : State[s, u])(err: ParseError) = `return`(Consumed(`return`(Ok(a, s_, err).up)).up)
         def cerr(err: ParseError) = `return`(Consumed(`return`(Error(err).up)).up)
         def eok(a: a)(s_ : State[s, u])(err: ParseError) = `return`(Empty(`return`(Ok(a, s_, err).up)).up)
@@ -45,7 +45,7 @@ private[parsec] trait _Prim[s, u, n[+_]] { this: _ParsecTs[s, u, n] =>
         unParser(p)(s)(cok)(cerr)(eok)(eerr)
     }
 
-    def mkPT[a](k: State[s, u] => n[Consumed_[n[Reply[s, u, a]]]]): ParsecT[a] = ParsecT { new UnParser[s, u, n, a] {
+    def mkPT[a](k: State[s, u] => n[Consumed_[n[Reply[s, u, a]]]]): ParsecT[s, u, n, a] = ParsecT { new UnParser[s, u, n, a] {
         override def apply[b](v: UnParserParam[s, u, n, a, b]): n[b] = {
             for {
                 cons <- k(v.state)
@@ -70,12 +70,12 @@ private[parsec] trait _Prim[s, u, n[+_]] { this: _ParsecTs[s, u, n] =>
     } }
 
     // epsilon
-    def parserReturn[a](x: a): ParsecT[a] = ParsecT { new UnParser[s, u, n, a] {
+    def parserReturn[a](x: a): ParsecT[s, u, n, a] = ParsecT { new UnParser[s, u, n, a] {
         override def apply[b](v: UnParserParam[s, u, n, a, b]): n[b] = v.eok(x)(v.state)(unknownError(v.state))
     } }
 
     // sequence
-    def parserBind[a, z](m: ParsecT[a])(k: a => ParsecT[z]): ParsecT[z] = ParsecT { new UnParser[s, u, n, z] {
+    def parserBind[a, z](m: ParsecT[s, u, n, a])(k: a => ParsecT[s, u, n, z]): ParsecT[s, u, n, z] = ParsecT { new UnParser[s, u, n, z] {
         override def apply[b](v: UnParserParam[s, u, n, z, b]): n[b] = {
             def mcok(x: a)(s: State[s, u])(err: ParseError): n[b] = {
                 val pcok = v.cok
@@ -98,12 +98,12 @@ private[parsec] trait _Prim[s, u, n[+_]] { this: _ParsecTs[s, u, n] =>
     } }
 
     // always-fail
-    def parserZero: ParsecT[Nothing] = ParsecT { new UnParser[s, u, n, Nothing] {
+    def parserZero: ParsecT[s, u, n, Nothing] = ParsecT { new UnParser[s, u, n, Nothing] {
         override def apply[b](v: UnParserParam[s, u, n, Nothing, b]): n[b] = v.eerr { unknownError(v.state) }
     } }
 
     // alternative
-    def parserPlus[a](m: ParsecT[a])(n: ParsecT[a]): ParsecT[a] = ParsecT { new UnParser[s, u, n, a] {
+    def parserPlus[a](m: ParsecT[s, u, n, a])(n: ParsecT[s, u, n, a]): ParsecT[s, u, n, a] = ParsecT { new UnParser[s, u, n, a] {
         override def apply[b](v: UnParserParam[s, u, n, a, b]): n[b] = {
             val meerr: v.eerr = err => {
                 val neok: v.eok = y => s_ => err_ => v.eok(y)(s_)(mergeError(err)(err_))
@@ -114,9 +114,9 @@ private[parsec] trait _Prim[s, u, n[+_]] { this: _ParsecTs[s, u, n] =>
         }
     } }
 
-    def label[a](p: ParsecT[a])(msg: String): ParsecT[a] = labels(p)(List(msg))
+    def label[a](p: ParsecT[s, u, n, a])(msg: String): ParsecT[s, u, n, a] = labels(p)(List(msg))
 
-    def labels[a](p: ParsecT[a])(msgs: List[String]): ParsecT[a] = ParsecT { new UnParser[s, u, n, a] {
+    def labels[a](p: ParsecT[s, u, n, a])(msgs: List[String]): ParsecT[s, u, n, a] = ParsecT { new UnParser[s, u, n, a] {
         override def apply[b](v: UnParserParam[s, u, n, a, b]): n[b] = {
             def setExpectErrors(err: ParseError)(msgs: List[String]): ParseError = msgs match {
                 case Nil => setErrorMessage(Expect(""))(err)
@@ -136,7 +136,7 @@ private[parsec] trait _Prim[s, u, n[+_]] { this: _ParsecTs[s, u, n] =>
     def tokens[t](showTokens: List[t] => String)
         (nextposs: SourcePos => List[t] => SourcePos)
         (tts: List[t])
-        (implicit i: Stream[s, n, t], j: Eq[t]): ParsecT[List[t]] = tts match
+        (implicit i: Stream[s, n, t], j: Eq[t]): ParsecT[s, u, n, List[t]] = tts match
     {
         case Nil => ParsecT { new UnParser[s, u, n, List[t]] {
             override def apply[b](v: UnParserParam[s, u, n, List[t], b]): n[b] = v.eok(Nil)(v.state) { unknownError(v.state) }
@@ -182,7 +182,7 @@ private[parsec] trait _Prim[s, u, n[+_]] { this: _ParsecTs[s, u, n] =>
         } }
     }
 
-    def `try`[a](p: ParsecT[a]): ParsecT[a] = ParsecT { new UnParser[s, u, n, a] {
+    def `try`[a](p: ParsecT[s, u, n, a]): ParsecT[s, u, n, a] = ParsecT { new UnParser[s, u, n, a] {
         override def apply[b](v: UnParserParam[s, u, n, a, b]): n[b] = v.state match {
             case s @ State(_, pos, _) => {
                 val pcerr: v.cerr = parseError => v.eerr { setErrorPos(pos)(parseError) }
@@ -193,7 +193,7 @@ private[parsec] trait _Prim[s, u, n[+_]] { this: _ParsecTs[s, u, n] =>
 
     def token[a, t](showToken: t => String)
         (tokpos: t => SourcePos)
-        (test: t => Maybe[a])(implicit i: Stream[s, n, t], ev: Iso1[n, WeakIdentity.apply]): ParsecT[a] =
+        (test: t => Maybe[a])(implicit i: Stream[s, n, t], ev: Iso1[n, WeakIdentity.apply]): ParsecT[s, u, n, a] =
     {
         def nextpos(* : SourcePos)(tok: t)(ts: s): SourcePos = ev.imply(i.uncons(ts)) match {
             case Nothing => tokpos(tok)
@@ -205,7 +205,7 @@ private[parsec] trait _Prim[s, u, n[+_]] { this: _ParsecTs[s, u, n] =>
     def tokenPrim[a, t](showToken: t => String)
         (nextpos: SourcePos => t => s => SourcePos)
         (test: t => Maybe[a])
-        (implicit i: Stream[s, n, t]): ParsecT[a] =
+        (implicit i: Stream[s, n, t]): ParsecT[s, u, n, a] =
     {
         tokenPrimEx(showToken)(nextpos)(Nothing)(test)(i)
     }
@@ -214,7 +214,7 @@ private[parsec] trait _Prim[s, u, n[+_]] { this: _ParsecTs[s, u, n] =>
         (nextpos: SourcePos => t => s => SourcePos)
         (nextstate: Maybe[SourcePos => t => s => u => u])
         (test: t => Maybe[a])
-        (implicit i: Stream[s, n, t]): ParsecT[a] =
+        (implicit i: Stream[s, n, t]): ParsecT[s, u, n, a] =
     {
         nextstate match {
             case Nothing => ParsecT { new UnParser[s, u, n, a] {
@@ -257,17 +257,17 @@ private[parsec] trait _Prim[s, u, n[+_]] { this: _ParsecTs[s, u, n] =>
         }
     }
 
-    def many[a](p: ParsecT[a]): ParsecT[List[a]] = {
-        import ParsecT.`for`
+    def many[a](p: ParsecT[s, u, n, a]): ParsecT[s, u, n, List[a]] = {
+        import parsecMonad.`for`
         for { xs <- manyAccum(List.op_::[a])(p) } yield List.reverse(xs)
     }
 
-    lazy val skipMany: ParsecT[Any] => ParsecT[Unit] = p => {
-        import ParsecT.`for`
+    lazy val skipMany: ParsecT[s, u, n, Any] => ParsecT[s, u, n, Unit] = p => {
+        import parsecMonad.`for`
         for { _ <- manyAccum[Any](_ => _ => Nil)(p) } yield ()
     }
 
-    def manyAccum[a](acc: a => Lazy[List[a]] => List[a])(p: ParsecT[a]): ParsecT[List[a]] = ParsecT { new UnParser[s, u, n, List[a]] {
+    def manyAccum[a](acc: a => Lazy[List[a]] => List[a])(p: ParsecT[s, u, n, a]): ParsecT[s, u, n, List[a]] = ParsecT { new UnParser[s, u, n, List[a]] {
         override def apply[b](v: UnParserParam[s, u, n, List[a], b]): n[b] = {
             def walk(xs: List[a])(x: a)(s_ : State[s, u])(err: ParseError): n[b] = {
                 unParser(p)(s_)(walk { acc(x)(xs) })(v.cerr)(manyErr)(e => v.cok(acc(x)(xs))(s_)(e))
@@ -280,13 +280,13 @@ private[parsec] trait _Prim[s, u, n[+_]] { this: _ParsecTs[s, u, n] =>
     } }
 
     // runParserT is equivalent to runParser by the power of Scala.
-    def runParser[a](p: ParsecT[a])(u: u)(name: SourceName)(s: s): n[Either[ParseError, a]] = {
+    def runParser[a](p: ParsecT[s, u, n, a])(u: u)(name: SourceName)(s: s): n[Either[ParseError, a]] = {
         def parserReply(res: Consumed_[n[Reply[s, u, a]]]): n[Reply[s, u, a]] = res match {
             case Consumed(r) => r
             case Empty(r) => r
         }
 
-        import inner.`return`
+        import innerMonad.`return`
         for {
             res <- runParsecT(p)(State(s, initialPos(name), u))
             r <- parserReply(res)
@@ -297,58 +297,57 @@ private[parsec] trait _Prim[s, u, n[+_]] { this: _ParsecTs[s, u, n] =>
         } yield *
     }
 
-    def parse[a](p: ParsecT[a])(name: SourceName)(s: s)(implicit ev: Unit =:= u): n[Either[ParseError, a]] = runParser(p)(())(name)(s)
+    def parse[a](p: ParsecT[s, u, n, a])(name: SourceName)(s: s)(implicit ev: Unit =:= u): n[Either[ParseError, a]] = runParser(p)(())(name)(s)
 
-    def parseTest[a](p: ParsecT[a])(input: s)(implicit i: Show[a], ev: Unit =:= u, evi: Iso1[n, WeakIdentity.apply]): IO[Unit] = {
+    def parseTest[a](p: ParsecT[s, u, n, a])(input: s)(implicit i: Show[a], ev: Unit =:= u, evi: Iso1[n, WeakIdentity.apply]): IO[Unit] = {
         evi.imply(parse(p)("")(input)) match {
             case Left(err) => for { _ <- IO.putStr("parse error at "); * <- IO.print(err) } yield *
             case Right(x) => IO.print(x)
         }
     }
 
-
     // Setter/Getter
     //
-    import ParsecT.`for`
+    import parsecMonad.`for`
 
-    lazy val getPosition: ParsecT[SourcePos] = for { state <- getParserState } yield statePos(state)
+    lazy val getPosition: ParsecT[s, u, n, SourcePos] = for { state <- getParserState } yield statePos(state)
 
-    lazy val getInput: ParsecT[s] = for { state <- getParserState } yield stateInput(state)
+    lazy val getInput: ParsecT[s, u, n, s] = for { state <- getParserState } yield stateInput(state)
 
-    lazy val setPosition: SourcePos => ParsecT[Unit] = pos => {
+    lazy val setPosition: SourcePos => ParsecT[s, u, n, Unit] = pos => {
         for { _ <- updateParserState {
             case State(input, _, user) => State(input, pos, user)
         } } yield ()
     }
 
-    lazy val setInput: s => ParsecT[Unit] = input => {
+    lazy val setInput: s => ParsecT[s, u, n, Unit] = input => {
         for { _ <- updateParserState {
             case State(_, pos, user) => State(input, pos, user)
             }
         } yield ()
     }
 
-    lazy val getParserState: ParsecT[State[s, u]] = updateParserState(id)
+    lazy val getParserState: ParsecT[s, u, n, State[s, u]] = updateParserState(id)
 
-    lazy val setParserState: State[s, u] => ParsecT[State[s, u]] = st => updateParserState(const(st))
+    lazy val setParserState: State[s, u] => ParsecT[s, u, n, State[s, u]] = st => updateParserState(const(st))
 
-    lazy val updateParserState: (State[s, u] => State[s, u]) => ParsecT[State[s, u]] = f => ParsecT { new UnParser[s, u, n, State[s, u]] {
+    lazy val updateParserState: (State[s, u] => State[s, u]) => ParsecT[s, u, n, State[s, u]] = f => ParsecT { new UnParser[s, u, n, State[s, u]] {
         override def apply[b](v: UnParserParam[s, u, n, State[s, u], b]): n[b] = {
             val s_ = f(v.state)
             v.eok(s_)(s_) { unknownError(s_) }
         }
     } }
 
-    lazy val getState: ParsecT[u] = ParsecT.liftM[State[s, u], u](stateUser)(getParserState)
+    lazy val getState: ParsecT[s, u, n, u] = parsecMonad.liftM[State[s, u], u](stateUser)(getParserState)
 
-    lazy val putState: u => ParsecT[Unit] = u => {
+    lazy val putState: u => ParsecT[s, u, n, Unit] = u => {
         for { _ <- updateParserState { (s: State[s, u]) => s.copy(user = u) } } yield ()
     }
 
-    lazy val modifyState: (u => u) => ParsecT[Unit] = f => {
+    lazy val modifyState: (u => u) => ParsecT[s, u, n, Unit] = f => {
         for { _ <- updateParserState { (s: State[s, u]) => s.copy(user = f(stateUser(s))) } } yield ()
     }
 
-    lazy val setState: u => ParsecT[Unit] = putState
-    lazy val updateState: (u => u) => ParsecT[Unit] = modifyState
+    lazy val setState: u => ParsecT[s, u, n, Unit] = putState
+    lazy val updateState: (u => u) => ParsecT[s, u, n, Unit] = modifyState
 }

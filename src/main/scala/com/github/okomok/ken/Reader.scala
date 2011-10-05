@@ -19,11 +19,8 @@ package ken
 
 @Annotation.compilerWorkaround("2.9.1", 5031)
 object _Reader extends ReaderTOp with Kind.FunctionLike {
-    sealed trait apply1[r] extends Kind.Newtype1 {
-        override type apply1[+a] = Reader[r, a]
-        override type oldtype1[+a] = r => a
-    }
-    type apply[r] = apply1[r]
+    trait apply1[r] extends ReaderT.apply2[r, WeakIdentity.apply]
+    trait apply[r] extends apply1[r]
 
     def apply[r, a](n: r => a): Reader[r, a] = new ReaderT[r, WeakIdentity.apply, a](n)
     def unapply[r, a](m: Reader[r, a]): Option[r => a] = Some(m.run)

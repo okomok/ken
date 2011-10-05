@@ -18,12 +18,12 @@ final case class StateT[s, n[+_], +a](override val get: s => n[(a, s)]) extends 
 
 
 object StateT extends StateTOp with StateTAs with Kind.FunctionLike {
-    sealed trait apply1[s] extends Kind.MonadTransX {
+    trait apply1[s] extends Kind.MonadTransX {
         override type monadTrans[n[+_], +a] = StateT[s, n, a]
     }
-    type apply[s] = apply1[s]
+    trait apply[s] extends apply1[s]
 
-    sealed trait apply2[s, n[+_]] extends Kind.Newtype1 {
+    trait apply2[s, n[+_]] extends Kind.Newtype1 {
         override type apply1[+a] = StateT[s, n, a]
         override type oldtype1[+a] = s => n[(a, s)]
     }

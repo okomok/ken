@@ -9,13 +9,16 @@ package parsectest.example.userguide
 
 
 import com.github.okomok.ken._
-import parsec.Parsers._
+import parsec._
 
 
 class MainTezt {
 //class MainTest extends org.scalatest.junit.JUnit3Suite {
 
     // 2.1
+
+    val pop = ParsecTOp[Parser[Char]]
+    import pop._
 
     val simple: Parser[Char] = letter
     val pm = MonadPlus[Parser.type]

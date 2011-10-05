@@ -9,11 +9,13 @@ package parsectest
 
 
 import com.github.okomok.ken._
+import parsec._
 
 
 class TrivialTest extends org.scalatest.junit.JUnit3Suite {
 
-    import parsec.Parsers._
+    val op = ParsecTOp[Parser[Char]]
+    import op._
 
     def testTrivial {
         val p: Parser[Char] = char('a')

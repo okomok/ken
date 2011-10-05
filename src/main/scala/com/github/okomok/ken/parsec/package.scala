@@ -66,6 +66,15 @@ package object parsec {
 
     // Prim
     //
+    type Parsec[s, u, +a] = ParsecT[s, u, WeakIdentity.apply, a]
+    val Parsec = _Parsec
+
+    type GenParser[tok, st, +a] = Parsec[List[tok], st, a]
+    val GenParser = _GenParser
+
+    type Parser[+a] = Parsec[String, Unit, a]
+    val Parser = _Parser
+
     def unknownError[s, u](state: State[s, u]): ParseError = newErrorUnknown(statePos(state))
 
     val sysUnExpectError: String => SourcePos => Reply[Nothing, Nothing, Nothing] = msg => pos => Error(newErrorMessage(SysUnExpect(msg))(pos))

@@ -18,12 +18,12 @@ final case class ReaderT[r, n[+_], +a](override val get: r => n[a]) extends Newt
 
 
 object ReaderT extends ReaderTOp with ReaderTAs with Kind.FunctionLike {
-    sealed trait apply1[r] extends Kind.MonadTransX {
+    trait apply1[r] extends Kind.MonadTransX {
         override type monadTrans[n[+_], +a] = ReaderT[r, n, a]
     }
-    type apply[r] = apply1[r]
+    trait apply[r] extends apply1[r]
 
-    sealed trait apply2[r, n[+_]] extends Kind.Newtype1 {
+    trait apply2[r, n[+_]] extends Kind.Newtype1 {
         override type apply1[+a] = ReaderT[r, n, a]
         override type oldtype1[+a] = r => n[a]
     }
