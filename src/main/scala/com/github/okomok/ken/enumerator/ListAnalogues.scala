@@ -12,13 +12,13 @@ package ken
 package enumerator
 
 
-private[enumerator] trait _ListAnalogues[n[+_]] { this: _Enumerators[n] =>
+private[enumerator] trait ListAnalogues { this: _Enumerator.type =>
 
     /**
      * Iteratee which cares about the first element only.
      */
-    def head[a]: Iteratee[a, Maybe[a]] = {
-        lazy val loop: Stream[a] => Iteratee[a, Maybe[a]] = {
+    def head[a, n[+_]](implicit im: Monad[n]): Iteratee[a, n, Maybe[a]] = {
+        lazy val loop: Stream[a] => Iteratee[a, n, Maybe[a]] = {
             case Chunks(Nil) => head
             case Chunks(x :: xs) => `yield`(Just(x))(Chunks(xs.!))
             case EOF => `yield`(Nothing)(EOF)
