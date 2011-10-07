@@ -57,12 +57,25 @@ private[ken] sealed trait StateTAs0 { this: StateT.type =>
         override def oldOf[a](nt: Lazy[nt[a]]): ot[a] = nt.run
     }
 
-    implicit def _asMonadTrans[s]: MonadTrans[apply1[s]#monadTrans] = new MonadTrans[apply1[s]#monadTrans] {
+    implicit def _asMonadTrans[s]: MonadTransControl[apply1[s]#monadTrans] = new MonadTransControl[apply1[s]#monadTrans] {
+        // MonadTrans
         private type t[n[+_], +a] = StateT[s, n, a]
         override def lift[n[+_], a](n: n[a])(implicit i: Monad[n]): t[n, a] = StateT { s => {
             import i.`for`
             for { a <- n } yield (a, s)
         } }
+        // MonadTransControl
+        override def liftControl[n[+_], a](f: Run => n[a])(implicit i: Monad[n]): t[n, a] = StateT { s =>
+            i.liftM((x: a) => (x, s)) {
+                f {
+                    new Run {
+                        override def apply[n_[+_], o[+_], b](t: t[n_, b], * : TypeC1[o] = null)(implicit ri: Monad[n_], rj: Monad[o], rk: Monad[({type m[+a] = t[o, a]})#m]): n_[t[o, b]] = {
+                            ri.liftM((x_s_ : (b, s)) => StateT((_: s) => rj.`return`(x_s_)))(run(t)(s))
+                        }
+                    }
+                }
+            }
+        }
     }
 
     implicit def _asMonadPlus[s, n[+_]](implicit i: MonadPlus[n]): MonadPlus[apply2[s, n]#apply1] = new MonadPlus[apply2[s, n]#apply1] with MonadProxy[apply2[s, n]#apply1] {
@@ -80,12 +93,6 @@ private[ken] sealed trait StateTAs0 { this: StateT.type =>
         override def mfix[a](f: Lazy[a] => m[a]): m[a] = StateT { s =>
             i.mfix { (aI_ : Lazy[(a, s)]) => run(f(aI_._1))(s) }
         }
-    }
-
-    implicit def _asMonadIO[s, n[+_]](implicit i: MonadIO[n]): MonadIO[apply2[s, n]#apply1] = new MonadIO[apply2[s, n]#apply1] with MonadProxy[apply2[s, n]#apply1] {
-        private type m[+a] = StateT[s, n, a]
-        override val selfMonad = _asMonadState[s, n]
-        override def liftIO[a](io: IO[a]): m[a] = _asMonadTrans.lift(i.liftIO(io))
     }
 
     implicit def _asMonadCont[s, n[+_]](implicit i: MonadCont[n]): MonadCont[apply2[s, n]#apply1] = new MonadCont[apply2[s, n]#apply1] with MonadProxy[apply2[s, n]#apply1] {
@@ -130,9 +137,36 @@ private[ken] sealed trait StateTAs0 { this: StateT.type =>
             }
         }
     }
+
+    implicit def _asMonadIO[s, n[+_]](implicit i: MonadIO[n]): MonadIO[apply2[s, n]#apply1] = new MonadIO[apply2[s, n]#apply1] with MonadProxy[apply2[s, n]#apply1] {
+        private type m[+a] = StateT[s, n, a]
+        override val selfMonad = _asMonadState[s, n]
+        override def liftIO[a](io: IO[a]): m[a] = _asMonadTrans.lift(i.liftIO(io))
+    }
 }
 
-private[ken] sealed trait StateTAs extends StateTAs0 { this: StateT.type =>
+@Annotation.compilerWorkaround("2.9.1") // ambiguous with `_asMonadIO` for some reason.
+private[ken] sealed trait StateTAs1 extends StateTAs0 { this: StateT.type =>
+    implicit def _asMonadControlIO[s, n[+_]](implicit i: MonadControlIO[n]): MonadControlIO[apply2[s, n]#apply1] = new MonadControlIO[apply2[s, n]#apply1] with MonadIOProxy[apply2[s, n]#apply1] {
+        private type m[+a] = StateT[s, n, a]
+        private val mt = _asMonadTrans[s]
+        override val selfMonadIO = _asMonadIO[s, n]
+        override def liftIO[a](io: IO[a]): m[a] = mt.lift(i.liftIO(io))
+        override def liftControlIO[a](f: RunInIO => IO[a]): m[a] = {
+            mt.liftControl { run1 =>
+                i.liftControlIO { runInBase =>
+                    f {
+                        new RunInIO {
+                            override def apply[b](t: m[b]): IO[m[b]] = IO.liftM((x: n[m[b]]) => join(mt.lift(x)))(runInBase(run1(t)))
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+private[ken] sealed trait StateTAs extends StateTAs1 { this: StateT.type =>
     implicit def _asMonadState[s, n[+_]](implicit i: Monad[n]): MonadState[s, apply2[s, n]#apply1] = new MonadState[s, apply2[s, n]#apply1] {
         // Functor
         private type f[+a] = StateT[s, n, a]

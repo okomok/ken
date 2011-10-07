@@ -58,7 +58,7 @@ private[ken] sealed trait ErrorTAs0 { this: ErrorT.type =>
         // MonadTransControl
         override def liftControl[n[+_], a](f: Run => n[a])(implicit i: Monad[n]): t[n, a] = ErrorT {
             val em = Monad[Either.apply[e]]
-            i.liftM[a, Either[e, a]](em.`return`[a]) {
+            i.liftM((x: a) => em.`return`(x)) {
                 f {
                     new Run {
                         override def apply[n_[+_], o[+_], b](t: t[n_, b], * : TypeC1[o] = null)(implicit ri: Monad[n_], rj: Monad[o], rk: Monad[({type m[+a] = t[o, a]})#m]): n_[t[o, b]] = {
@@ -80,13 +80,6 @@ private[ken] sealed trait ErrorTAs0 { this: ErrorT.type =>
             } } }
             i.mfix(k)
         }
-    }
-
-    implicit def _asMonadIO[e, n[+_]](implicit i: MonadIO[n]): MonadIO[apply2[e, n]#apply1] = new MonadIO[apply2[e, n]#apply1] with MonadProxy[apply2[e, n]#apply1] {
-        private type m[+a] = ErrorT[e, n, a]
-        private val mt = _asMonadTrans[e, n]
-        override val selfMonad = _asMonadError[e, n]
-        override def liftIO[a](io: IO[a]): m[a] = mt.lift(i.liftIO(io))
     }
 
     implicit def _asMonadCont[e, n[+_]](implicit i: MonadCont[n]): MonadCont[apply2[e, n]#apply1] = new MonadCont[apply2[e, n]#apply1] with MonadProxy[apply2[e, n]#apply1] {
@@ -149,6 +142,13 @@ private[ken] sealed trait ErrorTAs0 { this: ErrorT.type =>
                 }
             } yield *
         }
+    }
+
+    implicit def _asMonadIO[e, n[+_]](implicit i: MonadIO[n]): MonadIO[apply2[e, n]#apply1] = new MonadIO[apply2[e, n]#apply1] with MonadProxy[apply2[e, n]#apply1] {
+        private type m[+a] = ErrorT[e, n, a]
+        private val mt = _asMonadTrans[e, n]
+        override val selfMonad = _asMonadError[e, n]
+        override def liftIO[a](io: IO[a]): m[a] = mt.lift(i.liftIO(io))
     }
 }
 

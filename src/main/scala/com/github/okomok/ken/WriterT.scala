@@ -42,12 +42,25 @@ private[ken] trait WriterTOp {
 }
 
 
-private[ken] trait WriterTAs0 { this: WriterT.type =>
-    implicit def _asMonadTrans[w](implicit j: Monoid[w]): MonadTrans[apply1[w]#monadTrans] = new MonadTrans[apply1[w]#monadTrans] {
+private[ken] sealed trait WriterTAs0 { this: WriterT.type =>
+    implicit def _asMonadTrans[w](implicit j: Monoid[w]): MonadTransControl[apply1[w]#monadTrans] = new MonadTransControl[apply1[w]#monadTrans] {
+        // MonadTrans
         private type t[n[+_], +a] = WriterT[w, n, a]
         override def lift[n[+_], a](n: n[a])(implicit i: Monad[n]): t[n, a] = WriterT {
             import i.`for`
             for { a <- n } yield (a, j.mempty)
+        }
+        // MonadTransControl
+        override def liftControl[n[+_], a](f: Run => n[a])(implicit i: Monad[n]): t[n, a] = WriterT {
+            i.liftM((x: a) => (x, j.mempty)) {
+                f {
+                    new Run {
+                        override def apply[n_[+_], o[+_], b](t: t[n_, b], * : TypeC1[o] = null)(implicit ri: Monad[n_], rj: Monad[o], rk: Monad[({type m[+a] = t[o, a]})#m]): n_[t[o, b]] = {
+                            ri.liftM((x_w: (b, w)) => WriterT(rj.`return`(x_w)))(run(t))
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -65,12 +78,6 @@ private[ken] trait WriterTAs0 { this: WriterT.type =>
             def k(aI_ : Lazy[(a, w)]) = run(m(aI_.!._1))
             i.mfix(k)
         }
-    }
-
-    implicit def _asMonadIO[w, n[+_]](implicit i: MonadIO[n], j: Monoid[w]): MonadIO[apply2[w, n]#apply1] = new MonadIO[apply2[w, n]#apply1] with MonadProxy[apply2[w, n]#apply1] {
-        private type m[+a] = WriterT[w, n, a]
-        override val selfMonad = _asMonadWriter[w, n]
-        override def liftIO[a](io: IO[a]): m[a] = _asMonadTrans[w].lift(i.liftIO(io))
     }
 
     implicit def _asMonadCont[w, n[+_]](implicit i: MonadCont[n], j: Monoid[w]): MonadCont[apply2[w, n]#apply1] = new MonadCont[apply2[w, n]#apply1] with MonadProxy[apply2[w, n]#apply1] {
@@ -107,9 +114,36 @@ private[ken] trait WriterTAs0 { this: WriterT.type =>
         override def get: m[s] = _asMonadTrans[w].lift(i.get)
         override def put(s: s): m[Unit] = _asMonadTrans[w].lift(i.put(s))
     }
+
+    implicit def _asMonadIO[w, n[+_]](implicit i: MonadIO[n], j: Monoid[w]): MonadIO[apply2[w, n]#apply1] = new MonadIO[apply2[w, n]#apply1] with MonadProxy[apply2[w, n]#apply1] {
+        private type m[+a] = WriterT[w, n, a]
+        override val selfMonad = _asMonadWriter[w, n]
+        override def liftIO[a](io: IO[a]): m[a] = _asMonadTrans[w].lift(i.liftIO(io))
+    }
 }
 
-private[ken] trait WriterTAs extends WriterTAs0 { this: WriterT.type =>
+@Annotation.compilerWorkaround("2.9.1") // ambiguous with `_asMonadIO` for some reason.
+private[ken] sealed trait WriterTAs1 extends WriterTAs0 { this: WriterT.type =>
+    implicit def _asMonadControlIO[w, n[+_]](implicit i: MonadControlIO[n], j: Monoid[w]): MonadControlIO[apply2[w, n]#apply1] = new MonadControlIO[apply2[w, n]#apply1] with MonadIOProxy[apply2[w, n]#apply1] {
+        private type m[+a] = WriterT[w, n, a]
+        private val mt = _asMonadTrans[w]
+        override val selfMonadIO = _asMonadIO[w, n]
+        override def liftIO[a](io: IO[a]): m[a] = mt.lift(i.liftIO(io))
+        override def liftControlIO[a](f: RunInIO => IO[a]): m[a] = {
+            mt.liftControl { run1 =>
+                i.liftControlIO { runInBase =>
+                    f {
+                        new RunInIO {
+                            override def apply[b](t: m[b]): IO[m[b]] = IO.liftM((x: n[m[b]]) => join(mt.lift(x)))(runInBase(run1(t)))
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+private[ken] sealed trait WriterTAs extends WriterTAs1 { this: WriterT.type =>
     implicit def _asMonadWriter[w, n[+_]](implicit i: Monad[n], j: Monoid[w]): MonadWriter[w, apply2[w, n]#apply1] = new MonadWriter[w, apply2[w, n]#apply1] {
         // Functor
         private type f[+a] = WriterT[w, n, a]

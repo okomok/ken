@@ -38,11 +38,22 @@ class MonadTransTest extends org.scalatest.junit.JUnit3Suite {
         ()
     }
 */
-    def testErrorT {
+    def testImplicit {
         MonadError[String, ErrorT.apply2[String, WeakIdentity.apply]]
         MonadError[String, ErrorT.apply2[String, IO]]
         MonadIO[ListT.apply[IO]]
         MonadIO[ErrorT.apply2[String, IO]]
+        MonadIO[ReaderT.apply2[String, IO]]
+        MonadIO[StateT.apply2[Int, IO]]
+        MonadIO[WriterT.apply2[Monoid.All, IO]]
+
+        Monad[ErrorT.apply2[String, WeakIdentity.apply]]
+        Monad[ErrorT.apply2[String, IO]]
+        Monad[ListT.apply[IO]]
+        Monad[ErrorT.apply2[String, IO]]
+        Monad[ReaderT.apply2[String, IO]]
+        Monad[StateT.apply2[Int, IO]]
+        Monad[WriterT.apply2[Monoid.All, IO]]
 
         val wr = MonadWriter[Monoid.All, Writer.apply[Monoid.All]]
         MonadWriter[Monoid.All, ErrorT.apply2[String, wr.apply]]
