@@ -202,30 +202,30 @@ sealed trait IntegralShortcut { this: Integral.type =>
     def pow[a, b](x0: b)(y0: a)(implicit i: Integral[a], j: Num[b]): b = i.pow(x0)(y0)
     def powpow[a, b](x: b)(n: a)(implicit i: Integral[a], j: Fractional[b]): b = i.powpow(x)(n)
 
-    private[ken] class _Op_quot[a](n: a)(implicit i: Integral[a]) {
-        def _quot_(d: a): a = quot(n)(d)
+    private[ken] class _Op_quot[a](n: a) {
+        def _quot_(d: a)(implicit i: Integral[a]): a = quot(n)(d)
     }
-    implicit def _quot_[a](n: a)(implicit i: Integral[a]): _Op_quot[a] = new _Op_quot(n)
+    implicit def _quot_[a](n: a): _Op_quot[a] = new _Op_quot(n)
 
-    private[ken] class _Op_rem[a](n: a)(implicit i: Integral[a]) {
-        def _rem_(d: a): a = rem(n)(d)
+    private[ken] class _Op_rem[a](n: a) {
+        def _rem_(d: a)(implicit i: Integral[a]): a = rem(n)(d)
     }
-    implicit def _rem_[a](n: a)(implicit i: Integral[a]): _Op_rem[a] = new _Op_rem(n)
+    implicit def _rem_[a](n: a): _Op_rem[a] = new _Op_rem(n)
 
-    private[ken] class _Op_div[a](n: a)(implicit i: Integral[a]) {
-        def _div_(d: a): a = div(n)(d)
+    private[ken] class _Op_div[a](n: a) {
+        def _div_(d: a)(implicit i: Integral[a]): a = div(n)(d)
     }
-    implicit def _div_[a](n: a)(implicit i: Integral[a]): _Op_div[a] = new _Op_div(n)
+    implicit def _div_[a](n: a): _Op_div[a] = new _Op_div(n)
 
-    private[ken] class _Op_mod[a](n: a)(implicit i: Integral[a]) {
-        def _mod_(d: a): a = mod(n)(d)
+    private[ken] class _Op_mod[a](n: a) {
+        def _mod_(d: a)(implicit i: Integral[a]): a = mod(n)(d)
     }
-    implicit def _mod_[a](n: a)(implicit i: Integral[a]): _Op_mod[a] = new _Op_mod(n)
+    implicit def _mod_[a](n: a): _Op_mod[a] = new _Op_mod(n)
 
-    private[ken] class _Op_pow_[b](x0: b)(implicit j: Num[b]) {
-        def _pow_[a](y0: a)(implicit i: Integral[a]): b = pow(x0)(y0)
+    private[ken] class _Op_pow_[b](x0: b) {
+        def _pow_[a](y0: a)(implicit i: Integral[a], j: Num[b]): b = pow(x0)(y0)
     }
-    implicit def _pow_[b](x0: b)(implicit j: Num[b]): _Op_pow_[b] = new _Op_pow_(x0)
+    implicit def _pow_[b](x0: b): _Op_pow_[b] = new _Op_pow_(x0)
 
     def toInt[a](n: a)(implicit i: Integral[a]): Int = i.toInt(n)
 }

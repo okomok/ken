@@ -45,7 +45,7 @@ trait Ix[a] extends Ord[a] {
 
     // Extra
     //
-    final def indexError(rng: (a, a))(i: a)(tp: String)(implicit j: Show[a]): Nothing = {
+    def indexError(rng: (a, a))(i: a)(tp: String)(implicit j: Show[a]): Nothing = {
         import Show._
         error( (showString("Ix{") `.` showString(tp) `.` showString("}.index: Index ") `.`
             showParen(True)(showsPrec(0)(i)) `.`
@@ -55,14 +55,14 @@ trait Ix[a] extends Ord[a] {
     }
 
     type safeRangeSize = Pair[a, a] => Int
-    final val safeRangeSize: safeRangeSize = { case (l, u) =>
+    def safeRangeSize: safeRangeSize = { case (l, u) =>
         val r = rangeSize(l, u)
         if (r < 0) error("Negative range size")
         else r
     }
 
     type safeIndex = Pair[a, a] => Int => a => Int
-    final val safeIndex: safeIndex = { case (l, u) => n => i =>
+    def safeIndex: safeIndex = { case (l, u) => n => i =>
         val i_ = index(l, u)(i)
         if (0 <= i_ && i_ < n) i_
         else error("Error in array index; " ++: Show.show(i_) ++: " not in range [0.." ++: Show.show(n) ++: List.from(")"))
@@ -80,6 +80,10 @@ trait IxProxy[a] extends Ix[a] with OrdProxy[a] {
     override def inRange: inRange = selfIx.inRange
     override def rangeSize: rangeSize = selfIx.rangeSize
     override def unsafeRangeSize: unsafeRangeSize = selfIx.unsafeRangeSize
+
+    override def indexError(rng: (a, a))(i: a)(tp: String)(implicit j: Show[a]): Nothing = selfIx.indexError(rng)(i)(tp)(j)
+    override def safeRangeSize: safeRangeSize = selfIx.safeRangeSize
+    override def safeIndex: safeIndex = selfIx.safeIndex
 }
 
 

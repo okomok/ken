@@ -81,8 +81,8 @@ sealed trait FractionalShortcut { this: Fractional.type =>
 
     implicit def realToFrac[z, a](x: z, * : Type[a] = null)(implicit i: Real[z], j: Fractional[a]): a = j.realToFrac(x)(i)
 
-    private[ken] class _Op_/[a](x: a)(implicit i: Fractional[a]) {
-        def /(y: a): a = op_/(x)(y)
+    private[ken] class _Op_/[a](x: a) {
+        def /(y: a)(implicit i: Fractional[a]): a = op_/(x)(y)
     }
-    implicit def /[a](x: a)(implicit i: Fractional[a]): _Op_/[a] = new _Op_/(x)
+    implicit def /[a](x: a): _Op_/[a] = new _Op_/(x)
 }

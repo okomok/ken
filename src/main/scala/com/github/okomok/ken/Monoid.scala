@@ -56,7 +56,7 @@ trait MonoidProxy[m] extends Monoid[m] {
 }
 
 
-object Monoid extends MonoidInstance with MonoidShortcut {
+object Monoid extends MonoidInstance with MonoidShortcut with MonoidType {
     def apply[m <: Kind.Function0](implicit i: Monoid[m#apply0]): Monoid[m#apply0] = i
 
     def deriving[nt <: Kind.Newtype0](implicit j: Newtype0[nt#apply0, nt#oldtype0, _], i: Monoid[nt#oldtype0]): Monoid[nt#apply0] = new Monoid[nt#apply0] {
@@ -66,6 +66,31 @@ object Monoid extends MonoidInstance with MonoidShortcut {
     }
 
     def weak[nt <: Kind.Newtype0](implicit j: Newtype0[nt#apply0, nt#oldtype0, _], i: Monoid[nt#apply0]): Monoid[nt#oldtype0] = deriving[Kind.coNewtype0[nt]](j.coNewtype, i)
+}
+
+
+sealed trait MonoidInstance { this: Monoid.type =>
+    implicit val ofUnit: Monoid[Unit] = Unit
+    implicit def ofFunction[z, b](implicit mb: Monoid[b]): Monoid[z => b] = Function._asMonoid[z, b]
+    implicit def ofTuple2[a, b](implicit ma: Monoid[a], mb: Monoid[b]): Monoid[(a, b)] = Tuple2._asMonoid[a, b]
+}
+
+
+sealed trait MonoidShortcut { this: Monoid.type =>
+    def mempty[m](implicit i: Monoid[m]): m = i.mempty
+    def mappend[m](x: m)(y: Lazy[m])(implicit i: Monoid[m]): m = i.mappend(x)(y)
+    def mconcat[m](xs: List[m])(implicit i: Monoid[m]): m = i.mconcat(xs)
+
+    def dual[m](implicit i: Monoid[m]): Monoid[m] = i.dual
+
+    private[ken] class _Op_mappend[m](x: m) {
+        def _mappend_(y: Lazy[m])(implicit i: Monoid[m]): m = mappend(x)(y)
+    }
+    implicit def _mappend_[m](x: m): _Op_mappend[m] = new _Op_mappend(x)
+}
+
+
+sealed trait MonoidType { this: Monoid.type =>
 
     // Dual
     //
@@ -150,25 +175,4 @@ object Monoid extends MonoidInstance with MonoidShortcut {
             override val mappend: mappend = x => y => Product(x.get * y.get)
         }
     }
-}
-
-
-sealed trait MonoidInstance { this: Monoid.type =>
-    implicit val ofUnit: Monoid[Unit] = Unit
-    implicit def ofFunction[z, b](implicit mb: Monoid[b]): Monoid[z => b] = Function._asMonoid[z, b]
-    implicit def ofTuple2[a, b](implicit ma: Monoid[a], mb: Monoid[b]): Monoid[(a, b)] = Tuple2._asMonoid[a, b]
-}
-
-
-sealed trait MonoidShortcut { this: Monoid.type =>
-    def mempty[m](implicit i: Monoid[m]): m = i.mempty
-    def mappend[m](x: m)(y: Lazy[m])(implicit i: Monoid[m]): m = i.mappend(x)(y)
-    def mconcat[m](xs: List[m])(implicit i: Monoid[m]): m = i.mconcat(xs)
-
-    def dual[m](implicit i: Monoid[m]): Monoid[m] = i.dual
-
-    private[ken] class _Op_mappend[m](x: m)(implicit i: Monoid[m]) {
-        def _mappend_(y: Lazy[m]): m = mappend(x)(y)
-    }
-    implicit def _mappend_[m](x: m)(implicit i: Monoid[m]): _Op_mappend[m] = new _Op_mappend(x)
 }

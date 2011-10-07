@@ -22,7 +22,7 @@ trait MonadTransControl[t[_[+_], +_]] extends MonadTrans[t] {
 
     // Extra
     //
-    final def control[n[+_], a](f: Run => n[t[n, a]])(implicit i: Monad[n], j: Monad[({type m[+a] = t[n, a]})#m]): t[n, a] = j.join(liftControl(f))
+    def control[n[+_], a](f: Run => n[t[n, a]])(implicit i: Monad[n], j: Monad[({type m[+a] = t[n, a]})#m]): t[n, a] = j.join(liftControl(f))
 }
 
 
@@ -31,6 +31,8 @@ trait MonadTransControlProxy[t[_[+_], +_]] extends MonadTransControl[t] with Mon
     override def selfMonadTrans: MonadTrans[t] = selfMonadTransControl
 
     override def liftControl[n[+_], a](f: Run => n[a])(implicit i: Monad[n]): t[n, a] = selfMonadTransControl.liftControl(f)(i)
+
+    override def control[n[+_], a](f: Run => n[t[n, a]])(implicit i: Monad[n], j: Monad[({type m[+a] = t[n, a]})#m]): t[n, a] = selfMonadTransControl.control(f)(i, j)
 }
 
 

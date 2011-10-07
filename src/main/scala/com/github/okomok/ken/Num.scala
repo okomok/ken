@@ -153,23 +153,23 @@ sealed trait NumShortcut { this: Num.type =>
     def subtract[a](x: a)(y: a)(implicit i: Num[a]): a = i.subtract(x)(y)
     implicit def fromIntegral[z, a](x: z, * : Type[a] = null)(implicit i: Integral[z], j: Num[a]): a = j.fromIntegral(x)
 
-    private[ken] class _Op_+[a](x: a)(implicit i: Num[a]) {
-        def +(y: a): a = op_+(x)(y)
+    private[ken] class _Op_+[a](x: a) {
+        def +(y: a)(implicit i: Num[a]): a = op_+(x)(y)
     }
-    implicit def +[a](x: a)(implicit i: Num[a]): _Op_+[a] = new _Op_+(x)
+    implicit def +[a](x: a): _Op_+[a] = new _Op_+(x)
 
-    private[ken] class _Op_-[a](x: a)(implicit i: Num[a]) {
-        def -(y: a): a = op_-(x)(y)
+    private[ken] class _Op_-[a](x: a) {
+        def -(y: a)(implicit i: Num[a]): a = op_-(x)(y)
     }
-    implicit def -[a](x: a)(implicit i: Num[a]): _Op_-[a] = new _Op_-(x)
+    implicit def -[a](x: a): _Op_-[a] = new _Op_-(x)
 
-    private[ken] class _Op_*[a](x: a)(implicit i: Num[a]) {
-        def *(y: a): a = op_*(x)(y)
+    private[ken] class _Op_*[a](x: a) {
+        def *(y: a)(implicit i: Num[a]): a = op_*(x)(y)
     }
-    implicit def *[a](x: a)(implicit i: Num[a]): _Op_*[a] = new _Op_*(x)
+    implicit def *[a](x: a): _Op_*[a] = new _Op_*(x)
 
-    private[ken] class _Op_unary_-[a](x: a)(implicit i: Num[a]) {
-        def unary_- : a = negate(x)
+    private[ken] class _Op_unary_-[a](x: a) {
+        def unary_-(implicit i: Num[a]) : a = negate(x)
     }
-    implicit def unary_-[a](x: a)(implicit i: Num[a]): _Op_unary_-[a] = new _Op_unary_-(x)
+    implicit def unary_-[a](x: a): _Op_unary_-[a] = new _Op_unary_-(x)
 }

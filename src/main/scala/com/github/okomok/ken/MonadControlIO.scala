@@ -22,24 +22,25 @@ trait MonadControlIO[m[+_]] extends MonadIO[m] {
 
     // Extra
     //
-    final def controlIO[a](f: RunInIO => IO[m[a]]): m[a] = join(liftControlIO(f))
+    def controlIO[a](f: RunInIO => IO[m[a]]): m[a] = join(liftControlIO(f))
 
-    final def liftIOOp[a, b, c](f: (a => IO[m[b]]) => IO[m[c]]): (a => m[b]) => m[c] = g => controlIO { runInIO => f { a => runInIO(g(a)) } }
-    final def liftIOOp_[a, b](f: IO[m[a]] => IO[m[b]]): m[a] => m[b] = m => controlIO { runInIO => f { runInIO(m) } }
+    def liftIOOp[a, b, c](f: (a => IO[m[b]]) => IO[m[c]]): (a => m[b]) => m[c] = g => controlIO { runInIO => f { a => runInIO(g(a)) } }
+    def liftIOOp_[a, b](f: IO[m[a]] => IO[m[b]]): m[a] => m[b] = m => controlIO { runInIO => f { runInIO(m) } }
 
     // Exceptions
     //
-    final def `catch`[e, a](a: m[a])(handler: e => m[a])(implicit j: Exception[e]): m[a] = controlIO { runInIO =>
+    def `catch`[e, a](a: m[a])(handler: e => m[a])(implicit j: Exception[e]): m[a] = controlIO { runInIO =>
         j.`catch`(runInIO(a))(e => runInIO { handler(e) })
     }
 
-    final case class Handler[a](rep: (e => m[a], Exception[e]) forSome { type e })
+    type Handler[a] = MonadControlIO.Handler[m, a]
 
-    object Handler {
+    object Hanlder {
         def apply[e, a](h: e => m[a])(implicit i: Exception[e]): Handler[a] = new Handler(h, i)
+        def unapply[a](x: Handler[a]): Option[(e => m[a], Exception[e]) forSome { type e }] = Some(x.rep) // doesn't work for now.
     }
 
-    final def catches[a](a: m[a])(handlers: List[Handler[a]]): m[a] = controlIO { runInIO =>
+    def catches[a](a: m[a])(handlers: List[Handler[a]]): m[a] = controlIO { runInIO =>
         Exception.catches(runInIO(a)) {
             for {
                 h <- handlers
@@ -52,39 +53,39 @@ trait MonadControlIO[m[+_]] extends MonadIO[m] {
         }
     }
 
-    final def catchJust[e, a, b](p: e => Maybe[b])(a: m[a])(handler: b => m[a])(implicit j: Exception[e]): m[a] = controlIO { runInIO =>
+    def catchJust[e, a, b](p: e => Maybe[b])(a: m[a])(handler: b => m[a])(implicit j: Exception[e]): m[a] = controlIO { runInIO =>
         j.catchJust(p)(runInIO(a))(e => runInIO(handler(e)))
     }
 
-    final def handle[e, a](handler: e => m[a])(a: m[a])(implicit j: Exception[e]): m[a] = controlIO { runInIO =>
+    def handle[e, a](handler: e => m[a])(a: m[a])(implicit j: Exception[e]): m[a] = controlIO { runInIO =>
         j.handle(e => runInIO(handler(e)))(runInIO(a))
     }
 
-    final def handleJust[e, a, b](p: e => Maybe[b])(handler: b => m[a])(a: m[a])(implicit j: Exception[e]): m[a] = controlIO { runInIO =>
+    def handleJust[e, a, b](p: e => Maybe[b])(handler: b => m[a])(a: m[a])(implicit j: Exception[e]): m[a] = controlIO { runInIO =>
         j.handleJust(p)(e => runInIO(handler(e)))(runInIO(a))
     }
 
-    final def `try`[e, a](a: m[a])(implicit j: Exception[e]): m[Either[e, a]] = liftIOOp_((x: IO[m[a]]) => IO.liftM(sequenceEither[e, a])(j.`try`(x)))(a)
+    def `try`[e, a](a: m[a])(implicit j: Exception[e]): m[Either[e, a]] = liftIOOp_((x: IO[m[a]]) => IO.liftM(sequenceEither[e, a])(j.`try`(x)))(a)
 
-    final def tryJust[e, a, b](p: e => Maybe[b])(a: m[a])(implicit j: Exception[e]): m[Either[b, a]] = liftIOOp_((x: IO[m[a]]) => IO.liftM(sequenceEither[b, a])(j.tryJust(p)(x)))(a)
+    def tryJust[e, a, b](p: e => Maybe[b])(a: m[a])(implicit j: Exception[e]): m[Either[b, a]] = liftIOOp_((x: IO[m[a]]) => IO.liftM(sequenceEither[b, a])(j.tryJust(p)(x)))(a)
 
-    final def bracket[a, b, c](before: m[a])(after: a => m[b])(thing: a => m[c]): m[c] = controlIO { runInIO =>
+    def bracket[a, b, c](before: m[a])(after: a => m[b])(thing: a => m[c]): m[c] = controlIO { runInIO =>
         Exception.bracket(runInIO(before))((m: m[a]) => runInIO { m >>= after })((m: m[a]) => runInIO { m >>= thing })
     }
 
-    final def bracket_[a, b, c](before: m[a])(after: m[b])(thing: m[c]): m[c] = controlIO { runInIO =>
+    def bracket_[a, b, c](before: m[a])(after: m[b])(thing: m[c]): m[c] = controlIO { runInIO =>
         Exception.bracket_(runInIO(before))(runInIO(after))(runInIO(thing))
     }
 
-    final def bracketOnError[a, b, c](before: m[a])(after: a => m[b])(thing: a => m[c]): m[c] = controlIO { runInIO =>
+    def bracketOnError[a, b, c](before: m[a])(after: a => m[b])(thing: a => m[c]): m[c] = controlIO { runInIO =>
         Exception.bracketOnError(runInIO(before))((m: m[a]) => runInIO { m >>= after })((m: m[a]) => runInIO { m >>= thing })
     }
 
-    final def `finally`[a, b](a: m[a])(sequel: m[b]): m[a] = controlIO { runInIO =>
+    def `finally`[a, b](a: m[a])(sequel: m[b]): m[a] = controlIO { runInIO =>
         Exception.`finally`(runInIO(a))(runInIO(sequel))
     }
 
-    final def onException[a, b](m: m[a])(what: m[b]): m[a] = controlIO { runInIO =>
+    def onException[a, b](m: m[a])(what: m[b]): m[a] = controlIO { runInIO =>
         Exception.onException(runInIO(m))(runInIO(what))
     }
 }
@@ -95,6 +96,23 @@ trait MonadControlIOProxy[m[+_]] extends MonadControlIO[m] with MonadIOProxy[m] 
     override def selfMonadIO: MonadIO[m] = selfMonadControlIO
 
     override def liftControlIO[a](f: RunInIO => IO[a]): m[a] = selfMonadControlIO.liftControlIO(f)
+
+    override def controlIO[a](f: RunInIO => IO[m[a]]): m[a] = join(liftControlIO(f))
+    override def liftIOOp[a, b, c](f: (a => IO[m[b]]) => IO[m[c]]): (a => m[b]) => m[c] = selfMonadControlIO.liftIOOp(f)
+    override def liftIOOp_[a, b](f: IO[m[a]] => IO[m[b]]): m[a] => m[b] = selfMonadControlIO.liftIOOp_(f)
+
+    override def `catch`[e, a](a: m[a])(handler: e => m[a])(implicit j: Exception[e]): m[a] = selfMonadControlIO.`catch`(a)(handler)(j)
+    override def catches[a](a: m[a])(handlers: List[Handler[a]]): m[a] = selfMonadControlIO.catches(a)(handlers)
+    override def catchJust[e, a, b](p: e => Maybe[b])(a: m[a])(handler: b => m[a])(implicit j: Exception[e]): m[a] = selfMonadControlIO.catchJust(p)(a)(handler)(j)
+    override def handle[e, a](handler: e => m[a])(a: m[a])(implicit j: Exception[e]): m[a] = selfMonadControlIO.handle(handler)(a)(j)
+    override def handleJust[e, a, b](p: e => Maybe[b])(handler: b => m[a])(a: m[a])(implicit j: Exception[e]): m[a] = selfMonadControlIO.handleJust(p)(handler)(a)(j)
+    override def `try`[e, a](a: m[a])(implicit j: Exception[e]): m[Either[e, a]] = selfMonadControlIO.`try`(a)(j)
+    override def tryJust[e, a, b](p: e => Maybe[b])(a: m[a])(implicit j: Exception[e]): m[Either[b, a]] = selfMonadControlIO.tryJust(p)(a)(j)
+    override def bracket[a, b, c](before: m[a])(after: a => m[b])(thing: a => m[c]): m[c] = selfMonadControlIO.bracket(before)(after)(thing)
+    override def bracket_[a, b, c](before: m[a])(after: m[b])(thing: m[c]): m[c] = selfMonadControlIO.bracket_(before)(after)(thing)
+    override def bracketOnError[a, b, c](before: m[a])(after: a => m[b])(thing: a => m[c]): m[c] = selfMonadControlIO.bracketOnError(before)(after)(thing)
+    override def `finally`[a, b](a: m[a])(sequel: m[b]): m[a] = selfMonadControlIO.`finally`(a)(sequel)
+    override def onException[a, b](m: m[a])(what: m[b]): m[a] = selfMonadControlIO.onException(m)(what)
 }
 
 
@@ -120,4 +138,10 @@ object MonadControlIO {
     def weak[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply, nt#oldtype1], i: MonadControlIO[nt#apply]): MonadControlIO[nt#oldtype1] = deriving[Kind.coNewtype1[nt]](j.coNewtype, i)
 
     type RunInIO[m[+_]] = MonadTransControl.RunInBase[m, IO]
+
+    case class Handler[m[+_], a](rep: (e => m[a], Exception[e]) forSome { type e })
+
+    object Handler {
+        def apply[e, m[+_], a](h: e => m[a])(implicit i: Exception[e]): Handler[m, a] = new Handler(h, i)
+    }
 }
