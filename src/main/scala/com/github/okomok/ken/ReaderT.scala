@@ -18,10 +18,10 @@ final case class ReaderT[r, n[+_], +a](override val get: r => n[a]) extends Newt
 
 
 object ReaderT extends ReaderTOp with ReaderTAs with Kind.FunctionLike {
+    trait apply[r] extends apply1[r]
     trait apply1[r] extends Kind.MonadTrans {
         override type monadTrans[n[+_], +a] = ReaderT[r, n, a]
     }
-    trait apply[r] extends apply1[r]
 
     trait apply2[r, n[+_]] extends Kind.Newtype1 {
         override type apply1[+a] = ReaderT[r, n, a]
@@ -48,7 +48,7 @@ private[ken] sealed trait ReaderTAs0 { this: ReaderT.type =>
         override def liftControl[n[+_], a](f: Run => n[a])(implicit i: Monad[n]): t[n, a] = ReaderT { r =>
             f {
                 new Run {
-                    override def apply[n_[+_], o[+_], b](t: t[n_, b])(implicit ri: Monad[n_], rj: Monad[o], rk: Monad[({type m[+a] = t[o, a]})#m]): n_[t[o, b]] = {
+                    override def apply[n_[+_], o[+_], b](t: t[n_, b], * : TypeC1[o] = null)(implicit ri: Monad[n_], rj: Monad[o], rk: Monad[({type m[+a] = t[o, a]})#m]): n_[t[o, b]] = {
                         ri.liftM((x: b) => rk.`return`(x))(run(t)(r))
                     }
                 }
@@ -124,7 +124,7 @@ private[ken] sealed trait ReaderTAs0 { this: ReaderT.type =>
                 i.liftControlIO { runInBase =>
                     f {
                         new RunInIO {
-                            override def apply[b](t: m[b]): IO[m[b]] = IO.liftM((x: n[m[b]]) => join(mt.lift(x)))(runInBase(run1[n, n, b](t)))
+                            override def apply[b](t: m[b]): IO[m[b]] = IO.liftM((x: n[m[b]]) => join(mt.lift(x)))(runInBase(run1(t)))
                         }
                     }
                 }

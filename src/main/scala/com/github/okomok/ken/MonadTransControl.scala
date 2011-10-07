@@ -59,7 +59,7 @@ object MonadTransControl {
     // Run types
     //
     trait Run[t[_[+_], +_]] {
-        def apply[n_[+_], o[+_], b](t: t[n_, b])(implicit ri: Monad[n_], rj: Monad[o], rk: Monad[({type m[+a] = t[o, a]})#m]): n_[t[o, b]]
+        def apply[n_[+_], o[+_], b](t: t[n_, b], * : TypeC1[o] = null)(implicit ri: Monad[n_], rj: Monad[o], rk: Monad[({type m[+a] = t[o, a]})#m]): n_[t[o, b]]
     }
 
     trait RunInBase[m[+_], base[+_]] {

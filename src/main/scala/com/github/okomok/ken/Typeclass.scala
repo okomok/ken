@@ -8,43 +8,5 @@ package com.github.okomok
 package ken
 
 
-import scala.annotation.unchecked.uncheckedVariance
-
-
 @Annotation.marker
 trait Typeclass
-
-
-trait Typeclass0[-a] extends Typeclass with Kind.Function0 {
-    override type apply0 = a @uncheckedVariance
-}
-
-
-trait Typeclass1[f[+_]] extends Typeclass with Kind.Function1 {
-    override type apply1[+a] = f[a]
-
-    /**
-     * Helper for type-parameter inference
-     */
-    final def infer[a](x: f[a]): f[a] = x
-
-    /**
-     * Helper for type-parameter inference
-     */
-    trait Pull[f_ <: Kind.Function1] {
-        // Workaround: https://issues.scala-lang.org/browse/SI-4312
-        protected[this] type f[+a] = f_ #apply[a]
-        protected[this] type m[+a] = f[a]
-    }
-    def pull[f_ <: Kind.Function1]: Pull[f_] = new Pull[f_] {}
-}
-
-
-trait Typeclass2[f[-_, +_]] extends Typeclass with Kind.Function2 {
-    override type apply2[-a, +b] = f[a, b]
-
-    /**
-     * Helper for type-parameter inference
-     */
-    final def infer[a, b](x: f[a, b]): f[a, b] = x
-}

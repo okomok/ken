@@ -18,10 +18,10 @@ final case class ErrorT[e, n[+_], +a](override val get: n[Either[e, a]]) extends
 
 
 object ErrorT extends ErrorTOp with ErrorTAs with Kind.FunctionLike {
+    trait apply[e] extends apply1[e]
     trait apply1[e] extends Kind.MonadTrans {
         override type monadTrans[n[+_], +a] = ErrorT[e, n, a]
     }
-    trait apply[e] extends apply1[e]
 
     trait apply2[e, n[+_]] extends Kind.Newtype1 {
         override type apply1[+a] = ErrorT[e, n, a]
@@ -61,7 +61,7 @@ private[ken] sealed trait ErrorTAs0 { this: ErrorT.type =>
             i.liftM[a, Either[e, a]](em.`return`[a]) {
                 f {
                     new Run {
-                        override def apply[n_[+_], o[+_], b](t: t[n_, b])(implicit ri: Monad[n_], rj: Monad[o], rk: Monad[({type m[+a] = t[o, a]})#m]): n_[t[o, b]] = {
+                        override def apply[n_[+_], o[+_], b](t: t[n_, b], * : TypeC1[o] = null)(implicit ri: Monad[n_], rj: Monad[o], rk: Monad[({type m[+a] = t[o, a]})#m]): n_[t[o, b]] = {
                             ri.liftM((x: Either[e, b]) => ErrorT(rj.`return`(x)))(run(t))
                         }
                     }
@@ -164,7 +164,7 @@ private[ken] sealed trait ErrorTAs1 extends ErrorTAs0 { this: ErrorT.type =>
                 i.liftControlIO { runInBase =>
                     f {
                         new RunInIO {
-                            override def apply[b](t: m[b]): IO[m[b]] = IO.liftM((x: n[m[b]]) => join(mt.lift(x)))(runInBase(run1[n, n, b](t)))
+                            override def apply[b](t: m[b]): IO[m[b]] = IO.liftM((x: n[m[b]]) => join(mt.lift(x)))(runInBase(run1(t)))
                         }
                     }
                 }

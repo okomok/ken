@@ -16,10 +16,10 @@ final case class Iteratee[-a, +n[+_], +b](override val get: n[Step[a, n, b]]) ex
 
 
 object Iteratee extends IterateeAs with Kind.FunctionLike {
+    trait apply[z] extends apply1[z]
     trait apply1[z] extends Kind.MonadTrans {
         override type monadTrans[n[+_], +a] = Iteratee[z, n, a]
     }
-    trait apply[z] extends apply1[z]
 
     trait apply2[z, n[+_]] extends Kind.Newtype1 {
         override type apply1[+a] = Iteratee[z, n, a]

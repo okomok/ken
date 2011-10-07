@@ -9,10 +9,11 @@ package ken
 
 
 /**
- * Trivial type envelope for type-parameter inference
+ * Type envelope for type-parameter inference
  */
-sealed class Type[a] extends Kind.const[a]
+trait Type[a] extends Kind.const[a]
+
 
 object Type {
-    def apply[a]: Type[a] = new Type[a]
+    def apply[a]: Type[a] = new Type[a] {}
 }

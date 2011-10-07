@@ -19,8 +19,8 @@ package ken
 
 @Annotation.compilerWorkaround("2.9.1", 5031)
 object _State extends StateTOp with Kind.FunctionLike {
-    trait apply1[s] extends StateT.apply2[s, WeakIdentity.apply]
     trait apply[s] extends apply1[s]
+    trait apply1[s] extends StateT.apply2[s, WeakIdentity.apply]
 
     def apply[s, a](n: s => (a, s)): State[s, a] = new StateT[s, WeakIdentity.apply, a](n)
     def unapply[s, a](m: State[s, a]): Option[s => (a, s)] = Some(m.run)
