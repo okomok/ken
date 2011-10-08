@@ -444,7 +444,7 @@ object List extends ListAs with MonadPlus[List] with Traversable[List] with This
     //
     override def find[a](p: a => Bool)(xs: List[a]): Maybe[a] = Maybe.listToMaybe(filter(p)(xs))
 
-    def filter[a](pred: a => Bool)(xs: List[a]): List[a] = xs match {
+    override def filter[a](pred: a => Bool)(xs: List[a]): List[a] = xs match {
         case Nil => Nil
         case x :: xs => {
             if (pred(x)) {

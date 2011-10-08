@@ -14,7 +14,7 @@ package com.github.okomok
 package ken
 
 
-trait MonadPlus[m[+_]] extends Monad[m] with Alternative[m] {
+trait MonadPlus[m[+_]] extends Monad[m] with Alternative[m] { outer =>
     final val asMonadPlus: MonadPlus[apply] = this
 
     // Core
@@ -46,10 +46,10 @@ trait MonadPlus[m[+_]] extends Monad[m] with Alternative[m] {
 
     // Misc
     //
-    def mfilter[a](m: m[a])(p: a => Bool): m[a] = op_>>=(m)((a: a) => if (p(a)) `return`(a) else mzero)
+    def filter[a](p: a => Bool)(m: m[a]): m[a] = op_>>=(m)((a: a) => if (p(a)) `return`(a) else mzero)
 
     override implicit def `for`[a](m: m[a]): Monad.For[m, a] = new For(m)(this) {
-        override def filter(p: a => Bool): m[a] = mfilter(m)(p)
+        override def filter(p: a => Bool): m[a] = outer.filter(p)(m)
     }
 }
 
@@ -65,7 +65,7 @@ trait MonadPlusProxy[m[+_]] extends MonadPlus[m] with MonadProxy[m] with Alterna
     override def guard(b: Bool): m[Unit] = selfMonadPlus.guard(b)
     override def msum[a](xs: List[m[a]]): m[a] = msum(xs)
 
-    override implicit def mfilter[a](m: m[a])(p: a => Bool): m[a] = selfMonadPlus.mfilter(m)(p)
+    override implicit def filter[a](p: a => Bool)(m: m[a]): m[a] = selfMonadPlus.filter(p)(m)
 }
 
 
