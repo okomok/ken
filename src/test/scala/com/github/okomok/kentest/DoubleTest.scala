@@ -51,4 +51,9 @@ class DoubleTest extends org.scalatest.junit.JUnit3Suite {
         expect((BigInt(680L), 0.1313000000000102D))(properFraction[Integer](680.1313D))
         expect(1845319)(round[Int](1845319.14131D))
     }
+
+    def testEncode0 {
+        expect(0.0D)(encodeFloat(BigInt(0L))(19))
+        expect(0.0D)(encodeFloat(BigInt(0L))(-19))
+    }
 }

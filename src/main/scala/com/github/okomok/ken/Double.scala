@@ -140,7 +140,7 @@ object Double extends Enum[Double] with Eq.Default[Double] with RealFloat[Double
 
     private lazy val _encodeDouble: Pair[Integer, Int] => Double = { case (m, n) =>
         val impl: Pair[Integer, Int] => Double = { case (m, n) =>
-            if (m == 0 && n == 0) {
+            if (m == 0) {
                 0.0D
             } else {
                 var bits: Long = 0
@@ -167,6 +167,7 @@ object Double extends Enum[Double] with Eq.Default[Double] with RealFloat[Double
     @tailrec
     private def _normalizedDecode(m_n: Pair[Integer, Int]): (Integer, Int) = m_n match { case (m, n) =>
         if (_isNormalizedDecode(m, n)) (m, n)
+        else if (m == 0) (m, 0)
         else {
             import Integer._pow_
             val b: Integer = floatRadix(0.0D)

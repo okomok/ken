@@ -39,7 +39,7 @@ class TrivialTest extends org.scalatest.junit.JUnit3Suite {
 
         //Testable.ofProperty.quickCheck(tf.shrinking(Arbitary.ofInt.shrink)(50)(prop_int)).!
 
-        //Testable[Kind.const[Double => Bool]].quickCheck(prop_double).! // hungup!
+        //Testable[Kind.const[Double => Bool]].quickCheck(prop_Double).!
        // Testable[Kind.const[Char => Bool]].quickCheck(prop_char).!
    }
 

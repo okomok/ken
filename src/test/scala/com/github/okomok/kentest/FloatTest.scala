@@ -51,4 +51,9 @@ class FloatTest extends org.scalatest.junit.JUnit3Suite {
         expect((BigInt(680L), 0.13128662F))(properFraction[Integer](680.1313F))
         expect(1845319)(round[Int](1845319.14131F))
     }
+
+    def testEncode0 {
+        expect(0.0D)(encodeFloat(BigInt(0L))(19))
+        expect(0.0D)(encodeFloat(BigInt(0L))(-19))
+    }
 }
