@@ -33,9 +33,6 @@ sealed abstract class List[+a] extends Up[List[a]] {
 
     final def \\[b >: a](that: List[b])(implicit j: Eq[b]): List[b] = List.op_\\[b](this)(that)
 
-    final def filter(p: a => Bool): List[a] = List.filter(p)(this)
-    final def withFilter(p: a => Bool): List[a] = List.filter(p)(this)
-
     @tailrec
     final def foreach(f: a => Unit): Unit = this match {
         case Nil => ()

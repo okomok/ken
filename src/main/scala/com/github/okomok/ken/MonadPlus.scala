@@ -43,6 +43,14 @@ trait MonadPlus[m[+_]] extends Monad[m] with Alternative[m] {
         def _mplus_(y: Lazy[m[a]]): m[a] = mplus(x)(y)
     }
     final implicit def _mplus_[a](x: m[a]): Op_mplus[a] = new Op_mplus(x)
+
+    // Misc
+    //
+    def mfilter[a](m: m[a])(p: a => Bool): m[a] = op_>>=(m)((a: a) => if (p(a)) `return`(a) else mzero)
+
+    override implicit def `for`[a](m: m[a]): Monad.For[m, a] = new For(m)(this) {
+        override def filter(p: a => Bool): m[a] = mfilter(m)(p)
+    }
 }
 
 
@@ -56,6 +64,8 @@ trait MonadPlusProxy[m[+_]] extends MonadPlus[m] with MonadProxy[m] with Alterna
 
     override def guard(b: Bool): m[Unit] = selfMonadPlus.guard(b)
     override def msum[a](xs: List[m[a]]): m[a] = msum(xs)
+
+    override implicit def mfilter[a](m: m[a])(p: a => Bool): m[a] = selfMonadPlus.mfilter(m)(p)
 }
 
 

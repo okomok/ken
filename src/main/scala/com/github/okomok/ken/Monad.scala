@@ -105,13 +105,9 @@ trait Monad[m[+_]] extends Applicative[m] {
     }
     final implicit def >>(x: m[_]): Op_>> = new Op_>>(x)
 
-    sealed class For[a](x: m[a]) {
-        def flatMap[b](y: a => m[b]): m[b] = op_>>=(x)(y)
-        def map[b](y: a => b): m[b] = op_>>=(x)(_x => `return`(y(_x)))
-        def filter(y: a => Bool): m[a] = map(_x => seq(Predef.require(y(_x), "no monadic filter"))(_x))
-        def withFilter(y: a => Bool): m[a] = filter(y)
-    }
-    final implicit def `for`[a](x: m[a]): For[a] = new For(x)
+    type For[a] = Monad.For[m, a]
+    @Annotation.compilerWorkaround("2.9.1") // implicit-lookup fails in case of `For[a]`
+    implicit def `for`[a](x: m[a]): Monad.For[m, a] = new Monad.For[m, a](x)(this)
 
     private[ken] sealed class Op_=<<:[a](x: m[a]) {
         def =<<:[b](f: a => m[b]): m[b] = op_=<<:(f)(x)
@@ -177,6 +173,7 @@ trait MonadProxy[m[+_]] extends Monad[m] with ApplicativeProxy[m] {
     override def liftM4[a1, a2, a3, a4, r](f: a1 => a2 => a3 => a4 => r)(m1: m[a1])(m2: m[a2])(m3: m[a3])(m4: m[a4]): m[r] = selfMonad.liftM4(f)(m1)(m2)(m3)(m4)
     override def liftM5[a1, a2, a3, a4, a5, r](f: a1 => a2 => a3 => a4 => a5 => r)(m1: m[a1])(m2: m[a2])(m3: m[a3])(m4: m[a4])(m5: m[a5]): m[r] = selfMonad.liftM5(f)(m1)(m2)(m3)(m4)(m5)
     override def ap[a, b](x: m[a => b])(y: m[a]): m[b] = selfMonad.ap(x)(y)
+    override implicit def `for`[a](x: m[a]): Monad.For[m, a] = selfMonad.`for`(x)
 }
 
 
@@ -195,4 +192,11 @@ object Monad {
     }
 
     def weak[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply, nt#oldtype1], i: Monad[nt#apply]): Monad[nt#oldtype1] = deriving[Kind.coNewtype1[nt]](j.coNewtype, i)
+
+    class For[m[+_], a](m: m[a])(implicit i: Monad[m]) {
+        def flatMap[b](k: a => m[b]): m[b] = i.op_>>=(m)(k)
+        def map[b](f: a => b): m[b] = i.op_>>=(m)(a => i.`return`(f(a)))
+        def filter(p: a => Bool): m[a] = map(a => seq(Predef.require(p(a), "no monadic filter"))(a))
+        def withFilter(p: a => Bool): m[a] = filter(p)
+    }
 }
