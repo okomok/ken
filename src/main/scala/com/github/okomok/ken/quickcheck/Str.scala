@@ -76,7 +76,7 @@ object Str {
 
     val putTemp: Terminal => String => IO[Unit] = tm => s => {
         //IO.`return`()
-         IO.`return` { println(s) }
+        IO.putStrLn(s)
         /*
         val h = IO.stderr
         for {

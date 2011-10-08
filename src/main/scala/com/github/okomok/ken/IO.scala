@@ -45,9 +45,7 @@ object IO extends MonadControlIO[IO] with ThisIsInstance {
 
     def unsafePerformIO[a](io: IO[a]): a = unsafeDupablePerformIO(noDuplicate(io))
 
-    def unsafeDupablePerformIO[a](io: IO[a]): a = unIO(io)(RealWorld) match {
-        case (r, _) => r
-    }
+    def unsafeDupablePerformIO[a](io: IO[a]): a = unIO(io)(RealWorld)._1
 
     def noDuplicate[a](io: IO[a]): IO[a] = IO { s =>
         s.synchronized {
@@ -122,9 +120,9 @@ object IO extends MonadControlIO[IO] with ThisIsInstance {
 
     // Exception handling in the I/O asMonad
     //
-    val ioError: IOError => IO[Nothing] = err => IOError.throwIO(err)
+    lazy val ioError: IOError => IO[Nothing] = err => IOError.throwIO(err)
 
-    val userError: String => IOError = str => IOError(new java.io.IOException(List.toJString(str)))
+    lazy val userError: String => IOError = str => IOError(new java.io.IOException(List.toJString(str)))
 
     def `catch`[a](io: IO[a])(h: IOError => IO[a]): IO[a] = IOError.`catch`(io)(h)
 
@@ -158,17 +156,17 @@ object IO extends MonadControlIO[IO] with ThisIsInstance {
     //
     import RealWorld.IORef
 
-    val setStdGen: StdGen => IO[Unit] = sgen => IORef.write(theStdGen)(sgen)
-    val getStdGen: IO[StdGen] = IORef.read(theStdGen)
+    lazy val setStdGen: StdGen => IO[Unit] = sgen => IORef.write(theStdGen)(sgen)
+    lazy val getStdGen: IO[StdGen] = IORef.read(theStdGen)
 
-    val theStdGen: IORef[StdGen] = unsafePerformIO {
+    lazy val theStdGen: IORef[StdGen] = unsafePerformIO {
         for {
             rng <- `return`(new StdGen())
             * <- IORef.`new`(rng)
         } yield *
     }
 
-    val newStdGen: IO[StdGen] = IORef.atomicModify(theStdGen)(StdGen.split)
+    lazy val newStdGen: IO[StdGen] = IORef.atomicModify(theStdGen)(StdGen.split)
 
     def getStdRandom[a](f: StdGen => (a, StdGen)): IO[a] = {
         val swap: Pair[a, StdGen] => (StdGen, a) = { case (v, g) => (g, v) }

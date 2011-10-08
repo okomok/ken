@@ -124,7 +124,6 @@ package object ken {
     type IOError = IOException
     val IOError = IOException
 
-    @Annotation.ceremonial("no special effects")
     type IORep[+a] = RealWorld.type => (a, RealWorld.type)
 
     type TypeRep = ClassManifest[_]

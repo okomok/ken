@@ -15,7 +15,7 @@ class TrivialTest extends org.scalatest.junit.JUnit3Suite {
 
     def prop_Int: Int => Bool = n => {
         println("sample: " + n)
-        0 <= n && n <= 9
+        n < 100
     }
 
     def prop_Double: Double => Bool = n => {
@@ -25,8 +25,8 @@ class TrivialTest extends org.scalatest.junit.JUnit3Suite {
 
     def prop_List[a](xs: List[a]): Bool = {
         val l = List.length(xs)
-        println("length: " + l)
-        l <= 80
+        //println("length: " + l)
+        l <= 20
     }
 
     def testTrivial {
@@ -44,7 +44,8 @@ class TrivialTest extends org.scalatest.junit.JUnit3Suite {
    }
 
    def testInt {
-        val tf = Testable[Bool.type]
+        val tf = Testable[Kind.const[Int => Bool]]
+        //tf.quickCheck(prop_Int).!
         //Testable.ofProperty.quickCheck(tf.forAll(Gen.choose(0, 10))(prop_Int)).!
         //Testable.ofProperty.quickCheck(tf.forAllShrink(Gen.choose(0, 10))(Arbitary.ofInt.shrink)(prop_Int)).!
    }

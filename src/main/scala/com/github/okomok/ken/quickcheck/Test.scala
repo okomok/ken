@@ -239,7 +239,7 @@ object Test {
     // main shrinking loop
     //
     val foundFailure: State => quickcheck.Result => List[Rose[IO[quickcheck.Result]]] => IO[Unit] = st => res => ts => {
-        localMin(st.copy(numTryShrinks = 0, isShrinking = True) )(res)(ts)
+        localMin( st.copy(numTryShrinks = 0, isShrinking = True) )(res)(ts)
     }
 
     val localMin: State => quickcheck.Result => List[Rose[IO[quickcheck.Result]]] => IO[Unit] = st => res => {

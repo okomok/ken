@@ -8,17 +8,13 @@ package com.github.okomok
 package ken
 
 
-sealed abstract class Lazy[+a] {
-    private[ken] def _eval: a
-}
+sealed abstract class Lazy[+a] extends Eval[a]
 
 
-object Lazy extends Monad[Lazy] with ThisIsInstance with LazyEval {
+object Lazy extends Monad[Lazy] with ThisIsInstance with EvalOp {
     implicit def apply[a](x: => a): Lazy[a] = new Lazy[a] {
-        override lazy val _eval : a = x
+        override lazy val _eval: a = x
     }
-
-    implicit def eval[a](x: Lazy[a]): a = x._eval // higher priority
 
     // Overrides
     //
@@ -40,17 +36,4 @@ object Lazy extends Monad[Lazy] with ThisIsInstance with LazyEval {
 
     implicit def toStrictResult1[a, b](f: a => Lazy[b]): a => b = x => f(x)._eval
     implicit def toStrictResult2[a, b, c](f: a => b => Lazy[c]): a => b => c = x => y => f(x)(y)._eval
-}
-
-
-private[ken] trait LazyEval { this: Lazy.type =>
-    private[ken] sealed class Op_![a](x: Lazy[a]) {
-        def ! : a = x._eval
-    }
-    implicit def __![a](x: Lazy[a]): Op_![a] = new Op_!(x) // lower priority
-}
-
-
-object ! {
-    def unapply[a](x: Lazy[a]): Option[a] = Some(x._eval)
 }
