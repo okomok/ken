@@ -71,6 +71,7 @@ private[ken] sealed trait ReaderTAs0 { this: ReaderT.type =>
             i.mfix(k)
         }
     }
+
     implicit def _asMonadCont[r, n[+_]](implicit i: MonadCont[n]): MonadCont[apply2[r, n]#apply1] = new MonadCont[apply2[r, n]#apply1] with MonadProxy[apply2[r, n]#apply1] {
         private type m[+a] = ReaderT[r, n, a]
         override val selfMonad = _asMonadReader[r, n]

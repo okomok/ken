@@ -118,7 +118,7 @@ object Kind {
         }
     }
 
-    // MethodList (for cute syntax, but may be rejected.)
+    // MethodList
     //
     sealed trait MethodList
     sealed trait ^::[f[_], fs <: MethodList] extends MethodList
