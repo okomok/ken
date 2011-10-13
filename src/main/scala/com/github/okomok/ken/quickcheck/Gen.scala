@@ -16,7 +16,7 @@ package quickcheck
 import scala.annotation.tailrec
 
 
-final case class Gen[+a](override val get: StdGen => Int => a) extends NewtypeOf[StdGen => Int => a]
+final case class Gen[+a](override val old: StdGen => Int => a) extends NewtypeOf[StdGen => Int => a]
 
 
 object Gen extends Monad[Gen] with ThisIsInstance {

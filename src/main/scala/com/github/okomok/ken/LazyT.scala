@@ -14,7 +14,7 @@ package com.github.okomok
 package ken
 
 
-final case class LazyT[n[+_], +a](override val get: n[Lazy[a]]) extends NewtypeOf[n[Lazy[a]]]
+final case class LazyT[n[+_], +a](override val old: n[Lazy[a]]) extends NewtypeOf[n[Lazy[a]]]
 
 
 object LazyT extends LazyTOp with LazyTAs with MonadTransControl[LazyT] {

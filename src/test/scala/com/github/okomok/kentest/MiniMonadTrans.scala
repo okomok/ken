@@ -36,7 +36,7 @@ class MiniMonadTransTest extends org.scalatest.junit.JUnit3Suite {
         implicit def _asMonad[s]: Monad[apply[s]#apply] = error("todo")
     }
 
-    final case class StateT[s, m[+_], +a](override val get: s => m[(a, s)]) extends NewtypeOf[s => m[(a, s)]]
+    final case class StateT[s, m[+_], +a](override val old: s => m[(a, s)]) extends NewtypeOf[s => m[(a, s)]]
 
     object StateT extends Kind.FunctionLike with KindMiniMonadTrans {
         sealed trait apply2[s, m[+_]] extends Kind.Function1 {

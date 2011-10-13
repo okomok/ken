@@ -12,7 +12,7 @@ package ken
 package parsec
 
 
-final case class ParsecT[s, u, n[+_], +a](override val get: UnParser[s, u, n, a]) extends NewtypeOf[UnParser[s, u, n, a]] with KindParsecT {
+final case class ParsecT[s, u, n[+_], +a](override val old: UnParser[s, u, n, a]) extends NewtypeOf[UnParser[s, u, n, a]] with KindParsecT {
     override type stream = s
     override type userState = u
     override type innerMonad[+a] = n[a]

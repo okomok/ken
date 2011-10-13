@@ -15,7 +15,7 @@ package ken
 
 
 private[ken] final class _ArrowMonads[k[-_, +_]](val arrow: ArrowApply[k]) {
-    final case class _ArrowMonad[+b](override val get: k[Unit, b]) extends NewtypeOf[k[Unit, b]]
+    final case class _ArrowMonad[+b](override val old: k[Unit, b]) extends NewtypeOf[k[Unit, b]]
 
     object _ArrowMonad extends Newtype1[_ArrowMonad, ({type ot[+a] = k[Unit, a]})#ot] with Monad[_ArrowMonad] with ThisIsInstance {
         implicit def dependent[b](k: NewtypeOf[k[Unit, b]]): _ArrowMonad[b] = _ArrowMonad { k.run }

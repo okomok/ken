@@ -8,6 +8,9 @@ package com.github.okomok
 package ken
 
 
+// May be removed.
+
+
 trait Newtype2[nt[-_, +_], ot[-_, +_]] extends Typeclass with Kind.Newtype2 { outer =>
     override type apply2[-a, +b] = nt[a, b]
     override type oldtype2[-a, +b] = ot[a, b]

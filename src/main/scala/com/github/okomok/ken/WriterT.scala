@@ -14,7 +14,7 @@ package com.github.okomok
 package ken
 
 
-final case class WriterT[w, n[+_], +a](override val get: n[(a, w)]) extends NewtypeOf[n[(a, w)]]
+final case class WriterT[w, n[+_], +a](override val old: n[(a, w)]) extends NewtypeOf[n[(a, w)]]
 
 
 object WriterT extends WriterTOp with WriterTAs with Kind.FunctionLike {

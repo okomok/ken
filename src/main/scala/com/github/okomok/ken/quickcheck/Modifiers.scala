@@ -17,7 +17,7 @@ object Modifiers {
 
     // Blind
     //
-    final case class Blind[a](override val get: a) extends NewtypeOf[a] {
+    final case class Blind[a](override val old: a) extends NewtypeOf[a] {
         override def toString: JString = "(*)"
     }
 
@@ -35,7 +35,7 @@ object Modifiers {
 
     // Fixed
     //
-    final case class Fixed[a](override val get: a) extends NewtypeOf[a]
+    final case class Fixed[a](override val old: a) extends NewtypeOf[a]
 
     object Fixed {
         implicit def _asNewType0[a]: Newtype0[Fixed[a], a, Eq ^:: Show ^:: Ord ^:: Num ^:: Integral ^:: Real ^:: Enum ^:: Show ^:: Kind.Nil] = new Newtype0[Fixed[a], a, Eq ^:: Show ^:: Ord ^:: Num ^:: Integral ^:: Real ^:: Enum ^:: Show ^:: Kind.Nil] {
@@ -50,7 +50,7 @@ object Modifiers {
 
     // OrderedList
     //
-    final case class OrderedList[a](override val get: List[a]) extends NewtypeOf[List[a]]
+    final case class OrderedList[a](override val old: List[a]) extends NewtypeOf[List[a]]
 
     object OrderedList {
         implicit def _asNewType0[a]: Newtype0[OrderedList[a], List[a], Eq ^:: Ord ^:: Show ^:: Kind.Nil] = new Newtype0[OrderedList[a], List[a], Eq ^:: Ord ^:: Show ^:: Kind.Nil] {
@@ -66,7 +66,7 @@ object Modifiers {
 
     // NonEmptyList
     //
-    final case class NonEmptyList[a](override val get: List[a]) extends NewtypeOf[List[a]]
+    final case class NonEmptyList[a](override val old: List[a]) extends NewtypeOf[List[a]]
 
     object NonEmptyList {
         implicit def _asNewType0[a]: Newtype0[NonEmptyList[a], List[a], Eq ^:: Ord ^:: Show ^:: Kind.Nil] = new Newtype0[NonEmptyList[a], List[a], Eq ^:: Ord ^:: Show ^:: Kind.Nil] {
@@ -82,7 +82,7 @@ object Modifiers {
 
     // Positive
     //
-    final case class Positive[a](override val get: a) extends NewtypeOf[a]
+    final case class Positive[a](override val old: a) extends NewtypeOf[a]
 
     object Positive {
         implicit def _asNewType0[a]: Newtype0[Positive[a], a, Eq ^:: Show ^:: Ord ^:: Num ^:: Integral ^:: Real ^:: Enum ^:: Show ^:: Kind.Nil] = new Newtype0[Positive[a], a, Eq ^:: Show ^:: Ord ^:: Num ^:: Integral ^:: Real ^:: Enum ^:: Show ^:: Kind.Nil] {
@@ -99,7 +99,7 @@ object Modifiers {
 
     // NonZero
     //
-    final case class NonZero[a](override val get: a) extends NewtypeOf[a]
+    final case class NonZero[a](override val old: a) extends NewtypeOf[a]
 
     object NonZero {
         implicit def _asNewType0[a]: Newtype0[NonZero[a], a, Eq ^:: Show ^:: Ord ^:: Num ^:: Integral ^:: Real ^:: Enum ^:: Show ^:: Kind.Nil] = new Newtype0[NonZero[a], a, Eq ^:: Show ^:: Ord ^:: Num ^:: Integral ^:: Real ^:: Enum ^:: Show ^:: Kind.Nil] {
@@ -116,7 +116,7 @@ object Modifiers {
 
     // NonNegative
     //
-    final case class NonNegative[a](override val get: a) extends NewtypeOf[a]
+    final case class NonNegative[a](override val old: a) extends NewtypeOf[a]
 
     object NonNegative {
         implicit def _asNewType0[a]: Newtype0[NonNegative[a], a, Eq ^:: Show ^:: Ord ^:: Num ^:: Integral ^:: Real ^:: Enum ^:: Show ^:: Kind.Nil] = new Newtype0[NonNegative[a], a, Eq ^:: Show ^:: Ord ^:: Num ^:: Integral ^:: Real ^:: Enum ^:: Show ^:: Kind.Nil] {
@@ -133,7 +133,7 @@ object Modifiers {
 
     // Shrink2
     //
-    final case class Shrink2[a](override val get: a) extends NewtypeOf[a]
+    final case class Shrink2[a](override val old: a) extends NewtypeOf[a]
 
     object Shrink2 {
         implicit def _asNewType0[a]: Newtype0[Shrink2[a], a, Eq ^:: Show ^:: Ord ^:: Num ^:: Integral ^:: Real ^:: Enum ^:: Show ^:: Kind.Nil] = new Newtype0[Shrink2[a], a, Eq ^:: Show ^:: Ord ^:: Num ^:: Integral ^:: Real ^:: Enum ^:: Show ^:: Kind.Nil] {

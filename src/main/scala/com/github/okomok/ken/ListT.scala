@@ -14,7 +14,7 @@ package com.github.okomok
 package ken
 
 
-final case class ListT[n[+_], +a](override val get: n[List[a]]) extends NewtypeOf[n[List[a]]]
+final case class ListT[n[+_], +a](override val old: n[List[a]]) extends NewtypeOf[n[List[a]]]
 
 
 object ListT extends ListTOp with ListTAs with MonadTransControl[ListT] {

@@ -12,7 +12,7 @@ package ken
 package enumerator
 
 
-final case class Iteratee[-a, +n[+_], +b](override val get: n[Step[a, n, b]]) extends NewtypeOf[n[Step[a, n, b]]]
+final case class Iteratee[-a, +n[+_], +b](override val old: n[Step[a, n, b]]) extends NewtypeOf[n[Step[a, n, b]]]
 
 
 object Iteratee extends IterateeAs with Kind.FunctionLike {

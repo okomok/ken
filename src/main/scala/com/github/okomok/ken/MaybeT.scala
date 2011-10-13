@@ -14,7 +14,7 @@ package com.github.okomok
 package ken
 
 
-final case class MaybeT[n[+_], +a](override val get: n[Maybe[a]]) extends NewtypeOf[n[Maybe[a]]]
+final case class MaybeT[n[+_], +a](override val old: n[Maybe[a]]) extends NewtypeOf[n[Maybe[a]]]
 
 
 object MaybeT extends MaybeTOp with MaybeTAs with MonadTransControl[MaybeT] {

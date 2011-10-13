@@ -12,7 +12,7 @@ import com.github.okomok.ken._
 
 class Newtype0Test extends org.scalatest.junit.JUnit3Suite {
 
-    final case class Wrap[a](override val get: a) extends NewtypeOf[a]
+    final case class Wrap[a](override val old: a) extends NewtypeOf[a]
 
     object Wrap {
         implicit def _asNewType0[a]: Newtype0[Wrap[a], a, Num ^:: Ord ^:: Real ^:: Enum ^:: Floating ^:: Show ^:: Eq ^:: Kind.Nil] = new Newtype0[Wrap[a], a, Num ^:: Ord ^:: Real ^:: Enum ^:: Floating ^:: Show ^:: Eq ^:: Kind.Nil] {

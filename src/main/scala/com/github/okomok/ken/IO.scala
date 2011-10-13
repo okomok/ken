@@ -15,7 +15,7 @@ package ken
 
 
 // type IO[+a] = RealWorld.ST[a]
-final case class IO[+a](override val get: IORep[a]) extends NewtypeOf[IORep[a]] {
+final case class IO[+a](override val old: IORep[a]) extends NewtypeOf[IORep[a]] {
     def ! : a = (get)(RealWorld)._1
 }
 

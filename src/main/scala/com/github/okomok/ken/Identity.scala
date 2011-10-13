@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-final case class Identity[+a](override val get: a) extends NewtypeOf[a]
+final case class Identity[+a](override val old: a) extends NewtypeOf[a]
 
 
 object Identity extends Newtype1[Identity, ({type ot[+a] = a})#ot] with MonadFix[Identity] with ThisIsInstance {

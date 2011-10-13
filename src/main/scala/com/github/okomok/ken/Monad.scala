@@ -196,7 +196,7 @@ object Monad {
     class For[m[+_], a](m: m[a])(implicit i: Monad[m]) {
         def flatMap[b](k: a => m[b]): m[b] = i.op_>>=(m)(k)
         def map[b](f: a => b): m[b] = i.op_>>=(m)(a => i.`return`(f(a)))
-        def filter(p: a => Bool): m[a] = map(a => seq(Predef.require(p(a), "no monadic filter"))(a))
+        def filter(p: a => Bool): m[a] = map(a => a.ensuring(p, "no monadic filter"))
         def withFilter(p: a => Bool): m[a] = filter(p)
     }
 }

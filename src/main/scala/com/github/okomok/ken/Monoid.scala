@@ -94,7 +94,7 @@ sealed trait MonoidType { this: Monoid.type =>
 
     // Dual
     //
-    final case class Dual[+a](override val get: a) extends NewtypeOf[a]
+    final case class Dual[+a](override val old: a) extends NewtypeOf[a]
 
     object Dual {
         implicit def _asNewtype0[a]: Newtype0[Dual[a], a, Kind.Nil] = new Newtype0[Dual[a], a, Kind.Nil] {
@@ -110,7 +110,7 @@ sealed trait MonoidType { this: Monoid.type =>
 
     // All
     //
-    final case class All(override val get: Bool) extends NewtypeOf[Bool]
+    final case class All(override val old: Bool) extends NewtypeOf[Bool]
 
     object All extends Newtype0[All, Bool, Kind.Nil] with ThisIsInstance {
         // Overrides
@@ -127,7 +127,7 @@ sealed trait MonoidType { this: Monoid.type =>
 
     // Any_
     //
-    final case class Any_(override val get: Bool) extends NewtypeOf[Bool]
+    final case class Any_(override val old: Bool) extends NewtypeOf[Bool]
 
     object Any_  extends Newtype0[Any_, Bool, Kind.Nil] with ThisIsInstance {
         // Overrrides
@@ -144,7 +144,7 @@ sealed trait MonoidType { this: Monoid.type =>
 
     // Sum
     //
-    final case class Sum[a](override val get: a) extends NewtypeOf[a]
+    final case class Sum[a](override val old: a) extends NewtypeOf[a]
 
     object Sum {
         implicit def _asNewtype0[a]: Newtype0[Sum[a], a, Kind.Nil] = new Newtype0[Sum[a], a, Kind.Nil] {
@@ -161,7 +161,7 @@ sealed trait MonoidType { this: Monoid.type =>
 
     // Product
     //
-    final case class Product[a](override val get: a) extends NewtypeOf[a]
+    final case class Product[a](override val old: a) extends NewtypeOf[a]
 
     object Product {
         implicit def _asNewtype0[a]: Newtype0[Product[a], a, Kind.Nil] = new Newtype0[Product[a], a, Kind.Nil] {

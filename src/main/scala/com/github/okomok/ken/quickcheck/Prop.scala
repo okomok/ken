@@ -13,7 +13,7 @@ package ken
 package quickcheck
 
 
-final case class Prop(override val get: Rose[IO[Result]]) extends NewtypeOf[Rose[IO[Result]]]
+final case class Prop(override val old: Rose[IO[Result]]) extends NewtypeOf[Rose[IO[Result]]]
 
 
 object Prop extends Testable[Prop] with ThisIsInstance {

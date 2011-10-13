@@ -14,7 +14,7 @@ package com.github.okomok
 package ken
 
 
-final case class ErrorT[e, n[+_], +a](override val get: n[Either[e, a]]) extends NewtypeOf[n[Either[e, a]]]
+final case class ErrorT[e, n[+_], +a](override val old: n[Either[e, a]]) extends NewtypeOf[n[Either[e, a]]]
 
 
 object ErrorT extends ErrorTOp with ErrorTAs with Kind.FunctionLike {

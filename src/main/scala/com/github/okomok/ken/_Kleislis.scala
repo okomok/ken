@@ -16,7 +16,7 @@ package ken
 
 private[ken] final class _Kleislis[m[+_]](val monad: Monad[m]) {
 
-    final case class _Kleisli[-a, +b](override val get: a => m[b]) extends NewtypeOf[a => m[b]]
+    final case class _Kleisli[-a, +b](override val old: a => m[b]) extends NewtypeOf[a => m[b]]
 
     object _Kleisli extends _KleisliAs with Kind.Newtype2 {
         override type apply2[-a, +b] = _Kleisli[a, b]

@@ -44,8 +44,7 @@ The current status is pre-alpha.
 
 * Foolishly honest port of Haskell standard libraries.
 * Pulling type-class instances explicitly so that wildcard imports are removed.
-* Making full use of dependent types to simplify type-class signatures.
-* Type-level functions now for partially-applied types.
+* Type-level functions for partially-applied types.
 
 
 
