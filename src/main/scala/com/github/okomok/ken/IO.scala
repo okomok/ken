@@ -14,9 +14,8 @@ package com.github.okomok
 package ken
 
 
-// type IO[+a] = RealWorld.ST[a]
 final case class IO[+a](override val old: IORep[a]) extends NewtypeOf[IORep[a]] {
-    def ! : a = (get)(RealWorld)._1
+    def ! : a = IORep.eval(this)
 }
 
 
@@ -31,13 +30,17 @@ object IO extends MonadControlIO[IO] with ThisIsInstance {
     override def liftIO[a](io: IO[a]): m[a] = io
     override def liftControlIO[a](f: RunInIO => IO[a]): m[a] = MonadTransControl.idLiftControl(f)
 
-    private def returnIO[a](x: => a): IO[a] = IO { s => (x, s) }
+    private def returnIO[a](x: => a): IO[a] = IO { s => IORep.Done(x, s) }
 
     private def bindIO[a, b](m: IO[a])(k: a => IO[b]): IO[b] = IO { s =>
         unIO(m)(s) match {
-            case (a, new_s) => unIO(k(a))(new_s)
+            case Product2(a, new_s) => unIO(k(a))(new_s)
         }
     }
+
+    // Tail-recursion
+    //
+    def tailrec[a](io: => IO[a]): IO[a] = IO { s => IORep.Call(io, s) }
 
     // UnsafeIO operations
     //

@@ -124,7 +124,7 @@ package object ken {
     type IOError = IOException
     val IOError = IOException
 
-    type IORep[+a] = RealWorld.type => (a, RealWorld.type)
+    type IORep[+a] = RealWorld.type => Product2[a, RealWorld.type]
 
     type TypeRep = ClassManifest[_]
 

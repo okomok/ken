@@ -38,11 +38,19 @@ class World { world =>
     // Coercions between IO and ST
     //
     def unsafeIOToST[a](io: IO[a]): ST[a] = io match {
-        case IO(m) => ST { s => m.asInstanceOf[This => (a, This)](s) }
+        case IO(m) => ST { s =>
+            m(s.asInstanceOf[RealWorld.type]) match {
+                case Product2(a, _) => (a, s)
+            }
+        }
     }
 
     def unsafeSTToIO[a](st: ST[a]): IO[a] = st match {
-        case ST(m) => IO { s => m.asInstanceOf[IORep[a]](s) }
+        case ST(m) => IO { s =>
+            m(s.asInstanceOf[This]) match {
+                case (a, _) => IORep.Done(a, s)
+            }
+        }
     }
 
     // STRef

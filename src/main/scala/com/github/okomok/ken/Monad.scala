@@ -124,6 +124,10 @@ trait Monad[m[+_]] extends Applicative[m] {
     }
     final implicit def <=<:[a, b](f: a => m[b]): Op_<=<:[a, b] = new Op_<=<:(f)
 
+    // Misc
+    //
+    def map[a, b](f: a => b)(m: m[a]): m[b] = op_>>=(m)(a => `return`(f(a)))
+
     // Arrows
     //
     final lazy val _inKleislis = new _Kleislis[m](this)
@@ -194,9 +198,10 @@ object Monad {
     def weak[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply, nt#oldtype1], i: Monad[nt#apply]): Monad[nt#oldtype1] = deriving[Kind.coNewtype1[nt]](j.coNewtype, i)
 
     class For[m[+_], a](m: m[a])(implicit i: Monad[m]) {
-        def flatMap[b](k: a => m[b]): m[b] = i.op_>>=(m)(k)
-        def map[b](f: a => b): m[b] = i.op_>>=(m)(a => i.`return`(f(a)))
+        final def flatMap[b](k: a => m[b]): m[b] = i.op_>>=(m)(k)
+        final def map[b](f: a => b): m[b] = i.map(f)(m)
+        final def foreach[b](k: a => m[b]): m[b] = flatMap(k) // needed for `IO.tailrec`.
         def filter(p: a => Bool): m[a] = map(a => a.ensuring(p, "no monadic filter"))
-        def withFilter(p: a => Bool): m[a] = filter(p)
+        final def withFilter(p: a => Bool): m[a] = filter(p)
     }
 }

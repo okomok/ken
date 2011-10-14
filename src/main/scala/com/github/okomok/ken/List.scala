@@ -172,7 +172,7 @@ object List extends ListAs with MonadPlus[List] with Traversable[List] with This
 
     // List transformations
     //
-    def map[a, b](f: a => b)(xs: List[a]): List[b] = xs match {
+    override def map[a, b](f: a => b)(xs: List[a]): List[b] = xs match {
         case Nil => Nil
         case x :: xs => f(x) :: map(f)(xs.!)
     }

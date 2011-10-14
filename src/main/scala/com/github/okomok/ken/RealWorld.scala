@@ -17,7 +17,7 @@ object RealWorld extends World {
     }
 
     def ioToST[a](io: IO[a]): ST[a] = io match {
-        case IO(m) => ST(m)
+        case IO(m) => ST(s => Product2.toTuple(m(s)))
     }
 
     // IORef
