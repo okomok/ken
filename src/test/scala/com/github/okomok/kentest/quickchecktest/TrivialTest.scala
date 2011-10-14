@@ -26,7 +26,7 @@ class TrivialTest extends org.scalatest.junit.JUnit3Suite {
     def prop_List[a](xs: List[a]): Bool = {
         val l = List.length(xs)
         //println("length: " + l)
-        l <= 20
+        l <= 40
     }
 
     def testTrivial {
@@ -52,6 +52,6 @@ class TrivialTest extends org.scalatest.junit.JUnit3Suite {
 
    def testList {
         val tf = Testable[Kind.const[List[Int] => Bool]]
-        //tf.quickCheck(prop_List[Int]).! // stack-overflow!
+        //tf.quickCheck(prop_List[Int]).! // ok.
    }
 }

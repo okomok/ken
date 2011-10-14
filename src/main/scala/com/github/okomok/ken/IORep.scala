@@ -16,17 +16,17 @@ import scala.annotation.tailrec
 
 object IORep {
 
-    // See: scala.util.control.TailCalls
-    private[ken] case class Call[+a](rest: IO[a], override val _2: RealWorld.type) extends Product2[a, RealWorld.type] {
-        override lazy val _1: a = rest.!
+    // See: scala.util.control.TailCalls (`rest` may be just `IO[a]` in fact.)
+    private[ken] case class Call[+a](rest: () => IO[a], override val _2: RealWorld.type) extends Product2[a, RealWorld.type] {
+        override lazy val _1: a = rest().!
     }
     private[ken] case class Done[+a](override val _1: a, override val _2: RealWorld.type) extends Product2[a, RealWorld.type]
 
-    private[ken] def eval[a](io: IO[a]): a = {
+    def eval[a](io: IO[a]): a = {
         @tailrec
         def loop(body: IO[a])(s: RealWorld.type): a = body match {
             case IO(rep) => rep(s) match {
-                case IORep.Call(rest, s) => loop(rest)(s)
+                case IORep.Call(rest, s) => loop(rest())(s)
                 case IORep.Done(result, s) => result
             }
         }

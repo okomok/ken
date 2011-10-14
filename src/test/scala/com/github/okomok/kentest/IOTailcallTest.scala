@@ -11,7 +11,7 @@ import com.github.okomok.ken._ //{IO =>_, IORep => _, _}
 import scala.annotation.tailrec
 
 
-class IOTailRecTest extends org.scalatest.junit.JUnit3Suite {
+class IOTailcallTest extends org.scalatest.junit.JUnit3Suite {
 
 /*
     type IORep[+a] = RealWorld.type => Product2[a, RealWorld.type]
@@ -72,26 +72,22 @@ class IOTailRecTest extends org.scalatest.junit.JUnit3Suite {
     val isOdd1: Int => IO[Boolean] = {
         case 0 => for {
             _ <- IO.`return`()
-            * <- IO.`return`(false)
-        } yield *
+        } IO.`return`(false)
         case n => for {
             _ <- IO.`return`()
-            * <- isEven1(n - 1)
-        } yield *
+        } isEven1(n - 1)
     }
 
     val isEven1: Int => IO[Boolean] = {
         case 0 => for {
             _ <- IO.`return`()
-            * <- IO.`return`(true)
-        } yield *
+        } IO.`return`(true)
         case n => for {
             _ <- IO.`return`()
-            * <- isOdd1(n - 1)
-        } yield *
+        } isOdd1(n - 1)
     }
 
-    def teztTrivial {
+    def testTrivial {
         val io = isEven1(9)
         expect(false)(io.!)
     }
