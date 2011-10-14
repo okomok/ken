@@ -200,7 +200,7 @@ object Monad {
     class For[m[+_], a](m: m[a])(implicit i: Monad[m]) {
         final def flatMap[b](k: a => m[b]): m[b] = i.op_>>=(m)(k)
         final def map[b](f: a => b): m[b] = i.map(f)(m)
-        final def foreach[b](k: a => m[b]): m[b] = flatMap(k) // needed for `IO.tailrec`.
+        final def foreach[b](k: a => m[b]): m[b] = flatMap(k) // needed for `IO.tailcall`.
         def filter(p: a => Bool): m[a] = map(a => a.ensuring(p, "no monadic filter"))
         final def withFilter(p: a => Bool): m[a] = filter(p)
     }

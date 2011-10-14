@@ -109,12 +109,12 @@ class IOTailRecTest extends org.scalatest.junit.JUnit3Suite {
 
     val isOdd2: Int => IO[Boolean] = {
         case 0 => IO.`return`(false)
-        case n => IO.`return`() >> IO.tailrec(isEven2(n - 1))
+        case n => IO.`return`() >> IO.tailcall(isEven2(n - 1))
     }
 
     val isEven2: Int => IO[Boolean] = {
         case 0 => IO.`return`(true)
-        case n => IO.`return`() >> IO.tailrec(isOdd2(n - 1))
+        case n => IO.`return`() >> IO.tailcall(isOdd2(n - 1))
     }
 
     def testNoOverflow2 {
@@ -128,7 +128,7 @@ class IOTailRecTest extends org.scalatest.junit.JUnit3Suite {
         } IO.`return`(false)
         case n => for {
             _ <- IO.`return`()
-        } IO.tailrec(isEven3(n - 1))
+        } IO.tailcall(isEven3(n - 1))
     }
 
     val isEven3: Int => IO[Boolean] = {
@@ -137,7 +137,7 @@ class IOTailRecTest extends org.scalatest.junit.JUnit3Suite {
         } IO.`return`(true)
         case n => for {
             _ <- IO.`return`()
-        } IO.tailrec(isOdd3(n - 1))
+        } IO.tailcall(isOdd3(n - 1))
     }
 
     def testNoOverflow3 {

@@ -38,9 +38,9 @@ object IO extends MonadControlIO[IO] with ThisIsInstance {
         }
     }
 
-    // Tail-recursion
+    // Tail-call support
     //
-    def tailrec[a](io: => IO[a]): IO[a] = IO { s => IORep.Call(io, s) }
+    def tailcall[a](io: => IO[a]): IO[a] = IO { s => IORep.Call(io, s) }
 
     // UnsafeIO operations
     //
