@@ -15,7 +15,7 @@ package ken
 
 
 final case class IO[+a](override val old: IORep[a]) extends NewtypeOf[IORep[a]] {
-    def ! : a = IORep.eval(this)
+    def ! : a = IORep.eval(old)
 }
 
 
@@ -40,11 +40,11 @@ object IO extends MonadControlIO[IO] with ThisIsInstance {
 
     // Tail-call support
     //
-    def tailcall[a](io: => IO[a]): IO[a] = IO { s => IORep.Call(() => io, s) }
+    def tailcall[a](io: => IO[a]): IO[a] = IO { s => IORep.Call(() => unIO(io), s) }
 
     // UnsafeIO operations
     //
-    def unIO[a](io: IO[a]): IORep[a] = io.get
+    def unIO[a](io: IO[a]): IORep[a] = io.old
 
     def unsafePerformIO[a](io: IO[a]): a = unsafeDupablePerformIO(noDuplicate(io))
 
