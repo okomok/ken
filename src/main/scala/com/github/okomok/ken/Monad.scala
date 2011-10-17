@@ -14,7 +14,7 @@ package com.github.okomok
 package ken
 
 
-trait Monad[m[+_]] extends Applicative[m] {
+trait Monad[m[+_]] extends Applicative[m] { outer =>
     final val asMonad: Monad[apply] = this
 
     // Core
@@ -27,7 +27,16 @@ trait Monad[m[+_]] extends Applicative[m] {
     //
     // Applicative
     override def pure[a](x: Lazy[a]): m[a] = `return`(x)
-    override def op_<*>[a, b](x: m[a => b])(y: m[a]): m[b] = for { _x <- x; _y <- y } yield _x(_y)
+    override def op_<*>[a, b](x: m[a => b])(y: m[a]): m[b] = {
+        x >>= { _x =>
+            y >>= { _y =>
+                `return`(_x(_y))
+            }
+        }
+
+        // StackOverflow; `for` depends on `fmap` which depends on `<*>` by default.
+        // for { _x <- x; _y <- y } yield _x(_y)
+    }
 
     // Extra
     //
@@ -105,10 +114,6 @@ trait Monad[m[+_]] extends Applicative[m] {
     }
     final implicit def >>(x: m[_]): Op_>> = new Op_>>(x)
 
-    type For[a] = Monad.For[m, a]
-    @Annotation.compilerWorkaround("2.9.1") // implicit-lookup fails in case of `For[a]`
-    implicit def `for`[a](x: m[a]): Monad.For[m, a] = new Monad.For[m, a](x)(this)
-
     private[ken] sealed class Op_=<<:[a](x: m[a]) {
         def =<<:[b](f: a => m[b]): m[b] = op_=<<:(f)(x)
     }
@@ -124,9 +129,16 @@ trait Monad[m[+_]] extends Applicative[m] {
     }
     final implicit def <=<:[a, b](f: a => m[b]): Op_<=<:[a, b] = new Op_<=<:(f)
 
-    // Misc
+    // For-comprehension
     //
-    def map[a, b](f: a => b)(m: m[a]): m[b] = op_>>=(m)(a => `return`(f(a)))
+    type For[+a] = ken.For[m, a]
+    type ForProxy[+a] = ken.ForProxy[m, a]
+
+    @Annotation.compilerWorkaround("2.9.1", 5070)
+    implicit def `for`[a](m: m[a]): ken.For[m, a] = new For[a] {
+        override def map[b](f: a => b): m[b] = outer.fmap(f)(m)
+        override def flatMap[b](k: a => m[b]): m[b] = outer.op_>>=(m)(k)
+    }
 
     // Arrows
     //
@@ -177,7 +189,7 @@ trait MonadProxy[m[+_]] extends Monad[m] with ApplicativeProxy[m] {
     override def liftM4[a1, a2, a3, a4, r](f: a1 => a2 => a3 => a4 => r)(m1: m[a1])(m2: m[a2])(m3: m[a3])(m4: m[a4]): m[r] = selfMonad.liftM4(f)(m1)(m2)(m3)(m4)
     override def liftM5[a1, a2, a3, a4, a5, r](f: a1 => a2 => a3 => a4 => a5 => r)(m1: m[a1])(m2: m[a2])(m3: m[a3])(m4: m[a4])(m5: m[a5]): m[r] = selfMonad.liftM5(f)(m1)(m2)(m3)(m4)(m5)
     override def ap[a, b](x: m[a => b])(y: m[a]): m[b] = selfMonad.ap(x)(y)
-    override implicit def `for`[a](x: m[a]): Monad.For[m, a] = selfMonad.`for`(x)
+    override implicit def `for`[a](m: m[a]): ken.For[m, a] = selfMonad.`for`(m)
 }
 
 
@@ -196,12 +208,4 @@ object Monad {
     }
 
     def weak[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply, nt#oldtype1], i: Monad[nt#apply]): Monad[nt#oldtype1] = deriving[Kind.coNewtype1[nt]](j.coNewtype, i)
-
-    class For[m[+_], a](m: m[a])(implicit i: Monad[m]) {
-        final def flatMap[b](k: a => m[b]): m[b] = i.op_>>=(m)(k)
-        final def map[b](f: a => b): m[b] = i.map(f)(m)
-        final def foreach[b](k: a => m[b]): m[b] = flatMap(k) // needed for `IO.tailcall`.
-        def filter(p: a => Bool): m[a] = map(a => a.ensuring(p, "no monadic filter"))
-        final def withFilter(p: a => Bool): m[a] = filter(p)
-    }
 }

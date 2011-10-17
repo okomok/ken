@@ -194,9 +194,30 @@ trait Testable[prop] extends Typeclass0[prop] {
 trait TestableProxy[prop] extends Testable[prop] {
     def selfTestable: Testable[prop]
 
-    def property: property = selfTestable.property
+    override def property: property = selfTestable.property
 
-    // TODO
+    override def mapResult: mapResult = selfTestable.mapResult
+    override def mapIOResult: mapIOResult = selfTestable.mapIOResult
+    override def mapRoseIOResult: mapRoseIOResult = selfTestable.mapRoseIOResult
+    override def mapProp: mapProp = selfTestable.mapProp
+    override def mapSize: mapSize = selfTestable.mapSize
+    override def shrinking[a](shrink: a => List[a])(a: a)(pf: a => prop): Property = selfTestable.shrinking(shrink)(a)(pf)
+    override def callback: callback = selfTestable.callback
+    override def whenFail: whenFail = selfTestable.whenFail
+    override def `whenFail'`: `whenFail'` = selfTestable.`whenFail'`
+    override def expectFailure: expectFailure = selfTestable.expectFailure
+    override def label: label = selfTestable.label
+    override def collect[a](x: a)(implicit i: Show[a]): prop => Property = selfTestable.collect(x)(i)
+    override def classify: classify = selfTestable.classify
+    override def cover: cover = selfTestable.cover
+    override def op_==>: : op_==>: = selfTestable.op_==>:
+    override def forAll[a](gen: Gen[a])(pf: a => prop)(implicit i: Show[a]): Property = selfTestable.forAll(gen)(pf)(i)
+    override def forAllShrink[a](gen: Gen[a])(shrink: a => List[a])(pf: a => prop)(implicit i: Show[a]): Property = selfTestable.forAllShrink(gen)(shrink)(pf)(i)
+    override def op_:&:[prop2](p1: prop)(p2: prop2)(implicit j: Testable[prop2]): Property = selfTestable.op_:&:(p1)(p2)(j)
+
+    override def quickCheck: quickCheck = selfTestable.quickCheck
+    override def quickCheckWith: quickCheckWith = selfTestable.quickCheckWith
+    override def quickCheckWithResult: quickCheckWithResult = selfTestable.quickCheckWithResult
 }
 
 
@@ -229,5 +250,36 @@ sealed trait TestableInstance { this: Testable.type =>
 sealed trait TestableShortcut { this: Testable.type =>
     def property[prop](prop: prop)(implicit i: Testable[prop]): Property = i.property(prop)
 
-    // TODO
+    def mapResult[prop](f: Result => Result)(prop: prop)(implicit i: Testable[prop]): Property = i.mapResult(f)(prop)
+    def mapIOResult[prop](f: IO[Result] => IO[Result])(prop: prop)(implicit i: Testable[prop]): Property = i.mapIOResult(f)(prop)
+    def mapRoseIOResult[prop](f: Rose[IO[Result]] => Rose[IO[Result]])(prop: prop)(implicit i: Testable[prop]): Property = i.mapRoseIOResult(f)(prop)
+    def mapProp[prop](f: Prop => Prop)(prop: prop)(implicit i: Testable[prop]): Property = i.mapProp(f)(prop)
+    def mapSize[prop](f: Int => Int)(prop: prop)(implicit i: Testable[prop]): Property = i.mapSize(f)(prop)
+    def shrinking[prop, a](shrink: a => List[a])(a: a)(pf: a => prop)(implicit i: Testable[prop]): Property = i.shrinking(shrink)(a)(pf)
+    def callback[prop](cb: Callback)(prop: prop)(implicit i: Testable[prop]): Property = i.callback(cb)(prop)
+    def whenFail[prop](m: IO[Unit])(prop: prop)(implicit i: Testable[prop]): Property = i.whenFail(m)(prop)
+    def `whenFail'`[prop](m: IO[Unit])(prop: prop)(implicit i: Testable[prop]): Property = i.`whenFail'`(m)(prop)
+    def expectFailure[prop](prop: prop)(implicit i: Testable[prop]): Property = i.expectFailure(prop)
+    def label[prop](s: String)(prop: prop)(implicit i: Testable[prop]): Property = i.label(s)(prop)
+    def collect[prop, a](x: a)(prop: prop)(implicit i: Testable[prop], j: Show[a]): Property = i.collect(x)(j)(prop)
+    def classify[prop](b: Bool)(s: String)(prop: prop)(implicit i: Testable[prop]): Property = i.classify(b)(s)(prop)
+    def cover[prop](b: Bool)(n: Int)(s: String)(prop: prop)(implicit i: Testable[prop]): Property = i.cover(b)(n)(s)(prop)
+    def op_==>:[prop](b: Bool)(prop: prop)(implicit i: Testable[prop]): Property = i.op_==>:(b)(prop)
+    def forAll[prop, a](gen: Gen[a])(pf: a => prop)(implicit i: Testable[prop], j: Show[a]): Property = i.forAll(gen)(pf)
+    def forAllShrink[prop, a](gen: Gen[a])(shrink: a => List[a])(pf: a => prop)(implicit i: Testable[prop], j: Show[a]): Property = i.forAllShrink(gen)(shrink)(pf)(j)
+    def op_:&:[prop, prop2](p1: prop)(p2: prop2)(implicit i: Testable[prop], j: Testable[prop2]): Property = i.op_:&:(p1)(p2)(j)
+
+    def quickCheck[prop](prop: prop)(implicit i: Testable[prop]): IO[Unit] = i.quickCheck(prop)
+    def quickCheckWith[prop](args: Test.Args)(prop: prop)(implicit i: Testable[prop]): IO[Unit] = i.quickCheckWith(args)(prop)
+    def quickCheckWithResult[prop](args: Test.Args)(prop: prop)(implicit i: Testable[prop]): IO[Test.Result] = i.quickCheckWithResult(args)(prop)
+
+    private[quickcheck] sealed class _Op_==>:(b: Bool) {
+        def ==>:[prop](p: prop)(implicit i: Testable[prop]): Property = op_==>:(b)(p)
+    }
+    implicit def ==>:(b: Bool): _Op_==>: = new _Op_==>:(b)
+
+    private[quickcheck] sealed class _Op_:&:[prop](p1: prop) {
+        def :&:[prop2](p2: prop2)(implicit i: Testable[prop], j: Testable[prop2]): Property = op_:&:(p1)(p2)
+    }
+    implicit def :&:[prop](p1: prop): _Op_:&:[prop] = new _Op_:&:(p1)
 }

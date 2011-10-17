@@ -37,7 +37,7 @@ trait MonadControlIO[m[+_]] extends MonadIO[m] {
 
     object Hanlder {
         def apply[e, a](h: e => m[a])(implicit i: Exception[e]): Handler[a] = new Handler(h, i)
-        def unapply[a](x: Handler[a]): Option[(e => m[a], Exception[e]) forSome { type e }] = Some(x.rep) // doesn't work for now.
+        def unapply[a](x: Handler[a]): Option[(e => m[a], Exception[e]) forSome { type e }] = Some(x.rep) // doesn't work for now; SI-5022
     }
 
     def catches[a](a: m[a])(handlers: List[Handler[a]]): m[a] = controlIO { runInIO =>

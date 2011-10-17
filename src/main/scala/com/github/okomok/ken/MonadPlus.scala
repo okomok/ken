@@ -48,7 +48,13 @@ trait MonadPlus[m[+_]] extends Monad[m] with Alternative[m] { outer =>
     //
     def filter[a](p: a => Bool)(m: m[a]): m[a] = op_>>=(m)((a: a) => if (p(a)) `return`(a) else mzero)
 
-    override implicit def `for`[a](m: m[a]): Monad.For[m, a] = new For(m)(this) {
+    // For-comprehension
+    //
+    private[this] def monadFor[a](m: m[a]): For[a] = super.`for`(m)
+
+    @Annotation.compilerWorkaround("2.9.1", 5070)
+    override implicit def `for`[a](m: m[a]): ken.For[m, a] = new ForProxy[a] {
+        override val selfFor = monadFor(m)
         override def filter(p: a => Bool): m[a] = outer.filter(p)(m)
     }
 }
@@ -65,7 +71,7 @@ trait MonadPlusProxy[m[+_]] extends MonadPlus[m] with MonadProxy[m] with Alterna
     override def guard(b: Bool): m[Unit] = selfMonadPlus.guard(b)
     override def msum[a](xs: List[m[a]]): m[a] = msum(xs)
 
-    override implicit def filter[a](p: a => Bool)(m: m[a]): m[a] = selfMonadPlus.filter(p)(m)
+    override def filter[a](p: a => Bool)(m: m[a]): m[a] = selfMonadPlus.filter(p)(m)
 }
 
 

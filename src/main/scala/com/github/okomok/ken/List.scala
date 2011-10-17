@@ -86,6 +86,9 @@ object List extends ListAs with MonadPlus[List] with Traversable[List] with This
 
     // Overrides
     //
+    // Functor
+    private type f[+a] = List[a]
+    override def fmap[a, b](f: a => b)(xs: f[a]): f[b] = map(f)(xs)
     // Monad
     private type m[+a] = List[a]
     override def `return`[a](x: Lazy[a]): m[a] = List(x)
@@ -172,7 +175,7 @@ object List extends ListAs with MonadPlus[List] with Traversable[List] with This
 
     // List transformations
     //
-    override def map[a, b](f: a => b)(xs: List[a]): List[b] = xs match {
+    def map[a, b](f: a => b)(xs: List[a]): List[b] = xs match {
         case Nil => Nil
         case x :: xs => f(x) :: map(f)(xs.!)
     }

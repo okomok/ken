@@ -25,4 +25,13 @@ package object quickcheck {
     // Property
     //
     type Property = Gen[Prop]
+
+    // Test
+    //
+    def quickCheck[prop](prop: prop)(implicit i: Testable[prop]): IO[Unit] = i.quickCheck(prop)
+    def quickCheckWith[prop](args: Test.Args)(prop: prop)(implicit i: Testable[prop]): IO[Unit] = i.quickCheckWith(args)(prop)
+    def quickCheckWithResult[prop](args: Test.Args)(prop: prop)(implicit i: Testable[prop]): IO[Test.Result] = i.quickCheckWithResult(args)(prop)
+
+    implicit def ==>:(b: Bool): Testable._Op_==>: = new Testable._Op_==>:(b)
+    implicit def :&:[prop](p1: prop): Testable._Op_:&:[prop] = new Testable._Op_:&:(p1)
 }
