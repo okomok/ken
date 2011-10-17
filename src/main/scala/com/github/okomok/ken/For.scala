@@ -9,10 +9,10 @@ package ken
 
 
 trait For[m[+_], +a] {
-    def map[b](f: a => b): m[b]
-    def flatMap[b](k: a => m[b]): m[b]
+    def map[b](f: a => b): m[b] = error("shall be a Functor")
+    def flatMap[b](k: a => m[b]): m[b] = error("shall be a Monad")
     final def foreach[b](k: a => m[b]): m[b] = flatMap(k)
-    def filter(p: a => Bool): m[a] = map(a => a.ensuring(p, "no monadic filter")) // for trivial patterns.
+    def filter(p: a => Bool): m[a] = map(a => a.ensuring(p, "shall be a MonadPlus")) // for trivial patterns.
     final def withFilter(p: a => Bool): m[a] = filter(p)
 }
 

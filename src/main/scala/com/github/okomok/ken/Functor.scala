@@ -32,6 +32,16 @@ trait Functor[f[+_]] extends Typeclass1[f] { outer =>
         def <@[b](y: f[b]): f[a] = op_<@(x)(y)
     }
     final implicit def <@[a](x: a): Op_<@[a] = new Op_<@(x)
+
+    // For-comprehension
+    //
+    type For[+a] = ken.For[f, a]
+    type ForProxy[+a] = ken.ForProxy[f, a]
+
+    @Annotation.compilerWorkaround("2.9.1", 5070)
+    implicit def `for`[a](x: f[a]): ken.For[f, a] = new For[a] {
+        override def map[b](g: a => b): f[b] = outer.fmap(g)(x)
+    }
 }
 
 
@@ -41,6 +51,8 @@ trait FunctorProxy[f[+_]] extends Functor[f] {
     override def fmap[a, b](x: a => b)(y: f[a]): f[b] = selfFunctor.fmap(x)(y)
     override def op_<@>[a, b](x: a => b)(y: f[a]): f[b] = selfFunctor.op_<@>(x)(y)
     override def op_<@[a, b](x: Lazy[a])(y: f[b]): f[a] = selfFunctor.op_<@(x)(y)
+
+    override implicit def `for`[a](x: f[a]): ken.For[f, a] = selfFunctor.`for`(x)
 }
 
 

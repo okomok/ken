@@ -18,7 +18,8 @@ final case class Const[a, +b](override val old: a) extends NewtypeOf[a]
 
 
 object Const extends Kind.FunctionLike {
-    sealed trait apply[z] extends Kind.Newtype1 {
+    trait apply[z] extends apply1[z]
+    trait apply1[z] extends Kind.Newtype1 {
         override type apply1[+a] = Const[z, a]
         override type oldtype1[+a] = z
     }

@@ -131,12 +131,11 @@ trait Monad[m[+_]] extends Applicative[m] { outer =>
 
     // For-comprehension
     //
-    type For[+a] = ken.For[m, a]
-    type ForProxy[+a] = ken.ForProxy[m, a]
+    private[this] def functorFor[a](m: m[a]): For[a] = super.`for`(m)
 
     @Annotation.compilerWorkaround("2.9.1", 5070)
-    implicit def `for`[a](m: m[a]): ken.For[m, a] = new For[a] {
-        override def map[b](f: a => b): m[b] = outer.fmap(f)(m)
+    override implicit def `for`[a](m: m[a]): ken.For[m, a] = new ForProxy[a] {
+        override val selfFor = functorFor(m)
         override def flatMap[b](k: a => m[b]): m[b] = outer.op_>>=(m)(k)
     }
 
@@ -189,7 +188,6 @@ trait MonadProxy[m[+_]] extends Monad[m] with ApplicativeProxy[m] {
     override def liftM4[a1, a2, a3, a4, r](f: a1 => a2 => a3 => a4 => r)(m1: m[a1])(m2: m[a2])(m3: m[a3])(m4: m[a4]): m[r] = selfMonad.liftM4(f)(m1)(m2)(m3)(m4)
     override def liftM5[a1, a2, a3, a4, a5, r](f: a1 => a2 => a3 => a4 => a5 => r)(m1: m[a1])(m2: m[a2])(m3: m[a3])(m4: m[a4])(m5: m[a5]): m[r] = selfMonad.liftM5(f)(m1)(m2)(m3)(m4)(m5)
     override def ap[a, b](x: m[a => b])(y: m[a]): m[b] = selfMonad.ap(x)(y)
-    override implicit def `for`[a](m: m[a]): ken.For[m, a] = selfMonad.`for`(m)
 }
 
 
