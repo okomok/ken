@@ -106,7 +106,7 @@ object IO extends MonadControlIO[IO] with ThisIsInstance {
     val writeFile: FilePath => String => IO[Unit] = f => txt => returnIO {
         val fw = new java.io.FileWriter(f)
         try {
-            fw.write(List.toJString(txt))
+            fw.write(txt.asJString)
         } finally {
             fw.close()
         }
@@ -115,7 +115,7 @@ object IO extends MonadControlIO[IO] with ThisIsInstance {
     val appendFile: FilePath => String => IO[Unit] = f => txt => returnIO {
         val fw = new java.io.FileWriter(f, True)
         try {
-            fw.write(List.toJString(txt))
+            fw.write(txt.asJString)
         } finally {
             fw.close()
         }
@@ -125,7 +125,7 @@ object IO extends MonadControlIO[IO] with ThisIsInstance {
     //
     lazy val ioError: IOError => IO[Nothing] = err => IOError.throwIO(err)
 
-    lazy val userError: String => IOError = str => IOError(new java.io.IOException(List.toJString(str)))
+    lazy val userError: String => IOError = str => IOError(new java.io.IOException(str.asJString))
 
     def `catch`[a](io: IO[a])(h: IOError => IO[a]): IO[a] = IOError.`catch`(io)(h)
 

@@ -42,8 +42,12 @@ sealed abstract class List[+a] extends Up[List[a]] {
         }
     }
 
+    final def asJString[b >: a](implicit ev: List[b] =:= String): JString = {
+        List.foldl((sb: StringBuilder) => (c: Char) => sb += c)(new StringBuilder)(ev(this)).toString
+    }
+
     final def breakOut[To](implicit bf: scala.collection.generic.CanBuildFrom[Nothing, a, To]): To = {
-        List.foldl[scala.collection.mutable.Builder[a, To], a](b => x => seq(b += x)(b))(bf())(this).result
+        List.foldl((b: scala.collection.mutable.Builder[a, To]) => (x: a) => b += x)(bf())(this).result
     }
 
     final def toScalaList: scala.List[a] = breakOut[scala.List[a]]
@@ -506,13 +510,11 @@ object List extends ListAs with MonadPlus[List] with Traversable[List] with This
 
     // Functions on strings
     //
-    val toJString: String => JString = cs => foldl[StringBuilder, Char](sb => c => { sb += c; sb })(new StringBuilder)(cs).toString
-
-    val lines: String => List[String] = s => map(fromString)(from(toJString(s).split("\\r?\\n")))
+    val lines: String => List[String] = s => map(fromString)(from(s.asJString.split("\\r?\\n")))
 
     val unlines: List[String] => String = ls => concatMap(op_!++:("\n"))(ls)
 
-    val words: String => List[String] = s => map(fromString)(from(toJString(s).split("\\W+")))
+    val words: String => List[String] = s => map(fromString)(from(s.asJString.split("\\W+")))
 
     val unwords: List[String] => String = {
         case Nil => ""

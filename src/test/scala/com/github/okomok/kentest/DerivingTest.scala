@@ -19,12 +19,12 @@ class DerivingTest extends org.scalatest.junit.JUnit3Suite {
     def testDerivingShow {
         val ws = Show[WrapSimple[Int]]
         expect(false)(ws.isInstanceOf[Show.Default[_]])
-        expect("WrapSimple(3,5)")(List.toJString(ws.show(WrapSimple(3, 5))))
+        expect("WrapSimple(3,5)")(ws.show(WrapSimple(3, 5)).asJString)
     }
 
     def testDerivingShowList {
         val ws = Show[WrapSimple[String]]
-        expect("WrapSimple(\"hello\",\"bye\")")(List.toJString(ws.show(WrapSimple[String]("hello", "bye"))))
+        expect("WrapSimple(\"hello\",\"bye\")")(ws.show(WrapSimple[String]("hello", "bye")).asJString)
     }
 
     def testDerivingEq {

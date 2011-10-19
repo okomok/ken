@@ -17,7 +17,7 @@ import RealWorld._
 
 
 final case class Str(override val old: String) extends NewtypeOf[String] {
-    override def toString: JString  = List.toJString(get)
+    override def toString: JString  = old.asJString
 }
 
 

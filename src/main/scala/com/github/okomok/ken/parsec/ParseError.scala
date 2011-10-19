@@ -13,7 +13,7 @@ package parsec
 
 
 final case class ParseError(pos: SourcePos, msgs: List[Message_]) {
-    override def toString: JString = List.toJString(ParseError.show(this))
+    override def toString: JString = ParseError.show(this).asJString
 }
 
 

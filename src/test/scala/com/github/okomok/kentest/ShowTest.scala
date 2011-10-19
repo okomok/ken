@@ -13,37 +13,37 @@ import com.github.okomok.ken._
 class ShowTest extends org.scalatest.junit.JUnit3Suite {
 
     def testTrivial {
-        val s = List.toJString(Show.show(List(1,2)))
+        val s = Show.show(List(1,2)).asJString
         expect("List(1,2)")(s)
     }
 
     def testListNothing {
-        val s = List.toJString(Show.show(Nil.up))
+        val s = Show.show(Nil.up).asJString
         expect("Nil")(s)
     }
 
     def testNilType {
-        val s = List.toJString(Show.show(Nil))
+        val s = Show.show(Nil).asJString
         expect("Nil")(s)
     }
 
     def testNested {
-        val s = List.toJString(Show.show(List(List(1,2), List(3,4,5))))
+        val s = Show.show(List(List(1,2), List(3,4,5))).asJString
         expect("List(List(1,2),List(3,4,5))")(s)
     }
 
     def testString_1 {
-        val s = List.toJString(Show.show(List('a')))
+        val s = Show.show(List('a')).asJString
         expect("\"a\"")(s)
     }
 
     def testString_2 {
-        val s = List.toJString(Show.show(List('a','b')))
+        val s = Show.show(List('a','b')).asJString
         expect("\"ab\"")(s)
     }
 
     def testNestedString_ {
-        val s = List.toJString((Show.show(List(List('1','2'), List('3','4','5')))))
+        val s = Show.show(List(List('1','2'), List('3','4','5'))).asJString
         expect("List(\"12\",\"345\")")(s)
     }
 

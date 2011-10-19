@@ -54,7 +54,7 @@ object Char extends Bounded[Char] with Enum[Char] with Eq.Default[Char] with Ord
     // Utilities
     //
     val matches: String => Char => Bool = {
-        str => ch => java.lang.String.valueOf(ch).matches(List.toJString(str))
+        str => ch => java.lang.String.valueOf(ch).matches(str.asJString)
     }
 
     val isAscii: Char => Bool = ch => ch < 128

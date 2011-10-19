@@ -64,7 +64,7 @@ class IOTailcallTest extends org.scalatest.junit.JUnit3Suite {
 
         def tailrec[a](io: => IO[a]): IO[a] = IO { s => IOCall(io) }
 
-        val putStrLn: String => IO[Unit] = str => IO { s => IODone(Predef.println(List.toJString(str))) }
+        val putStrLn: String => IO[Unit] = str => IO { s => IODone(Predef.println(str.asJString)) }
     }
 */
     // Overflow way

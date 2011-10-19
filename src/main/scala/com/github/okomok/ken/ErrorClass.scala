@@ -52,7 +52,7 @@ sealed trait ErrorClassInstance { this: ErrorClass.type =>
     }
 
     implicit def ofThrowable[x <: Throwable](implicit i: ClassManifest[x]): ErrorClass[x] = new ErrorClass[x] {
-        override val strMsg: strMsg = msg => i.erasure.getConstructor(classOf[JString]).newInstance(List.toJString(msg)).asInstanceOf[x]
+        override val strMsg: strMsg = msg => i.erasure.getConstructor(classOf[JString]).newInstance(msg.asJString).asInstanceOf[x]
     }
 }
 

@@ -13,7 +13,7 @@ package parsec
 
 
 final case class SourcePos(name: SourceName, line: Line, column: Column) {
-    override def toString = List.toJString(SourcePos.show(this))
+    override def toString = SourcePos.show(this).asJString
 }
 
 

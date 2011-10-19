@@ -73,7 +73,7 @@ package object ken {
     @Annotation.ceremonial("useless in Scala")
     implicit def _asTypeOf_[a](x: a): Op_asTypeOf_[a] = new Op_asTypeOf_(x)
 
-    val error: String => Nothing = { msg => throw new java.lang.Error(List.toJString(msg)) }
+    val error: String => Nothing = { msg => throw new java.lang.Error(msg.asJString) }
 
     def undefined: Nothing = throw new java.lang.Error("undefined")
 
