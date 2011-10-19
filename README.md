@@ -36,13 +36,14 @@
         val main_ = IO.print { State.eval(playGame("abcaaacbbcabbab"))(startState) }
     }
 
-The current status is pre-alpha.
+The current status is alpha.
 
 
 
 ## Rationale
 
 * Foolishly honest port of Haskell standard libraries.
+* Variance-aware.
 * Pulling type-class instances explicitly so that wildcard imports are removed.
 * Type-level functions for partially-applied types.
 
