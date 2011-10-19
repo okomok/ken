@@ -26,25 +26,12 @@ trait Show[-a] extends Typeclass0[a] {
     def show: show = x => shows(x)("")
 
     type showList = List[a] => ShowS
-    def showList: showList = ls => s => showList__(shows)(ls)(s)
+    def showList: showList = ls => s => Show.showList__(shows)(ls)(s)
 
     // Extra
     //
     type shows = a => ShowS
     def shows: shows = x => showsPrec(0)(x)
-
-    private[this] def showList__(showx: a => ShowS)(xs: List[a]): ShowS = s => {
-        xs match {
-            case Nil => "Nil" ++: s
-            case x :: xs => {
-                def showl(ys: List[a]): String = ys match {
-                    case Nil => ')' :: s
-                    case y :: ys => ',' :: showx(y)(showl(ys.!))
-                }
-                "List(" ++: showx(x)(showl(xs.!))
-            }
-        }
-    }
 }
 
 
@@ -77,10 +64,25 @@ object Show extends ShowInstance with ShowShortcut {
     val showParen: Bool => ShowS => ShowS = b => p => if (b) showChar('(') `.` p `.` showChar(')') else p
     val showSpace: ShowS = xs => ' ' :: xs
 
+    def showList__[a](showx: a => ShowS)(xs: List[a]): ShowS = s => {
+        xs match {
+            case Nil => "Nil" ++: s
+            case x :: xs => {
+                def showl(ys: List[a]): String = ys match {
+                    case Nil => ')' :: s
+                    case y :: ys => ',' :: showx(y)(showl(ys.!))
+                }
+                "List(" ++: showx(x)(showl(xs.!))
+            }
+        }
+    }
+
     trait Default[a] extends Show[a] {
         override val showsPrec: showsPrec = _ => a => showString(a.toString)
     }
 
+    // Details
+    //
     private[ken] val show_tuple: List[ShowS] => ShowS = ss => {
         showChar('(') `.` List.foldr1((s: ShowS) => (r: Lazy[ShowS]) => s `.` showChar(',') `.` r)(ss) `.` showChar(')')
     }
@@ -90,6 +92,8 @@ object Show extends ShowInstance with ShowShortcut {
     }
 
     private[ken] val show_prefix: Any => ShowS = x => xs => List.takeWhile[Char](_ /== '(')(x.toString) ++: xs
+
+    private[ken] def showFloat[a](x: a): ShowS = showString(x.toString)
 }
 
 
@@ -104,6 +108,8 @@ private[ken] sealed trait ShowInstance1 extends ShowInstance0 { this: Show.type 
     // Primitives
     //
     implicit val ofChar: Show[Char] = Char
+    implicit val ofDouble: Show[Double] = Double
+    implicit val ofFloat: Show[Float] = Float
     implicit val ofInt: Show[Int] = Int
     implicit val ofInteger: Show[Integer] = _Integer
 

@@ -56,4 +56,14 @@ class FloatTest extends org.scalatest.junit.JUnit3Suite {
         expect(0.0D)(encodeFloat(BigInt(0L))(19))
         expect(0.0D)(encodeFloat(BigInt(0L))(-19))
     }
+
+    def testShow {
+        val i = Show[Float.type]
+        import i._
+        expect("Infinity")(showsPrec(3)(1F/0F)(Nil).asJString)
+        expect("31.15")(showsPrec(3)(31.15F)(Nil).asJString)
+        expect("31.15")(showsPrec(7)(31.15F)(Nil).asJString)
+        expect("-31.15")(showsPrec(3)(-31.15F)(Nil).asJString)
+        expect("(-31.15)")(showsPrec(7)(-31.15F)(Nil).asJString)
+    }
 }

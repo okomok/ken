@@ -103,12 +103,12 @@ object Int extends Bounded[Int] with Enum[Int] with Eq.Default[Int]
     // Show
     override val showsPrec: showsPrec = showSignedInt
 
-    private lazy val showSignedInt: Int => Int => ShowS = p => n => r => {
+    private def showSignedInt: Int => Int => ShowS = p => n => r => {
         if (n < 0 && p > 6) '(' :: itos(n)(')' :: r)
         else itos(n)(r)
     }
 
-    private lazy val itos: Int => String => String = n => cs => {
+    private val itos: Int => String => String = n => cs => {
         n.toString ++: cs
     }
 }

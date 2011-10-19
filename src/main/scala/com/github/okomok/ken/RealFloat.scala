@@ -91,6 +91,13 @@ trait RealFloat[a] extends RealFrac[a] with Floating[a] {
             x + y
         }
     }
+
+    final val showFloat: a => ShowS = x => Show.showString(x.toString)
+
+    final val showSignedFloat: (a => ShowS) => Int => a => ShowS = showPos => p => x => {
+        if (x < 0 || isNegativeZero(x)) Show.showParen(p > 6)(Show.showChar('-') `.` showPos(-x))
+        else showPos(x)
+    }
 }
 
 

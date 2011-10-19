@@ -19,7 +19,7 @@ import java.lang.{Double => JDouble}
 import scala.annotation.tailrec
 
 
-object Double extends Enum[Double] with Eq.Default[Double] with RealFloat[Double] with Random[Double] {
+object Double extends Enum[Double] with Eq.Default[Double] with RealFloat[Double] with Random[Double] with Show[Double] {
     // Overrides
     //
     // Ord
@@ -110,6 +110,9 @@ object Double extends Enum[Double] with Eq.Default[Double] with RealFloat[Double
     // Random
     override def randomR[g](ival: (a, a))(g: g)(implicit i: RandomGen[g]): (a, g) = Random.randomIvalDouble(ival)(id[Double])(g)
     override def random[g](g: g)(implicit i: RandomGen[g]): (a, g) = randomR(0D, 1D)(g)
+    // Show
+    override val showsPrec: showsPrec = x => showSignedFloat(showFloat)(x)
+    override val showList: showList = Show.showList__(showsPrec(0))
 
     // Details
     //
