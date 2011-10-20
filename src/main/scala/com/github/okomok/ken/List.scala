@@ -689,16 +689,6 @@ object List extends ListAs with MonadPlus[List] with Traversable[List] with This
 
 
 private[ken] sealed trait ListAs { this: List.type =>
-    implicit def _asShow[a](implicit i: Show[a]): Show[List[a]] = new Show[List[a]] {
-        override val showsPrec: showsPrec = _ => x => i.showList(x)
-    }
-
-    implicit def _asMonoid[a]: Monoid[List[a]] = new Monoid[List[a]] {
-        private type m = List[a]
-        override val mempty: m = Nil
-        override val mappend: m => Lazy[m] => m = op_++:[a]
-    }
-
     implicit def _asEq[a](implicit i: Eq[a]): Eq[List[a]] = new Eq[List[a]] {
         override val op_=== : op_=== = {
             @tailrec
@@ -735,6 +725,16 @@ private[ken] sealed trait ListAs { this: List.type =>
     implicit val _NilAsOrd: Ord[List[Nothing]] = new Ord[List[Nothing]] {
         override val op_=== : op_=== = x => y => True
         override val compare: compare = x => y => EQ
+    }
+
+    implicit def _asShow[a](implicit i: Show[a]): Show[List[a]] = new Show[List[a]] {
+        override val showsPrec: showsPrec = _ => x => i.showList(x)
+    }
+
+    implicit def _asMonoid[a]: Monoid[List[a]] = new Monoid[List[a]] {
+        private type m = List[a]
+        override val mempty: m = Nil
+        override val mappend: m => Lazy[m] => m = op_++:[a]
     }
 
     //implicit def _asScalaOrdering[a](implicit i: scala.Ordering[a]): scala.Ordering[List[a]] = Ord.asScalaOrdering(_asOrd[a])

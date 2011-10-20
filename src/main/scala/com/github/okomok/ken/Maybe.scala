@@ -22,7 +22,7 @@ case object Nothing extends Maybe[Nothing]
 final case class Just[+a](x: a) extends Maybe[a]
 
 
-object Maybe extends MonadPlus[Maybe] with Traversable[Maybe] with ThisIsInstance {
+object Maybe extends MaybeAs with MonadPlus[Maybe] with Traversable[Maybe] with ThisIsInstance {
     // Overrides
     //
     // Functor
@@ -116,6 +116,44 @@ object Maybe extends MonadPlus[Maybe] with Traversable[Maybe] with ThisIsInstanc
                 case Nothing => rs
                 case Just(r) => r :: rs
             }
+        }
+    }
+}
+
+
+private[ken] sealed trait MaybeAs { this: Maybe.type =>
+    implicit def _asEq[a](implicit i: Eq[a]): Eq[Maybe[a]] = new Eq[Maybe[a]] {
+        override val op_=== : op_=== = x => y => (x, y) match {
+            case (Nothing, Nothing) => True
+            case (Nothing, _) => False
+            case (_, Nothing) => False
+            case (Just(x), Just(y)) => i.op_===(x)(y)
+        }
+    }
+
+    implicit def _asOrd[a](implicit i: Ord[a]): Ord[Maybe[a]] = new Ord[Maybe[a]] with EqProxy[Maybe[a]] {
+        override val selfEq = _asEq(i)
+        override val compare: compare = x => y => (x, y) match {
+            case (Nothing, Nothing) => EQ
+            case (Nothing, _) => LT
+            case (_, Nothing) => GT
+            case (Just(x), Just(y)) => i.compare(x)(y)
+        }
+    }
+
+    implicit def _asShow[a](implicit i: Show[a]): Show[Maybe[a]] = new Show[Maybe[a]] {
+        override val showsPrec: showsPrec = _ => {
+            case Nothing => Show.showString("Nothing")
+            case Just(x) => Show.showString("Just(") `.` i.shows(x) `.` Show.showChar(')')
+        }
+    }
+
+    implicit def _asMonoid[a](implicit i: Semigroup[a]): Monoid[Maybe[a]] = new Monoid[Maybe[a]] {
+        override val mempty: mempty = Nothing
+        override val mappend: mappend = m1 => m2 => (m1, m2.!) match {
+            case (Nothing, m) => m
+            case (m, Nothing) => m
+            case (Just(m1), Just(m2)) => Just(i.op_<>:(m1)(m2))
         }
     }
 }

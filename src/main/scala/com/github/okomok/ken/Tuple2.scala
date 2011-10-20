@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-object Tuple2 extends Kind.qcurry2[Tuple2] {
+object Tuple2 extends Tuple2As with Kind.qcurry2[Tuple2] {
 
     // Prelude
     //
@@ -27,10 +27,21 @@ object Tuple2 extends Kind.qcurry2[Tuple2] {
     def swap[a, b](p: (a, b)): (b, a) = p match {
         case (x, y) => (y, x)
     }
+}
 
-    // Instances
-    //
-    private[ken] def _asMonoid[a, b](implicit ma: Monoid[a], mb: Monoid[b]): Monoid[(a, b)] = new Monoid[(a, b)] {
+private[ken] sealed trait Tuple2As { this: Tuple2.type =>
+    private[ken] def _asSemigroup[x, y](implicit sx: Semigroup[x], sy: Semigroup[y]): Semigroup[(x, y)] = new Semigroup[(x, y)] {
+        private type a = (x, y)
+        override val op_<>: : op_<>: = x1 => x2 => (x1, x2.!) match {
+            case ((a1, b1), (a2, b2)) => (sx.op_<>:(a1)(a2), sy.op_<>:(b1)(b2))
+        }
+        override def times1p[n](n: n)(x0: a)(implicit j: Integral[n]): a = x0 match {
+            case (a, b) => (sx.times1p(n)(a), sy.times1p(n)(b))
+        }
+    }
+
+    private[ken] def _asMonoid[a, b](implicit ma: Monoid[a], mb: Monoid[b]): Monoid[(a, b)] = new Monoid[(a, b)] with SemigroupProxy[(a, b)] {
+        override val selfSemigroup = _asSemigroup(ma, mb)
         override val mempty: mempty = (ma.mempty, mb.mempty)
         override val mappend: mappend = x1 => x2 => (x1, x2.!) match {
             case ((a1, b1), (a2, b2)) => (ma.mappend(a1)(a2), mb.mappend(b1)(b2))

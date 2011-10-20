@@ -14,7 +14,7 @@ package com.github.okomok
 package ken
 
 
-trait Monoid[m] extends Typeclass0[m] { outer =>
+trait Monoid[m] extends Semigroup[m] { outer =>
     final val asMonoid: Monoid[apply0] = this
 
     // Core
@@ -27,6 +27,10 @@ trait Monoid[m] extends Typeclass0[m] { outer =>
 
     type mconcat = List[m] => m
     def mconcat: mconcat = { x => List.foldr(mappend)(mempty)(x) }
+
+    // Overrides
+    //
+    override def op_<>: : op_<>: = mappend
 
     // Extra
     //
@@ -45,8 +49,9 @@ trait Monoid[m] extends Typeclass0[m] { outer =>
 }
 
 
-trait MonoidProxy[m] extends Monoid[m] {
+trait MonoidProxy[m] extends Monoid[m] with SemigroupProxy[m] {
     def selfMonoid: Monoid[m]
+    override def selfSemigroup: Semigroup[m] = selfMonoid
 
     override def mempty: mempty = selfMonoid.mempty
     override def mappend: mappend = selfMonoid.mappend
@@ -59,7 +64,9 @@ trait MonoidProxy[m] extends Monoid[m] {
 object Monoid extends MonoidInstance with MonoidShortcut with MonoidType {
     def apply[m <: Kind.Function0](implicit i: Monoid[m#apply0]): Monoid[m#apply0] = i
 
-    def deriving[nt <: Kind.Newtype0](implicit j: Newtype0[nt#apply0, nt#oldtype0, _], i: Monoid[nt#oldtype0]): Monoid[nt#apply0] = new Monoid[nt#apply0] {
+    def deriving[nt <: Kind.Newtype0](implicit j: Newtype0[nt#apply0, nt#oldtype0, _], i: Monoid[nt#oldtype0]): Monoid[nt#apply0] = new Monoid[nt#apply0] with SemigroupProxy[nt#apply0] {
+        override val selfSemigroup = Semigroup.deriving[nt]
+
         override val mempty: mempty = j.newOf(i.mempty)
         override val mappend: mappend = x => y => j.newOf(i.mappend(j.oldOf(x))(j.oldOf(y)))
         override val mconcat: mconcat = xs => j.newOf(i.mconcat(List.map[nt#apply0, nt#oldtype0](j.oldOf)(xs)))
@@ -97,14 +104,14 @@ sealed trait MonoidType { this: Monoid.type =>
     final case class Dual[+a](override val old: a) extends NewtypeOf[a]
 
     object Dual {
-        implicit def _asNewtype0[a]: Newtype0[Dual[a], a, Kind.Nil] = new Newtype0[Dual[a], a, Kind.Nil] {
+        implicit def _asNewtype0[a]: Newtype0[Dual[a], a, Eq ^:: Ord ^:: Show ^:: Bounded ^:: Kind.Nil] = new Newtype0[Dual[a], a, Eq ^:: Ord ^:: Show ^:: Bounded ^:: Kind.Nil] {
             override val newOf: newOf = ot => Dual(ot)
-            override val oldOf: oldOf = nt => nt.get
+            override val oldOf: oldOf = nt => nt.old
         }
 
         implicit def _asMonoid[a](implicit i: Monoid[a]): Monoid[Dual[a]] = new Monoid[Dual[a]] {
             override val mempty: mempty = Dual(i.mempty)
-            override val mappend: mappend = x => y => Dual(i.mappend(y.get)(x.get))
+            override val mappend: mappend = x => y => Dual(i.mappend(y.old)(x.old))
         }
     }
 
@@ -112,16 +119,20 @@ sealed trait MonoidType { this: Monoid.type =>
     //
     final case class All(override val old: Bool) extends NewtypeOf[Bool]
 
-    object All extends Newtype0[All, Bool, Kind.Nil] with ThisIsInstance {
+    object All extends Newtype0[All, Bool, Eq ^:: Ord ^:: Show ^:: Bounded ^:: Kind.Nil] with ThisIsInstance {
         // Overrides
         //
         // Newtype0
         override val newOf: newOf = ot => All(ot)
-        override val oldOf: oldOf = nt => nt.get
+        override val oldOf: oldOf = nt => nt.old
 
         implicit val _asMonoid: Monoid[All] = new Monoid[All] {
+            // Semigroup
+            private type a = All
+            override def times1p[n](n: n)(a: a)(implicit j: Integral[n]): a = a
+            // Monoid
             override val mempty: mempty = All(True)
-            override val mappend: mappend = x => y => All(x.get && y.get)
+            override val mappend: mappend = x => y => All(x.old && y.old)
         }
     }
 
@@ -129,16 +140,20 @@ sealed trait MonoidType { this: Monoid.type =>
     //
     final case class Any_(override val old: Bool) extends NewtypeOf[Bool]
 
-    object Any_  extends Newtype0[Any_, Bool, Kind.Nil] with ThisIsInstance {
+    object Any_  extends Newtype0[Any_, Bool, Eq ^:: Ord ^:: Show ^:: Bounded ^:: Kind.Nil] with ThisIsInstance {
         // Overrrides
         //
         // Newtype0
         override val newOf: newOf = ot => Any_(ot)
-        override val oldOf: oldOf = nt => nt.get
+        override val oldOf: oldOf = nt => nt.old
 
         implicit val _asMonoid: Monoid[Any_] = new Monoid[Any_] {
+            // Semigroup
+            private type a = Any_
+            override def times1p[n](n: n)(a: a)(implicit j: Integral[n]): a = a
+            // Monoid
             override val mempty: mempty = Any_(False)
-            override val mappend: mappend = x => y => Any_(x.get || y.get)
+            override val mappend: mappend = x => y => Any_(x.old || y.old)
         }
     }
 
@@ -147,15 +162,15 @@ sealed trait MonoidType { this: Monoid.type =>
     final case class Sum[a](override val old: a) extends NewtypeOf[a]
 
     object Sum {
-        implicit def _asNewtype0[a]: Newtype0[Sum[a], a, Kind.Nil] = new Newtype0[Sum[a], a, Kind.Nil] {
+        implicit def _asNewtype0[a]: Newtype0[Sum[a], a, Eq ^:: Ord ^:: Show ^:: Bounded ^:: Kind.Nil] = new Newtype0[Sum[a], a, Eq ^:: Ord ^:: Show ^:: Bounded ^:: Kind.Nil] {
             override val newOf: newOf = ot => Sum(ot)
-            override val oldOf: oldOf = nt => nt.get
+            override val oldOf: oldOf = nt => nt.old
         }
 
         implicit def _asMonoid[a](implicit i: Num[a]): Monoid[Sum[a]] = new Monoid[Sum[a]] {
             import i.+
             override val mempty: mempty = Sum(i.fromIntegral(0))
-            override val mappend: mappend = x => y => Sum(x.get + y.get)
+            override val mappend: mappend = x => y => Sum(x.old + y.old)
         }
     }
 
@@ -164,15 +179,61 @@ sealed trait MonoidType { this: Monoid.type =>
     final case class Product[a](override val old: a) extends NewtypeOf[a]
 
     object Product {
-        implicit def _asNewtype0[a]: Newtype0[Product[a], a, Kind.Nil] = new Newtype0[Product[a], a, Kind.Nil] {
+        implicit def _asNewtype0[a]: Newtype0[Product[a], a, Eq ^:: Ord ^:: Show ^:: Bounded ^:: Kind.Nil] = new Newtype0[Product[a], a, Eq ^:: Ord ^:: Show ^:: Bounded ^:: Kind.Nil] {
             override val newOf: newOf = ot => Product(ot)
-            override val oldOf: oldOf = nt => nt.get
+            override val oldOf: oldOf = nt => nt.old
         }
 
         implicit def _asMonoid[a](implicit i: Num[a]): Monoid[Product[a]] = new Monoid[Product[a]] {
             import i.*
             override val mempty: mempty = Product(i.fromIntegral(1))
-            override val mappend: mappend = x => y => Product(x.get * y.get)
+            override val mappend: mappend = x => y => Product(x.old * y.old)
+        }
+    }
+
+    // First
+    //
+    final case class First[a](override val old: Maybe[a]) extends NewtypeOf[Maybe[a]]
+
+    object First {
+        implicit def _asNewtype0[a]: Newtype0[First[a], Maybe[a], Eq ^:: Ord ^:: Show ^:: Kind.Nil] = new Newtype0[First[a], Maybe[a], Eq ^:: Ord ^:: Show ^:: Kind.Nil] {
+            override val newOf: newOf = ot => First(ot)
+            override val oldOf: oldOf = nt => nt.old
+        }
+
+        implicit def _asMonoid[z]: Monoid[First[z]] = new Monoid[First[z]] {
+            // Semigroup
+            private type a = First[z]
+            override def times1p[n](n: n)(a: a)(implicit j: Integral[n]): a = a
+            // Monoid
+            override val mempty: mempty = First(Nothing)
+            override val mappend: mappend = x => y => (x, y.!) match {
+                case (r @ First(Just(_)), _) => r
+                case (First(Nothing), r) => r
+            }
+        }
+    }
+
+    // Last
+    //
+    final case class Last[a](override val old: Maybe[a]) extends NewtypeOf[Maybe[a]]
+
+    object Last {
+        implicit def _asNewtype0[a]: Newtype0[Last[a], Maybe[a], Eq ^:: Ord ^:: Show ^:: Kind.Nil] = new Newtype0[Last[a], Maybe[a], Eq ^:: Ord ^:: Show ^:: Kind.Nil] {
+            override val newOf: newOf = ot => Last(ot)
+            override val oldOf: oldOf = nt => nt.old
+        }
+
+        implicit def _asMonoid[z]: Monoid[Last[z]] = new Monoid[Last[z]] {
+            // Semigroup
+            private type a = Last[z]
+            override def times1p[n](n: n)(a: a)(implicit j: Integral[n]): a = a
+            // Monoid
+            override val mempty: mempty = Last(Nothing)
+            override val mappend: mappend = x => y => (x, y.!) match {
+                case (_, r @ Last(Just(_))) => r
+                case (r, Last(Nothing)) => r
+            }
         }
     }
 }

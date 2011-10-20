@@ -11,6 +11,28 @@ import com.github.okomok.ken._
 
 
 class MaybeTest extends org.scalatest.junit.JUnit3Suite {
+
+    def testEq {
+        expect(true)(Eq.op_===(Nothing)(Nothing))
+        expect(false)(Eq.op_===(Just(1))(Just(2)))
+        expect(true)(Eq.op_===(Just(10))(Just(10)))
+    }
+
+    def testOrd {
+        val i = Ord[Maybe[Int]]
+        import i._
+        expect(false)(Nothing < Nothing)
+        expect(true)(Just(1) < Just(2))
+        expect(true)(Nothing < Just(10))
+        expect(false)(Nothing > Just(10))
+    }
+
+    def testShow {
+        val i = Show[Maybe[String]]
+        expect("Nothing")(i.show(Nothing).asJString)
+        expect("Just(\"abcd\")")(i.show(Just[String]("abcd")).asJString)
+    }
+
     /*
     def testStrongMonadTObsolete {
         import IO.MaybeT // MaybeT[a] <:< Identity[IO[Maybe[a]]]

@@ -8,15 +8,17 @@ package com.github.okomok
 package ken
 
 
-object Function extends ArrowChoice[Function] with ArrowApply[Function] with ArrowLoop[Function] with Kind.qcurry2[Function] {
+object Function extends FunctionAs with
+    ArrowChoice[Function] with ArrowApply[Function] with ArrowLoop[Function] with Kind.qcurry2[Function]
+{
     def fix[a](f: Lazy[a] => a): a = {
         lazy val x: a = f(x)
         x
     }
 
-    def fixfun[a](f: (a => a) => a => a): a => a = { x => f(fixfun(f))(x) }
+    def fixfun[a](f: (a => a) => a => a): a => a = x => f(fixfun(f))(x)
 
-    def on[a, b, c](* : b => b => c)(f: a => b): a => a => c = { x => y => *(f(x))(f(y)) }
+    def on[a, b, c](* : b => b => c)(f: a => b): a => a => c = x => y => *(f(x))(f(y))
 
     // Overrides
     //
@@ -43,31 +45,36 @@ object Function extends ArrowChoice[Function] with ArrowApply[Function] with Arr
         //lazy val t: (c, d) = f(b, Lazy(t._2)) // scalac CRASH.
         //t._1
     }
+}
 
-    // Instances
-    //
+
+private[ken] sealed trait FunctionAs { this: Function.type =>
     private[ken] def _asMonadReader[z]: MonadReader[z, ({type m[+a] = z => a})#m] = new MonadReader[z, ({type m[+a] = z => a})#m] {
         // Functor
         private type f[+a] = z => a
         override def fmap[a, b](x: a => b)(y: f[a]): f[b] = x `.` y
         // Applicative
         override def pure[a](x: Lazy[a]): f[a] = const(x)
-        override def op_<*>[a, b](x: f[a => b])(y: f[a]): f[b] = { z => x(z)(y(z)) }
+        override def op_<*>[a, b](x: f[a => b])(y: f[a]): f[b] = z => x(z)(y(z))
         // Monad
         private type m[+a] = f[a]
         override def `return`[a](x: Lazy[a]): m[a] = const(x)
-        override def op_>>=[a, b](f: m[a])(k: a => m[b]): m[b] = { z => k(f(z))(z) }
+        override def op_>>=[a, b](f: m[a])(k: a => m[b]): m[b] = z => k(f(z))(z)
         // MonadReader
         override def ask: m[z] = id
         override def local[a](f: z => z)(m: m[a]): m[a] = m `.` f
     }
 
-    private[ken] def _asMonoid[z, b](implicit mb: Monoid[b]): Monoid[z => b] = new Monoid[z => b] {
+    private[ken] def _asSemigroup[z, b](implicit sb: Semigroup[b]): Semigroup[z => b] = new Semigroup[z => b] {
         private type m = z => b
+        override val op_<>: : m => Lazy[m] => m = f => g => { a => sb.op_<>:(f(a))(g(a)) }
+        override def times1p[n](n: n)(f: m)(implicit j: Integral[n]): m = e => sb.times1p(n)(f(e))(j)
+    }
+
+    private[ken] def _asMonoid[z, b](implicit mb: Monoid[b]): Monoid[z => b] = new Monoid[z => b] with SemigroupProxy[z => b] {
+        private type m = z => b
+        override val selfSemigroup = _asSemigroup[z, b](mb)
         override val mempty: m = _ => mb.mempty
-        override val mappend: m => Lazy[m] => m = { x => y =>
-            val y_ = y // scalac mistery
-            z => mb.mappend(x(z))(y_(z))
-        }
+        override val mappend: m => Lazy[m] => m = x => y => z => mb.mappend(x(z))(y(z))
     }
 }
