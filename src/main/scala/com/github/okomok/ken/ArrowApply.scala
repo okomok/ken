@@ -31,12 +31,6 @@ trait ArrowApply[a[-_, +_]] extends Arrow[a] {
             ((d: d) => (arr((_: Unit) => d) >>>: arr(Right(_: d).of[c, d]), ()))
         } >>>: app
     }
-
-    // Monads
-    //
-    final lazy val _arrowMonads = new _ArrowMonads[a](this)
-    type ArrowMonad[+b] = _arrowMonads._ArrowMonad[b]
-    final lazy val ArrowMonad = _arrowMonads._ArrowMonad
 }
 
 

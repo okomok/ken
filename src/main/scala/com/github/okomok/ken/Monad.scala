@@ -139,12 +139,6 @@ trait Monad[m[+_]] extends Applicative[m] { outer =>
         override def flatMap[b](k: a => m[b]): m[b] = outer.op_>>=(m)(k)
     }
 
-    // Arrows
-    //
-    final lazy val _inKleislis = new _Kleislis[m](this)
-    type Kleisli[-a, +b] = _inKleislis._Kleisli[a, b]
-    final lazy val Kleisli = _inKleislis._Kleisli
-
     // Monad-control
     //
     def sequenceEither[e, a](x: Either[e, m[a]]): m[Either[e, a]] = {
