@@ -78,7 +78,7 @@ trait SemigroupProxy[a] extends Semigroup[a] {
 }
 
 
-object Semigroup extends SemigroupInstance with SemigroupShortcut {
+object Semigroup extends SemigroupInstance with SemigroupShortcut with SemigroupType {
     def apply[a <: Kind.Function0](implicit i: Semigroup[a#apply0]): Semigroup[a#apply0] = i
 
     def deriving[nt <: Kind.Newtype0](implicit j: Newtype0[nt#apply0, nt#oldtype0, _], i: Semigroup[nt#oldtype0]): Semigroup[nt#apply0] = new Semigroup[nt#apply0] {
@@ -104,6 +104,9 @@ sealed trait SemigroupInstance { this: Semigroup.type =>
 
 sealed trait SemigroupShortcut { this: Semigroup.type =>
     def op_<>:[a](x: a)(y: Lazy[a])(implicit i: Semigroup[a]): a = i.op_<>:(x)(y)
+    def sconcat[a](xs: List[a])(implicit i: Semigroup[a]): a = i.sconcat(xs)
+    def times1p[a, n](y0: n)(x0: a)(implicit i: Semigroup[a], j: Integral[n]): a = i.times1p(y0)(x0)(j)
+
     def cycle1[a](xs: a)(implicit i: Semigroup[a]): a = i.cycle1(xs)
 
     private[ken] class _Op_<>:[a](y: Lazy[a]) {
@@ -112,3 +115,89 @@ sealed trait SemigroupShortcut { this: Semigroup.type =>
     implicit def <>:[a](y: => a): _Op_<>:[a] = new _Op_<>:(y)
 }
 
+
+sealed trait SemigroupType { this: Semigroup.type =>
+
+    // Min
+    //
+    final case class Min[a](override val old: a) extends NewtypeOf[a]
+
+    object Min {
+        implicit def _asNewtype0[a]: Newtype0[Min[a], a, Eq ^:: Ord ^:: Bounded ^:: Show ^:: Kind.Nil] = new Newtype0[Min[a], a, Eq ^:: Ord ^:: Bounded ^:: Show ^:: Kind.Nil] {
+            override val newOf: newOf = ot => Min(ot)
+            override val oldOf: oldOf = nt => nt.old
+        }
+
+        implicit def _asSemigroup[z](implicit i: Ord[z]): Semigroup[Min[z]] = new Semigroup[Min[z]] {
+            private type a = Min[z]
+            override val op_<>: : op_<>: = a => b => Min(i.min(a.old)(b.old))
+            override def times1p[n](n: n)(a: a)(implicit j: Integral[n]): a = a
+        }
+
+        implicit def _asMonoid[z](implicit i: Ord[z], j: Bounded[z]): Monoid[Min[z]] = new Monoid[Min[z]] with SemigroupProxy[Min[z]] {
+            override val selfSemigroup = _asSemigroup(i)
+            override val mempty: mempty = Min(j.maxBound)
+            override val mappend = op_<>:
+        }
+    }
+
+    // Max
+    //
+    final case class Max[a](override val old: a) extends NewtypeOf[a]
+
+    object Max {
+        implicit def _asNewtype0[a]: Newtype0[Max[a], a, Eq ^:: Ord ^:: Bounded ^:: Show ^:: Kind.Nil] = new Newtype0[Max[a], a, Eq ^:: Ord ^:: Bounded ^:: Show ^:: Kind.Nil] {
+            override val newOf: newOf = ot => Max(ot)
+            override val oldOf: oldOf = nt => nt.old
+        }
+
+        implicit def _asSemigroup[z](implicit i: Ord[z]): Semigroup[Max[z]] = new Semigroup[Max[z]] {
+            private type a = Max[z]
+            override val op_<>: : op_<>: = a => b => Max(i.max(a.old)(b.old))
+            override def times1p[n](n: n)(a: a)(implicit j: Integral[n]): a = a
+        }
+
+        implicit def _asMonoid[z](implicit i: Ord[z], j: Bounded[z]): Monoid[Max[z]] = new Monoid[Max[z]] with SemigroupProxy[Max[z]] {
+            override val selfSemigroup = _asSemigroup(i)
+            override val mempty: mempty = Max(j.minBound)
+            override val mappend = op_<>:
+        }
+    }
+
+    // These are slightly different from those of Monoid.
+    //
+
+    // First
+    //
+    final case class First[a](override val old: a) extends NewtypeOf[a]
+
+    object First {
+        implicit def _asNewtype0[a]: Newtype0[First[a], a, Eq ^:: Ord ^:: Bounded ^:: Show ^:: Kind.Nil] = new Newtype0[First[a], a, Eq ^:: Ord ^:: Bounded ^:: Show ^:: Kind.Nil] {
+            override val newOf: newOf = ot => First(ot)
+            override val oldOf: oldOf = nt => nt.old
+        }
+
+        implicit def _asSemigroup[z]: Semigroup[First[z]] = new Semigroup[First[z]] {
+            private type a = First[z]
+            override val op_<>: : op_<>: = a => _ => a
+            override def times1p[n](n: n)(a: a)(implicit j: Integral[n]): a = a
+        }
+    }
+
+    // Last
+    //
+    final case class Last[a](override val old: a) extends NewtypeOf[a]
+
+    object Last {
+        implicit def _asNewtype0[a]: Newtype0[Last[a], a, Eq ^:: Ord ^:: Bounded ^:: Show ^:: Kind.Nil] = new Newtype0[Last[a], a, Eq ^:: Ord ^:: Bounded ^:: Show ^:: Kind.Nil] {
+            override val newOf: newOf = ot => Last(ot)
+            override val oldOf: oldOf = nt => nt.old
+        }
+
+        implicit def _asSemigroup[z]: Semigroup[Last[z]] = new Semigroup[Last[z]] {
+            private type a = Last[z]
+            override val op_<>: : op_<>: = _ => b => b
+            override def times1p[n](n: n)(a: a)(implicit j: Integral[n]): a = a
+        }
+    }
+}
