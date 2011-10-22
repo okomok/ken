@@ -26,8 +26,9 @@ trait Monad[m[+_]] extends Applicative[m] { outer =>
     // Overrides
     //
     // Applicative
-    override def pure[a](x: Lazy[a]): m[a] = `return`(x)
-    override def op_<*>[a, b](x: m[a => b])(y: m[a]): m[b] = {
+    private type f[+a] = m[a]
+    override def pure[a](x: Lazy[a]): f[a] = `return`(x)
+    override def op_<*>[a, b](x: f[a => b]): f[a] => f[b] = y => {
         x >>= { _x =>
             y >>= { _y =>
                 `return`(_x(_y))

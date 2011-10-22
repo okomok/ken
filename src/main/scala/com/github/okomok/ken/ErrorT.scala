@@ -177,7 +177,7 @@ private[ken] sealed trait ErrorTAs extends ErrorTAs1 { this: ErrorT.type =>
     implicit def _asMonadError[e, n[+_]](implicit i: Monad[n]): MonadError[e, apply2[e, n]#apply1] = new MonadError[e, apply2[e, n]#apply1] {
         // Functor
         private type f[+a] = ErrorT[e, n, a]
-        override def fmap[a, b](f: a => b)(m: f[a]): f[b] = ErrorT {
+        override def fmap[a, b](f: a => b): f[a] => f[b] = m => ErrorT {
             import i.`for`
             for {
                 a <- run(m)

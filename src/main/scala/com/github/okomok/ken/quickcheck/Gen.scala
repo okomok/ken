@@ -24,7 +24,7 @@ object Gen extends Monad[Gen] with ThisIsInstance {
     //
     // Functor
     private type f[+a] = Gen[a]
-    override def fmap[a, b](f: a => b)(g: f[a]): f[b] = Gen(r => n => f((g.get)(r)(n)))
+    override def fmap[a, b](f: a => b): f[a] => f[b] = g => Gen(r => n => f((g.get)(r)(n)))
     // Monad
     private type m[+a] = Gen[a]
     override def `return`[a](x: Lazy[a]): m[a] = Gen(_ => _ => x)

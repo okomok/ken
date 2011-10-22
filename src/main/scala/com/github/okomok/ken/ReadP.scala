@@ -92,7 +92,7 @@ object ReadP extends MonadPlus[ReadP] with ThisIsInstance {
     //
     // Functor
     private type f[+a] = ReadP[a]
-    override def fmap[a, b](h: a => b)(f: f[a]): f[b] = new ReadP[b] {
+    override def fmap[a, b](h: a => b): f[a] => f[b] = f => new ReadP[b] {
         override def apply[c](k: b => P[c]): P[c] = f(k `.` h)
     }
     // Monad

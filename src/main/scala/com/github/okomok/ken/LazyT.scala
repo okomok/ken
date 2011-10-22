@@ -132,7 +132,7 @@ private[ken] sealed trait LazyTAs extends LazyTAs1 { this: LazyT.type =>
     implicit def _asMonad[n[+_]](implicit i: Monad[n]): Monad[apply1[n]#apply1] with HighPriority = new Monad[apply1[n]#apply1] with HighPriority {
         // Functor
         private type f[+a] = LazyT[n, a]
-        override def fmap[a, b](f: a => b)(m: f[a]): f[b] = LazyT {
+        override def fmap[a, b](f: a => b): f[a] => f[b] = m => LazyT {
             import i.`for`
             for { a <- run(m) } yield Lazy(f(a.!))
         }

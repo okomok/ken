@@ -140,7 +140,7 @@ private[ken] sealed trait ReaderTAs extends ReaderTAs1 { this: ReaderT.type =>
     implicit def _asMonadReader[r, n[+_]](implicit i: Monad[n]): MonadReader[r, apply2[r, n]#apply1] = new MonadReader[r, apply2[r, n]#apply1] {
         // Functor
         private type f[+a] = ReaderT[r, n, a]
-        override def fmap[a, b](f: a => b)(m: f[a]): f[b] = ReaderT { r => {
+        override def fmap[a, b](f: a => b): f[a] => f[b] = m => ReaderT { r => {
             import i.`for`
             for { a <- run(m)(r) } yield f(a)
         } }

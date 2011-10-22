@@ -51,7 +51,7 @@ private[ken] sealed trait Tuple2As { this: Tuple2.type =>
     private[ken] def _asApplicative[z](implicit ma: Monoid[z]): Applicative[({type f[+a] = (z, a)})#f] = new Applicative[({type f[+a] = (z, a)})#f] {
         private type f[a] = (z, a)
         override def pure[a](x: Lazy[a]): f[a] = (ma.mempty, x)
-        override def op_<*>[a, b](a1: f[a => b])(a2: f[a]): f[b] = (a1, a2) match {
+        override def op_<*>[a, b](a1: f[a => b]): f[a] => f[b] = a2 => (a1, a2) match {
             case ((u, f), (v, x)) => (ma.mappend(u)(v), f(x))
         }
     }

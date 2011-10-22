@@ -20,21 +20,21 @@ trait Applicative[f[+_]] extends Functor[f] {
     // Core
     //
     def pure[a](x: Lazy[a]): f[a]
-    def op_<*>[a, b](x: f[a => b])(y: f[a]): f[b]
+    def op_<*>[a, b](x: f[a => b]): f[a] => f[b]
     def op_*>[a, b](x: f[a])(y: f[b]): f[b] = liftA2[a, b, b](const(id))(x)(y)
     def op_<*[a, b](x: f[a])(y: f[b]): f[a] = liftA2[a, b, a](const)(x)(y)
 
     // Overrides
     //
     // Functor
-    override def fmap[a, b](x: a => b)(y: f[a]): f[b] = pure(x) <*> y
+    override def fmap[a, b](x: a => b): f[a] => f[b] = y => pure(x) <*> y
 
     // Extra
     //
     def op_<**>[a, b](x: f[a])(y: f[a => b]): f[b] = liftA2[a, a => b, b](flip(op_@))(x)(y)
-    def liftA[a, b](x: a => b)(y: f[a]): f[b] = pure(x) <*> y
-    def liftA2[a, b, c](x: a => b => c)(y: f[a])(z: f[b]): f[c] = x <@> y <*> z
-    def liftA3[a, b, c, d](x: a => b => c => d)(y: f[a])(z: f[b])(w: f[c]): f[d] = x <@> y <*> z <*> w
+    def liftA[a, b](x: a => b): f[a] => f[b] = y => pure(x) <*> y
+    def liftA2[a, b, c](x: a => b => c): f[a] => f[b] => f[c] = y => z => x <@> y <*> z
+    def liftA3[a, b, c, d](x: a => b => c => d): f[a] => f[b] => f[c] => f[d] = y => z => w => x <@> y <*> z <*> w
 
     // Operators
     //
@@ -60,14 +60,14 @@ trait ApplicativeProxy[f[+_]] extends Applicative[f] with FunctorProxy[f] {
     override def selfFunctor: Functor[f] = selfApplicative
 
     override def pure[a](x: Lazy[a]): f[a] = selfApplicative.pure(x)
-    override def op_<*>[a, b](x: f[a => b])(y: f[a]): f[b] = selfApplicative.op_<*>(x)(y)
+    override def op_<*>[a, b](x: f[a => b]): f[a] => f[b] = selfApplicative.op_<*>(x)
     override def op_*>[a, b](x: f[a])(y: f[b]): f[b] = selfApplicative.op_*>(x)(y)
     override def op_<*[a, b](x: f[a])(y: f[b]): f[a] = selfApplicative.op_<*(x)(y)
 
     override def op_<**>[a, b](x: f[a])(y: f[a => b]): f[b] = selfApplicative.op_<**>(x)(y)
-    override def liftA[a, b](x: a => b)(y: f[a]): f[b] = selfApplicative.liftA(x)(y)
-    override def liftA2[a, b, c](x: a => b => c)(y: f[a])(z: f[b]): f[c] = selfApplicative.liftA2(x)(y)(z)
-    override def liftA3[a, b, c, d](x: a => b => c => d)(y: f[a])(z: f[b])(w: f[c]): f[d] = selfApplicative.liftA3(x)(y)(z)(w)
+    override def liftA[a, b](x: a => b): f[a] => f[b] = selfApplicative.liftA(x)
+    override def liftA2[a, b, c](x: a => b => c): f[a] => f[b] => f[c] = selfApplicative.liftA2(x)
+    override def liftA3[a, b, c, d](x: a => b => c => d): f[a] => f[b] => f[c] => f[d] = selfApplicative.liftA3(x)
 }
 
 
@@ -79,7 +79,7 @@ object Applicative {
         override val selfFunctor = Functor.deriving[nt]
 
         override def pure[a](x: Lazy[a]): f[a] = j.newOf { i.pure(x) }
-        override def op_<*>[a, b](x: f[a => b])(y: f[a]): f[b] = j.newOf { i.op_<*>(j.oldOf(x))(j.oldOf(y)) }
+        override def op_<*>[a, b](x: f[a => b]): f[a] => f[b] = y => j.newOf { i.op_<*>(j.oldOf(x))(j.oldOf(y)) }
         override def op_*>[a, b](x: f[a])(y: f[b]): f[b] = j.newOf { i.op_*>(j.oldOf(x))(j.oldOf(y)) }
         override def op_<*[a, b](x: f[a])(y: f[b]): f[a] = j.newOf { i.op_<*(j.oldOf(x))(j.oldOf(y)) }
 

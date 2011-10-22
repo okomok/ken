@@ -147,7 +147,7 @@ private[ken] sealed trait WriterTAs extends WriterTAs1 { this: WriterT.type =>
     implicit def _asMonadWriter[w, n[+_]](implicit i: Monad[n], j: Monoid[w]): MonadWriter[w, apply2[w, n]#apply1] = new MonadWriter[w, apply2[w, n]#apply1] {
         // Functor
         private type f[+a] = WriterT[w, n, a]
-        override def fmap[a, b](f: a => b)(m: f[a]): f[b] = WriterT {
+        override def fmap[a, b](f: a => b): f[a] => f[b] = m => WriterT {
             import i.`for`
             for { (a, w) <- run(m) } yield (f(a), w)
         }

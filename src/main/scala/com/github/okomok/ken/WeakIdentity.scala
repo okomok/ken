@@ -13,7 +13,7 @@ object WeakIdentity extends MonadFix[({type m[+a] = a})#m] {
     //
     // Functor
     private type f[+a] = a
-    override def fmap[a, b](f: a => b)(m: f[a]): f[b] = f(m)
+    override def fmap[a, b](f: a => b): f[a] => f[b] = m => f(m)
     // Monad
     private type m[+a] = a
     override def `return`[a](a: Lazy[a]): m[a] = a

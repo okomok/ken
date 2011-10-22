@@ -27,7 +27,7 @@ object Maybe extends MaybeAs with MonadPlus[Maybe] with Traversable[Maybe] with 
     //
     // Functor
     private type f[+a] = Maybe[a]
-    override def fmap[a, b](f: a => b)(x: f[a]): f[b] = x match {
+    override def fmap[a, b](f: a => b): f[a] => f[b] = {
         case Nothing => Nothing
         case Just(a) => Just(f(a))
     }

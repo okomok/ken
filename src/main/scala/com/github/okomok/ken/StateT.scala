@@ -170,7 +170,7 @@ private[ken] sealed trait StateTAs extends StateTAs1 { this: StateT.type =>
     implicit def _asMonadState[s, n[+_]](implicit i: Monad[n]): MonadState[s, apply2[s, n]#apply1] = new MonadState[s, apply2[s, n]#apply1] {
         // Functor
         private type f[+a] = StateT[s, n, a]
-        override def fmap[a, b](f: a => b)(m: f[a]): f[b] = StateT { s =>
+        override def fmap[a, b](f: a => b): f[a] => f[b] = m => StateT { s =>
             import i.`for`
             for { (x, s_) <- run(m)(s) } yield (f(x), s_)
         }

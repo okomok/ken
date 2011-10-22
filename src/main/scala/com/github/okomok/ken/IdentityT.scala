@@ -125,9 +125,9 @@ private[ken] sealed trait IdentityTAs extends IdentityTAs1 { this: IdentityT.typ
     implicit def _asMonad[n[+_]](implicit i: Monad[n]): Monad[apply1[n]#apply1] with HighPriority = new Monad[apply1[n]#apply1] with HighPriority {
         // Functor
         private type f[+a] = IdentityT[n, a]
-        override def fmap[a, b](f: a => b)(m: f[a]): f[b] = IdentityT { i.fmap(f)(run(m)) }
+        override def fmap[a, b](f: a => b): f[a] => f[b] = m => IdentityT { i.fmap(f)(run(m)) }
         // Applicative
-        override def op_<*>[a, b](f: f[a => b])(m: f[a]): f[b] = IdentityT { i.op_<*>(run(f))(run(m)) }
+        override def op_<*>[a, b](f: f[a => b]): f[a] => f[b] = m => IdentityT { i.op_<*>(run(f))(run(m)) }
         // Monad
         private type m[+a] = IdentityT[n, a]
         override def `return`[a](a: Lazy[a]): m[a] = IdentityT { i.`return`(a) }

@@ -23,7 +23,7 @@ object Consumed_ extends Functor[Consumed_] with ThisIsInstance {
     //
     // Functor
     private type f[+a] = Consumed_[a]
-    override def fmap[a, b](f: a => b)(x: f[a]): f[b] = x match {
+    override def fmap[a, b](f: a => b): f[a] => f[b] = {
         case Consumed(x) => Consumed(f(x))
         case Empty(x) => Empty(f(x))
     }

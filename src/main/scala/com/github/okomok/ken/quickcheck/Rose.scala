@@ -23,7 +23,7 @@ object Rose extends Monad[Rose] with ThisIsInstance {
     //
     // Functor
     private type f[+a] = Rose[a]
-    override def fmap[a, b](f: a => b)(rs: f[a]): f[b] = rs match {
+    override def fmap[a, b](f: a => b): f[a] => f[b] = {
         case Rose(x, rs) => Rose(f(x), for { r <- rs.! } yield fmap(f)(r))
     }
     // Monad

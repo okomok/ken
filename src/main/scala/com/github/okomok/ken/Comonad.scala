@@ -1,6 +1,10 @@
 
 
 // Copyright Shunsuke Sogame 2011.
+//
+// Copyright 2008-2011 Edward Kmett
+// Copyright 2004-2008 Dave Menendez
+//
 // Distributed under the New BSD license.
 
 

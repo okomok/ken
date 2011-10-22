@@ -68,7 +68,7 @@ object Scala {
     object Option extends MonadPlus[Option] with Traversable[Option] {
         // Functor
         private type f[+a] = Option[a]
-        override def fmap[a, b](f: a => b)(x: f[a]): f[b] = x match {
+        override def fmap[a, b](f: a => b): f[a] => f[b] = {
             case None => None
             case Some(a) => Some(f(a))
         }

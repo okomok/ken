@@ -14,11 +14,11 @@ trait Functor[f[+_]] extends Typeclass1[f] { outer =>
 
     // Core
     //
-    def fmap[a, b](x: a => b)(y: f[a]): f[b]
+    def fmap[a, b](x: a => b): f[a] => f[b]
 
     // Extra
     //
-    def op_<@>[a, b](x: a => b)(y: f[a]): f[b] = fmap(x)(y)
+    final def op_<@>[a, b](x: a => b): f[a] => f[b] = fmap(x)
     def op_<@[a, b](x: Lazy[a])(y: f[b]): f[a] = fmap[b, a](_ => x)(y)
 
     // Operators
@@ -48,8 +48,7 @@ trait Functor[f[+_]] extends Typeclass1[f] { outer =>
 trait FunctorProxy[f[+_]] extends Functor[f] {
     def selfFunctor: Functor[f]
 
-    override def fmap[a, b](x: a => b)(y: f[a]): f[b] = selfFunctor.fmap(x)(y)
-    override def op_<@>[a, b](x: a => b)(y: f[a]): f[b] = selfFunctor.op_<@>(x)(y)
+    override def fmap[a, b](x: a => b): f[a] => f[b] = selfFunctor.fmap(x)
     override def op_<@[a, b](x: Lazy[a])(y: f[b]): f[a] = selfFunctor.op_<@(x)(y)
 
     override implicit def `for`[a](x: f[a]): ken.For[f, a] = selfFunctor.`for`(x)
@@ -61,7 +60,7 @@ object Functor extends FunctorInstance {
 
     def deriving[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply, nt#oldtype1], i: Functor[nt#oldtype1]): Functor[nt#apply] = new Functor[nt#apply] {
         private type f[+a] = nt#apply[a]
-        override def fmap[a, b](f: a => b)(m: f[a]): f[b] = j.newOf { i.fmap(f)(j.oldOf(m)) }
+        override def fmap[a, b](f: a => b): f[a] => f[b] = m => j.newOf { i.fmap(f)(j.oldOf(m)) }
     }
 
     def weak[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply, nt#oldtype1], i: Functor[nt#apply]): Functor[nt#oldtype1] = deriving[Kind.coNewtype1[nt]](j.coNewtype, i)

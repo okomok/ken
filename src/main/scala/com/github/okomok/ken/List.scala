@@ -92,7 +92,7 @@ object List extends ListAs with MonadPlus[List] with Traversable[List] with This
     //
     // Functor
     private type f[+a] = List[a]
-    override def fmap[a, b](f: a => b)(xs: f[a]): f[b] = map(f)(xs)
+    override def fmap[a, b](f: a => b): f[a] => f[b] = xs => map(f)(xs)
     // Monad
     private type m[+a] = List[a]
     override def `return`[a](x: Lazy[a]): m[a] = List(x)
@@ -316,7 +316,7 @@ object List extends ListAs with MonadPlus[List] with Traversable[List] with This
 
     // Accumulating maps
     //
-    override def mapAccumL[acc, x, y](f: acc => x => (acc, y))(s: acc)(xs: List[x]): (acc, List[y]) = xs match {
+    override def mapAccumL[acc, x, y](f: acc => x => (acc, y)): acc => List[x] => (acc, List[y]) = s => {
         case Nil => (s, Nil)
         case x :: xs => {
             val (s_, y) = f(s)(x)
@@ -325,7 +325,7 @@ object List extends ListAs with MonadPlus[List] with Traversable[List] with This
         }
     }
 
-    override def mapAccumR[acc, x, y](f: Lazy[acc] => x => (acc, y))(s: acc)(xs: List[x]): (acc, List[y]) = xs match {
+    override def mapAccumR[acc, x, y](f: Lazy[acc] => x => (acc, y)): acc => List[x] => (acc, List[y]) = s => {
         case Nil => (s, Nil)
         case x :: xs => {
             lazy val s_ys = mapAccumR(f)(s)(xs.!)

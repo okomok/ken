@@ -33,7 +33,7 @@ object Const extends Kind.FunctionLike {
 
     implicit def _asFunctor[z]: Functor[({type f[+a] = Const[z, a]})#f] = new Functor[({type f[+a] = Const[z, a]})#f] {
         private type f[+a] = Const[z, a]
-        override def fmap[a, b](a: a => b)(y: f[a]): f[b] = y match {
+        override def fmap[a, b](a: a => b): f[a] => f[b] = {
             case Const(v) => Const(v)
         }
     }
@@ -41,7 +41,7 @@ object Const extends Kind.FunctionLike {
     implicit def _asApplicative[z](implicit i: Monoid[z]): Applicative[({type f[+a] = Const[z, a]})#f] = new Applicative[({type f[+a] = Const[z, a]})#f] {
         private type f[+a] = Const[z, a]
         override def pure[a](a: Lazy[a]): f[a] = Const(i.mempty)
-        override def op_<*>[a, b](a: f[a => b])(y: f[a]): f[b] = (a, y) match {
+        override def op_<*>[a, b](a: f[a => b]): f[a] => f[b] = y => (a, y) match {
             case (Const(f), Const(v)) => Const(i.mappend(f)(v))
         }
     }

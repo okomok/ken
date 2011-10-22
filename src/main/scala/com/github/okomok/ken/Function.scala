@@ -52,10 +52,10 @@ private[ken] sealed trait FunctionAs { this: Function.type =>
     private[ken] def _asMonadReader[z]: MonadReader[z, ({type m[+a] = z => a})#m] = new MonadReader[z, ({type m[+a] = z => a})#m] {
         // Functor
         private type f[+a] = z => a
-        override def fmap[a, b](x: a => b)(y: f[a]): f[b] = x `.` y
+        override def fmap[a, b](x: a => b): f[a] => f[b] = y => x `.` y
         // Applicative
         override def pure[a](x: Lazy[a]): f[a] = const(x)
-        override def op_<*>[a, b](x: f[a => b])(y: f[a]): f[b] = z => x(z)(y(z))
+        override def op_<*>[a, b](x: f[a => b]): f[a] => f[b] = y => z => x(z)(y(z))
         // Monad
         private type m[+a] = f[a]
         override def `return`[a](x: Lazy[a]): m[a] = const(x)

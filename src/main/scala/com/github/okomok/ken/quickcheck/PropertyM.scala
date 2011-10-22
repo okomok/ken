@@ -25,7 +25,7 @@ object PropertyM extends Kind.FunctionLike {
     implicit def _asMonad[n[+_]]: Monad[apply1[n]#apply1] = new Monad[apply1[n]#apply1] {
         // Functor
         private type f[+a] = PropertyM[n, a]
-        override def fmap[a, b](f: a => b)(m: f[a]): f[b] = PropertyM(k => (m.old)(k `.` f))
+        override def fmap[a, b](f: a => b): f[a] => f[b] = m => PropertyM(k => (m.old)(k `.` f))
         // Monad
         private type m[+a] = PropertyM[n, a]
         override def `return`[a](x: Lazy[a]): m[a] = PropertyM(k => k(x))

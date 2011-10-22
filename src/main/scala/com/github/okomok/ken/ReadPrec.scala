@@ -31,7 +31,7 @@ object ReadPrec extends Newtype1[ReadPrec, ({type ot[+a] = Int => ReadP[a]})#ot]
     //
     // Functor
     private type f[+a] = ReadPrec[a]
-    override def fmap[a, b](h: a => b)(f: f[a]): f[b] = ReadPrec { n => ReadP.fmap(h)(f.get(n)) }
+    override def fmap[a, b](h: a => b): f[a] => f[b] = f => ReadPrec { n => ReadP.fmap(h)(f.get(n)) }
     // Monad
     private type m[+a] = ReadPrec[a]
     override def `return`[a](x: Lazy[a]): m[a] = ReadPrec { _ => ReadP.`return`(x) }

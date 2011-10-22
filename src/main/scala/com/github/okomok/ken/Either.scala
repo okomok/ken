@@ -76,7 +76,7 @@ private[ken] sealed trait EitherAs { this: Either.type =>
     implicit def _asMonadFix[e]: MonadFix[({type m[+a] = Either[e, a]})#m] = new MonadFix[({type m[+a] = Either[e, a]})#m] {
         // Functor
         private type f[+a] = Either[e, a]
-        override def fmap[a, b](f: a => b)(e: f[a]): f[b] = e match {
+        override def fmap[a, b](f: a => b): f[a] => f[b] = {
             case Left(l) => Left(l)
             case Right(r) => Right(f(r))
         }
