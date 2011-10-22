@@ -84,4 +84,5 @@ object Extend extends ExtendInstance {
 
 
 trait ExtendInstance { this: Extend.type =>
+    implicit def ofFunction[z](implicit i: Semigroup[z]): Extend[Function.apply[z]#apply] = Function._asExtend(i)
 }

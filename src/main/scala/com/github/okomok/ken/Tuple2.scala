@@ -57,12 +57,14 @@ private[ken] sealed trait Tuple2As { this: Tuple2.type =>
         }
     }
 
-    private[ken] def _asExtend[z]: Extend[apply[z]#apply] = new Extend[apply[z]#apply] {
+    private[ken] def _asComonad[z]: Comonad[apply[z]#apply] = new Comonad[apply[z]#apply] {
         // Functor
         private type f[+a] = (z, a)
         override def fmap[a, b](f: a => b): f[a] => f[b] = { case (x, y) => (x, f(y)) }
         // Extend
         private type w[+a] = (z, a)
         override def duplicate[a](p: w[a]): w[w[a]] = (Pair.fst(p), p)
+        // Comonad
+        override def extract[a](p: w[a]): a = Pair.snd(p)
     }
 }

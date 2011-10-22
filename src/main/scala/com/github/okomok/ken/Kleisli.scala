@@ -50,15 +50,6 @@ private[ken] sealed trait KleisliAs0 { this: Kleisli.type =>
         }
     }
 
-    implicit def _asArrowChoice[m[+_]](implicit i: Monad[m]): ArrowChoice[apply1[m]#apply2] = new ArrowChoice[apply1[m]#apply2] with ArrowProxy[apply1[m]#apply2] {
-        private type a[-a, +b] = Kleisli[m, a, b]
-        override val selfArrow = _asArrow(i)
-        override def left[b, c, d](f: a[b, c], * : Type[d] = null): a[Either[b, d], Either[c, d]] = f +++: arr(id[d])
-        override def right[b, c, d](f: a[b, c], * : Type[d] = null): a[Either[d, b], Either[d, c]] = arr(id[d]) +++: f
-        override def op_+++:[b, c, b_, c_](f: a[b, c])(g: a[b_, c_]): a[Either[b, b_], Either[c, c_]] = (f >>>: arr(Left(_: c).of[c, c_])) |||: (g >>>: arr(Right(_: c_).of[c, c_]))
-        override def op_|||:[b, c, d](f: a[b, d])(g: a[c, d]): a[Either[b, c], d] = Kleisli { Either.either(f.run)(g.run) }
-    }
-
     implicit def _asArrowLoop[m[+_]](implicit i: MonadFix[m]): ArrowLoop[apply1[m]#apply2] = new ArrowLoop[apply1[m]#apply2] with ArrowProxy[apply1[m]#apply2] {
         private type a[-a, +b] = Kleisli[m, a, b]
         override val selfArrow = _asArrow(i)
@@ -73,7 +64,7 @@ private[ken] sealed trait KleisliAs0 { this: Kleisli.type =>
 }
 
 private[ken] sealed trait KleisliAs extends KleisliAs0 { this: Kleisli.type =>
-    implicit def _asArrow[m[+_]](implicit i: Monad[m]): ArrowApply[apply1[m]#apply2] = new ArrowApply[apply1[m]#apply2] {
+    implicit def _asArrow[m[+_]](implicit i: Monad[m]): ArrowApply[apply1[m]#apply2] with ArrowChoice[apply1[m]#apply2] = new ArrowApply[apply1[m]#apply2] with ArrowChoice[apply1[m]#apply2] {
         import i.{>>=, `return`}
         // Category
         private type cat[-a, +b] = Kleisli[m, a, b]
@@ -92,5 +83,10 @@ private[ken] sealed trait KleisliAs extends KleisliAs0 { this: Kleisli.type =>
         }
         // ArrowApply
         override def app[b, c]: a[(a[b, c], b), c] = Kleisli { case (f, x) => (f.run)(x) }
+        // ArrowChoice
+        override def left[b, c, d](f: a[b, c], * : Type[d] = null): a[Either[b, d], Either[c, d]] = f +++: arr(id[d])
+        override def right[b, c, d](f: a[b, c], * : Type[d] = null): a[Either[d, b], Either[d, c]] = arr(id[d]) +++: f
+        override def op_+++:[b, c, b_, c_](f: a[b, c])(g: a[b_, c_]): a[Either[b, b_], Either[c, c_]] = (f >>>: arr(Left(_: c).of[c, c_])) |||: (g >>>: arr(Right(_: c_).of[c, c_]))
+        override def op_|||:[b, c, d](f: a[b, d])(g: a[c, d]): a[Either[b, c], d] = Kleisli { Either.either(f.run)(g.run) }
     }
 }

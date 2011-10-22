@@ -77,6 +77,12 @@ private[ken] sealed trait FunctionAs { this: Function.type =>
         override def duplicate[a](f: w[a]): w[w[a]] = m => f `.` i.op_<>:(m)
     }
 
+    private[ken] def _asComonad[m](implicit i: Monoid[m]): Comonad[apply[m]#apply] = new Comonad[apply[m]#apply] with ExtendProxy[apply[m]#apply] {
+        private type w[+a] = Function[m, a]
+        override val selfExtend = _asExtend(i)
+        override def extract[a](f: w[a]): a = f(i.mempty)
+    }
+
     private[ken] def _asMonoid[z, b](implicit mb: Monoid[b]): Monoid[z => b] = new Monoid[z => b] with SemigroupProxy[z => b] {
         private type m = z => b
         override val selfSemigroup = _asSemigroup[z, b](mb)

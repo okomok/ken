@@ -67,17 +67,11 @@ object Functor extends FunctorInstance {
 }
 
 
-private[ken] sealed trait FunctorInstance0 { this: Functor.type =>
-    implicit val ofWeakIdentity: MonadFix[WeakIdentity.apply] with Extend[WeakIdentity.apply]= WeakIdentity
-    implicit def ofFunctionWithSemigroup[z](implicit i: Semigroup[z]): Extend[Function.apply[z]#apply] = Function._asExtend(i)
-    implicit def ofTuple2[z]: Extend[Tuple2.apply[z]#apply] = Tuple2._asExtend[z]
+sealed trait FunctorInstance { this: Functor.type =>
+    implicit val ofWeakIdentity: MonadFix[WeakIdentity.apply] with Comonad[WeakIdentity.apply]= WeakIdentity
+    implicit def ofTuple2[z]: Comonad[Tuple2.apply[z]#apply] = Tuple2._asComonad[z]
+    implicit def ofFunction[z]: MonadReader[z, Function.apply[z]#apply] = Function._asMonadReader[z]
 
     implicit def ofScalaTraversable[CC[+X] <: scala.collection.GenTraversableLike[X, CC[X]]](implicit mf: Scala.CanMapFrom[CC]): MonadPlus[CC] = Scala.Traversable._asMonadPlus(mf)
     implicit val ofScalaOption: MonadPlus[Option] = Scala.Option
-}
-
-
-sealed trait FunctorInstance extends FunctorInstance0 { this: Functor.type =>
-    implicit def ofFunction[z]: MonadReader[z, Function.apply[z]#apply] = Function._asMonadReader[z]
-    implicit def ofTuple2WithMonoid[z](implicit ma: Monoid[z]): Applicative[Tuple2.apply[z]#apply] = Tuple2._asApplicative(ma)
 }

@@ -19,7 +19,7 @@ trait Monad[m[+_]] extends Applicative[m] { outer =>
 
     // Core
     //
-    def `return`[a](x: Lazy[a]): m[a]
+    def `return`[a](x: Lazy[a]): m[a] = pure(x)
     def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b]
     def op_>>[b](x: m[_])(y: Lazy[m[b]]): m[b] = x >>= (_ => y)
 
