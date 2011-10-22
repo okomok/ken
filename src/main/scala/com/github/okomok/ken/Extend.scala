@@ -84,5 +84,4 @@ object Extend extends ExtendInstance {
 
 
 trait ExtendInstance { this: Extend.type =>
-
 }

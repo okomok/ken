@@ -78,7 +78,7 @@ object !:: {
 }
 
 
-object List extends ListAs with MonadPlus[List] with Traversable[List] with ThisIsInstance {
+object List extends ListAs with MonadPlus[List] with Traversable[List] with Extend[List] with ThisIsInstance {
     def op_::[a](x: a)(xs: Lazy[List[a]]): List[a] = ::(x, Lazy(xs))
     def op_!::[a](x: a)(xs: List[a]): List[a] = op_::(x)(xs)
 
@@ -110,6 +110,9 @@ object List extends ListAs with MonadPlus[List] with Traversable[List] with This
         foldr(cons_f)(i.pure(Nil))(t)
     }
     override def mapM[m_[+_], a, b](f: a => m_[b])(t: t[a])(implicit i: Monad[m_]): m_[t[b]] = i.mapM(f)(t)
+    // Extend
+    private type w[+a] = List[a]
+    override def duplicate[a](w: w[a]): w[w[a]] = List.tails(w)
 
     // Conversions
     //

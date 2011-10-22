@@ -73,12 +73,17 @@ private[ken] sealed trait EitherAs { this: Either.type =>
         }
     }
 
-    implicit def _asMonadFix[e]: MonadFix[({type m[+a] = Either[e, a]})#m] = new MonadFix[({type m[+a] = Either[e, a]})#m] {
+    implicit def _asMonadFix[e]: MonadFix[apply[e]#apply] with Extend[apply[e]#apply] = new MonadFix[apply[e]#apply] with Extend[apply[e]#apply] {
         // Functor
         private type f[+a] = Either[e, a]
         override def fmap[a, b](f: a => b): f[a] => f[b] = {
             case Left(l) => Left(l)
             case Right(r) => Right(f(r))
+        }
+        // Applicative
+        override def op_<*>[a, b](x: f[a => b]): f[a] => f[b] = x match {
+            case Left(e) => _ => Left(e)
+            case Right(f) => r => fmap(f)(r)
         }
         // Monad
         private type m[+a] = f[a]
@@ -94,6 +99,12 @@ private[ken] sealed trait EitherAs { this: Either.type =>
                 case _ => error("empty mfix argument")
             } }
             a
+        }
+        // Extend
+        private type w[+a] = Either[e, a]
+        override def duplicate[a](w: w[a]): w[w[a]] = w match {
+            case Left(a) => Left(a)
+            case r => Right(r)
         }
     }
 }

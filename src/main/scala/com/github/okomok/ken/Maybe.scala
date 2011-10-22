@@ -22,7 +22,7 @@ case object Nothing extends Maybe[Nothing]
 final case class Just[+a](x: a) extends Maybe[a]
 
 
-object Maybe extends MaybeAs with MonadPlus[Maybe] with Traversable[Maybe] with ThisIsInstance {
+object Maybe extends MaybeAs with MonadPlus[Maybe] with Traversable[Maybe] with Extend[Maybe] with ThisIsInstance {
     // Overrides
     //
     // Functor
@@ -65,6 +65,12 @@ object Maybe extends MaybeAs with MonadPlus[Maybe] with Traversable[Maybe] with 
             import i.{<@>}
             (Just(_: b).up) <@> f(x)
         }
+    }
+    // Extend
+    private type w[+a] = Maybe[a]
+    override def duplicate[a](w: w[a]): w[w[a]] = w match {
+        case Nothing => Nothing
+        case j => Just(j)
     }
 
     // Operators

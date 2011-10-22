@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-object WeakIdentity extends MonadFix[({type m[+a] = a})#m] {
+object WeakIdentity extends MonadFix[({type m[+a] = a})#m] with Extend[({type m[+a] = a})#m] {
     // Overrides
     //
     // Functor
@@ -20,4 +20,7 @@ object WeakIdentity extends MonadFix[({type m[+a] = a})#m] {
     override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = k(m)
     // MonadFix
     override def mfix[a](f: Lazy[a] => m[a]): m[a] = Function.fix(f)
+    // Extend
+    private type w[+a] = a
+    override def duplicate[a](w: w[a]): w[w[a]] = w
 }

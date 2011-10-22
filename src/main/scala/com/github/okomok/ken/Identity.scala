@@ -11,7 +11,7 @@ package ken
 final case class Identity[+a](override val old: a) extends NewtypeOf[a]
 
 
-object Identity extends Newtype1[Identity, ({type ot[+a] = a})#ot] with MonadFix[Identity] with ThisIsInstance {
+object Identity extends Newtype1[Identity, ({type ot[+a] = a})#ot] with MonadFix[Identity] with Extend[Identity] with ThisIsInstance {
     // Overrides
     //
     // Newtype1
@@ -28,6 +28,9 @@ object Identity extends Newtype1[Identity, ({type ot[+a] = a})#ot] with MonadFix
     override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = k(run(m))
     // MonadFix
     override def mfix[a](f: Lazy[a] => m[a]): m[a] = Identity { Function.fix(run[a]_ `.` f) }
+    // Extend
+    private type w[+a] = Identity[a]
+    override def duplicate[a](w: w[a]): w[w[a]] = Identity(w)
 
     // Instances
     //

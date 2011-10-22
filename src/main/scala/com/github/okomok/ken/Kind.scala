@@ -92,7 +92,8 @@ object Kind {
     }
 
     trait qcurry2[f[_, +_]] extends FunctionLike {
-        trait apply[a] extends Function1 {
+        trait apply[a] extends apply1[a]
+        trait apply1[a] extends Function1 {
             override type apply1[+b] = f[a, b]
         }
     }

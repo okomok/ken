@@ -49,7 +49,7 @@ object Function extends FunctionAs with
 
 
 private[ken] sealed trait FunctionAs { this: Function.type =>
-    private[ken] def _asMonadReader[z]: MonadReader[z, ({type m[+a] = z => a})#m] = new MonadReader[z, ({type m[+a] = z => a})#m] {
+    private[ken] def _asMonadReader[z]: MonadReader[z, apply[z]#apply] = new MonadReader[z, apply[z]#apply] {
         // Functor
         private type f[+a] = z => a
         override def fmap[a, b](x: a => b): f[a] => f[b] = y => x `.` y
@@ -69,6 +69,12 @@ private[ken] sealed trait FunctionAs { this: Function.type =>
         private type m = z => b
         override val op_<>: : m => Lazy[m] => m = f => g => { a => sb.op_<>:(f(a))(g(a)) }
         override def times1p[n](n: n)(f: m)(implicit j: Integral[n]): m = e => sb.times1p(n)(f(e))(j)
+    }
+
+    private[ken] def _asExtend[m](implicit i: Semigroup[m]): Extend[apply[m]#apply] = new Extend[apply[m]#apply] with FunctorProxy[apply[m]#apply] {
+        private type w[+a] = Function[m, a]
+        override val selfFunctor = _asMonadReader[m]
+        override def duplicate[a](f: w[a]): w[w[a]] = m => f `.` i.op_<>:(m)
     }
 
     private[ken] def _asMonoid[z, b](implicit mb: Monoid[b]): Monoid[z => b] = new Monoid[z => b] with SemigroupProxy[z => b] {
