@@ -38,18 +38,18 @@ trait ComonadProxy[w[+_]] extends Comonad[w] with ExtendProxy[w] {
 
 
 object Comonad extends ComonadInstance {
-    def apply[w <: Kind.Function1](implicit i: Comonad[w#apply]): Comonad[w#apply] = i
+    def apply[w <: Kind.Function1](implicit i: Comonad[w#apply1]): Comonad[w#apply1] = i
 
-    def deriving[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply, nt#oldtype1], i: Comonad[nt#oldtype1]): Comonad[nt#apply] = new Comonad[nt#apply] with ExtendProxy[nt#apply] {
-        private type w[+a] = nt#apply[a]
+    def deriving[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply1, nt#oldtype1], i: Comonad[nt#oldtype1]): Comonad[nt#apply1] = new Comonad[nt#apply1] with ExtendProxy[nt#apply1] {
+        private type w[+a] = nt#apply1[a]
         override val selfExtend = Extend.deriving[nt]
         override def extract[a](w: w[a]): a = i.extract(j.oldOf(w))
     }
 
-    def weak[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply, nt#oldtype1], i: Comonad[nt#apply]): Comonad[nt#oldtype1] = deriving[Kind.coNewtype1[nt]](j.coNewtype, i)
+    def weak[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply1, nt#oldtype1], i: Comonad[nt#apply1]): Comonad[nt#oldtype1] = deriving[Kind.coNewtype1[nt]](j.coNewtype, i)
 }
 
 
 sealed trait ComonadInstance { this: Comonad.type =>
-    implicit def ofFunction[m](implicit i: Monoid[m]): Comonad[Function.apply[m]#apply] = Function._asComonad(i)
+    implicit def ofFunction[m](implicit i: Monoid[m]): Comonad[Function.apply[m]#apply1] = Function._asComonad(i)
 }

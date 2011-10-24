@@ -31,7 +31,7 @@ object IdentityT extends IdentityTOp with IdentityTAs with MonadTransControl[Ide
          i.liftM((x: a) => x) {
             f {
                 new Run {
-                    override def apply[n_[+_], o[+_], b](t: t[n_, b], * : TypeC1[o] = null)(implicit ri: Monad[n_], rj: Monad[o], rk: Monad[({type m[+a] = t[o, a]})#m]): n_[t[o, b]] = {
+                    override def apply[n_[+_], o[+_], b](t: t[n_, b], * : Type1[o] = null)(implicit ri: Monad[n_], rj: Monad[o], rk: Monad[({type m[+a] = t[o, a]})#m]): n_[t[o, b]] = {
                         ri.liftM((x: b) => IdentityT(rj.`return`(x)))(run(t))
                     }
                 }

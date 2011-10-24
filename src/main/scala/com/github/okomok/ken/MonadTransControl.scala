@@ -39,9 +39,9 @@ trait MonadTransControlProxy[t[_[+_], +_]] extends MonadTransControl[t] with Mon
 object MonadTransControl {
     def apply[t <: Kind.MonadTrans](implicit i: MonadTransControl[t#monadTrans]): MonadTransControl[t#monadTrans] = i
 /*
-    def deriving[nt <: Kind.Function1, ot <: Kind.MonadTransControl](implicit j: Newtype1[nt#apply, ot#apply], i: MonadTransControl[ot#apply, ot#innerMonad, ot#baseResult]): MonadTransControl[nt#apply, ot#innerMonad, ot#baseResult] = new MonadTransControl[nt#apply, ot#innerMonad, ot#baseResult] with MonadTransProxy[nt#apply, ot#innerMonad] {
+    def deriving[nt <: Kind.Function1, ot <: Kind.MonadTransControl](implicit j: Newtype1[nt#apply1, ot#apply1], i: MonadTransControl[ot#apply1, ot#innerMonad, ot#baseResult]): MonadTransControl[nt#apply1, ot#innerMonad, ot#baseResult] = new MonadTransControl[nt#apply1, ot#innerMonad, ot#baseResult] with MonadTransProxy[nt#apply1, ot#innerMonad] {
         type n[+a] = ot#innerMonad[a]
-        type m[+a] = nt#apply[a]
+        type m[+a] = nt#apply1[a]
         type u[+a] = ot#baseResult[a]
         override val selfMonadTrans = MonadTrans.deriving[nt, ot]
 
@@ -56,12 +56,12 @@ object MonadTransControl {
         }
     }
 
-    def weak[nt <: Kind.MonadTransControl](implicit j: Newtype1[nt#apply, nt#oldtype1], i: MonadTransControl[nt#apply, nt#innerMonad, nt#baseResult]): MonadTransControl[nt#oldtype1, nt#innerMonad, nt#baseResult] = deriving[Kind.quote1[nt#oldtype1], nt](j.coNewtype, i)
+    def weak[nt <: Kind.MonadTransControl](implicit j: Newtype1[nt#apply1, nt#oldtype1], i: MonadTransControl[nt#apply1, nt#innerMonad, nt#baseResult]): MonadTransControl[nt#oldtype1, nt#innerMonad, nt#baseResult] = deriving[Kind.quote1[nt#oldtype1], nt](j.coNewtype, i)
 */
     // Run types
     //
     trait Run[t[_[+_], +_]] {
-        def apply[n_[+_], o[+_], b](t: t[n_, b], * : TypeC1[o] = null)(implicit ri: Monad[n_], rj: Monad[o], rk: Monad[({type m[+a] = t[o, a]})#m]): n_[t[o, b]]
+        def apply[n_[+_], o[+_], b](t: t[n_, b], * : Type1[o] = null)(implicit ri: Monad[n_], rj: Monad[o], rk: Monad[({type m[+a] = t[o, a]})#m]): n_[t[o, b]]
     }
 
     trait RunInBase[m[+_], base[+_]] {

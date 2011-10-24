@@ -187,10 +187,10 @@ trait MonadProxy[m[+_]] extends Monad[m] with ApplicativeProxy[m] {
 
 
 object Monad {
-    def apply[m <: Kind.Function1](implicit i: Monad[m#apply]): Monad[m#apply] = i
+    def apply[m <: Kind.Function1](implicit i: Monad[m#apply1]): Monad[m#apply1] = i
 
-    def deriving[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply, nt#oldtype1], i: Monad[nt#oldtype1]): Monad[nt#apply] = new Monad[nt#apply] with ApplicativeProxy[nt#apply] {
-        private type m[+a] = nt#apply[a]
+    def deriving[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply1, nt#oldtype1], i: Monad[nt#oldtype1]): Monad[nt#apply1] = new Monad[nt#apply1] with ApplicativeProxy[nt#apply1] {
+        private type m[+a] = nt#apply1[a]
         override val selfApplicative = Applicative.deriving[nt]
 
         override def `return`[a](x: Lazy[a]): m[a] = j.newOf { i.`return`(x) }
@@ -200,5 +200,5 @@ object Monad {
         // TODO
     }
 
-    def weak[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply, nt#oldtype1], i: Monad[nt#apply]): Monad[nt#oldtype1] = deriving[Kind.coNewtype1[nt]](j.coNewtype, i)
+    def weak[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply1, nt#oldtype1], i: Monad[nt#apply1]): Monad[nt#oldtype1] = deriving[Kind.coNewtype1[nt]](j.coNewtype, i)
 }

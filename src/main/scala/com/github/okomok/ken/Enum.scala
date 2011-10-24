@@ -14,7 +14,7 @@ package com.github.okomok
 package ken
 
 
-trait Enum[a] extends Typeclass0[a] {
+trait Enum[a] extends Typeclass[a] {
     final val asEnum: Enum[apply0] = this
 
     // Core
@@ -71,7 +71,7 @@ trait EnumProxy[a] extends Enum[a] {
 object Enum extends EnumInstance with EnumShortcut with EnumDetail {
     def apply[a <: Kind.Function0](implicit i: Enum[a#apply0]): Enum[a#apply0] = i
 
-    def deriving[nt <: Kind.Newtype0](implicit j: Newtype0[nt#apply0, nt#oldtype0, _], i: Enum[nt#oldtype0]): Enum[nt#apply0] = new Enum[nt#apply0] {
+    def deriving[nt <: Kind.Newtype](implicit j: Newtype[nt#apply0, nt#oldtype, _], i: Enum[nt#oldtype]): Enum[nt#apply0] = new Enum[nt#apply0] {
         override val succ: succ = a => j.newOf(i.succ(j.oldOf(a)))
         override val pred: pred = a => j.newOf(i.pred(j.oldOf(a)))
         override val toEnum: toEnum = n => j.newOf(i.toEnum(n))
@@ -83,7 +83,7 @@ object Enum extends EnumInstance with EnumShortcut with EnumDetail {
         override val enumFromThenTo: enumFromThenTo = x1 => x2 => y => for { ot <- i.enumFromThenTo(j.oldOf(x1))(j.oldOf(x2))(j.oldOf(y)) } yield j.newOf(ot)
     }
 
-    def weak[nt <: Kind.Newtype0](implicit j: Newtype0[nt#apply0, nt#oldtype0, _], i: Enum[nt#apply0]): Enum[nt#oldtype0] = deriving[Kind.coNewtype0[nt]](j.coNewtype, i)
+    def weak[nt <: Kind.Newtype](implicit j: Newtype[nt#apply0, nt#oldtype, _], i: Enum[nt#apply0]): Enum[nt#oldtype] = deriving[Kind.coNewtype[nt]](j.coNewtype, i)
 }
 
 
@@ -101,7 +101,7 @@ sealed trait EnumInstance { this: Enum.type =>
         override val fromEnum: fromEnum = x => i.toInt(x)
     }
 
-    implicit def ofNewtype0[nt, ot, ds <: Kind.MethodList](implicit j: Newtype0[nt, ot, ds], i: Enum[ot], k: Kind.MethodList.Contains[ds, Enum]): Enum[nt] = deriving[Newtype0[nt, ot, _]]
+    implicit def ofNewtype[nt, ot, ds <: Kind.MethodList](implicit j: Newtype[nt, ot, ds], i: Enum[ot], k: Kind.MethodList.Contains[ds, Enum]): Enum[nt] = deriving[Newtype[nt, ot, _]]
 }
 
 

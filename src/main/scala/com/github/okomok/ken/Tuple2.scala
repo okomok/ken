@@ -48,7 +48,7 @@ private[ken] sealed trait Tuple2As { this: Tuple2.type =>
         }
     }
 
-    private[ken] def _asApplicative[z](implicit ma: Monoid[z]): Applicative[apply[z]#apply] with Extend[apply[z]#apply] = new Applicative[apply[z]#apply] with Extend[apply[z]#apply] {
+    private[ken] def _asApplicative[z](implicit ma: Monoid[z]): Applicative[apply[z]#apply1] with Extend[apply[z]#apply1] = new Applicative[apply[z]#apply1] with Extend[apply[z]#apply1] {
         // Applicative
         private type f[a] = (z, a)
         override def pure[a](x: Lazy[a]): f[a] = (ma.mempty, x)
@@ -57,7 +57,7 @@ private[ken] sealed trait Tuple2As { this: Tuple2.type =>
         }
     }
 
-    private[ken] def _asComonad[z]: Comonad[apply[z]#apply] = new Comonad[apply[z]#apply] {
+    private[ken] def _asComonad[z]: Comonad[apply[z]#apply1] = new Comonad[apply[z]#apply1] {
         // Functor
         private type f[+a] = (z, a)
         override def fmap[a, b](f: a => b): f[a] => f[b] = { case (x, y) => (x, f(y)) }

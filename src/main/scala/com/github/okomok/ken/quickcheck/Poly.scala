@@ -21,10 +21,10 @@ object Poly {
     //
     final case class A(override val old: Integer) extends NewtypeOf[Integer]
 
-    object A extends Newtype0[A, Integer, Kind.Nil] with Arbitary[A] with CoArbitary[A] with ThisIsInstance {
+    object A extends Newtype[A, Integer, Kind.Nil] with Arbitary[A] with CoArbitary[A] with ThisIsInstance {
         // Overrides
         //
-        // Newtype0
+        // Newtype
         override val newOf: newOf = ot => A(ot)
         override val oldOf: oldOf = nt => nt.get
         // Arbitary
@@ -41,10 +41,10 @@ object Poly {
     //
     final case class B(override val old: Integer) extends NewtypeOf[Integer]
 
-    object B extends Newtype0[B, Integer, Kind.Nil] with Arbitary[B] with CoArbitary[B] with ThisIsInstance {
+    object B extends Newtype[B, Integer, Kind.Nil] with Arbitary[B] with CoArbitary[B] with ThisIsInstance {
         // Overrides
         //
-        // Newtype0
+        // Newtype
         override val newOf: newOf = ot => B(ot)
         override val oldOf: oldOf = nt => nt.get
         // Arbitary
@@ -61,10 +61,10 @@ object Poly {
     //
     final case class C(override val old: Integer) extends NewtypeOf[Integer]
 
-    object C extends Newtype0[C, Integer, Kind.Nil] with Arbitary[C] with CoArbitary[C] with ThisIsInstance {
+    object C extends Newtype[C, Integer, Kind.Nil] with Arbitary[C] with CoArbitary[C] with ThisIsInstance {
         // Overrides
         //
-        // Newtype0
+        // Newtype
         override val newOf: newOf = ot => C(ot)
         override val oldOf: oldOf = nt => nt.get
         // Arbitary
@@ -81,12 +81,12 @@ object Poly {
     //
     final case class OrdA(override val old: Integer) extends NewtypeOf[Integer]
 
-    object OrdA extends Newtype0[OrdA, Integer, Kind.Nil]
+    object OrdA extends Newtype[OrdA, Integer, Kind.Nil]
         with Arbitary[OrdA] with CoArbitary[OrdA] with OrdProxy[OrdA] with ThisIsInstance
     {
         // Overrides
         //
-        // Newtype0
+        // Newtype
         override val newOf: newOf = ot => OrdA(ot)
         override val oldOf: oldOf = nt => nt.get
         // Ord
@@ -105,12 +105,12 @@ object Poly {
     //
     final case class OrdB(override val old: Integer) extends NewtypeOf[Integer]
 
-    object OrdB extends Newtype0[OrdB, Integer, Kind.Nil]
+    object OrdB extends Newtype[OrdB, Integer, Kind.Nil]
         with Arbitary[OrdB] with CoArbitary[OrdB] with OrdProxy[OrdB] with ThisIsInstance
     {
         // Overrides
         //
-        // Newtype0
+        // Newtype
         override val newOf: newOf = ot => OrdB(ot)
         override val oldOf: oldOf = nt => nt.get
         // Ord
@@ -129,12 +129,12 @@ object Poly {
     //
     final case class OrdC(override val old: Integer) extends NewtypeOf[Integer]
 
-    object OrdC extends Newtype0[OrdC, Integer, Kind.Nil]
+    object OrdC extends Newtype[OrdC, Integer, Kind.Nil]
         with Arbitary[OrdC] with CoArbitary[OrdC] with OrdProxy[OrdC] with ThisIsInstance
     {
         // Overrides
         //
-        // Newtype0
+        // Newtype
         override val newOf: newOf = ot => OrdC(ot)
         override val oldOf: oldOf = nt => nt.get
         // Ord

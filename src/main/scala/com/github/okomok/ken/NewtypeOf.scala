@@ -11,9 +11,9 @@ package ken
 import scala.annotation.unchecked.uncheckedVariance // Why needed?
 
 
-trait NewtypeOf[+a] extends Up[NewtypeOf[a]] with Kind.Newtype0 {
+trait NewtypeOf[+a] extends Up[NewtypeOf[a]] with Kind.Newtype {
     override type apply0 = this.type
-    override type oldtype0 = a @uncheckedVariance
+    override type oldtype = a @uncheckedVariance
 
     def old: a
 

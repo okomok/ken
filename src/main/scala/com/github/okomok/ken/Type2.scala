@@ -8,7 +8,9 @@ package com.github.okomok
 package ken
 
 
-import scala.annotation.unchecked.uncheckedVariance
+trait Type2[f[_, _]] extends TypeEnvelope
 
 
-trait Typeclass0[-a] extends Typeclass with Type[a @uncheckedVariance]
+object Type2 {
+    def apply[f[_, _]]: Type2[f] = new Type2[f] {}
+}

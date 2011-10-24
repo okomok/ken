@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-trait ErrorClass[a] extends Typeclass0[a] {
+trait ErrorClass[a] extends Typeclass[a] {
     final val asErrorClass: ErrorClass[apply0] = this
 
     // Core
@@ -32,12 +32,12 @@ trait ErrorClassProxy[a] extends ErrorClass[a] {
 object ErrorClass extends ErrorClassInstance with ErrorClassShortcut {
     def apply[a <: Kind.Function0](implicit i: ErrorClass[a#apply0]): ErrorClass[a#apply0] = i
 
-    def deriving[nt <: Kind.Newtype0](implicit j: Newtype0[nt#apply0, nt#oldtype0, _], i: ErrorClass[nt#oldtype0]): ErrorClass[nt#apply0] = new ErrorClass[nt#apply0] {
+    def deriving[nt <: Kind.Newtype](implicit j: Newtype[nt#apply0, nt#oldtype, _], i: ErrorClass[nt#oldtype]): ErrorClass[nt#apply0] = new ErrorClass[nt#apply0] {
         override val noMsg: noMsg = j.newOf(i.noMsg)
         override val strMsg: strMsg = msg => j.newOf(i.strMsg(msg))
     }
 
-    def weak[nt <: Kind.Newtype0](implicit j: Newtype0[nt#apply0, nt#oldtype0, _], i: ErrorClass[nt#apply0]): ErrorClass[nt#oldtype0] = deriving[Kind.coNewtype0[nt]](j.coNewtype, i)
+    def weak[nt <: Kind.Newtype](implicit j: Newtype[nt#apply0, nt#oldtype, _], i: ErrorClass[nt#apply0]): ErrorClass[nt#oldtype] = deriving[Kind.coNewtype[nt]](j.coNewtype, i)
 }
 
 

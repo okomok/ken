@@ -13,7 +13,7 @@ package ken
 package quickcheck
 
 
-trait Testable[prop] extends Typeclass0[prop] {
+trait Testable[prop] extends Typeclass[prop] {
     final val asTestable: Testable[prop] = this
 
     // Core

@@ -56,21 +56,21 @@ trait FunctorProxy[f[+_]] extends Functor[f] {
 
 
 object Functor extends FunctorInstance {
-    def apply[f <: Kind.Function1](implicit i: Functor[f#apply]): Functor[f#apply] = i
+    def apply[f <: Kind.Function1](implicit i: Functor[f#apply1]): Functor[f#apply1] = i
 
-    def deriving[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply, nt#oldtype1], i: Functor[nt#oldtype1]): Functor[nt#apply] = new Functor[nt#apply] {
-        private type f[+a] = nt#apply[a]
+    def deriving[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply1, nt#oldtype1], i: Functor[nt#oldtype1]): Functor[nt#apply1] = new Functor[nt#apply1] {
+        private type f[+a] = nt#apply1[a]
         override def fmap[a, b](f: a => b): f[a] => f[b] = m => j.newOf { i.fmap(f)(j.oldOf(m)) }
     }
 
-    def weak[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply, nt#oldtype1], i: Functor[nt#apply]): Functor[nt#oldtype1] = deriving[Kind.coNewtype1[nt]](j.coNewtype, i)
+    def weak[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply1, nt#oldtype1], i: Functor[nt#apply1]): Functor[nt#oldtype1] = deriving[Kind.coNewtype1[nt]](j.coNewtype, i)
 }
 
 
 sealed trait FunctorInstance { this: Functor.type =>
     implicit val ofWeakIdentity: MonadFix[WeakIdentity.apply] with Comonad[WeakIdentity.apply]= WeakIdentity
-    implicit def ofTuple2[z]: Comonad[Tuple2.apply[z]#apply] = Tuple2._asComonad[z]
-    implicit def ofFunction[z]: MonadReader[z, Function.apply[z]#apply] = Function._asMonadReader[z]
+    implicit def ofTuple2[z]: Comonad[Tuple2.apply[z]#apply1] = Tuple2._asComonad[z]
+    implicit def ofFunction[z]: MonadReader[z, Function.apply[z]#apply1] = Function._asMonadReader[z]
 
     implicit def ofScalaTraversable[CC[+X] <: scala.collection.GenTraversableLike[X, CC[X]]](implicit mf: Scala.CanMapFrom[CC]): MonadPlus[CC] = Scala.Traversable._asMonadPlus(mf)
     implicit val ofScalaOption: MonadPlus[Option] = Scala.Option

@@ -28,17 +28,17 @@ trait MonadErrorProxy[e, m[+_]] extends MonadError[e, m] with MonadProxy[m] {
 
 
 object MonadError extends MonadErrorInstance {
-    def apply[e, m <: Kind.Function1](implicit i: MonadError[e, m#apply]): MonadError[e, m#apply] = i
+    def apply[e, m <: Kind.Function1](implicit i: MonadError[e, m#apply1]): MonadError[e, m#apply1] = i
 
-    def deriving[e, nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply, nt#oldtype1], i: MonadError[e, nt#oldtype1]): MonadError[e, nt#apply] = new MonadError[e, nt#apply] with MonadProxy[nt#apply] {
-        private type m[+a] = nt#apply[a]
+    def deriving[e, nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply1, nt#oldtype1], i: MonadError[e, nt#oldtype1]): MonadError[e, nt#apply1] = new MonadError[e, nt#apply1] with MonadProxy[nt#apply1] {
+        private type m[+a] = nt#apply1[a]
         override val selfMonad = Monad.deriving[nt]
 
         override def throwError[a](e: e): m[a] = j.newOf { i.throwError(e) }
         override def catchError[a](m: m[a])(h: e => m[a]): m[a] = j.newOf { i.catchError(j.oldOf(m))(e => j.oldOf(h(e))) }
     }
 
-    def weak[e, nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply, nt#oldtype1], i: MonadError[e, nt#apply]): MonadError[e, nt#oldtype1] = deriving[e, Kind.coNewtype1[nt]](j.coNewtype, i)
+    def weak[e, nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply1, nt#oldtype1], i: MonadError[e, nt#apply1]): MonadError[e, nt#oldtype1] = deriving[e, Kind.coNewtype1[nt]](j.coNewtype, i)
 }
 
 

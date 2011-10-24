@@ -46,10 +46,10 @@ trait MonadWriterProxy[w, m[+_]] extends MonadWriter[w, m] with MonadProxy[m] {
 
 
 object MonadWriter {
-    def apply[w, m <: Kind.Function1](implicit i: MonadWriter[w, m#apply]): MonadWriter[w, m#apply] = i
+    def apply[w, m <: Kind.Function1](implicit i: MonadWriter[w, m#apply1]): MonadWriter[w, m#apply1] = i
 
-    def deriving[w, nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply, nt#oldtype1], i: MonadWriter[w, nt#oldtype1]): MonadWriter[w, nt#apply] = new MonadWriter[w, nt#apply] with MonadProxy[nt#apply] {
-        private type m[+a] = nt#apply[a]
+    def deriving[w, nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply1, nt#oldtype1], i: MonadWriter[w, nt#oldtype1]): MonadWriter[w, nt#apply1] = new MonadWriter[w, nt#apply1] with MonadProxy[nt#apply1] {
+        private type m[+a] = nt#apply1[a]
         override val selfMonad = Monad.deriving[nt]
 
         override def monoid: Monoid[w] = i.monoid
@@ -58,5 +58,5 @@ object MonadWriter {
         override def pass[a](x: m[(a, w => w)]): m[a] = j.newOf { i.pass(j.oldOf(x)) }
     }
 
-    def weak[w, nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply, nt#oldtype1], i: MonadWriter[w, nt#apply]): MonadWriter[w, nt#oldtype1] = deriving[w, Kind.coNewtype1[nt]](j.coNewtype, i)
+    def weak[w, nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply1, nt#oldtype1], i: MonadWriter[w, nt#apply1]): MonadWriter[w, nt#oldtype1] = deriving[w, Kind.coNewtype1[nt]](j.coNewtype, i)
 }

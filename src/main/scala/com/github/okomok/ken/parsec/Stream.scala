@@ -19,7 +19,7 @@ trait Stream[s, m[+_], t] extends Monad[m] {
 
 
 object Stream extends StreamInstance {
-    def apply[s, m <: Kind.Function1, t](implicit i: Stream[s, m#apply, t]): Stream[s, m#apply, t] = i
+    def apply[s, m <: Kind.Function1, t](implicit i: Stream[s, m#apply1, t]): Stream[s, m#apply1, t] = i
 }
 
 

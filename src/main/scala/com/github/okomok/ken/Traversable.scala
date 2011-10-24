@@ -92,7 +92,7 @@ trait TraversableProxy[t[+_]] extends Traversable[t] with FunctorProxy[t] with F
 
 
 object Traversable {
-    def apply[t <: Kind.Function1](implicit i: Traversable[t#apply]): Traversable[t#apply] = i
+    def apply[t <: Kind.Function1](implicit i: Traversable[t#apply1]): Traversable[t#apply1] = i
 }
 
 

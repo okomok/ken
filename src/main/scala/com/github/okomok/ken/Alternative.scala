@@ -61,10 +61,10 @@ trait AlternativeProxy[f[+_]] extends Alternative[f] with ApplicativeProxy[f] {
 
 
 object Alternative {
-    def apply[f <: Kind.Function1](implicit i: Alternative[f#apply]): Alternative[f#apply] = i
+    def apply[f <: Kind.Function1](implicit i: Alternative[f#apply1]): Alternative[f#apply1] = i
 
-    def deriving[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply, nt#oldtype1], i: Alternative[nt#oldtype1]): Alternative[nt#apply] = new Alternative[nt#apply] with ApplicativeProxy[nt#apply] {
-        private type f[+a] = nt#apply[a]
+    def deriving[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply1, nt#oldtype1], i: Alternative[nt#oldtype1]): Alternative[nt#apply1] = new Alternative[nt#apply1] with ApplicativeProxy[nt#apply1] {
+        private type f[+a] = nt#apply1[a]
         override val selfApplicative = Applicative.deriving[nt]
 
         override def empty: f[Nothing] = j.newOf(i.empty)
@@ -75,5 +75,5 @@ object Alternative {
         override def optional[a](x: f[a]): f[Maybe[a]] = j.newOf(i.optional(j.oldOf(x)))
     }
 
-    def weak[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply, nt#oldtype1], i: Alternative[nt#apply]): Alternative[nt#oldtype1] = deriving[Kind.coNewtype1[nt]](j.coNewtype, i)
+    def weak[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply1, nt#oldtype1], i: Alternative[nt#apply1]): Alternative[nt#oldtype1] = deriving[Kind.coNewtype1[nt]](j.coNewtype, i)
 }

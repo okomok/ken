@@ -17,7 +17,7 @@ package com.github.okomok
 package ken
 
 
-trait Read[a] extends Typeclass0[a] {
+trait Read[a] extends Typeclass[a] {
     final val asRead: Read[apply0] = this
 
     // Core

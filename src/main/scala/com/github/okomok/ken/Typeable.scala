@@ -14,7 +14,7 @@ package com.github.okomok
 package ken
 
 
-trait Typeable[a] extends Typeclass0[a] {
+trait Typeable[a] extends Typeclass[a] {
     final val asTypeable: Typeable[a] = this
 
     // Core

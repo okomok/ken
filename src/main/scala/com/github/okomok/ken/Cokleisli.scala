@@ -74,7 +74,7 @@ private[ken] sealed trait CokleisliAs { this: Cokleisli.type =>
         override def left[b, c, d](f: a[b, c], * : Type[d] = null): a[Either[b, d], Either[c, d]] = leftApp(f, *)
     }
 
-    implicit def _asMonad[w[+_], z]: Monad[apply2[w, z]#apply] = new Monad[apply2[w, z]#apply] {
+    implicit def _asMonad[w[+_], z]: Monad[apply2[w, z]#apply1] = new Monad[apply2[w, z]#apply1] {
         // Functor
         private type f[+a] = Cokleisli[w, z, a]
         override def fmap[a, b](f: a => b): f[a] => f[b] = g => Cokleisli { f `.` g.run }

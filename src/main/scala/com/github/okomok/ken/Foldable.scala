@@ -196,7 +196,7 @@ trait FoldableProxy[t[+_]] extends Foldable[t] {
 
 
 object Foldable extends FoldableInstance {
-    def apply[t <: Kind.Function1](implicit i: Foldable[t#apply]): Foldable[t#apply] = i
+    def apply[t <: Kind.Function1](implicit i: Foldable[t#apply1]): Foldable[t#apply1] = i
 }
 
 

@@ -14,7 +14,7 @@ package com.github.okomok
 package ken
 
 
-trait Show[-a] extends Typeclass0[a] {
+trait Show[-a] extends Typeclass[a] {
     final val asShow: Show[apply0] = this
 
     // Core
@@ -49,7 +49,7 @@ trait ShowProxy[-a] extends Show[a] {
 object Show extends ShowInstance with ShowShortcut {
     def apply[a <: Kind.Function0](implicit i: Show[a#apply0]): Show[a#apply0] = i
 
-    def deriving[nt <: Kind.Newtype0](implicit j: Newtype0[nt#apply0, nt#oldtype0, _], i: Show[nt#oldtype0]): Show[nt#apply0] = new Show[nt#apply0] {
+    def deriving[nt <: Kind.Newtype](implicit j: Newtype[nt#apply0, nt#oldtype, _], i: Show[nt#oldtype]): Show[nt#apply0] = new Show[nt#apply0] {
         override val showsPrec: showsPrec = _ => x => show_prefix(x) `.` showChar('(') `.` i.shows(j.oldOf(x)) `.` showChar(')')
         //override val show: show = a => show_prefix(a) `.` showChar('(') `.` i.show(j.oldOf(a)) `.` showChar(')')
         //override val showList: showList = ls => show_prefix(a) `.` showChar('(') `.` i.showList(List.map((x: nt#apply0) => j.oldOf(x))(ls)) `.` showChar(')')
@@ -57,7 +57,7 @@ object Show extends ShowInstance with ShowShortcut {
         //override val shows: shows = a => i.shows(j.oldOf(a))
     }
 
-    def weak[nt <: Kind.Newtype0](implicit j: Newtype0[nt#apply0, nt#oldtype0, _], i: Show[nt#apply0]): Show[nt#oldtype0] = deriving[Kind.coNewtype0[nt]](j.coNewtype, i)
+    def weak[nt <: Kind.Newtype](implicit j: Newtype[nt#apply0, nt#oldtype, _], i: Show[nt#apply0]): Show[nt#oldtype] = deriving[Kind.coNewtype[nt]](j.coNewtype, i)
 
     val showChar: Char => ShowS = List.op_!::
     val showString: String => ShowS = List.op_!++:
@@ -100,7 +100,7 @@ object Show extends ShowInstance with ShowShortcut {
 private[ken] sealed trait ShowInstance0 { this: Show.type =>
     val ofAny: Show[Any] = new Default[Any] {}
 
-    implicit def ofDefault[a]: Show[a] = ofAny // vs `ofNewtype0`
+    implicit def ofDefault[a]: Show[a] = ofAny // vs `ofNewtype`
 }
 
 private[ken] sealed trait ShowInstance1 extends ShowInstance0 { this: Show.type =>
@@ -113,7 +113,7 @@ private[ken] sealed trait ShowInstance1 extends ShowInstance0 { this: Show.type 
     implicit val ofInt: Show[Int] = Int
     implicit val ofInteger: Show[Integer] = _Integer
 
-    implicit def ofNewtype0[nt, ot, ds <: Kind.MethodList](implicit j: Newtype0[nt, ot, ds], i: Show[ot], k: Kind.MethodList.Contains[ds, Show]): Show[nt] = deriving[Newtype0[nt, ot, _]]
+    implicit def ofNewtype[nt, ot, ds <: Kind.MethodList](implicit j: Newtype[nt, ot, ds], i: Show[ot], k: Kind.MethodList.Contains[ds, Show]): Show[nt] = deriving[Newtype[nt, ot, _]]
 
     // Products
     //

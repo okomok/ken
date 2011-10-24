@@ -88,7 +88,7 @@ trait OrdProxy[-a] extends Ord[a] with EqProxy[a] {
 object Ord extends OrdInstance with OrdShortcut {
     def apply[a <: Kind.Function0](implicit i: Ord[a#apply0]): Ord[a#apply0] = i
 
-    def deriving[nt <: Kind.Newtype0](implicit j: Newtype0[nt#apply0, nt#oldtype0, _], i: Ord[nt#oldtype0]): Ord[nt#apply0] = new Ord[nt#apply0] with EqProxy[nt#apply0] {
+    def deriving[nt <: Kind.Newtype](implicit j: Newtype[nt#apply0, nt#oldtype, _], i: Ord[nt#oldtype]): Ord[nt#apply0] = new Ord[nt#apply0] with EqProxy[nt#apply0] {
         override val selfEq = Eq.deriving[nt]
         private type a = nt#apply0
 
@@ -99,7 +99,7 @@ object Ord extends OrdInstance with OrdShortcut {
         override val op_>= : op_>= = x => y => i.op_>=(j.oldOf(x))(j.oldOf(y))
     }
 
-    def weak[nt <: Kind.Newtype0](implicit j: Newtype0[nt#apply0, nt#oldtype0, _], i: Ord[nt#apply0]): Ord[nt#oldtype0] = deriving[Kind.coNewtype0[nt]](j.coNewtype, i)
+    def weak[nt <: Kind.Newtype](implicit j: Newtype[nt#apply0, nt#oldtype, _], i: Ord[nt#apply0]): Ord[nt#oldtype] = deriving[Kind.coNewtype[nt]](j.coNewtype, i)
 
     def asScalaOrdering[a](implicit i: Ord[a]): scala.Ordering[a] = new scala.Ordering[a] {
         override def compare(x: a, y: a): Int = i.compare(x)(y) match {
@@ -139,7 +139,7 @@ private[ken] sealed trait OrdInstance0 { this: Ord.type =>
         override val op_>= : op_>= = x => y => i.gteq(x, y)
     }
 
-    implicit def ofNewtype0[nt, ot, ds <: Kind.MethodList](implicit j: Newtype0[nt, ot, ds], i: Ord[ot], k: Kind.MethodList.Contains[ds, Ord]): Ord[nt] = deriving[Newtype0[nt, ot, _]]
+    implicit def ofNewtype[nt, ot, ds <: Kind.MethodList](implicit j: Newtype[nt, ot, ds], i: Ord[ot], k: Kind.MethodList.Contains[ds, Ord]): Ord[nt] = deriving[Newtype[nt, ot, _]]
 
     // Products
     //

@@ -15,7 +15,7 @@ class Newtype0Test extends org.scalatest.junit.JUnit3Suite {
     final case class Wrap[a](override val old: a) extends NewtypeOf[a]
 
     object Wrap {
-        implicit def _asNewType0[a]: Newtype0[Wrap[a], a, Num ^:: Ord ^:: Real ^:: Enum ^:: Floating ^:: Show ^:: Eq ^:: Kind.Nil] = new Newtype0[Wrap[a], a, Num ^:: Ord ^:: Real ^:: Enum ^:: Floating ^:: Show ^:: Eq ^:: Kind.Nil] {
+        implicit def _asNewType0[a]: Newtype[Wrap[a], a, Num ^:: Ord ^:: Real ^:: Enum ^:: Floating ^:: Show ^:: Eq ^:: Kind.Nil] = new Newtype[Wrap[a], a, Num ^:: Ord ^:: Real ^:: Enum ^:: Floating ^:: Show ^:: Eq ^:: Kind.Nil] {
             override val newOf: newOf = ot => Wrap(ot)
             override val oldOf: oldOf = nt => nt.get
         }

@@ -64,15 +64,15 @@ trait MonoidProxy[m] extends Monoid[m] with SemigroupProxy[m] {
 object Monoid extends MonoidInstance with MonoidShortcut with MonoidType {
     def apply[m <: Kind.Function0](implicit i: Monoid[m#apply0]): Monoid[m#apply0] = i
 
-    def deriving[nt <: Kind.Newtype0](implicit j: Newtype0[nt#apply0, nt#oldtype0, _], i: Monoid[nt#oldtype0]): Monoid[nt#apply0] = new Monoid[nt#apply0] with SemigroupProxy[nt#apply0] {
+    def deriving[nt <: Kind.Newtype](implicit j: Newtype[nt#apply0, nt#oldtype, _], i: Monoid[nt#oldtype]): Monoid[nt#apply0] = new Monoid[nt#apply0] with SemigroupProxy[nt#apply0] {
         override val selfSemigroup = Semigroup.deriving[nt]
 
         override val mempty: mempty = j.newOf(i.mempty)
         override val mappend: mappend = x => y => j.newOf(i.mappend(j.oldOf(x))(j.oldOf(y)))
-        override val mconcat: mconcat = xs => j.newOf(i.mconcat(List.map[nt#apply0, nt#oldtype0](j.oldOf)(xs)))
+        override val mconcat: mconcat = xs => j.newOf(i.mconcat(List.map[nt#apply0, nt#oldtype](j.oldOf)(xs)))
     }
 
-    def weak[nt <: Kind.Newtype0](implicit j: Newtype0[nt#apply0, nt#oldtype0, _], i: Monoid[nt#apply0]): Monoid[nt#oldtype0] = deriving[Kind.coNewtype0[nt]](j.coNewtype, i)
+    def weak[nt <: Kind.Newtype](implicit j: Newtype[nt#apply0, nt#oldtype, _], i: Monoid[nt#apply0]): Monoid[nt#oldtype] = deriving[Kind.coNewtype[nt]](j.coNewtype, i)
 }
 
 
@@ -104,7 +104,7 @@ sealed trait MonoidType { this: Monoid.type =>
     final case class Dual[+a](override val old: a) extends NewtypeOf[a]
 
     object Dual {
-        implicit def _asNewtype0[a]: Newtype0[Dual[a], a, Eq ^:: Ord ^:: Show ^:: Bounded ^:: Kind.Nil] = new Newtype0[Dual[a], a, Eq ^:: Ord ^:: Show ^:: Bounded ^:: Kind.Nil] {
+        implicit def _asNewtype[a]: Newtype[Dual[a], a, Eq ^:: Ord ^:: Show ^:: Bounded ^:: Kind.Nil] = new Newtype[Dual[a], a, Eq ^:: Ord ^:: Show ^:: Bounded ^:: Kind.Nil] {
             override val newOf: newOf = ot => Dual(ot)
             override val oldOf: oldOf = nt => nt.old
         }
@@ -119,10 +119,10 @@ sealed trait MonoidType { this: Monoid.type =>
     //
     final case class All(override val old: Bool) extends NewtypeOf[Bool]
 
-    object All extends Newtype0[All, Bool, Eq ^:: Ord ^:: Show ^:: Bounded ^:: Kind.Nil] with ThisIsInstance {
+    object All extends Newtype[All, Bool, Eq ^:: Ord ^:: Show ^:: Bounded ^:: Kind.Nil] with ThisIsInstance {
         // Overrides
         //
-        // Newtype0
+        // Newtype
         override val newOf: newOf = ot => All(ot)
         override val oldOf: oldOf = nt => nt.old
 
@@ -140,10 +140,10 @@ sealed trait MonoidType { this: Monoid.type =>
     //
     final case class Any_(override val old: Bool) extends NewtypeOf[Bool]
 
-    object Any_  extends Newtype0[Any_, Bool, Eq ^:: Ord ^:: Show ^:: Bounded ^:: Kind.Nil] with ThisIsInstance {
+    object Any_  extends Newtype[Any_, Bool, Eq ^:: Ord ^:: Show ^:: Bounded ^:: Kind.Nil] with ThisIsInstance {
         // Overrrides
         //
-        // Newtype0
+        // Newtype
         override val newOf: newOf = ot => Any_(ot)
         override val oldOf: oldOf = nt => nt.old
 
@@ -162,7 +162,7 @@ sealed trait MonoidType { this: Monoid.type =>
     final case class Sum[a](override val old: a) extends NewtypeOf[a]
 
     object Sum {
-        implicit def _asNewtype0[a]: Newtype0[Sum[a], a, Eq ^:: Ord ^:: Show ^:: Bounded ^:: Kind.Nil] = new Newtype0[Sum[a], a, Eq ^:: Ord ^:: Show ^:: Bounded ^:: Kind.Nil] {
+        implicit def _asNewtype[a]: Newtype[Sum[a], a, Eq ^:: Ord ^:: Show ^:: Bounded ^:: Kind.Nil] = new Newtype[Sum[a], a, Eq ^:: Ord ^:: Show ^:: Bounded ^:: Kind.Nil] {
             override val newOf: newOf = ot => Sum(ot)
             override val oldOf: oldOf = nt => nt.old
         }
@@ -179,7 +179,7 @@ sealed trait MonoidType { this: Monoid.type =>
     final case class Product[a](override val old: a) extends NewtypeOf[a]
 
     object Product {
-        implicit def _asNewtype0[a]: Newtype0[Product[a], a, Eq ^:: Ord ^:: Show ^:: Bounded ^:: Kind.Nil] = new Newtype0[Product[a], a, Eq ^:: Ord ^:: Show ^:: Bounded ^:: Kind.Nil] {
+        implicit def _asNewtype[a]: Newtype[Product[a], a, Eq ^:: Ord ^:: Show ^:: Bounded ^:: Kind.Nil] = new Newtype[Product[a], a, Eq ^:: Ord ^:: Show ^:: Bounded ^:: Kind.Nil] {
             override val newOf: newOf = ot => Product(ot)
             override val oldOf: oldOf = nt => nt.old
         }
@@ -196,7 +196,7 @@ sealed trait MonoidType { this: Monoid.type =>
     final case class First[a](override val old: Maybe[a]) extends NewtypeOf[Maybe[a]]
 
     object First {
-        implicit def _asNewtype0[a]: Newtype0[First[a], Maybe[a], Eq ^:: Ord ^:: Show ^:: Kind.Nil] = new Newtype0[First[a], Maybe[a], Eq ^:: Ord ^:: Show ^:: Kind.Nil] {
+        implicit def _asNewtype[a]: Newtype[First[a], Maybe[a], Eq ^:: Ord ^:: Show ^:: Kind.Nil] = new Newtype[First[a], Maybe[a], Eq ^:: Ord ^:: Show ^:: Kind.Nil] {
             override val newOf: newOf = ot => First(ot)
             override val oldOf: oldOf = nt => nt.old
         }
@@ -219,7 +219,7 @@ sealed trait MonoidType { this: Monoid.type =>
     final case class Last[a](override val old: Maybe[a]) extends NewtypeOf[Maybe[a]]
 
     object Last {
-        implicit def _asNewtype0[a]: Newtype0[Last[a], Maybe[a], Eq ^:: Ord ^:: Show ^:: Kind.Nil] = new Newtype0[Last[a], Maybe[a], Eq ^:: Ord ^:: Show ^:: Kind.Nil] {
+        implicit def _asNewtype[a]: Newtype[Last[a], Maybe[a], Eq ^:: Ord ^:: Show ^:: Kind.Nil] = new Newtype[Last[a], Maybe[a], Eq ^:: Ord ^:: Show ^:: Kind.Nil] {
             override val newOf: newOf = ot => Last(ot)
             override val oldOf: oldOf = nt => nt.old
         }

@@ -13,7 +13,7 @@ package ken
 package quickcheck
 
 
-trait CoArbitary[a] extends Typeclass0[a] {
+trait CoArbitary[a] extends Typeclass[a] {
     final val asCoArbitary: CoArbitary[a] = this
 
     // Core

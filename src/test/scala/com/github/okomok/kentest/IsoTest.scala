@@ -66,7 +66,7 @@ class IsoTest extends org.scalatest.junit.JUnit3Suite {
 
 
     class My2[n <: Kind.Function1] {
-        type m[+a] = n#apply[a]
+        type m[+a] = n#apply1[a]
         def useIso1(implicit i: Iso1[m, WeakIdentity.apply]) = ()
         def useIso3(implicit i: Iso1[m, Identity]) = ()
     }

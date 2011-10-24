@@ -70,19 +70,19 @@ trait ExtendProxy[w[+_]] extends Extend[w] with FunctorProxy[w] {
 
 
 object Extend extends ExtendInstance {
-    def apply[w <: Kind.Function1](implicit i: Extend[w#apply]): Extend[w#apply] = i
+    def apply[w <: Kind.Function1](implicit i: Extend[w#apply1]): Extend[w#apply1] = i
 
-    def deriving[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply, nt#oldtype1], i: Extend[nt#oldtype1]): Extend[nt#apply] = new Extend[nt#apply] with FunctorProxy[nt#apply] {
-        private type w[+a] = nt#apply[a]
+    def deriving[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply1, nt#oldtype1], i: Extend[nt#oldtype1]): Extend[nt#apply1] = new Extend[nt#apply1] with FunctorProxy[nt#apply1] {
+        private type w[+a] = nt#apply1[a]
         override val selfFunctor = Functor.deriving[nt]
 
         override def extend[a, b](f: w[a] => b): w[a] => w[b] = nt => j.newOf(i.extend((ot: nt#oldtype1[a]) => f(j.newOf(ot)))(j.oldOf(nt)))
     }
 
-    def weak[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply, nt#oldtype1], i: Extend[nt#apply]): Extend[nt#oldtype1] = deriving[Kind.coNewtype1[nt]](j.coNewtype, i)
+    def weak[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply1, nt#oldtype1], i: Extend[nt#apply1]): Extend[nt#oldtype1] = deriving[Kind.coNewtype1[nt]](j.coNewtype, i)
 }
 
 
 trait ExtendInstance { this: Extend.type =>
-    implicit def ofFunction[z](implicit i: Semigroup[z]): Extend[Function.apply[z]#apply] = Function._asExtend(i)
+    implicit def ofFunction[z](implicit i: Semigroup[z]): Extend[Function.apply[z]#apply1] = Function._asExtend(i)
 }

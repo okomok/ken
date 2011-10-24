@@ -14,7 +14,7 @@ package com.github.okomok
 package ken
 
 
-trait Bounded[a] extends Typeclass0[a] {
+trait Bounded[a] extends Typeclass[a] {
     final val asBounded: Bounded[apply0] = this
 
     // Core
@@ -38,12 +38,12 @@ trait BoundedProxy[a] extends Bounded[a] {
 object Bounded extends BoundedInstance with BoundedShortcut with BoundedDetail {
     def apply[a <: Kind.Function0](implicit i: Bounded[a#apply0]): Bounded[a#apply0] = i
 
-    def deriving[nt <: Kind.Newtype0](implicit j: Newtype0[nt#apply0, nt#oldtype0, _], i: Bounded[nt#oldtype0]): Bounded[nt#apply0] = new Bounded[nt#apply0] {
+    def deriving[nt <: Kind.Newtype](implicit j: Newtype[nt#apply0, nt#oldtype, _], i: Bounded[nt#oldtype]): Bounded[nt#apply0] = new Bounded[nt#apply0] {
         override val minBound: minBound = j.newOf(i.minBound)
         override val maxBound: maxBound = j.newOf(i.maxBound)
     }
 
-    def weak[nt <: Kind.Newtype0](implicit j: Newtype0[nt#apply0, nt#oldtype0, _], i: Bounded[nt#apply0]): Bounded[nt#oldtype0] = deriving[Kind.coNewtype0[nt]](j.coNewtype, i)
+    def weak[nt <: Kind.Newtype](implicit j: Newtype[nt#apply0, nt#oldtype, _], i: Bounded[nt#apply0]): Bounded[nt#oldtype] = deriving[Kind.coNewtype[nt]](j.coNewtype, i)
 }
 
 
@@ -53,7 +53,7 @@ sealed trait BoundedInstance { this: Bounded.type =>
     implicit val ofInt: Bounded[Int] = Int
     implicit val ofUnit: Bounded[Unit] = Unit
 
-    implicit def ofNewtype0[nt, ot, ds <: Kind.MethodList](implicit j: Newtype0[nt, ot, ds], i: Bounded[ot], k: Kind.MethodList.Contains[ds, Bounded]): Bounded[nt] = deriving[Newtype0[nt, ot, _]]
+    implicit def ofNewtype[nt, ot, ds <: Kind.MethodList](implicit j: Newtype[nt, ot, ds], i: Bounded[ot], k: Kind.MethodList.Contains[ds, Bounded]): Bounded[nt] = deriving[Newtype[nt, ot, _]]
 }
 
 

@@ -14,7 +14,7 @@ package com.github.okomok
 package ken
 
 
-trait Num[a] extends Typeclass0[a] {
+trait Num[a] extends Typeclass[a] {
     final val asNum: Num[apply0] = this
 
     // Core
@@ -94,7 +94,7 @@ trait NumProxy[a] extends Num[a] {
 object Num extends NumInstance with NumShortcut {
     def apply[a <: Kind.Function0](implicit i: Num[a#apply0]): Num[a#apply0] = i
 
-    def deriving[nt <: Kind.Newtype0](implicit j: Newtype0[nt#apply0, nt#oldtype0, _], i: Num[nt#oldtype0]): Num[nt#apply0] = new Num[nt#apply0] {
+    def deriving[nt <: Kind.Newtype](implicit j: Newtype[nt#apply0, nt#oldtype, _], i: Num[nt#oldtype]): Num[nt#apply0] = new Num[nt#apply0] {
         private type a = nt#apply0
 
         override val op_+ : op_+ = x => y => j.newOf(i.op_+(j.oldOf(x))(j.oldOf(y)))
@@ -109,7 +109,7 @@ object Num extends NumInstance with NumShortcut {
         override def fromIntegral[z](x: z)(implicit zi: Integral[z]): a = j.newOf(i.fromIntegral(x)(zi))
     }
 
-    def weak[nt <: Kind.Newtype0](implicit j: Newtype0[nt#apply0, nt#oldtype0, _], i: Num[nt#apply0]): Num[nt#oldtype0] = deriving[Kind.coNewtype0[nt]](j.coNewtype, i)
+    def weak[nt <: Kind.Newtype](implicit j: Newtype[nt#apply0, nt#oldtype, _], i: Num[nt#apply0]): Num[nt#oldtype] = deriving[Kind.coNewtype[nt]](j.coNewtype, i)
 }
 
 
@@ -129,7 +129,7 @@ sealed trait NumInstance { this: Num.type =>
         override val fromInteger: fromInteger = n => i.fromInt(n.toInt)
     }
 
-    implicit def ofNewtype0[nt, ot, ds <: Kind.MethodList](implicit j: Newtype0[nt, ot, ds], i: Num[ot], k: Kind.MethodList.Contains[ds, Num]): Num[nt] = deriving[Newtype0[nt, ot, _]]
+    implicit def ofNewtype[nt, ot, ds <: Kind.MethodList](implicit j: Newtype[nt, ot, ds], i: Num[ot], k: Kind.MethodList.Contains[ds, Num]): Num[nt] = deriving[Newtype[nt, ot, _]]
 
 /*
     implicit def _Fractional_ofScalaFractional[a](implicit i: scala.math.Fractional[a]): Fractional[a] = new Fractional[a] with NumProxy[a] {

@@ -51,7 +51,7 @@ trait FractionalProxy[a] extends Fractional[a] with NumProxy[a] {
 object Fractional extends FractionalInstance with FractionalShortcut {
     def apply[a](implicit i: Fractional[a]): Fractional[a] = i
 
-    def deriving[nt <: Kind.Newtype0](implicit j: Newtype0[nt#apply0, nt#oldtype0, _], i: Fractional[nt#oldtype0]): Fractional[nt#apply0] = new Fractional[nt#apply0] with NumProxy[nt#apply0] {
+    def deriving[nt <: Kind.Newtype](implicit j: Newtype[nt#apply0, nt#oldtype, _], i: Fractional[nt#oldtype]): Fractional[nt#apply0] = new Fractional[nt#apply0] with NumProxy[nt#apply0] {
         private type a = nt#apply0
         override val selfNum = Num.deriving[nt]
 
@@ -62,7 +62,7 @@ object Fractional extends FractionalInstance with FractionalShortcut {
         override def realToFrac[z](x: z)(implicit zr: Real[z]): a = j.newOf(i.realToFrac(x)(zr))
     }
 
-    def weak[nt <: Kind.Newtype0](implicit j: Newtype0[nt#apply0, nt#oldtype0, _], i: Fractional[nt#apply0]): Fractional[nt#oldtype0] = deriving[Kind.coNewtype0[nt]](j.coNewtype, i)
+    def weak[nt <: Kind.Newtype](implicit j: Newtype[nt#apply0, nt#oldtype, _], i: Fractional[nt#apply0]): Fractional[nt#oldtype] = deriving[Kind.coNewtype[nt]](j.coNewtype, i)
 }
 
 
@@ -70,7 +70,7 @@ sealed trait FractionalInstance { this: Fractional.type =>
     implicit val ofDouble: Fractional[Double] = Double
     implicit val ofFloat: Fractional[Float] = Float
 
-    implicit def ofNewtype0[nt, ot, ds <: Kind.MethodList](implicit j: Newtype0[nt, ot, ds], i: Fractional[ot], k: Kind.MethodList.Contains[ds, Fractional]): Fractional[nt] = deriving[Newtype0[nt, ot, _]]
+    implicit def ofNewtype[nt, ot, ds <: Kind.MethodList](implicit j: Newtype[nt, ot, ds], i: Fractional[ot], k: Kind.MethodList.Contains[ds, Fractional]): Fractional[nt] = deriving[Newtype[nt, ot, _]]
 }
 
 

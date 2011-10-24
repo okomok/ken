@@ -14,7 +14,7 @@ package com.github.okomok
 package ken
 
 
-trait RandomGen[g] extends Typeclass0[g] {
+trait RandomGen[g] extends Typeclass[g] {
     final val asRandomGen: RandomGen[apply0] = this
 
     // Core

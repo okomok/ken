@@ -21,7 +21,7 @@ object ParsecTOp {
 
 sealed trait ParsecTOp[s, u, n[+_]] extends Prim[s, u, n] with Combinators[s, u, n] with Char_[s, u, n] {
     protected implicit val innerMonad: Monad[n]
-    protected implicit final lazy val parsecMonad: MonadPlus[ParsecT.apply3[s, u, n]#apply] = ParsecT._asMonadPlus[s, u, n]
+    protected implicit final lazy val parsecMonad: MonadPlus[ParsecT.apply3[s, u, n]#apply1] = ParsecT._asMonadPlus[s, u, n]
 
     protected implicit final def innerFor[a](x: n[a]): innerMonad.For[a] = innerMonad.`for`(x)
     protected implicit final def innerOp_>>=[a](x: n[a]): innerMonad.Op_>>=[a] = innerMonad.>>=(x)

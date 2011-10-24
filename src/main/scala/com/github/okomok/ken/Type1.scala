@@ -8,9 +8,9 @@ package com.github.okomok
 package ken
 
 
-trait Type[a] extends TypeEnvelope with Kind.const[a]
+trait Type1[f[_]] extends TypeEnvelope
 
 
-object Type {
-    def apply[a]: Type[a] = new Type[a] {}
+object Type1 {
+    def apply[f[_]]: Type1[f] = new Type1[f] {}
 }

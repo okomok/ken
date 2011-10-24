@@ -11,7 +11,7 @@ package ken
 // May be removed.
 
 
-trait Newtype1[nt[+_], ot[+_]] extends Typeclass with Kind.Newtype1 { outer =>
+trait Newtype1[nt[+_], ot[+_]] extends TypeclassLike with Kind.Newtype1 { outer =>
     override type apply1[+a] = nt[a]
     override type oldtype1[+a] = ot[a]
 
@@ -44,7 +44,7 @@ trait Newtype1Proxy[nt[+_], ot[+_]] extends Newtype1[nt, ot] {
 
 
 object Newtype1 extends Newtype1Instance {
-    def apply[nt <: Kind.Newtype1](implicit i: Newtype1[nt#apply, nt#oldtype1]): Newtype1[nt#apply, nt#oldtype1] = i
+    def apply[nt <: Kind.Newtype1](implicit i: Newtype1[nt#apply1, nt#oldtype1]): Newtype1[nt#apply1, nt#oldtype1] = i
 }
 
 

@@ -17,7 +17,7 @@ package ken
 import RealWorld._
 
 
-trait Random[a] extends Typeclass0[a] {
+trait Random[a] extends Typeclass[a] {
     final val asRandom: Random[apply0] = this
 
     // Core

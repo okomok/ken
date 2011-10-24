@@ -12,7 +12,7 @@ package ken
 //   See: =~~= of scalaz7
 
 
-trait Iso1[f[_], g[_]] extends Typeclass {
+trait Iso1[f[_], g[_]] extends TypeclassLike {
     final val asIso: Iso1[f, g] = this
 
     implicit def imply[a](f: f[a]): g[a]
@@ -29,7 +29,7 @@ trait Iso1Proxy[f[_], g[_]] extends Iso1[f, g] {
 
 
 object Iso1 extends Iso1Instance {
-    def apply[f <: Kind.Function1, g <: Kind.Function1](implicit i: Iso1[f#apply, g#apply]): Iso1[f#apply, g#apply] = i
+    def apply[f <: Kind.Function1, g <: Kind.Function1](implicit i: Iso1[f#apply1, g#apply1]): Iso1[f#apply1, g#apply1] = i
 }
 
 

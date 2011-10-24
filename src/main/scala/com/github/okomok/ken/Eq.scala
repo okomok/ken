@@ -12,7 +12,7 @@ package ken
 // (Toplevel identifier is case-insensitive under the influence of file-system.)
 
 
-trait _Eq[-a] extends Typeclass0[a] {
+trait _Eq[-a] extends Typeclass[a] {
     final val asEq: _Eq[apply0] = this
 
     // Core
@@ -48,12 +48,12 @@ trait EqProxy[-a] extends _Eq[a] {
 object _Eq extends EqInstance with EqShortcut {
     def apply[a <: Kind.Function0](implicit i: _Eq[a#apply0]): _Eq[a#apply0] = i
 
-    def deriving[nt <: Kind.Newtype0](implicit j: Newtype0[nt#apply0, nt#oldtype0, _], i: _Eq[nt#oldtype0]): _Eq[nt#apply0] = new _Eq[nt#apply0] {
+    def deriving[nt <: Kind.Newtype](implicit j: Newtype[nt#apply0, nt#oldtype, _], i: _Eq[nt#oldtype]): _Eq[nt#apply0] = new _Eq[nt#apply0] {
         override val op_=== : op_=== = x => y => i.op_===(j.oldOf(x))(j.oldOf(y))
         override val op_/== : op_/== = x => y => i.op_/==(j.oldOf(x))(j.oldOf(y))
     }
 
-    def weak[nt <: Kind.Newtype0](implicit j: Newtype0[nt#apply0, nt#oldtype0, _], i: _Eq[nt#apply0]): _Eq[nt#oldtype0] = deriving[Kind.coNewtype0[nt]](j.coNewtype, i)
+    def weak[nt <: Kind.Newtype](implicit j: Newtype[nt#apply0, nt#oldtype, _], i: _Eq[nt#apply0]): _Eq[nt#oldtype] = deriving[Kind.coNewtype[nt]](j.coNewtype, i)
 
     trait Default[a] extends _Eq[a] {
         override val op_=== : op_=== = x => y => x == y
@@ -73,7 +73,7 @@ object _Eq extends EqInstance with EqShortcut {
 private[ken] sealed trait EqInstance0 { this: _Eq.type =>
     val ofAny: _Eq[Any] = new Default[Any] {}
 
-    implicit def ofDefault[a]: _Eq[a] = ofAny // vs `ofNewtype0`
+    implicit def ofDefault[a]: _Eq[a] = ofAny // vs `ofNewtype`
 }
 
 private[ken] sealed trait EqInstance1 extends EqInstance0 { this: _Eq.type =>
@@ -87,7 +87,7 @@ private[ken] sealed trait EqInstance1 extends EqInstance0 { this: _Eq.type =>
     implicit val ofInteger: _Eq[Integer] = _Integer
     implicit val ofUnit: _Eq[Unit] = Unit
 
-    implicit def ofNewtype0[nt, ot, ds <: Kind.MethodList](implicit j: Newtype0[nt, ot, ds], i: _Eq[ot], k: Kind.MethodList.Contains[ds, Eq]): _Eq[nt] = deriving[Newtype0[nt, ot, _]]
+    implicit def ofNewtype[nt, ot, ds <: Kind.MethodList](implicit j: Newtype[nt, ot, ds], i: _Eq[ot], k: Kind.MethodList.Contains[ds, Eq]): _Eq[nt] = deriving[Newtype[nt, ot, _]]
 
     // Products
     //

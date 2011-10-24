@@ -72,10 +72,10 @@ trait ApplicativeProxy[f[+_]] extends Applicative[f] with FunctorProxy[f] {
 
 
 object Applicative extends ApplicativeInstance {
-    def apply[f <: Kind.Function1](implicit i: Applicative[f#apply]): Applicative[f#apply] = i
+    def apply[f <: Kind.Function1](implicit i: Applicative[f#apply1]): Applicative[f#apply1] = i
 
-    def deriving[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply, nt#oldtype1], i: Applicative[nt#oldtype1]): Applicative[nt#apply] = new Applicative[nt#apply] with FunctorProxy[nt#apply] {
-        private type f[+a] = nt#apply[a]
+    def deriving[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply1, nt#oldtype1], i: Applicative[nt#oldtype1]): Applicative[nt#apply1] = new Applicative[nt#apply1] with FunctorProxy[nt#apply1] {
+        private type f[+a] = nt#apply1[a]
         override val selfFunctor = Functor.deriving[nt]
 
         override def pure[a](x: Lazy[a]): f[a] = j.newOf { i.pure(x) }
@@ -84,10 +84,10 @@ object Applicative extends ApplicativeInstance {
         override def op_<*[a, b](x: f[a])(y: f[b]): f[a] = j.newOf { i.op_<*(j.oldOf(x))(j.oldOf(y)) }
     }
 
-    def weak[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply, nt#oldtype1], i: Applicative[nt#apply]): Applicative[nt#oldtype1] = deriving[Kind.coNewtype1[nt]](j.coNewtype, i)
+    def weak[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply1, nt#oldtype1], i: Applicative[nt#apply1]): Applicative[nt#oldtype1] = deriving[Kind.coNewtype1[nt]](j.coNewtype, i)
 }
 
 
 sealed trait ApplicativeInstance { this: Applicative.type =>
-    implicit def ofTuple2[z](implicit ma: Monoid[z]): Applicative[Tuple2.apply[z]#apply] = Tuple2._asApplicative(ma)
+    implicit def ofTuple2[z](implicit ma: Monoid[z]): Applicative[Tuple2.apply[z]#apply1] = Tuple2._asApplicative(ma)
 }

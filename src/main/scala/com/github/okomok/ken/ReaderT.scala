@@ -48,7 +48,7 @@ private[ken] sealed trait ReaderTAs0 { this: ReaderT.type =>
         override def liftControl[n[+_], a](f: Run => n[a])(implicit i: Monad[n]): t[n, a] = ReaderT { r =>
             f {
                 new Run {
-                    override def apply[n_[+_], o[+_], b](t: t[n_, b], * : TypeC1[o] = null)(implicit ri: Monad[n_], rj: Monad[o], rk: Monad[({type m[+a] = t[o, a]})#m]): n_[t[o, b]] = {
+                    override def apply[n_[+_], o[+_], b](t: t[n_, b], * : Type1[o] = null)(implicit ri: Monad[n_], rj: Monad[o], rk: Monad[({type m[+a] = t[o, a]})#m]): n_[t[o, b]] = {
                         ri.liftM((x: b) => rk.`return`(x))(run(t)(r))
                     }
                 }

@@ -33,7 +33,7 @@ class MiniMonadTransTest extends org.scalatest.junit.JUnit3Suite {
             override type apply1[+a] = MyParser[s, a]
         }
 
-        implicit def _asMonad[s]: Monad[apply[s]#apply] = error("todo")
+        implicit def _asMonad[s]: Monad[apply[s]#apply1] = error("todo")
     }
 
     final case class StateT[s, m[+_], +a](override val old: s => m[(a, s)]) extends NewtypeOf[s => m[(a, s)]]

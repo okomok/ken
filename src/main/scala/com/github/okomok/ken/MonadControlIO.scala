@@ -117,10 +117,10 @@ trait MonadControlIOProxy[m[+_]] extends MonadControlIO[m] with MonadIOProxy[m] 
 
 
 object MonadControlIO {
-    def apply[m <: Kind.Function1](implicit i: MonadControlIO[m#apply]): MonadControlIO[m#apply] = i
+    def apply[m <: Kind.Function1](implicit i: MonadControlIO[m#apply1]): MonadControlIO[m#apply1] = i
 
-    def deriving[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply, nt#oldtype1], i: MonadControlIO[nt#oldtype1]): MonadControlIO[nt#apply] = new MonadControlIO[nt#apply] with MonadIOProxy[nt#apply] {
-        private type m[+a] = nt#apply[a]
+    def deriving[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply1, nt#oldtype1], i: MonadControlIO[nt#oldtype1]): MonadControlIO[nt#apply1] = new MonadControlIO[nt#apply1] with MonadIOProxy[nt#apply1] {
+        private type m[+a] = nt#apply1[a]
         override val selfMonadIO = MonadIO.deriving[nt]
 
         override def liftIO[a](io: IO[a]): m[a] = j.newOf { i.liftIO(io) }
@@ -135,7 +135,7 @@ object MonadControlIO {
         }
     }
 
-    def weak[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply, nt#oldtype1], i: MonadControlIO[nt#apply]): MonadControlIO[nt#oldtype1] = deriving[Kind.coNewtype1[nt]](j.coNewtype, i)
+    def weak[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply1, nt#oldtype1], i: MonadControlIO[nt#apply1]): MonadControlIO[nt#oldtype1] = deriving[Kind.coNewtype1[nt]](j.coNewtype, i)
 
     type RunInIO[m[+_]] = MonadTransControl.RunInBase[m, IO]
 

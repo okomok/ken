@@ -11,7 +11,7 @@ package com.github.okomok
 package ken
 
 
-trait Semigroup[a] extends Typeclass0[a] {
+trait Semigroup[a] extends Typeclass[a] {
     final val asSemigroup: Semigroup[apply0] = this
 
     // Core
@@ -81,7 +81,7 @@ trait SemigroupProxy[a] extends Semigroup[a] {
 object Semigroup extends SemigroupInstance with SemigroupShortcut with SemigroupType {
     def apply[a <: Kind.Function0](implicit i: Semigroup[a#apply0]): Semigroup[a#apply0] = i
 
-    def deriving[nt <: Kind.Newtype0](implicit j: Newtype0[nt#apply0, nt#oldtype0, _], i: Semigroup[nt#oldtype0]): Semigroup[nt#apply0] = new Semigroup[nt#apply0] {
+    def deriving[nt <: Kind.Newtype](implicit j: Newtype[nt#apply0, nt#oldtype, _], i: Semigroup[nt#oldtype]): Semigroup[nt#apply0] = new Semigroup[nt#apply0] {
         private type a = nt#apply0
         override val op_<>: : op_<>: = x => y => j.newOf(i.op_<>:(j.oldOf(x))(j.oldOf(y)))
 
@@ -89,7 +89,7 @@ object Semigroup extends SemigroupInstance with SemigroupShortcut with Semigroup
         override val cycle1: cycle1 = x => j.newOf(i.cycle1(j.oldOf(x)))
     }
 
-    def weak[nt <: Kind.Newtype0](implicit j: Newtype0[nt#apply0, nt#oldtype0, _], i: Semigroup[nt#apply0]): Semigroup[nt#oldtype0] = deriving[Kind.coNewtype0[nt]](j.coNewtype, i)
+    def weak[nt <: Kind.Newtype](implicit j: Newtype[nt#apply0, nt#oldtype, _], i: Semigroup[nt#apply0]): Semigroup[nt#oldtype] = deriving[Kind.coNewtype[nt]](j.coNewtype, i)
 }
 
 
@@ -98,7 +98,7 @@ sealed trait SemigroupInstance { this: Semigroup.type =>
     implicit def ofFunction[z, b](implicit mb: Semigroup[b]): Semigroup[z => b] = Function._asSemigroup[z, b]
     implicit def ofTuple2[a, b](implicit ma: Semigroup[a], mb: Semigroup[b]): Semigroup[(a, b)] = Tuple2._asSemigroup[a, b]
 
-    implicit def ofNewtype0[nt, ot, ds <: Kind.MethodList](implicit j: Newtype0[nt, ot, ds], i: Semigroup[ot], k: Kind.MethodList.Contains[ds, Semigroup]): Semigroup[nt] = deriving[Newtype0[nt, ot, _]]
+    implicit def ofNewtype[nt, ot, ds <: Kind.MethodList](implicit j: Newtype[nt, ot, ds], i: Semigroup[ot], k: Kind.MethodList.Contains[ds, Semigroup]): Semigroup[nt] = deriving[Newtype[nt, ot, _]]
 }
 
 
@@ -123,7 +123,7 @@ sealed trait SemigroupType { this: Semigroup.type =>
     final case class Min[a](override val old: a) extends NewtypeOf[a]
 
     object Min {
-        implicit def _asNewtype0[a]: Newtype0[Min[a], a, Eq ^:: Ord ^:: Bounded ^:: Show ^:: Kind.Nil] = new Newtype0[Min[a], a, Eq ^:: Ord ^:: Bounded ^:: Show ^:: Kind.Nil] {
+        implicit def _asNewtype[a]: Newtype[Min[a], a, Eq ^:: Ord ^:: Bounded ^:: Show ^:: Kind.Nil] = new Newtype[Min[a], a, Eq ^:: Ord ^:: Bounded ^:: Show ^:: Kind.Nil] {
             override val newOf: newOf = ot => Min(ot)
             override val oldOf: oldOf = nt => nt.old
         }
@@ -146,7 +146,7 @@ sealed trait SemigroupType { this: Semigroup.type =>
     final case class Max[a](override val old: a) extends NewtypeOf[a]
 
     object Max {
-        implicit def _asNewtype0[a]: Newtype0[Max[a], a, Eq ^:: Ord ^:: Bounded ^:: Show ^:: Kind.Nil] = new Newtype0[Max[a], a, Eq ^:: Ord ^:: Bounded ^:: Show ^:: Kind.Nil] {
+        implicit def _asNewtype[a]: Newtype[Max[a], a, Eq ^:: Ord ^:: Bounded ^:: Show ^:: Kind.Nil] = new Newtype[Max[a], a, Eq ^:: Ord ^:: Bounded ^:: Show ^:: Kind.Nil] {
             override val newOf: newOf = ot => Max(ot)
             override val oldOf: oldOf = nt => nt.old
         }
@@ -172,7 +172,7 @@ sealed trait SemigroupType { this: Semigroup.type =>
     final case class First[a](override val old: a) extends NewtypeOf[a]
 
     object First {
-        implicit def _asNewtype0[a]: Newtype0[First[a], a, Eq ^:: Ord ^:: Bounded ^:: Show ^:: Kind.Nil] = new Newtype0[First[a], a, Eq ^:: Ord ^:: Bounded ^:: Show ^:: Kind.Nil] {
+        implicit def _asNewtype[a]: Newtype[First[a], a, Eq ^:: Ord ^:: Bounded ^:: Show ^:: Kind.Nil] = new Newtype[First[a], a, Eq ^:: Ord ^:: Bounded ^:: Show ^:: Kind.Nil] {
             override val newOf: newOf = ot => First(ot)
             override val oldOf: oldOf = nt => nt.old
         }
@@ -189,7 +189,7 @@ sealed trait SemigroupType { this: Semigroup.type =>
     final case class Last[a](override val old: a) extends NewtypeOf[a]
 
     object Last {
-        implicit def _asNewtype0[a]: Newtype0[Last[a], a, Eq ^:: Ord ^:: Bounded ^:: Show ^:: Kind.Nil] = new Newtype0[Last[a], a, Eq ^:: Ord ^:: Bounded ^:: Show ^:: Kind.Nil] {
+        implicit def _asNewtype[a]: Newtype[Last[a], a, Eq ^:: Ord ^:: Bounded ^:: Show ^:: Kind.Nil] = new Newtype[Last[a], a, Eq ^:: Ord ^:: Bounded ^:: Show ^:: Kind.Nil] {
             override val newOf: newOf = ot => Last(ot)
             override val oldOf: oldOf = nt => nt.old
         }

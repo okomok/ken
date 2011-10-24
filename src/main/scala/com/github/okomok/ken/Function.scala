@@ -49,7 +49,7 @@ object Function extends FunctionAs with
 
 
 private[ken] sealed trait FunctionAs { this: Function.type =>
-    private[ken] def _asMonadReader[z]: MonadReader[z, apply[z]#apply] = new MonadReader[z, apply[z]#apply] {
+    private[ken] def _asMonadReader[z]: MonadReader[z, apply[z]#apply1] = new MonadReader[z, apply[z]#apply1] {
         // Functor
         private type f[+a] = z => a
         override def fmap[a, b](x: a => b): f[a] => f[b] = y => x `.` y
@@ -71,13 +71,13 @@ private[ken] sealed trait FunctionAs { this: Function.type =>
         override def times1p[n](n: n)(f: m)(implicit j: Integral[n]): m = e => sb.times1p(n)(f(e))(j)
     }
 
-    private[ken] def _asExtend[m](implicit i: Semigroup[m]): Extend[apply[m]#apply] = new Extend[apply[m]#apply] with FunctorProxy[apply[m]#apply] {
+    private[ken] def _asExtend[m](implicit i: Semigroup[m]): Extend[apply[m]#apply1] = new Extend[apply[m]#apply1] with FunctorProxy[apply[m]#apply1] {
         private type w[+a] = Function[m, a]
         override val selfFunctor = _asMonadReader[m]
         override def duplicate[a](f: w[a]): w[w[a]] = m => f `.` i.op_<>:(m)
     }
 
-    private[ken] def _asComonad[m](implicit i: Monoid[m]): Comonad[apply[m]#apply] = new Comonad[apply[m]#apply] with ExtendProxy[apply[m]#apply] {
+    private[ken] def _asComonad[m](implicit i: Monoid[m]): Comonad[apply[m]#apply1] = new Comonad[apply[m]#apply1] with ExtendProxy[apply[m]#apply1] {
         private type w[+a] = Function[m, a]
         override val selfExtend = _asExtend(i)
         override def extract[a](f: w[a]): a = f(i.mempty)
