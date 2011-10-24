@@ -11,9 +11,9 @@ package ken
 /**
  * Type-constructor envelope for type-parameter inference
  */
-trait TypeC2[f[-_, +_]] extends Kind.quote2[f]
+trait TypeC2[f[_, _]]
 
 
 object TypeC2 {
-    def apply[f[-_, +_]]: TypeC2[f] = new TypeC2[f] {}
+    def apply[f[_, _]]: TypeC2[f] = new TypeC2[f] {}
 }

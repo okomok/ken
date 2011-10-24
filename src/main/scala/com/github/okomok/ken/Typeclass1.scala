@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-trait Typeclass1[f[+_]] extends Typeclass with TypeC1[f] {
+trait Typeclass1[f[+_]] extends Typeclass with TypeC1[f] with Kind.quote1[f] {
 
     /**
      * Helper for type-parameter inference

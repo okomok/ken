@@ -21,6 +21,14 @@ class TypeableTest extends org.scalatest.junit.JUnit3Suite {
         expect(Nothing)(c)
     }
 
+    def test_gcast {
+        val a = List.from("hello")
+        val Just(x) = Typeable.gcast(a, Type[List[Char]])
+        expect(a)(x)
+        val c = Typeable.cast(a, Type[scala.List[Char]])
+        expect(Nothing)(c)
+    }
+
     def testParam {
         val a = "hello" :: scala.Nil
         val Just(x) = Typeable.cast(a, Type[scala.List[Predef.String]])

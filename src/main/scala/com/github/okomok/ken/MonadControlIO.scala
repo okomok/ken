@@ -45,8 +45,8 @@ trait MonadControlIO[m[+_]] extends MonadIO[m] {
             for {
                 h <- handlers
             } yield {
-                def impl[e](x: (e => m[a], Exception[e])): Exception.Handler[m[a]] = {
-                    Exception.Handler((e: e) => runInIO { x._1(e) })(x._2)
+                def impl[e](rep: (e => m[a], Exception[e])): Exception.Handler[m[a]] = {
+                    Exception.Handler((e: e) => runInIO { rep._1(e) })(rep._2)
                 }
                 impl(h.rep)
             }

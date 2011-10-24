@@ -21,31 +21,6 @@ trait Typeable[a] extends Typeclass0[a] {
     //
     type typeOf = Lazy[_] => TypeRep
     def typeOf: typeOf
-
-    // Extra
-    //
-    def cast[b](x: Lazy[_])(implicit j: Typeable[b]): Maybe[b] = {
-        lazy val r: Maybe[b] = if (typeOf(x) <:< j.typeOf(Lazy(Maybe.fromJust(r)))) {
-            Just(x.!.asInstanceOf[b])
-        } else {
-            Nothing
-        }
-        r
-    }
-
-    // In short, success only if a == b.
-    def mkT[b](f: b => b)(x: a)(implicit j: Typeable[b]): a = cast[b](x)(j) match {
-        case Nothing => x
-        case Just(y) => j.cast[a](f(y))(this) match {
-            case Nothing => x
-            case Just(r) => r
-        }
-    }
-
-    def mkQ[b, r](r: r)(q: b => r)(a: a)(implicit j: Typeable[b]): r = cast[b](a)(j) match {
-        case Nothing => r
-        case Just(b) => q(b)
-    }
 }
 
 
@@ -53,15 +28,49 @@ trait TypeableProxy[a] extends Typeable[a] {
     def selfTypeable: Typeable[a]
 
     override def typeOf: typeOf = selfTypeable.typeOf
-
-    override def cast[b](x: Lazy[_])(implicit j: Typeable[b]): Maybe[b] = selfTypeable.cast(x)(j)
-    override def mkT[b](f: b => b)(x: a)(implicit j: Typeable[b]): a = selfTypeable.mkT(f)(x)(j)
-    override def mkQ[b, r](r: r)(q: b => r)(a: a)(implicit j: Typeable[b]): r = selfTypeable.mkQ(r)(q)(a)(j)
 }
 
 
 object Typeable extends TypeableInstance with TypeableShortcut {
     def apply[a <: Kind.Function0](implicit i: Typeable[a#apply0]): Typeable[a#apply0] = i
+
+    // For some reason, result type-ascription doesn't work.
+    def cast[a, b](x: Lazy[a], y: Type[b] = null)(implicit i: Typeable[a], j: Typeable[b]): Maybe[b] = {
+        lazy val r: Maybe[b] = {
+            if (i.typeOf(x) <:< j.typeOf(Lazy(Maybe.fromJust(r)))) Just(x.!.asInstanceOf[b])
+            else Nothing
+        }
+        r
+    }
+
+    // Any usecase?
+    def gcast[a, b, c[_]](x: Lazy[c[a]], y: Type[c[b]] = null)(implicit i: Typeable[a], j: Typeable[b]): Maybe[c[b]] = {
+        def getArg[x](x: c[x]): x = undefined
+        lazy val r: Maybe[c[b]] = {
+            if (i.typeOf(getArg(x)) <:< j.typeOf(getArg(Maybe.fromJust(r)))) Just(x.!.asInstanceOf[c[b]])
+            else Nothing
+        }
+        r
+    }
+
+    def mkT[a, b](f: b => b)(x: a)(implicit i: Typeable[a], j: Typeable[b]): a = cast(x, Type[b]) match {
+        case Nothing => x
+        case Just(y) => cast(f(y), Type[a]) match {
+            case Nothing => x
+            case Just(r) => r
+        }
+    }
+
+    def mkQ[a, b, r](r: r)(q: b => r)(a: a)(implicit i: Typeable[a], j: Typeable[b]): r = cast(a, Type[b]) match {
+        case Nothing => r
+        case Just(b) => q(b)
+    }
+
+    // Rejected because Typeable[a => a] is bothersome.
+    private def _original_mkT[a, b](f: b => b)(x: a)(implicit i: Typeable[a => a], j: Typeable[b => b]): a = cast(f, Type[a => a]) match {
+        case Nothing => x
+        case Just(g) => g(x)
+    }
 }
 
 
@@ -72,16 +81,6 @@ sealed trait TypeableInstance { this: Typeable.type =>
 }
 
 
-sealed trait TypeableShortcut { this: Typeable.type =>
-    // For some reason, result type-ascription doesn't work.
-    def cast[a, b](x: Lazy[a], y: Type[b] = null)(implicit i: Typeable[a], j: Typeable[b]): Maybe[b] = i.cast[b](x)(j)
-
-    def mkT[a, b](f: b => b)(x: a)(implicit i: Typeable[a], j: Typeable[b]): a = i.mkT(f)(x)(j)
-    def mkQ[a, b, r](r: r)(q: b => r)(a: a)(implicit i: Typeable[a], j: Typeable[b]): r = i.mkQ(r)(q)(a)(j)
-
-    // Rejected because Typeable[a => a] is bothersome.
-    private def _original_mkT[a, b](f: b => b)(x: a)(implicit i: Typeable[a => a], j: Typeable[b => b]): a = cast(f, Type[a => a]) match {
-        case Nothing => x
-        case Just(g) => g(x)
-    }
+private[ken] sealed trait TypeableShortcut { this: Typeable.type =>
+    def typeOf[a](x: Lazy[a])(implicit i: Typeable[a]): TypeRep = i.typeOf(x)
 }

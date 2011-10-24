@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-trait Typeclass2[f[-_, +_]] extends Typeclass with TypeC2[f] {
+trait Typeclass2[f[-_, +_]] extends Typeclass with TypeC2[f] with Kind.quote2[f] {
     /**
      * Helper for type-parameter inference
      */

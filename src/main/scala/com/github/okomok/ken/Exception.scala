@@ -23,7 +23,12 @@ trait Exception[e] extends Typeable[e] with Show[e] {
     def toException: toException = e => SomeException(e)(this)
 
     type fromException = SomeException => Maybe[e]
-    def fromException: fromException = { se => (se.rep._2).cast[e](Lazy(se.rep._1))(this) }
+    def fromException: fromException = { se =>
+        def impl[t](rep: (t, Exception[t])): Maybe[e] = {
+            Typeable.cast(rep._1, Type[e])(rep._2, this)
+        }
+        impl(se.rep)
+    }
 
     // Extra
     //
@@ -173,9 +178,9 @@ object Exception extends ExceptionInstance with ExceptionShortcut {
 
     def catchesHandler[a](handlers: List[Handler[a]])(e: SomeException): IO[a] = {
         val tryHandler: Handler[a] => IO[a] => IO[a] = { h => res =>
-            def impl[e](x: (e => IO[a], Exception[e])): IO[a] = {
-                x._2.fromException(e) match {
-                    case Just(e_) => x._1(e_)
+            def impl[e](rep: (e => IO[a], Exception[e])): IO[a] = {
+                rep._2.fromException(e) match {
+                    case Just(e_) => rep._1(e_)
                     case Nothing => res
                 }
             }
@@ -190,8 +195,8 @@ object Exception extends ExceptionInstance with ExceptionShortcut {
 
     def catchAny[a](io: IO[a])(handler: AnyHandler[a]): IO[a] = {
         val handler_ : SomeException => IORep[a] = se => {
-            def impl[e](x: (e, Exception[e])): IORep[a] = {
-                IO.unIO(handler(x._1)(x._2))
+            def impl[e](rep: (e, Exception[e])): IORep[a] = {
+                IO.unIO(handler(rep._1)(rep._2))
             }
             impl(se.rep)
         }
