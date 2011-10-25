@@ -27,7 +27,7 @@ private[parsec] trait Combinators[s, u, n[+_]] { this: ParsecTOp[s, u, n] =>
     def between[a](open: ParsecT[s, u, n, _])(close: ParsecT[s, u, n, _])(p: ParsecT[s, u, n, a]): ParsecT[s, u, n, a] = for { _ <- open; x <- p; _ <- close } yield x
 
     // p+ (result abandoned)
-    lazy val skipMany1: ParsecT[s, u, n, Any] => ParsecT[s, u, n, Unit] = p => for { _ <- p; * <- skipMany(p) } yield *
+    lazy val skipMany1: ParsecT[s, u, n, Any] => ParsecT[s, u, n, Unit] = p => for { _ <- p } { skipMany(p) }
 
     // p+
     def many1[a](p: ParsecT[s, u, n, a]): ParsecT[s, u, n, List[a]] = for { x <- p; xs <- many(p) } yield (x :: xs)
@@ -40,8 +40,9 @@ private[parsec] trait Combinators[s, u, n[+_]] { this: ParsecTOp[s, u, n] =>
     def sepEndBy1[a](p: ParsecT[s, u, n, a])(sep: ParsecT[s, u, n, _]): ParsecT[s, u, n, List[a]] = {
         for {
             x <- p
-            * <- ( for { _ <- sep; xs <- sepEndBy(p)(sep) } yield (x :: xs) ) <|> `return`(List(x))
-        } yield *
+        } {
+            ( for { _ <- sep; xs <- sepEndBy(p)(sep) } yield (x :: xs) ) <|> `return`(List(x))
+        }
     }
 
     def sepEndBy[a](p: ParsecT[s, u, n, a])(sep: ParsecT[s, u, n, _]): ParsecT[s, u, n, List[a]] = sepEndBy1(p)(sep) <|> `return`(Nil)
@@ -67,14 +68,14 @@ private[parsec] trait Combinators[s, u, n[+_]] { this: ParsecTOp[s, u, n] =>
     // folding without seed
     def chainr1[a](p: ParsecT[s, u, n, a])(op: ParsecT[s, u, n, a => a => a]): ParsecT[s, u, n, a] = {
         def rest(x: a): ParsecT[s, u, n, a] = ( for { f <- op; y <- scan } yield f(x)(y) ) <|> `return`(x)
-        lazy val scan: ParsecT[s, u, n, a] = for { x <- p; * <- rest(x) } yield *
+        lazy val scan: ParsecT[s, u, n, a] = for { x <- p } { rest(x) }
         scan
     }
 
     // folding without seed
     def chainl1[a](p: ParsecT[s, u, n, a])(op: ParsecT[s, u, n, a => a => a]): ParsecT[s, u, n, a] = {
         def rest(x: a): ParsecT[s, u, n, a] = ( for { f <- op; y <- p; z <- rest(f(x)(y)) } yield z ) <|> `return`(x)
-        for { x <- p; * <- rest(x) } yield *
+        for { x <- p } { rest(x) }
     }
 
     def anyToken[t](implicit si: Stream[s, n, t], sj: Show[t]): ParsecT[s, u, n, t] = {

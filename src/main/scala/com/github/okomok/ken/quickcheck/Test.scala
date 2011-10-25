@@ -92,7 +92,8 @@ object Test {
                 List.from(")") )
             size = st.computeSize(st.numSuccessTests)(st.numDiscardedTests)
             (res, ts) <- run(f(rnd1)(size).get)
-            * <- res.ok match {
+        } {
+            res.ok match {
                 case Just(True) => {
                     test(
                         st.copy(
@@ -132,7 +133,7 @@ object Test {
                     }
                 }
             }
-        } yield *
+        }
     }
 
     val summary: State => List[(String, Int)] = st => {
@@ -202,8 +203,9 @@ object Test {
             case pt !:: Nil => Str.putLine(st.terminal)(" (" ++: List.dropWhile(Char.isSpace)(pt) ++: List.from(")."))
             case cases => for {
                 _ <- Str.putLine(st.terminal)(":")
-                * <- List.sequence__( for { pt <- cases } yield Str.putLine(st.terminal)(pt) )
-            } yield *
+            } {
+                List.sequence__( for { pt <- cases } yield Str.putLine(st.terminal)(pt) )
+            }
         }
     }
 
@@ -218,11 +220,12 @@ object Test {
         def orElseErr[a](m: IO[a]): (String, SomeException => a) => IO[a] = {
             case (s, f) => for {
                 eex <- tryEvaluateIO(m)
-                * <- eex match {
+            } {
+                eex match {
                     case Left(err) => IO.`return`(f(err))
                     case Right(x) => IO.`return`(x)
                 }
-            } yield *
+            }
         }
 
         val strictOk: quickcheck.Result => quickcheck.Result = res => seq(res.ok == Just(False))(res)
@@ -257,8 +260,9 @@ object Test {
                     }
                 } ++:
                 List.from("):  ") )
-            * <- callbackPostFinalFailure(st)(res)
-        } yield *
+        } {
+            callbackPostFinalFailure(st)(res)
+        }
         case t :: ts => for {
             (res_, ts_) <- run(t)
             _ <- Str.putTemp(st.terminal)(

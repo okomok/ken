@@ -35,7 +35,7 @@ object ReadPrec extends Newtype1[ReadPrec, ({type ot[+a] = Int => ReadP[a]})#ot]
     // Monad
     private type m[+a] = ReadPrec[a]
     override def `return`[a](x: Lazy[a]): m[a] = ReadPrec { _ => ReadP.`return`(x) }
-    override def op_>>=[a, b](f: m[a])(k: a => m[b]): m[b] = ReadPrec { n => for { a <- f.get(n); * <- k(a).get(n) } yield * }
+    override def op_>>=[a, b](f: m[a])(k: a => m[b]): m[b] = ReadPrec { n => for { a <- f.get(n) } { k(a).get(n) } }
     // MonadPlus
     override def mzero: m[Nothing] = pfail
     override def mplus[a](f1: m[a])(f2: Lazy[m[a]]): m[a] = f1 +++ f2

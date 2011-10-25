@@ -71,14 +71,15 @@ trait Exception[e] extends Typeable[e] with Show[e] {
         import IO.{`for`, `return`}
         for {
             r <- `try`(a)
-            * <- r match {
+        } {
+            r match {
                 case Right(v) => `return`(Right(v))
                 case Left(e) => p(e) match {
                     case Nothing => `throw`(e)
                     case Just(b) => `return`(Left(b))
                 }
             }
-        } yield *
+        }
     }
 }
 
@@ -135,8 +136,9 @@ object Exception extends ExceptionInstance with ExceptionShortcut {
     def onException[a, b](io: IO[a])(what: IO[b]): IO[a] = SomeException.`catch`(io) { e =>
         for {
             _ <- what
-            * <- SomeException.`throw`(e): IO[a]
-        } yield *
+        } {
+            SomeException.`throw`(e): IO[a]
+        }
     }
 
     def bracket[a, b, c](before: IO[a])(after: a => IO[b])(thing: a => IO[c]): IO[c] = mask[c] { restore =>
@@ -159,8 +161,9 @@ object Exception extends ExceptionInstance with ExceptionShortcut {
     def bracketOnError[a, b, c](before: IO[a])(after: a => IO[b])(thing: a => IO[c]): IO[c] = mask[c] { restore =>
         for {
             a <- before
-            * <- onException(restore(thing(a)))(after(a))
-        } yield *
+        } {
+            onException(restore(thing(a)))(after(a))
+        }
     }
 
     def assert[a](b: Bool)(x: a): a = b match {

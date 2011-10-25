@@ -44,8 +44,9 @@ class ParseErrorTest extends org.scalatest.junit.JUnit3Suite {
             case Nil =>`return`(v)
             case c :: cs => for {
                 d <- parseHexDigit(c)(idx)
-                * <- parseHex_(cs.!)(v * 16 + d)(idx + 1)
-            } yield *
+            } {
+                parseHex_(cs.!)(v * 16 + d)(idx + 1)
+            }
         }
         parseHex_(s)(0)(1)
     }
@@ -57,7 +58,7 @@ class ParseErrorTest extends org.scalatest.junit.JUnit3Suite {
             `return` { "At Index " ++: Show.show(e.location) ++: ": " ++: e.reason }
         }
 
-        val Right(str) = catchError( for { n <- parseHex(s); * <- toString_(n) } yield * )(printError).run
+        val Right(str) = catchError( for { n <- parseHex(s) } { toString_(n) } )(printError).run
         str
     }
 

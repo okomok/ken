@@ -75,18 +75,20 @@ object Gen extends Monad[Gen] with ThisIsInstance {
     def sample[a](g: Gen[a])(implicit i: Show[a]): IO[Unit] = {
         for {
             cases <- `sample'`(g)
-            * <- IO.sequence_(List.map((x: a) => IO.print(x))(cases))
-        } yield *
+        } {
+            IO.sequence_(List.map((x: a) => IO.print(x))(cases))
+        }
     }
 
     def suchThat[a](gen: Gen[a])(p: a => Bool): Gen[a] = {
         for {
             mx <- suchThatMaybe(gen)(p)
-            * <- mx match {
+        } {
+            mx match {
                 case Just(x) => `return`(x)
                 case Nothing => sized(n => resize(n+1)(suchThat(gen)(p)))
             }
-        } yield *
+        }
     }
 
     def suchThatMaybe[a](gen: Gen[a])(p: a => Bool): Gen[Maybe[a]] = {
@@ -94,8 +96,9 @@ object Gen extends Monad[Gen] with ThisIsInstance {
             case 0 => `return`(Nothing)
             case n => for {
                 x <- resize(2*k+n)(gen)
-                * <- if (p(x)) `return`(Just(x)) else `try`(k+1)(n-1)
-            } yield *
+            } {
+                if (p(x)) `return`(Just(x)) else `try`(k+1)(n-1)
+            }
         }
         sized(`try`(0) `.` Int.max(1))
     }
@@ -140,16 +143,18 @@ object Gen extends Monad[Gen] with ThisIsInstance {
     def listOf[a](gen: Gen[a]): Gen[List[a]] = sized { n =>
         for {
             k <- choose(0, n)
-            * <- vectorOf(k)(gen)
-        } yield *
+        } {
+            vectorOf(k)(gen)
+        }
     }
 
     def listOf1[a](gen: Gen[a]): Gen[List[a]] = sized { n =>
         import Int._max_
         for {
             k <- choose(1, 1 _max_ n)
-            * <- vectorOf(k)(gen)
-        } yield *
+        } {
+            vectorOf(k)(gen)
+        }
     }
 
     def vectorOf[a](k: Int)(gen: Gen[a]): Gen[List[a]] = sequence( for { _ <- Int.enumFromTo(1)(k) } yield gen )
@@ -157,8 +162,9 @@ object Gen extends Monad[Gen] with ThisIsInstance {
     def op_><[a](f: Gen[a] => Gen[a])(g: Gen[a] => Gen[a]): Gen[a] => Gen[a] = gen => {
         for {
             n <- Arbitary.arbitary[Int]
-            * <- g(Gen.variant(n)(f(gen)))
-        } yield *
+        } {
+            g(Gen.variant(n)(f(gen)))
+        }
     }
 
     private[quickcheck] sealed class Op_><[a](f: Gen[a] => Gen[a]) {

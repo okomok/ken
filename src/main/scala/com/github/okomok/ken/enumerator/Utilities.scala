@@ -44,12 +44,13 @@ private[enumerator] trait Utilities { this: _Enumerator.type =>
         import im.`for`
         for {
             step <- runIteratee(enumEOF[ao, n, Step[ai, n, b]] @@: enum @@: enee(s))
-            * <- step match {
+        } {
+            step match {
                 case Error(err) => im.`return`(Error(err))
                 case Yield(x, _) => im.`return`(x)
                 case Continue(_) => error("joinE: divergent iteratee")
             }
-        } yield *
+        }
     }
 
     def op_@=:[ao, ai, n[+_], b](enum: Enumerator[ao, n, Step[ai, n, b]])(enee: Enumeratee[ao, ai, n, b])(implicit im: Monad[n]): Enumerator[ai, n, b] = joinE(enum)(enee)
@@ -134,14 +135,16 @@ private[enumerator] trait Utilities { this: _Enumerator.type =>
             case Chunks(xs) => {
                 val hide = List.`null`(xs) && Bool.not(printEmpty)
                 for {
-                    * <- mi.unless(hide)(mi.liftIO(IO.print(xs)))
-                    * <- continue(loop)
-                } yield *
+                    _ <- mi.unless(hide)(mi.liftIO(IO.print(xs)))
+                } {
+                    continue(loop)
+                }
             }
             case EOF => for {
                 _ <- mi.liftIO(IO.putStrLn("EOF"))
-                * <- `yield`()(EOF.of[Any])
-            } yield *
+            } {
+                `yield`()(EOF.of[Any])
+            }
         }
         continue(loop)
     }

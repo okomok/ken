@@ -51,8 +51,9 @@ class ApplicativeTest extends org.scalatest.junit.JUnit3Suite {
         import i._
         for {
             b <- mb
-            * <- if (b) mt else me // b can influence so that either mt or me is abandoned.
-        } yield *
+        } {
+            if (b) mt else me // b can influence so that either mt or me is abandoned.
+        }
     }
 
     def iffy[f[+_], a](fb: f[Boolean])(ft: f[a])(fe: f[a])(implicit i: Applicative[f]): f[a] = {

@@ -55,23 +55,26 @@ object Str {
         for {
             io <- IORef.read(ref)
             _ <- IORef.write(ref)(IO.`return`())
-            * <- io
-        } yield *
+        } {
+            io
+        }
     }
 
     val postpone: Terminal => IO[Unit] => IO[Unit] = { case Terminal(ref) => io_ =>
         for {
             io <- IORef.read(ref)
-            * <- IORef.write(ref)(io >> io_)
-        } yield *
+        } {
+            IORef.write(ref)(io >> io_)
+        }
     }
 
     val putPart: Terminal => String => IO[Unit] = tm => s => {
         for {
             _ <- flush(tm)
             _ <- IO.putStr(s)
-            * <- IO.hFlush(IO.stdout)
-        } yield *
+        } {
+            IO.hFlush(IO.stdout)
+        }
     }
 
     val putTemp: Terminal => String => IO[Unit] = tm => s => {
@@ -84,14 +87,13 @@ object Str {
             _ <- IO.hPutStr(h)(s)
             _ <- IO.hPutStr(h)(for { _ <- s } yield '\b')
             _ <- IO.hFlush(h)
-            * <- postpone(tm) {
-                for {
-                    * <- IO.hPutStr(h) {
-                        (for { _ <- s } yield ' ') ++: (for { _ <- s } yield '\b')
-                    }
-                } yield *
+        } {
+            postpone(tm) {
+                IO.hPutStr(h) {
+                    (for { _ <- s } yield ' ') ++: (for { _ <- s } yield '\b')
+                }
             }
-        } yield *
+        }
         */
     }
 
@@ -99,7 +101,8 @@ object Str {
         for {
             _ <- flush(tm)
             _ <- IO.putStrLn(s)
-            * <- IO.hFlush(IO.stdout)
-        } yield *
+        } {
+            IO.hFlush(IO.stdout)
+        }
     }
 }

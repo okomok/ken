@@ -174,8 +174,9 @@ sealed trait ArbitaryInstance { this: Arbitary.type =>
         override val arbitary: arbitary = Gen.sized { n =>
             for {
                 k <- Gen.choose(0, n)
-                * <- List.sequence( for { _ <- Int.enumFromTo(1)(k) } yield i.arbitary )
-            } yield *
+            } {
+                List.sequence( for { _ <- Int.enumFromTo(1)(k) } yield i.arbitary )
+            }
         }
         override val shrink: shrink = xs => shrinkList(i.shrink)(xs)
     }

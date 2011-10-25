@@ -42,11 +42,12 @@ trait Testable[prop] extends Typeclass[prop] {
     def mapIOResult: mapIOResult = f => {
         val wrap: IO[Result] => IO[Result] = iores => for {
             miores <- tryEvaluate(iores)
-            * <- miores match {
+        } {
+            miores match {
                 case Left(err) => IO.`return`(Result.exception(err))
                 case Right(iores) => iores
             }
-        } yield *
+        }
         mapRoseIOResult(Rose.fmap(f `.` wrap))
     }
 
@@ -165,7 +166,8 @@ trait Testable[prop] extends Typeclass[prop] {
             case Nothing => IO.newStdGen
             case Just((rnd, _)) => IO.`return`(rnd)
         }
-        * <- Test.test(
+    } {
+        Test.test(
             State(
                 terminal = tm,
                 maxSuccessTests = args.maxSuccess,
@@ -187,7 +189,7 @@ trait Testable[prop] extends Typeclass[prop] {
                 numTryShrinks = 0
             )
         )(property(p).get)
-    } yield *
+    }
 }
 
 
@@ -238,7 +240,7 @@ sealed trait TestableInstance { this: Testable.type =>
     }
 
     implicit def ofGen[prop](implicit i: Testable[prop]): Testable[Gen[prop]] = new Testable[Gen[prop]] {
-        override val property: property = mp => for { p <- mp; * <- i.property(p) } yield *
+        override val property: property = mp => for { p <- mp } { i.property(p) }
     }
 
     implicit def ofFunction[a, prop](implicit i: Testable[prop], j: Arbitary[a], k: Show[a]): Testable[a => prop] = new Testable[a => prop] {

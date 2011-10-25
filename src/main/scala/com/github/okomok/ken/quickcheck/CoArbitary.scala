@@ -45,8 +45,9 @@ sealed trait CoArbitaryInstance { outer: CoArbitary.type =>
         type a = x => y
         override def coarbitary[c](f: a)(gen: Gen[c]): Gen[c] = for {
             xs <- Arbitary.arbitary[List[x]]
-            * <- outer.coarbitary(List.map(f)(xs))(gen)
-        } yield *
+        } {
+            outer.coarbitary(List.map(f)(xs))(gen)
+        }
     }
 
     implicit val ofUnit: CoArbitary[Unit] = new CoArbitary[Unit] {

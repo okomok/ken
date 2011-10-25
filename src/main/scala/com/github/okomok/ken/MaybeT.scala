@@ -137,11 +137,12 @@ private[ken] sealed trait MaybeTAs extends MaybeTAs1 { this: MaybeT.type =>
             import i.`for`
             for {
                 a <- run(m)
-                * <- a match {
+            } {
+                a match {
                     case Nothing => i.`return`(Nothing.of[b])
                     case Just(r) => run(k(r))
                 }
-            } yield *
+            }
         }
         // MonadPlus
         override def mzero: m[Nothing] = MaybeT { i.`return`(Nothing) }
@@ -149,11 +150,12 @@ private[ken] sealed trait MaybeTAs extends MaybeTAs1 { this: MaybeT.type =>
             import i.`for`
             for {
                 a <- run(m)
-                * <- a match {
+            } {
+                a match {
                     case Nothing => run(n)
                     case Just(r) => i.`return`(Just(r))
                 }
-            } yield *
+            }
         }
     }
 }

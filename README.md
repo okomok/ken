@@ -15,7 +15,7 @@
         val i = MonadState[GameState, State.apply[GameState]]
         import i._
 
-        val playGame: String_ => State[GameState, GameValue] = {
+        val playGame: String => State[GameState, GameValue] = {
             case Nil => for {
                 (_, score) <- get
             } yield score
@@ -27,8 +27,9 @@
                     case 'c' => put(Bool.not(on), score)
                     case _ => put(on, score)
                 }
-                * <- playGame(xs)
-            } yield *
+            } {
+                playGame(xs)
+            }
         }
 
         val startState = (False, 0)

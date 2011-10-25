@@ -141,7 +141,7 @@ private[ken] sealed trait LazyTAs extends LazyTAs1 { this: LazyT.type =>
         override def `return`[a](a: Lazy[a]): m[a] = LazyT { i.`return`(Lazy(a)) }
         override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = LazyT {
             import i.`for`
-            for { a <- run(m); * <- run(k(a.!)) } yield *
+            for { a <- run(m) } { run(k(a.!)) }
         }
     }
 }

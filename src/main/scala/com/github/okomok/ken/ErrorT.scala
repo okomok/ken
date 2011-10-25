@@ -108,22 +108,24 @@ private[ken] sealed trait ErrorTAs0 { this: ErrorT.type =>
             import i.`for`
             for {
                 (a, w) <- i.listen(run(m))
-                * <- a match {
+            } {
+                a match {
                     case Left(l) => i.`return`(Left(l))
                     case Right(r) => i.`return`(Right(r, w))
                 }
-            } yield *
+            }
         }
         override def pass[a](m: m[(a, w => w)]): m[a] = ErrorT {
             import i.`for`
             i.pass {
                 for {
                     a <- run(m)
-                    * <- a match {
+                } {
+                    a match {
                         case Left(l) => i.`return`(Left(l), id[w])
                         case Right((r, f)) => i.`return`(Right(r), f)
                     }
-                } yield *
+                }
             }
         }
     }
@@ -136,11 +138,12 @@ private[ken] sealed trait ErrorTAs0 { this: ErrorT.type =>
             import i.`for`
             for {
                 a <- run(m)
-                * <- a match {
+            } {
+                a match {
                     case Left(_) => run(n)
                     case Right(r) => i.`return`(Right(r))
                 }
-            } yield *
+            }
         }
     }
 
@@ -181,11 +184,12 @@ private[ken] sealed trait ErrorTAs extends ErrorTAs1 { this: ErrorT.type =>
             import i.`for`
             for {
                 a <- run(m)
-                * <- a match {
+            } {
+                a match {
                     case Left(l) => i.`return`(Left(l))
                     case Right(r) => i.`return`(Right(f(r)))
                 }
-            } yield *
+            }
         }
         // Monad
         private type m[+a] = f[a]
@@ -194,11 +198,12 @@ private[ken] sealed trait ErrorTAs extends ErrorTAs1 { this: ErrorT.type =>
             import i.`for`
             for {
                 a <- run(m)
-                * <- a match {
+            } {
+                a match {
                     case Left(l) => i.`return`(Left(l))
                     case Right(r) => run(k(r))
                 }
-            } yield *
+            }
         }
         // MonadError
         override def throwError[a](l: e): m[a] = ErrorT { i.`return`(Left(l)) }
@@ -206,11 +211,12 @@ private[ken] sealed trait ErrorTAs extends ErrorTAs1 { this: ErrorT.type =>
             import i.`for`
             for {
                 a <- run(m)
-                * <- a match {
+            } {
+                a match {
                     case Left(l) => run(h(l))
                     case Right(r) => i.`return`(Right(r))
                 }
-            } yield *
+            }
         }
     }
 }

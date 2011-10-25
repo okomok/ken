@@ -92,7 +92,7 @@ object IO extends MonadControlIO[IO] with ThisIsInstance {
     }
 
     val interact: (String => String) => IO[Unit] = f => {
-        for { s <- getContents; * <- putStr(f(s)) } yield *
+        for { s <- getContents } { putStr(f(s)) }
     }
 
     // Files
@@ -165,8 +165,9 @@ object IO extends MonadControlIO[IO] with ThisIsInstance {
     lazy val theStdGen: IORef[StdGen] = unsafePerformIO {
         for {
             rng <- `return`(new StdGen())
-            * <- IORef.`new`(rng)
-        } yield *
+        } {
+            IORef.`new`(rng)
+        }
     }
 
     lazy val newStdGen: IO[StdGen] = IORef.atomicModify(theStdGen)(StdGen.split)

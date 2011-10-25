@@ -46,8 +46,9 @@ private[parsec] sealed trait ParsecTAs0 { this: ParsecT.type =>
                 import i.`for`
                 for {
                     a <- amb
-                    * <- v.eok(a)(v.state) { unknownError(v.state) }
-                } yield *
+                } {
+                    v.eok(a)(v.state) { unknownError(v.state) }
+                }
             }
         } }
     }

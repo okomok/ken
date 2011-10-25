@@ -144,8 +144,9 @@ object ReadP extends MonadPlus[ReadP] with ThisIsInstance {
         }
         for {
             s <- look
-            * <- probe(f(P.`return`[a]))(s)(0)
-        } yield *
+        } {
+            probe(f(P.`return`[a]))(s)(0)
+        }
     }
 
     private[ken] sealed class Op_<++[a](f: ReadP[a]) {
@@ -171,8 +172,9 @@ object ReadP extends MonadPlus[ReadP] with ThisIsInstance {
     val satisfy: (Char => Bool) => ReadP[Char] = p => {
         for {
             c <- get
-            * <- if (p(c)) `return`(c) else pfail[Char]
-        } yield *
+        } {
+            if (p(c)) `return`(c) else pfail[Char]
+        }
     }
 
     val char: Char => ReadP[Char] = c => satisfy(c == _)
@@ -180,17 +182,18 @@ object ReadP extends MonadPlus[ReadP] with ThisIsInstance {
     val eof: ReadP[Unit] = {
         for {
             s <- look
-            * <- if (List.`null`(s)) `return`() else pfail[Unit]
-        } yield *
+        } {
+            if (List.`null`(s)) `return`() else pfail[Unit]
+        }
     }
 
     val string: String => ReadP[String] = _this => {
         def scan(xs: String)(ys: String): ReadP[String] = (xs, ys) match {
             case (Nil, _) => `return`(_this)
-            case (x :: xs, y :: ys) => for { _ <- get; * <- scan(xs)(ys) } yield *
+            case (x :: xs, y :: ys) => for { _ <- get } { scan(xs)(ys) }
             case _ => pfail
         }
-        for { s <- look; * <- scan(_this)(s) } yield *
+        for { s <- look } { scan(_this)(s) }
     }
 
     val munch: (Char => Bool) => ReadP[String] = p => {
@@ -200,15 +203,17 @@ object ReadP extends MonadPlus[ReadP] with ThisIsInstance {
         }
         for {
             s <- look
-            * <- scan(s)
-        } yield *
+        } {
+            scan(s)
+        }
     }
 
     val munch1: (Char => Bool) => ReadP[String] = p => {
         for {
             c <- get
-            * <- if (p(c)) ( for { s <- munch(p) } yield (c :: s) ) else pfail
-        } yield *
+        } {
+            if (p(c)) ( for { s <- munch(p) } yield (c :: s) ) else pfail
+        }
     }
 
     def choice[a](ps: List[ReadP[a]]): ReadP[a] = ps match {
@@ -219,13 +224,14 @@ object ReadP extends MonadPlus[ReadP] with ThisIsInstance {
 
     val skipSpaces: ReadP[Unit] = {
         def skip(s: String): ReadP[Unit] = s match {
-            case c :: s if Char.isSpace(c) => for { _ <- get; * <- skip(s) } yield *
+            case c :: s if Char.isSpace(c) => for { _ <- get } { skip(s) }
             case _ => `return`()
         }
         for {
             s <- look
-            * <- skip(s)
-        } yield *
+        } {
+            skip(s)
+        }
     }
 
     def count[a](n: Int)(p: ReadP[a]): ReadP[List[a]] = sequence(List.replicate(n)(p))
@@ -263,7 +269,7 @@ object ReadP extends MonadPlus[ReadP] with ThisIsInstance {
     }
 
     def chainl1[a](p: ReadP[a])(op: ReadP[a => a => a]): ReadP[a] = {
-        def rest(x: a): ReadP[a] = ( for { f <- op; y <- p; * <- rest(f(x)(y)) } yield * ) +++ `return`(x)
+        def rest(x: a): ReadP[a] = ( for { f <- op; y <- p } { rest(f(x)(y)) } ) +++ `return`(x)
         p >>= rest
     }
 

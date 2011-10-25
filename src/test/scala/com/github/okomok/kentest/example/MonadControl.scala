@@ -38,8 +38,9 @@ class MonadControlTest extends org.scalatest.junit.JUnit3Suite {
         import me.`for`
         for {
             _ <- mt.lift { IO.hPutStrLn(handle)("Hi there, error!") }
-            * <- me.throwError(MyError)
-        } yield *
+        } {
+            me.throwError(MyError)
+        }
     }
 
     val useMyFileError: ErrorT[MyError, IO, Unit] = {
@@ -73,8 +74,9 @@ class MonadControlTest extends org.scalatest.junit.JUnit3Suite {
         import mew.`for`
         for {
             _ <- IO.hPutStrLn(handle)("Hi there, error!")
-            * <- mew.throwError(MyError)
-        } yield *
+        } {
+            mew.throwError(MyError)
+        }
     }
 
     val useMyFileErrorWeak: IO[Either[MyError, Unit]] = mtw.control { run =>

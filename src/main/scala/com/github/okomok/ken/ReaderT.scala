@@ -149,7 +149,7 @@ private[ken] sealed trait ReaderTAs extends ReaderTAs1 { this: ReaderT.type =>
         override def `return`[a](a: Lazy[a]): m[a] = ReaderT { r => i.`return`(a) }
         override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = ReaderT { r => {
             import i.`for`
-            for { a <- run(m)(r); * <- run(k(a))(r) } yield *
+            for { a <- run(m)(r) } { run(k(a))(r) }
         } }
         // MonadReader
         override def ask: m[r] = ReaderT { r => i.`return`(r) }

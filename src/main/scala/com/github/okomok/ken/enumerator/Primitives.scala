@@ -68,12 +68,13 @@ private[enumerator] trait Primitives { this: _Enumerator.type =>
         import im.{`return`, `for`}
         for {
             mStep <- runIteratee { enumEOF[a, n, b] ==<<: i }
-            * <- mStep match {
+        } {
+            mStep match {
                 case Error(err) => `return` { Left(err) }
                 case Yield(x, _) => `return` { Right(x) }
                 case Continue(_) => error("run: divergent iteratee")
             }
-        } yield *
+        }
     }
 
     /**

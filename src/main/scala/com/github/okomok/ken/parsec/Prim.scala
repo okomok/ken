@@ -49,23 +49,26 @@ private[parsec] trait Prim[s, u, n[+_]] { this: ParsecTOp[s, u, n] =>
         override def apply[b](v: UnParserParam[s, u, n, a, b]): n[b] = {
             for {
                 cons <- k(v.state)
-                * <- cons match {
+            } {
+                cons match {
                     case Consumed(mrep) => for {
                         rep <- mrep
-                        * <- rep match {
+                    } {
+                        rep match {
                             case Ok(x, s_, err) => v.cok(x)(s_)(err)
                             case Error(err) => v.cerr(err)
                         }
-                    } yield *
+                    }
                     case Empty(mrep) => for {
                         rep <- mrep
-                        * <- rep match {
+                    } {
+                        rep match {
                             case Ok(x, s_, err) => v.eok(x)(s_)(err)
                             case Error(err) => v.eerr(err)
                         }
-                    } yield *
+                    }
                 }
-            } yield *
+            }
         }
     } }
 
@@ -157,26 +160,28 @@ private[parsec] trait Prim[s, u, n[+_]] { this: ParsecTOp[s, u, n] =>
                         case (Nil, rs) => ok(rs)
                         case (t :: ts, rs) => for {
                             sr <- i.uncons(rs)
-                            * <- sr match {
+                        } {
+                            sr match {
                                 case Nothing => v.cerr { errEof }
                                 case Just((x, xs)) => {
                                     if (t === x) walk(ts)(xs)
                                     else v.cerr { errExpect(x) }
                                 }
                             }
-                        } yield *
+                        }
                     }
 
                     for {
                         sr <- i.uncons(input)
-                        * <- sr match {
+                    } {
+                        sr match {
                             case Nothing => v.eerr { errEof }
                             case Just((x, xs)) => {
                                 if (tok === x) walk(toks)(xs)
                                 else v.eerr { errExpect(x) }
                             }
                         }
-                    } yield *
+                    }
                 }
             }
         } }
@@ -221,7 +226,8 @@ private[parsec] trait Prim[s, u, n[+_]] { this: ParsecTOp[s, u, n] =>
                 override def apply[b](v: UnParserParam[s, u, n, a, b]): n[b] = v.state match {
                     case State(input, pos, user) => for {
                         r <- i.uncons(input)
-                        * <- r match {
+                    } {
+                        r match {
                             case Nothing => v.eerr { unexpectError("")(pos) }
                             case Just((c, cs)) => test(c) match {
                                 case Just(x) => {
@@ -232,14 +238,15 @@ private[parsec] trait Prim[s, u, n[+_]] { this: ParsecTOp[s, u, n] =>
                                 case Nothing => v.eerr { unexpectError(showToken(c))(pos) }
                             }
                         }
-                    } yield *
+                    }
                 }
             } }
             case Just(nextState) => ParsecT { new UnParser[s, u, n, a] {
                 override def apply[b](v: UnParserParam[s, u, n, a, b]): n[b] = v.state match {
                     case State(input, pos, user) => for {
                         r <- i.uncons(input)
-                        * <- r match {
+                    } {
+                        r match {
                             case Nothing => v.eerr { unexpectError("")(pos) }
                             case Just((c, cs)) => test(c) match {
                                 case Just(x) => {
@@ -251,7 +258,7 @@ private[parsec] trait Prim[s, u, n[+_]] { this: ParsecTOp[s, u, n] =>
                                 case Nothing => v.eerr { unexpectError(showToken(c))(pos) }
                             }
                         }
-                    } yield *
+                    }
                 }
             } }
         }
@@ -290,18 +297,19 @@ private[parsec] trait Prim[s, u, n[+_]] { this: ParsecTOp[s, u, n] =>
         for {
             res <- runParsecT(p)(State(s, initialPos(name), u))
             r <- parserReply(res)
-            * <- r match {
+        } {
+            r match {
                 case Ok(x, _, _) => `return`(Right(x))
                 case Error(err) => `return`(Left(err))
             }
-        } yield *
+        }
     }
 
     def parse[a](p: ParsecT[s, u, n, a])(name: SourceName)(s: s)(implicit ev: Unit =:= u): n[Either[ParseError, a]] = runParser(p)(())(name)(s)
 
     def parseTest[a](p: ParsecT[s, u, n, a])(input: s)(implicit i: Show[a], ev: Unit =:= u, evi: Iso1[n, WeakIdentity.apply]): IO[Unit] = {
         evi.imply(parse(p)("")(input)) match {
-            case Left(err) => for { _ <- IO.putStr("parse error at "); * <- IO.print(err) } yield *
+            case Left(err) => for { _ <- IO.putStr("parse error at ") } { IO.print(err) }
             case Right(x) => IO.print(x)
         }
     }

@@ -179,7 +179,7 @@ private[ken] sealed trait StateTAs extends StateTAs1 { this: StateT.type =>
         override def `return`[a](a: Lazy[a]): m[a] = StateT { s => i.`return`(a.!, s) }
         override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = StateT { s =>
             import i.`for`
-            for { (a, s_) <- run(m)(s); * <- run(k(a))(s_) } yield *
+            for { (a, s_) <- run(m)(s) } { run(k(a))(s_) }
         }
         // MonadState
         override def get: m[s] = StateT { s => i.`return`(s, s) }

@@ -19,25 +19,28 @@ class YetAnotherTutorialTest extends org.scalatest.junit.JUnit3Suite {
         import itm._
         for {
             maybeNum <- head[Int, m]
-            * <- maybeNum match {
+        } {
+            maybeNum match {
                 case Nothing => `return`(0)
                 case Just(i) => for {
                     rest <- sum6
-                    * <- `return` { i + rest }
-                } yield *
+                } {
+                    `return` { i + rest }
+                }
             }
-        } yield *
+        }
     }
 
     def sum8[m[+_]](implicit in: Monad[m]): Iteratee[Int, m, Int] = Iteratee {
         import in._
         for {
             step <- runIteratee(sum6)
-            * <- step match {
+        } {
+            step match {
                 case Continue(k) => runIteratee { k { Chunks(List.range(1, 11)) } }
                 case _ => `return`(step)
             }
-        } yield *
+        }
     }
 
     def testTrivial8 {
