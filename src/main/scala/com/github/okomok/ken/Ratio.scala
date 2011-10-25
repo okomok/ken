@@ -67,7 +67,7 @@ object Ratio {
         gcd_(abs(x))(abs(y))
     }
 
-    implicit def _asRealFrac[z](implicit i: Integral[z]): RealFrac[Ratio[z]] = new RealFrac[Ratio[z]] with Eq.Default[Ratio[z]] {
+    implicit def _asRealFrac[z](implicit i: Integral[z]): RealFrac[Ratio[z]] = new RealFrac[Ratio[z]] with Eq.Of[Ratio[z]] {
         // Ord
         override val op_< : op_< = { case Ratio(x, y) => { case Ratio(x_, y_) =>
             i.op_<(i.op_*(x)(y_))(i.op_*(x_)(y))

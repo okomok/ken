@@ -22,7 +22,7 @@ sealed abstract class List[+a] extends Up[List[a]] {
 
     final override def toString: JString = {
         if (this eq Nil) "Nil"
-        // else if (List.all((_: a).isInstanceOf[Char])(this)) toScalaList.mkString("\"", "", "\"")
+        else if (List.all((_: a).isInstanceOf[Char])(this)) toScalaList.mkString("\"", "", "\"")
         else toScalaList.mkString("List(", ",", ")")
     }
 
@@ -61,7 +61,7 @@ case object Nil extends List[Nothing] {
 
 final case class ::[+a](head: a, tail: Lazy[List[a]]) extends List[a] {
     override def equals(that: Any): Bool = that match {
-        case that: List[_] => List._asEq(Eq.ofAny).op_===(this)(that)
+        case that: List[_] => List._asEq(Eq.of[Any]).op_===(this)(that)
         case _ => False
     }
 }
@@ -278,12 +278,12 @@ object List extends ListAs with MonadPlus[List] with Traversable[List] with Exte
 
     override def maximum[a](xs: List[a])(implicit i: Ord[a]): a = xs match {
         case Nil => error("empty List")
-        case xs => foldl1(i.max[a])(xs)
+        case xs => foldl1(i.max)(xs)
     }
 
     override def minimum[a](xs: List[a])(implicit i: Ord[a]): a = xs match {
         case Nil => error("empty List")
-        case xs => foldl1(i.min[a])(xs)
+        case xs => foldl1(i.min)(xs)
     }
 
     // Building lists
@@ -728,10 +728,6 @@ private[ken] sealed trait ListAs { this: List.type =>
     implicit val _NilAsOrd: Ord[List[Nothing]] = new Ord[List[Nothing]] {
         override val op_=== : op_=== = x => y => True
         override val compare: compare = x => y => EQ
-    }
-
-    implicit def _asShow[a](implicit i: Show[a]): Show[List[a]] = new Show[List[a]] {
-        override val showsPrec: showsPrec = _ => x => i.showList(x)
     }
 
     implicit def _asMonoid[a]: Monoid[List[a]] = new Monoid[List[a]] {

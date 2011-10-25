@@ -8,7 +8,4 @@ package com.github.okomok
 package ken
 
 
-import scala.annotation.unchecked.uncheckedVariance
-
-
-trait Typeclass[-a] extends TypeclassLike with Type[a @uncheckedVariance]
+trait Typeclass[a] extends TypeclassLike with Type[a]

@@ -14,21 +14,21 @@ class EqTest extends org.scalatest.junit.JUnit3Suite {
 
     def testTrivial {
         val me = Eq[Kind.const[JString]]
-        expect(true)(me.isInstanceOf[Eq.Default[_]])
+        expect(true)(me.isInstanceOf[Eq.Of[_]])
     }
 
     final case class My(override val _1: Int, override val _2: String) extends Product2[Int, String]
 
     def testEqNoDeriving {
         val me = Eq[Kind.const[My]]
-        expect(true)(me.isInstanceOf[Eq.Default[_]])
+        expect(true)(me.isInstanceOf[Eq.Of[_]])
     }
 
     final case class Your(override val _1: Int, override val _2: String) extends Product2[Int, String] with Deriving[Eq ^:: Kind.Nil]
 
     def testEqDeriving {
         val me = Eq[Kind.const[Your]]
-        expect(false)(me.isInstanceOf[Eq.Default[_]])
+        expect(false)(me.isInstanceOf[Eq.Of[_]])
     }
 
 

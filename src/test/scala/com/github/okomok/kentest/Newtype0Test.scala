@@ -36,20 +36,20 @@ class Newtype0Test extends org.scalatest.junit.JUnit3Suite {
 
     def testShow {
         val ws = Show[Wrap[Int]]
-        expect(false)(ws.isInstanceOf[Show.Default[_]])
+        expect(false)(ws.isInstanceOf[Show.Of[_]])
         expect("Wrap(3)")(ws.show(Wrap(3)).asJString)
 
     }
 
     def testShowList {
         val ws = Show[Wrap[String]]
-        expect(false)(ws.isInstanceOf[Show.Default[_]])
+        expect(false)(ws.isInstanceOf[Show.Of[_]])
         expect("Wrap(\"hello\")")(ws.show(Wrap[String]("hello")).asJString)
     }
 
     def testEq {
         val ws = Eq[Wrap[Int]]
-        expect(false)(ws.isInstanceOf[Eq.Default[_]])
+        expect(false)(ws.isInstanceOf[Eq.Of[_]])
         expect(true)(ws.op_===(Wrap(3))(Wrap(3)))
         expect(false)(ws.op_===(Wrap(3))(Wrap(4)))
     }

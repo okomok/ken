@@ -11,7 +11,7 @@ package object ken {
 
     // Eq
     //
-    type Eq[-a] = _Eq[a]
+    type Eq[a] = _Eq[a]
     val Eq = _Eq
 
     def op_===[a](x: a)(y: a)(implicit i: _Eq[a]): Bool = i.op_===(x)(y)

@@ -19,7 +19,7 @@ import java.lang.{Float => JFloat}
 import scala.annotation.tailrec
 
 
-object Float extends Enum[Float] with Eq.Default[Float] with RealFloat[Float] with Random[Float] with Show[Float] {
+object Float extends Enum[Float] with Eq.Of[Float] with RealFloat[Float] with Random[Float] with Show[Float] {
     // Overrides
     //
     // Ord

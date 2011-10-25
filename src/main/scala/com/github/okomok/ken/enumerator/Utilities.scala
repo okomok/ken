@@ -130,7 +130,7 @@ private[enumerator] trait Utilities { this: _Enumerator.type =>
     def printChunks[n[+_]](printEmpty: Bool)(implicit i: MonadIO[n]): Iteratee[Any, n, Unit] = {
         val mi = MonadIO[Iteratee.apply2[Any, n]]
         import mi.`for`
-        implicit val as = Show.ofAny
+        implicit val as = Show.of[Any]
         lazy val loop: Stream[Any] => Iteratee[Any, n, Unit] = {
             case Chunks(xs) => {
                 val hide = List.`null`(xs) && Bool.not(printEmpty)

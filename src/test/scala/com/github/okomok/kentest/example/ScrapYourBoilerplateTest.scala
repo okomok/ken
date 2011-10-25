@@ -15,8 +15,25 @@ import com.github.okomok.ken._
 
 class ScrapYourBoilerplateTest extends org.scalatest.junit.JUnit3Suite {
 
-    final case class Company(val _1: List[Dept]) extends Product1[List[Dept]] with Deriving[Eq ^:: Show ^:: Kind.Nil]
-    final case class Dept(val _1: Name, val _2: Manager, val _3: List[SubUnit]) extends Product3[Name, Manager, List[SubUnit]] with Deriving[Eq ^:: Show ^:: Kind.Nil]
+    final case class Company(val _1: List[Dept])
+
+    object Company extends Data[Company] with TypeableProxy[Company] with ThisIsInstance {
+        private type a = Company
+        override val selfTypeable = Typeable.of[a]
+        override def gfoldl[c[_]](k: GApply[c])(z: GPure[c])(a: a): c[a] = a match {
+            case Company(v1) => k(z((w1: List[Dept]) => Company(w1)))(v1)
+        }
+    }
+
+    final case class Dept(val _1: Name, val _2: Manager, val _3: List[SubUnit])
+
+    object Dept extends Data[Dept] with TypeableProxy[Dept] with ThisIsInstance {
+        private type a = Dept
+        override val selfTypeable = Typeable.of[a]
+        override def gfoldl[c[_]](k: GApply[c])(z: GPure[c])(a: a): c[a] = a match {
+            case Dept(v1, v2, v3) => k( k( k(z((w1: Name) => (w2: Manager) => (w3: List[SubUnit]) => Dept(w1, w2, w3)))(v1) )(v2) )(v3)
+        }
+    }
 
     sealed abstract class SubUnit extends Up[SubUnit]
     final case class PersonUnit(employee: Employee) extends SubUnit
@@ -24,16 +41,42 @@ class ScrapYourBoilerplateTest extends org.scalatest.junit.JUnit3Suite {
 
     object SubUnit extends Data[SubUnit] with TypeableProxy[SubUnit] with ThisIsInstance {
         private type a = SubUnit
-        override val selfTypeable = Typeable.of[SubUnit]
+        override val selfTypeable = Typeable.of[a]
         override def gfoldl[c[_]](k: GApply[c])(z: GPure[c])(a: a): c[a] = a match {
             case PersonUnit(e) => k(z(PersonUnit(_: Employee).up))(e)
             case DeptUnit(d) => k(z(DeptUnit(_: Dept).up))(d)
         }
     }
 
-    final case class Employee(val _1: Person, val _2: Salary) extends Product2[Person, Salary] with Deriving[Eq ^:: Show ^:: Kind.Nil]
-    final case class Person(val _1: Name, val _2: Address) extends Product2[Name, Address] with Deriving[Eq ^:: Show ^:: Kind.Nil]
-    final case class Salary(val _1: Float) extends Product1[Float] with Deriving[Eq ^:: Show ^:: Kind.Nil]
+    final case class Employee(val _1: Person, val _2: Salary)
+
+    object Employee extends Data[Employee] with TypeableProxy[Employee] with ThisIsInstance {
+        private type a = Employee
+        override val selfTypeable = Typeable.of[a]
+        override def gfoldl[c[_]](k: GApply[c])(z: GPure[c])(a: a): c[a] = a match {
+            case Employee(p, s) => k( k(z((p: Person) => (s: Salary) => Employee(p, s)))(p) )(s)
+        }
+    }
+
+    final case class Person(val _1: Name, val _2: Address)
+
+    object Person extends Data[Person] with TypeableProxy[Person] with ThisIsInstance {
+        private type a = Person
+        override val selfTypeable = Typeable.of[a]
+        override def gfoldl[c[_]](k: GApply[c])(z: GPure[c])(a: a): c[a] = a match {
+            case Person(p, s) => k( k(z((p: Name) => (s: Address) => Person(p, s)))(p) )(s)
+        }
+    }
+
+    final case class Salary(val _1: Float)
+
+    object Salary extends Data[Salary] with TypeableProxy[Salary] with ThisIsInstance {
+        private type a = Salary
+        override val selfTypeable = Typeable.of[a]
+        override def gfoldl[c[_]](k: GApply[c])(z: GPure[c])(a: a): c[a] = a match {
+            case Salary(v1) => k(z((w1: Float) => Salary(w1)))(v1)
+        }
+    }
 
     type Manager = Employee
     type Name = String
@@ -84,10 +127,10 @@ class ScrapYourBoilerplateTest extends org.scalatest.junit.JUnit3Suite {
     }
 
     def testIncrease {
-        IO.print(Person("Ralf", "Amsterdam")).!
-        IO.print(Employee(Person("Ralf", "Amsterdam"), Salary(8000))).!
-        IO.print(genCom).!
-        IO.print(increase(.05F)(genCom)).!
+        val src = genCom
+        val dst = increase(.05F)(genCom)
+        expect(false)(src == dst)
+        //println(src)
+        //println(dst)
     }
-
 }

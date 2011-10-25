@@ -14,7 +14,7 @@ package com.github.okomok
 package ken
 
 
-trait Show[-a] extends Typeclass[a] {
+trait Show[a] extends Typeclass[a] {
     final val asShow: Show[apply0] = this
 
     // Core
@@ -35,7 +35,7 @@ trait Show[-a] extends Typeclass[a] {
 }
 
 
-trait ShowProxy[-a] extends Show[a] {
+trait ShowProxy[a] extends Show[a] {
     def selfShow: Show[a]
 
     override val showsPrec: showsPrec = selfShow.showsPrec
@@ -77,7 +77,7 @@ object Show extends ShowInstance with ShowShortcut {
         }
     }
 
-    trait Default[a] extends Show[a] {
+    trait Of[a] extends Show[a] {
         override val showsPrec: showsPrec = _ => a => showString(a.toString)
     }
 
@@ -98,15 +98,10 @@ object Show extends ShowInstance with ShowShortcut {
 
 
 private[ken] sealed trait ShowInstance0 { this: Show.type =>
-    val ofAny: Show[Any] = new Default[Any] {}
-
-    implicit def _ofDefault[a]: Show[a] = ofAny // vs `_ofNewtype`
+    implicit def of[a]: Show[a] = new Of[a] {} // vs `_ofNewtype`
 }
 
-private[ken] sealed trait ShowInstance1 extends ShowInstance0 { this: Show.type =>
-
-    // Primitives
-    //
+sealed trait ShowInstance extends ShowInstance0 { this: Show.type =>
     implicit val _ofChar: Show[Char] = Char
     implicit val _ofDouble: Show[Double] = Double
     implicit val _ofFloat: Show[Float] = Float
@@ -114,46 +109,6 @@ private[ken] sealed trait ShowInstance1 extends ShowInstance0 { this: Show.type 
     implicit val _ofInteger: Show[Integer] = _Integer
 
     implicit def _ofNewtype[nt, ot, ds <: Kind.MethodList](implicit j: Newtype[nt, ot, ds], i: Show[ot], k: Kind.MethodList.Contains[ds, Show]): Show[nt] = deriving[Newtype[nt, ot, _]]
-
-    // Products
-    //
-    implicit def _ofProduct1[a, ds <: Kind.MethodList](implicit i1: Show[a], k: Kind.MethodList.Contains[ds, Show]): Show[Product1[a] with Deriving[ds]] = new Show[Product1[a] with Deriving[ds]] {
-        override val showsPrec: showsPrec = _ => x => show_product(List(i1.shows(x._1)))(show_prefix(x))
-    }
-    implicit def _ofProduct2[a, b, ds <: Kind.MethodList](implicit i1: Show[a], i2: Show[b], k: Kind.MethodList.Contains[ds, Show]): Show[Product2[a, b] with Deriving[ds]] = new Show[Product2[a, b] with Deriving[ds]] {
-        override val showsPrec: showsPrec = _ => x => show_product(List(i1.shows(x._1), i2.shows(x._2)))(show_prefix(x))
-    }
-    implicit def _ofProduct3[a, b, c, ds <: Kind.MethodList](implicit i1: Show[a], i2: Show[b], i3: Show[c], k: Kind.MethodList.Contains[ds, Show]): Show[Product3[a, b, c] with Deriving[ds]] = new Show[Product3[a, b, c] with Deriving[ds]] {
-        override val showsPrec: showsPrec = _ => x => show_product(List(i1.shows(x._1), i2.shows(x._2), i3.shows(x._3)))(show_prefix(x))
-    }
-    implicit def _ofProduct4[a, b, c, d, ds <: Kind.MethodList](implicit i1: Show[a], i2: Show[b], i3: Show[c], i4: Show[d], k: Kind.MethodList.Contains[ds, Show]): Show[Product4[a, b, c, d] with Deriving[ds]] = new Show[Product4[a, b, c, d] with Deriving[ds]] {
-        override val showsPrec: showsPrec = _ => x => show_product(List(i1.shows(x._1), i2.shows(x._2), i3.shows(x._3), i4.shows(x._4)))(show_prefix(x))
-    }
-    implicit def _ofProduct5[a, b, c, d, e, ds <: Kind.MethodList](implicit i1: Show[a], i2: Show[b], i3: Show[c], i4: Show[d], i5: Show[e], k: Kind.MethodList.Contains[ds, Show]): Show[Product5[a, b, c, d, e] with Deriving[ds]] = new Show[Product5[a, b, c, d, e] with Deriving[ds]] {
-        override val showsPrec: showsPrec = _ => x => show_product(List(i1.shows(x._1), i2.shows(x._2), i3.shows(x._3), i4.shows(x._4), i5.shows(x._5)))(show_prefix(x))
-    }
-
-    // Tuples
-    //
-    implicit def _ofTuple1[a](implicit i1: Show[a]): Show[Tuple1[a]] = new Show[Tuple1[a]] {
-        override val showsPrec: showsPrec = _ => x => show_tuple(List(i1.shows(x._1)))
-    }
-    implicit def _ofTuple2[a, b](implicit i1: Show[a], i2: Show[b]): Show[Tuple2[a, b]] = new Show[Tuple2[a, b]] {
-        override val showsPrec: showsPrec = _ => x => show_tuple(List(i1.shows(x._1), i2.shows(x._2)))
-    }
-    implicit def _ofTuple3[a, b, c](implicit i1: Show[a], i2: Show[b], i3: Show[c]): Show[Tuple3[a, b, c]] = new Show[Tuple3[a, b, c]] {
-        override val showsPrec: showsPrec = _ => x => show_tuple(List(i1.shows(x._1), i2.shows(x._2), i3.shows(x._3)))
-    }
-    implicit def _ofTuple4[a, b, c, d](implicit i1: Show[a], i2: Show[b], i3: Show[c], i4: Show[d]): Show[Tuple4[a, b, c, d]] = new Show[Tuple4[a, b, c, d]] {
-        override val showsPrec: showsPrec = _ => x => show_tuple(List(i1.shows(x._1), i2.shows(x._2), i3.shows(x._3), i4.shows(x._4)))
-    }
-    implicit def _ofTuple5[a, b, c, d, e](implicit i1: Show[a], i2: Show[b], i3: Show[c], i4: Show[d], i5: Show[e]): Show[Tuple5[a, b, c, d, e]] = new Show[Tuple5[a, b, c, d, e]] {
-        override val showsPrec: showsPrec = _ => x => show_tuple(List(i1.shows(x._1), i2.shows(x._2), i3.shows(x._3), i4.shows(x._4), i5.shows(x._5)))
-    }
-}
-
-sealed trait ShowInstance extends ShowInstance1 { this: Show.type =>
-    implicit val _ofNothing: Show[Nothing] with HighPriority = new Show[Nothing] with HighPriority
 }
 
 

@@ -15,7 +15,7 @@ package ken
 
 
 // `object Bool` crashes scalac.
-private[ken] object _Bool extends Bounded[Bool] with Enum[Bool] with Eq.Default[Bool]
+private[ken] object _Bool extends Bounded[Bool] with Enum[Bool] with Eq.Of[Bool]
     with Ord[Bool] with Ix[Bool] with Random[Bool]
 {
     // Overrides
@@ -51,7 +51,7 @@ private[ken] object _Bool extends Bounded[Bool] with Enum[Bool] with Eq.Default[
     override val unsafeIndex: unsafeIndex = { case (l, _) => i => fromEnum(i) - fromEnum(l) }
     override val index: index = b => i => {
         if (inRange(b)(i)) unsafeIndex(b)(i)
-        else indexError(b)(i)("Bool")(Show._ofDefault[Bool])
+        else indexError(b)(i)("Bool")
     }
     override val inRange: inRange = { case (l, u) => i => fromEnum(i) >= fromEnum(l) && fromEnum(i) <= fromEnum(u) }
     // Random

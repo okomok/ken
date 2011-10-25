@@ -110,7 +110,7 @@ trait Foldable[t[+_]] extends Typeclass1[t] { outer =>
     def sum[a](xs: t[a])(implicit i: Num[a]): a = foldMap(id[a])(xs)(Monoid.weak[Monoid.Sum[a]])
     def product[a](xs: t[a])(implicit i: Num[a]): a = foldMap(id[a])(xs)(Monoid.weak[Monoid.Product[a]])
 
-    def maximum[a](xs: t[a])(implicit i: Ord[a]): a = foldl1(i.max[a])(xs)
+    def maximum[a](xs: t[a])(implicit i: Ord[a]): a = foldl1(i.max)(xs)
 
     def maximumBy[a](cmp: a => a => Ordering)(xs: t[a]): a = {
         def max_(x: a)(y: a): a = cmp(x)(y) match {
@@ -120,7 +120,7 @@ trait Foldable[t[+_]] extends Typeclass1[t] { outer =>
         foldl1(max_)(xs)
     }
 
-    def minimum[a](xs: t[a])(implicit i: Ord[a]): a = foldl1(i.min[a])(xs)
+    def minimum[a](xs: t[a])(implicit i: Ord[a]): a = foldl1(i.min)(xs)
 
     def minimumBy[a](cmp: a => a => Ordering)(xs: t[a]): a = {
         def min_(x: a)(y: a): a = cmp(x)(y) match {

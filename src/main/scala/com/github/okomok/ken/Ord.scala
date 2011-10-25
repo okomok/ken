@@ -14,7 +14,7 @@ package com.github.okomok
 package ken
 
 
-trait Ord[-a] extends Eq[a] {
+trait Ord[a] extends Eq[a] {
     final val asOrd: Ord[apply0] = this
 
     // Core
@@ -34,8 +34,11 @@ trait Ord[-a] extends Eq[a] {
     type op_>= = a => a => Bool
     def op_>= : op_>= = x => y => compare(x)(y) match { case LT => False; case _ => True }
 
-    def max[b <: a](x: b)(y: b): b = if (op_<=(x)(y)) y else x
-    def min[b <: a](x: b)(y: b): b = if (op_<=(x)(y)) x else y
+    type max = a => a => a
+    def max: max = x => y => if (op_<=(x)(y)) y else x
+
+    type min = a => a => a
+    def min: min = x => y => if (op_<=(x)(y)) x else y
 
     // Operators
     //
@@ -59,19 +62,19 @@ trait Ord[-a] extends Eq[a] {
     }
     final implicit def >=(x: a): Op_>= = new Op_>=(x)
 
-    private[ken] sealed class Op_max_[b <: a](x: b) {
-        def _max_(y: b): b = max(x)(y)
+    private[ken] sealed class Op_max_(x: a) {
+        def _max_(y: a): a = max(x)(y)
     }
-    final implicit def _max_[b <: a](x: b): Op_max_[b] = new Op_max_(x)
+    final implicit def _max_(x: a): Op_max_ = new Op_max_(x)
 
-    private[ken] sealed class Op_min_[b <: a](x: b) {
-        def _min_(y: b): b = min(x)(y)
+    private[ken] sealed class Op_min_(x: a) {
+        def _min_(y: a): a = min(x)(y)
     }
-    final implicit def _min_[b <: a](x: b): Op_min_[b] = new Op_min_(x)
+    final implicit def _min_(x: a): Op_min_ = new Op_min_(x)
 }
 
 
-trait OrdProxy[-a] extends Ord[a] with EqProxy[a] {
+trait OrdProxy[a] extends Ord[a] with EqProxy[a] {
     def selfOrd: Ord[a]
     override def selfEq: Eq[a] = selfOrd
 
@@ -80,8 +83,8 @@ trait OrdProxy[-a] extends Ord[a] with EqProxy[a] {
     override def op_<= : op_<= = selfOrd.op_<=
     override def op_> : op_> = selfOrd.op_>
     override def op_>= : op_>= = selfOrd.op_>=
-    override def max[b <: a](x: b)(y: b): b = selfOrd.max(x)(y)
-    override def min[b <: a](x: b)(y: b): b = selfOrd.min(x)(y)
+    override def max: max = selfOrd.max
+    override def min: min = selfOrd.min
 }
 
 
@@ -115,7 +118,7 @@ object Ord extends OrdInstance with OrdShortcut {
 }
 
 
-private[ken] sealed trait OrdInstance0 { this: Ord.type =>
+sealed trait OrdInstance { this: Ord.type =>
 
     // Primitives
     //
@@ -140,42 +143,6 @@ private[ken] sealed trait OrdInstance0 { this: Ord.type =>
     }
 
     implicit def _ofNewtype[nt, ot, ds <: Kind.MethodList](implicit j: Newtype[nt, ot, ds], i: Ord[ot], k: Kind.MethodList.Contains[ds, Ord]): Ord[nt] = deriving[Newtype[nt, ot, _]]
-
-    // Products
-    //
-    implicit def _ofProduct2[a, b, ds <: Kind.MethodList](implicit ord1: Ord[a], ord2: Ord[b], k: Kind.MethodList.Contains[ds, Ord]): Ord[Product2[a, b] with Deriving[ds]] = new Ord[Product2[a, b] with Deriving[ds]] with EqProxy[Product2[a, b] with Deriving[ds]] {
-        override val selfEq = Eq._ofProduct2[a, b, ds](ord1, ord2, null)
-        override val compare: compare = x => y => {
-            val compare1 = ord1.compare(x._1)(y._1)
-            if (compare1 != EQ) compare1
-            else {
-                val compare2 = ord2.compare(x._2)(y._2)
-                if (compare2 != EQ) compare2
-                else {
-                    EQ
-                }
-            }
-        }
-    }
-
-    implicit def _ofProduct3[a, b, c, ds <: Kind.MethodList](implicit ord1: Ord[a], ord2: Ord[b], ord3: Ord[c], k: Kind.MethodList.Contains[ds, Ord]) : Ord[Product3[a, b, c] with Deriving[ds]] = new Ord[Product3[a, b, c] with Deriving[ds]] with EqProxy[Product3[a, b, c] with Deriving[ds]] {
-        override val selfEq = Eq._ofProduct3[a, b, c, ds](ord1, ord2, ord3, null)
-        override val compare: compare = x => y => {
-            val compare1 = ord1.compare(x._1)(y._1)
-            if (compare1 != EQ) compare1
-            else {
-                val compare2 = ord2.compare(x._2)(y._2)
-                if (compare2 != EQ) compare2
-                else {
-                    val compare3 = ord3.compare(x._3)(y._3)
-                    if (compare3 != EQ) compare3
-                    else {
-                        EQ
-                    }
-                }
-            }
-        }
-    }
 
     // Tuples
     //
@@ -212,10 +179,6 @@ private[ken] sealed trait OrdInstance0 { this: Ord.type =>
             }
         }
     }
-}
-
-sealed trait OrdInstance extends OrdInstance0 { this: Ord.type =>
-    implicit val _ofNothing: Ord[Nothing] with HighPriority = new Ord[Nothing] with HighPriority {}
 }
 
 

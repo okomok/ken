@@ -35,7 +35,7 @@ class MainTezt {
 
         for {
             _ <- io
-            _ <- IO.print("\n\n")(Show.ofAny)
+            _ <- IO.print("\n\n")
         } yield ()
     }
 

@@ -12,7 +12,7 @@ package ken
 // (Toplevel identifier is case-insensitive under the influence of file-system.)
 
 
-trait _Eq[-a] extends Typeclass[a] {
+trait _Eq[a] extends Typeclass[a] {
     final val asEq: _Eq[apply0] = this
 
     // Core
@@ -37,7 +37,7 @@ trait _Eq[-a] extends Typeclass[a] {
 }
 
 
-trait EqProxy[-a] extends _Eq[a] {
+trait EqProxy[a] extends _Eq[a] {
     def selfEq: _Eq[a]
 
     override def op_=== : op_=== = selfEq.op_===
@@ -55,7 +55,7 @@ object _Eq extends EqInstance with EqShortcut {
 
     def weak[nt <: Kind.Newtype](implicit j: Newtype[nt#apply0, nt#oldtype, _], i: _Eq[nt#apply0]): _Eq[nt#oldtype] = deriving[Kind.coNewtype[nt]](j.coNewtype, i)
 
-    trait Default[a] extends _Eq[a] {
+    trait Of[a] extends _Eq[a] {
         override val op_=== : op_=== = x => y => x == y
         override val op_/== : op_/== = x => y => x != y
     }
@@ -67,50 +67,19 @@ object _Eq extends EqInstance with EqShortcut {
     def byPredicate[a](f: Pair[a, a] => Bool): _Eq[a] = new _Eq[a] {
         override val op_=== : op_=== = x => y => f(x, y)
     }
+
+    def ofScalaEquiv[a](implicit i: scala.Equiv[a]): _Eq[a] = new _Eq[a] {
+        override val op_=== : op_=== = x => y => i.equiv(x, y)
+    }
 }
 
 
 private[ken] sealed trait EqInstance0 { this: _Eq.type =>
-    val ofAny: _Eq[Any] = new Default[Any] {}
-
-    implicit def _ofDefault[a]: _Eq[a] = ofAny // vs `_ofNewtype`
+    implicit def of[a]: _Eq[a] = new Of[a] {} // vs `_ofNewtype`
 }
 
-private[ken] sealed trait EqInstance1 extends EqInstance0 { this: _Eq.type =>
-    // Primitives
-    //
-    implicit val _ofBool: _Eq[Bool] = _Bool
-    implicit val _ofChar: _Eq[Char] = Char
-    implicit val _ofDouble: _Eq[Double] = Double
-    implicit val _ofFloat: _Eq[Float] = Float
-    implicit val _ofInt: _Eq[Int] = Int
-    implicit val _ofInteger: _Eq[Integer] = _Integer
-    implicit val _ofUnit: _Eq[Unit] = Unit
-
+sealed trait EqInstance extends EqInstance0 { this: _Eq.type =>
     implicit def _ofNewtype[nt, ot, ds <: Kind.MethodList](implicit j: Newtype[nt, ot, ds], i: _Eq[ot], k: Kind.MethodList.Contains[ds, Eq]): _Eq[nt] = deriving[Newtype[nt, ot, _]]
-
-    // Products
-    //
-    implicit def _ofProduct1[a, ds <: Kind.MethodList](implicit i1: _Eq[a], k: Kind.MethodList.Contains[ds, Eq]): _Eq[Product1[a] with Deriving[ds]] = new _Eq[Product1[a] with Deriving[ds]] {
-        override val op_=== : op_=== = x => y => i1.op_===(x._1)(y._1)
-        override val op_/== : op_/== = x => y => i1.op_/==(x._1)(y._1)
-    }
-    implicit def _ofProduct2[a, b, ds <: Kind.MethodList](implicit i1: _Eq[a], i2: _Eq[b], k: Kind.MethodList.Contains[ds, Eq]): _Eq[Product2[a, b] with Deriving[ds]] = new _Eq[Product2[a, b] with Deriving[ds]] {
-        override val op_=== : op_=== = x => y => i1.op_===(x._1)(y._1) && i2.op_===(x._2)(y._2)
-        override val op_/== : op_/== = x => y => i1.op_/==(x._1)(y._1) || i2.op_/==(x._2)(y._2)
-    }
-    implicit def _ofProduct3[a, b, c, ds <: Kind.MethodList](implicit i1: _Eq[a], i2: _Eq[b], i3: _Eq[c], k: Kind.MethodList.Contains[ds, Eq]): _Eq[Product3[a, b, c] with Deriving[ds]] = new _Eq[Product3[a, b, c] with Deriving[ds]] {
-        override val op_=== : op_=== = x => y => i1.op_===(x._1)(y._1) && i2.op_===(x._2)(y._2) && i3.op_===(x._3)(y._3)
-        override val op_/== : op_/== = x => y => i1.op_/==(x._1)(y._1) || i2.op_/==(x._2)(y._2) || i3.op_/==(x._3)(y._3)
-    }
-    implicit def _ofProduct4[a, b, c, d, ds <: Kind.MethodList](implicit i1: _Eq[a], i2: _Eq[b], i3: _Eq[c], i4: _Eq[d], k: Kind.MethodList.Contains[ds, Eq]): _Eq[Product4[a, b, c, d] with Deriving[ds]] = new _Eq[Product4[a, b, c, d] with Deriving[ds]] {
-        override val op_=== : op_=== = x => y => i1.op_===(x._1)(y._1) && i2.op_===(x._2)(y._2) && i3.op_===(x._3)(y._3) && i4.op_===(x._4)(y._4)
-        override val op_/== : op_/== = x => y => i1.op_/==(x._1)(y._1) || i2.op_/==(x._2)(y._2) || i3.op_/==(x._3)(y._3) || i4.op_/==(x._4)(y._4)
-    }
-    implicit def _ofProduct5[a, b, c, d, e, ds <: Kind.MethodList](implicit i1: _Eq[a], i2: _Eq[b], i3: _Eq[c], i4: _Eq[d], i5: _Eq[e], k: Kind.MethodList.Contains[ds, Eq]): _Eq[Product5[a, b, c, d, e] with Deriving[ds]] = new _Eq[Product5[a, b, c, d, e] with Deriving[ds]] {
-        override val op_=== : op_=== = x => y => i1.op_===(x._1)(y._1) && i2.op_===(x._2)(y._2) && i3.op_===(x._3)(y._3) && i4.op_===(x._4)(y._4) && i5.op_===(x._5)(y._5)
-        override val op_/== : op_/== = x => y => i1.op_/==(x._1)(y._1) || i2.op_/==(x._2)(y._2) || i3.op_/==(x._3)(y._3) || i4.op_/==(x._4)(y._4) || i5.op_/==(x._5)(y._5)
-    }
 
     // Tuples
     //
@@ -134,14 +103,6 @@ private[ken] sealed trait EqInstance1 extends EqInstance0 { this: _Eq.type =>
         override val op_=== : op_=== = x => y => i1.op_===(x._1)(y._1) && i2.op_===(x._2)(y._2) && i3.op_===(x._3)(y._3) && i4.op_===(x._4)(y._4) && i5.op_===(x._5)(y._5)
         override val op_/== : op_/== = x => y => i1.op_/==(x._1)(y._1) || i2.op_/==(x._2)(y._2) || i3.op_/==(x._3)(y._3) || i4.op_/==(x._4)(y._4) || i5.op_/==(x._5)(y._5)
     }
-
-    def ofScalaEquiv[a](implicit i: scala.Equiv[a]): _Eq[a] = new _Eq[a] {
-        override val op_=== : op_=== = x => y => i.equiv(x, y)
-    }
-}
-
-sealed trait EqInstance extends EqInstance1 { this: Eq.type =>
-    implicit val _ofNothing: Eq[Nothing] with HighPriority = new Eq[Nothing] with HighPriority {}
 }
 
 

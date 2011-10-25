@@ -16,8 +16,6 @@ class ComonadBehindZipperTest extends org.scalatest.junit.JUnit3Suite {
 
     // aN ... a1 a0 ! b0 b1 b2 ... bN
     final case class Zipper[+a](val _1: List[a], val _2: List[a])
-        extends Product2[List[a], List[a]] // will be unneeded soon.
-        with Deriving[Eq ^:: Show ^:: Kind.Nil]
 
     object Zipper extends Comonad[Zipper] with ThisIsInstance {
         def left[a](w: Zipper[a]): Zipper[a] = (w: @unchecked) match {

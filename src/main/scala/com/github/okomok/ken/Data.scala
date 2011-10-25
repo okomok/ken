@@ -220,11 +220,21 @@ sealed trait DataInstance { this: Data.type =>
         }
     }
 
-    implicit def _ofTuple2[v, w](implicit i: Data[v], j: Data[w], t: Typeable[Tuple2[v, w]]): Data[Tuple2[v, w]] = new Data[Tuple2[v, w]] with TypeableProxy[Tuple2[v, w]] {
-        private type a = Tuple2[v, w]
+    // Tuples
+    //
+    implicit def _ofTuple2[v1, v2](implicit i1: Data[v1], i2: Data[v2], t: Typeable[Tuple2[v1, v2]]): Data[Tuple2[v1, v2]] = new Data[Tuple2[v1, v2]] with TypeableProxy[Tuple2[v1, v2]] {
+        private type a = Tuple2[v1, v2]
         override val selfTypeable = t
         override def gfoldl[c[_]](f: GApply[c])(z: GPure[c])(a: a): c[a] = a match {
-            case (a, b) => f( f(z((x: v) => (y: w) => (x, y)))(a) )(b)
+            case (w1, w2) => f( f(z((v1: v1) => (v2: v2) => (v1, v2)))(w1) )(w2)
+        }
+    }
+
+    implicit def _ofTuple3[v1, v2, v3](implicit i1: Data[v1], i2: Data[v2], i3: Data[v3], t: Typeable[Tuple3[v1, v2, v3]]): Data[Tuple3[v1, v2, v3]] = new Data[Tuple3[v1, v2, v3]] with TypeableProxy[Tuple3[v1, v2, v3]] {
+        private type a = Tuple3[v1, v2, v3]
+        override val selfTypeable = t
+        override def gfoldl[c[_]](f: GApply[c])(z: GPure[c])(a: a): c[a] = a match {
+            case (w1, w2, w3) => f( f( f(z((v1: v1) => (v2: v2) => (v3: v3) => (v1, v2, v3)))(w1) )(w2) )(w3)
         }
     }
 }

@@ -17,7 +17,7 @@ package ken
 import java.lang.{Character => JChar}
 
 
-object Char extends Bounded[Char] with Enum[Char] with Eq.Default[Char] with Ord[Char] with Random[Char] with Show[Char] {
+object Char extends Bounded[Char] with Enum[Char] with Eq.Of[Char] with Ord[Char] with Random[Char] with Show[Char] {
 
     // Overrides
     //

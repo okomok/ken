@@ -17,7 +17,7 @@ final case class SourcePos(name: SourceName, line: Line, column: Column) {
 }
 
 
-object SourcePos extends Eq.Default[SourcePos] with Ord[SourcePos] with Show[SourcePos] with ThisIsInstance {
+object SourcePos extends Eq.Of[SourcePos] with Ord[SourcePos] with Show[SourcePos] with ThisIsInstance {
     // Overrides
     //
     // Ord
