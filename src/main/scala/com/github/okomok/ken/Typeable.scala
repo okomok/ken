@@ -15,7 +15,7 @@ package ken
 
 
 trait Typeable[a] extends Typeclass[a] {
-    final val asTypeable: Typeable[a] = this
+    final val asTypeable: Typeable[apply0] = this
 
     // Core
     //

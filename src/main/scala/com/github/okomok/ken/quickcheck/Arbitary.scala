@@ -14,7 +14,7 @@ package quickcheck
 
 
 trait Arbitary[a] extends Typeclass[a] {
-    final val asArbitary: Arbitary[a] = this
+    final val asArbitary: Arbitary[apply0] = this
 
     // Core
     //

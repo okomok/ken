@@ -63,7 +63,7 @@ object PropertyM extends Kind.FunctionLike {
         run(n) >>= k
     }
 
-    def forAllM[n[+_], a, b](gen: Gen[a])(k: a => PropertyM[n, b])(implicit i: Monad[n]): PropertyM[n, b] = {
+    def forAllM[n[+_], a, b](gen: Gen[a])(k: a => PropertyM[n, b])(implicit i: Monad[n], j: Show[a]): PropertyM[n, b] = {
         val pm = Monad[apply1[n]]
         import pm.>>=
         pick(gen) >>= k

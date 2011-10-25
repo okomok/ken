@@ -11,6 +11,9 @@ package com.github.okomok.kentest.example
 import com.github.okomok.ken
 
 
+// version which doesn't use the ken.Data.
+
+
 class SybTest extends org.scalatest.junit.JUnit3Suite {
 
     case class Company(depts: List[Dept])

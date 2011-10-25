@@ -51,7 +51,7 @@ private[ken] object _Bool extends Bounded[Bool] with Enum[Bool] with Eq.Default[
     override val unsafeIndex: unsafeIndex = { case (l, _) => i => fromEnum(i) - fromEnum(l) }
     override val index: index = b => i => {
         if (inRange(b)(i)) unsafeIndex(b)(i)
-        else indexError(b)(i)("Bool")
+        else indexError(b)(i)("Bool")(Show._ofDefault[Bool])
     }
     override val inRange: inRange = { case (l, u) => i => fromEnum(i) >= fromEnum(l) && fromEnum(i) <= fromEnum(u) }
     // Random

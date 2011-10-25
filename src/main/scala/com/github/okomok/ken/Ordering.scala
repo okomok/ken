@@ -57,7 +57,7 @@ object Ordering extends Bounded[Ordering] with Enum[Ordering] with Ix[Ordering]
     override val unsafeIndex: unsafeIndex = { case (l, _) => i => fromEnum(i) - fromEnum(l) }
     override val index: index = b => i => {
         if (inRange(b)(i)) unsafeIndex(b)(i)
-        else indexError(b)(i)("Bool")
+        else indexError(b)(i)("Ordering")(Show._ofDefault[Ordering])
     }
     override val inRange: inRange = { case (l, u) => i => fromEnum(i) >= fromEnum(l) && fromEnum(i) <= fromEnum(u) }
     // Monoid

@@ -14,7 +14,7 @@ package quickcheck
 
 
 trait CoArbitary[a] extends Typeclass[a] {
-    final val asCoArbitary: CoArbitary[a] = this
+    final val asCoArbitary: CoArbitary[apply0] = this
 
     // Core
     //
