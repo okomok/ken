@@ -48,12 +48,12 @@ object Bounded extends BoundedInstance with BoundedShortcut with BoundedDetail {
 
 
 sealed trait BoundedInstance { this: Bounded.type =>
-    implicit val ofBool: Bounded[Bool] = _Bool
-    implicit val ofChar: Bounded[Char] = Char
-    implicit val ofInt: Bounded[Int] = Int
-    implicit val ofUnit: Bounded[Unit] = Unit
+    implicit val _ofBool: Bounded[Bool] = _Bool
+    implicit val _ofChar: Bounded[Char] = Char
+    implicit val _ofInt: Bounded[Int] = Int
+    implicit val _ofUnit: Bounded[Unit] = Unit
 
-    implicit def ofNewtype[nt, ot, ds <: Kind.MethodList](implicit j: Newtype[nt, ot, ds], i: Bounded[ot], k: Kind.MethodList.Contains[ds, Bounded]): Bounded[nt] = deriving[Newtype[nt, ot, _]]
+    implicit def _ofNewtype[nt, ot, ds <: Kind.MethodList](implicit j: Newtype[nt, ot, ds], i: Bounded[ot], k: Kind.MethodList.Contains[ds, Bounded]): Bounded[nt] = deriving[Newtype[nt, ot, _]]
 }
 
 

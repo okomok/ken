@@ -61,5 +61,5 @@ object Category extends CategoryInstance {
 
 
 sealed trait CategoryInstance { this: Category.type =>
-    implicit val ofFunction: ArrowChoice[Function] with ArrowApply[Function] with ArrowLoop[Function] = Function
+    implicit val _ofFunction: ArrowChoice[Function] with ArrowApply[Function] with ArrowLoop[Function] = Function
 }

@@ -15,7 +15,7 @@ package ken
 
 
 trait Traversable[t[+_]] extends Functor[t] with Foldable[t] { outer =>
-    final val asTraversable: Traversable[apply] = this
+    final val asTraversable: Traversable[apply1] = this
 
     // Core
     //

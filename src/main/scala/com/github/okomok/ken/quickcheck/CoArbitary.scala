@@ -41,7 +41,7 @@ object CoArbitary extends CoArbitaryInstance with CoArbitaryShortcut {
 
 
 sealed trait CoArbitaryInstance { outer: CoArbitary.type =>
-    implicit def ofFunction[x, y](implicit i: Arbitary[x], j: CoArbitary[y]): CoArbitary[x => y] = new CoArbitary[x => y] {
+    implicit def _ofFunction[x, y](implicit i: Arbitary[x], j: CoArbitary[y]): CoArbitary[x => y] = new CoArbitary[x => y] {
         type a = x => y
         override def coarbitary[c](f: a)(gen: Gen[c]): Gen[c] = for {
             xs <- Arbitary.arbitary[List[x]]
@@ -50,12 +50,12 @@ sealed trait CoArbitaryInstance { outer: CoArbitary.type =>
         }
     }
 
-    implicit val ofUnit: CoArbitary[Unit] = new CoArbitary[Unit] {
+    implicit val _ofUnit: CoArbitary[Unit] = new CoArbitary[Unit] {
         type a = Unit
         override def coarbitary[c](f: a)(gen: Gen[c]): Gen[c] = gen
     }
 
-    implicit val ofBool: CoArbitary[Bool] = new CoArbitary[Bool] {
+    implicit val _ofBool: CoArbitary[Bool] = new CoArbitary[Bool] {
         type a = Bool
         override def coarbitary[c](f: a)(gen: Gen[c]): Gen[c] = f match {
             case False => Gen.variant(0)(gen)
@@ -63,7 +63,7 @@ sealed trait CoArbitaryInstance { outer: CoArbitary.type =>
         }
     }
 
-    implicit def ofMaybe[x](implicit i: CoArbitary[x]): CoArbitary[Maybe[x]] = new CoArbitary[Maybe[x]] {
+    implicit def _ofMaybe[x](implicit i: CoArbitary[x]): CoArbitary[Maybe[x]] = new CoArbitary[Maybe[x]] {
         type a = Maybe[x]
         override def coarbitary[c](f: a)(gen: Gen[c]): Gen[c] = f match {
             case Nothing => Gen.variant(0)(gen)
@@ -71,7 +71,7 @@ sealed trait CoArbitaryInstance { outer: CoArbitary.type =>
         }
     }
 
-    implicit def ofEither[x, y](implicit i: CoArbitary[x], j: CoArbitary[y]): CoArbitary[Either[x, y]] = new CoArbitary[Either[x, y]] {
+    implicit def _ofEither[x, y](implicit i: CoArbitary[x], j: CoArbitary[y]): CoArbitary[Either[x, y]] = new CoArbitary[Either[x, y]] {
         type a = Either[x, y]
         override def coarbitary[c](f: a)(gen: Gen[c]): Gen[c] = f match {
             case Left(x) => Gen.variant(0)(i.coarbitary(x)(gen))
@@ -79,7 +79,7 @@ sealed trait CoArbitaryInstance { outer: CoArbitary.type =>
         }
     }
 
-    implicit def ofList[x](implicit i: CoArbitary[x]): CoArbitary[List[x]] = new CoArbitary[List[x]] {
+    implicit def _ofList[x](implicit i: CoArbitary[x]): CoArbitary[List[x]] = new CoArbitary[List[x]] {
         type a = List[x]
         override def coarbitary[c](f: a)(gen: Gen[c]): Gen[c] = f match {
             case Nil => Gen.variant(0)(gen)
@@ -87,46 +87,46 @@ sealed trait CoArbitaryInstance { outer: CoArbitary.type =>
         }
     }
 
-    implicit def ofRatio[x](implicit i: CoArbitary[x], j: Integral[x]): CoArbitary[Ratio[x]] = new CoArbitary[Ratio[x]] {
+    implicit def _ofRatio[x](implicit i: CoArbitary[x], j: Integral[x]): CoArbitary[Ratio[x]] = new CoArbitary[Ratio[x]] {
         type a = Ratio[x]
         override def coarbitary[c](r: a)(gen: Gen[c]): Gen[c] = outer.coarbitary(Ratio.numerator(r), Ratio.denominator(r))(gen)
     }
 
-    implicit def ofTuple2[x1, x2](implicit i1: CoArbitary[x1], i2: CoArbitary[x2]): CoArbitary[(x1, x2)] = new CoArbitary[(x1, x2)] {
+    implicit def _ofTuple2[x1, x2](implicit i1: CoArbitary[x1], i2: CoArbitary[x2]): CoArbitary[(x1, x2)] = new CoArbitary[(x1, x2)] {
         type a = (x1, x2)
         override def coarbitary[c](f: a)(gen: Gen[c]): Gen[c] = f match {
             case (x1, x2) => Gen.op_><[c](i1.coarbitary(x1))(i2.coarbitary(x2))(gen)
         }
     }
 
-    implicit def ofTuple3[x1, x2, x3](implicit i1: CoArbitary[x1], i2: CoArbitary[x2], i3: CoArbitary[x3]): CoArbitary[(x1, x2, x3)] = new CoArbitary[(x1, x2, x3)] {
+    implicit def _ofTuple3[x1, x2, x3](implicit i1: CoArbitary[x1], i2: CoArbitary[x2], i3: CoArbitary[x3]): CoArbitary[(x1, x2, x3)] = new CoArbitary[(x1, x2, x3)] {
         type a = (x1, x2, x3)
         override def coarbitary[c](f: a)(gen: Gen[c]): Gen[c] = f match {
             case (x1, x2, x3) => Gen.op_><[c](Gen.op_><[c](i1.coarbitary(x1))(i2.coarbitary(x2)))(i3.coarbitary(x3))(gen)
         }
     }
 
-    implicit val ofInteger: CoArbitary[Integer] = new CoArbitary[Integer] {
+    implicit val _ofInteger: CoArbitary[Integer] = new CoArbitary[Integer] {
         type a = Integer
         override def coarbitary[c](f: a)(gen: Gen[c]): Gen[c] = coarbitaryIntegral(f)(gen)
     }
 
-    implicit val ofInt: CoArbitary[Int] = new CoArbitary[Int] {
+    implicit val _ofInt: CoArbitary[Int] = new CoArbitary[Int] {
         type a = Int
         override def coarbitary[c](f: a)(gen: Gen[c]): Gen[c] = coarbitaryIntegral(f)(gen)
     }
 
-    implicit val ofChar: CoArbitary[Char] = new CoArbitary[Char] {
+    implicit val _ofChar: CoArbitary[Char] = new CoArbitary[Char] {
         type a = Char
         override def coarbitary[c](f: a)(gen: Gen[c]): Gen[c] = coarbitaryIntegral(Char.ord(f))(gen)
     }
 
-    implicit val ofFloat: CoArbitary[Float] = new CoArbitary[Float] {
+    implicit val _ofFloat: CoArbitary[Float] = new CoArbitary[Float] {
         type a = Float
         override def coarbitary[c](f: a)(gen: Gen[c]): Gen[c] = coarbitaryReal(f)(gen)
     }
 
-    implicit val ofDouble: CoArbitary[Double] = new CoArbitary[Double] {
+    implicit val _ofDouble: CoArbitary[Double] = new CoArbitary[Double] {
         type a = Double
         override def coarbitary[c](f: a)(gen: Gen[c]): Gen[c] = coarbitaryReal(f)(gen)
     }

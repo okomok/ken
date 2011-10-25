@@ -116,8 +116,8 @@ object Kind {
         trait Contains[xs <: List, y]
 
         object Contains {
-            implicit def ofHead[x, xs <: List]: Contains[x ^: xs, x] = new Contains[x ^: xs, x] {}
-            implicit def ofTail[x, xs <: List, y](implicit ev: Contains[xs, y]): Contains[x ^: xs, y] = new Contains[x ^: xs, y] {}
+            implicit def _ofHead[x, xs <: List]: Contains[x ^: xs, x] = new Contains[x ^: xs, x] {}
+            implicit def _ofTail[x, xs <: List, y](implicit ev: Contains[xs, y]): Contains[x ^: xs, y] = new Contains[x ^: xs, y] {}
         }
     }
 
@@ -130,8 +130,8 @@ object Kind {
         trait Contains[fs <: MethodList, g[_]]
 
         object Contains {
-            implicit def ofHead[f[_], fs <: MethodList]: Contains[f ^:: fs, f] = new Contains[f ^:: fs, f] {}
-            implicit def ofTail[f[_], fs <: MethodList, g[_]](implicit ev: Contains[fs, g]): Contains[f ^:: fs, g] = new Contains[f ^:: fs, g] {}
+            implicit def _ofHead[f[_], fs <: MethodList]: Contains[f ^:: fs, f] = new Contains[f ^:: fs, f] {}
+            implicit def _ofTail[f[_], fs <: MethodList, g[_]](implicit ev: Contains[fs, g]): Contains[f ^:: fs, g] = new Contains[f ^:: fs, g] {}
         }
     }
 }

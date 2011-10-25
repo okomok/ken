@@ -34,21 +34,21 @@ object Iso1 extends Iso1Instance {
 
 
 private[ken] trait Iso1Instance0 { this: Iso1.type =>
-    implicit def ofTransivity[f[_], h[_], g[_]](implicit i: Iso1[f, h], j: Iso1[h, g]): Iso1[f, g] = new Iso1[f, g] {
+    implicit def _ofTransivity[f[_], h[_], g[_]](implicit i: Iso1[f, h], j: Iso1[h, g]): Iso1[f, g] = new Iso1[f, g] {
         override def imply[a](f: f[a]): g[a] = j.imply(i.imply(f))
         override def unimply[a](g: g[a]): f[a] = i.unimply(j.unimply(g))
     }
 }
 
 private[ken] trait Iso1Instance1 { this: Iso1.type =>
-    implicit def ofSymmetry[f[_], g[_]](implicit i: Iso1[g, f]): Iso1[f, g] = new Iso1[f, g] {
+    implicit def _ofSymmetry[f[_], g[_]](implicit i: Iso1[g, f]): Iso1[f, g] = new Iso1[f, g] {
         override def imply[a](f: f[a]): g[a] = i.unimply(f)
         override def unimply[a](g: g[a]): f[a] = i.imply(g)
     }
 }
 
 sealed trait Iso1Instance extends Iso1Instance1 { this: Iso1.type =>
-    implicit def ofReflexivity[f[_]]: Iso1[f, f] = new Iso1[f, f] {
+    implicit def _ofReflexivity[f[_]]: Iso1[f, f] = new Iso1[f, f] {
         private type g[a] = f[a]
         override def imply[a](f: f[a]): g[a] = f
         override def unimply[a](g: g[a]): f[a] = g

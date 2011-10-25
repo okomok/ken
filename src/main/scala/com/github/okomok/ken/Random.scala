@@ -58,10 +58,10 @@ object Random extends RandomInstance with RandomShortcut with RandomDetail
 
 
 sealed trait RandomInstance { this: Random.type =>
-    implicit val ofBool: Random[Bool] = _Bool
-    implicit val ofChar: Random[Char] = Char
-    implicit val ofInt: Random[Int] = Int
-    implicit val ofInteger: Random[Integer] = _Integer
+    implicit val _ofBool: Random[Bool] = _Bool
+    implicit val _ofChar: Random[Char] = Char
+    implicit val _ofInt: Random[Int] = Int
+    implicit val _ofInteger: Random[Integer] = _Integer
 }
 
 

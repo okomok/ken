@@ -88,20 +88,20 @@ object Enum extends EnumInstance with EnumShortcut with EnumDetail {
 
 
 sealed trait EnumInstance { this: Enum.type =>
-    implicit val ofBool: Enum[Bool] = _Bool
-    implicit val ofChar: Enum[Char] = Char
-    implicit val ofDouble: Enum[Double] = Double
-    implicit val ofFloat: Enum[Float] = Float
-    implicit val ofInt: Enum[Int] = Int
-    implicit val ofInteger: Enum[Integer] = _Integer
-    implicit val ofUnit: Enum[Unit] = Unit
+    implicit val _ofBool: Enum[Bool] = _Bool
+    implicit val _ofChar: Enum[Char] = Char
+    implicit val _ofDouble: Enum[Double] = Double
+    implicit val _ofFloat: Enum[Float] = Float
+    implicit val _ofInt: Enum[Int] = Int
+    implicit val _ofInteger: Enum[Integer] = _Integer
+    implicit val _ofUnit: Enum[Unit] = Unit
 
     implicit def ofScalaNumeric[a](implicit i: scala.math.Numeric[a]): Enum[a] = new Enum[a] {
         override val toEnum: toEnum = n => i.fromInt(n)
         override val fromEnum: fromEnum = x => i.toInt(x)
     }
 
-    implicit def ofNewtype[nt, ot, ds <: Kind.MethodList](implicit j: Newtype[nt, ot, ds], i: Enum[ot], k: Kind.MethodList.Contains[ds, Enum]): Enum[nt] = deriving[Newtype[nt, ot, _]]
+    implicit def _ofNewtype[nt, ot, ds <: Kind.MethodList](implicit j: Newtype[nt, ot, ds], i: Enum[ot], k: Kind.MethodList.Contains[ds, Enum]): Enum[nt] = deriving[Newtype[nt, ot, _]]
 }
 
 

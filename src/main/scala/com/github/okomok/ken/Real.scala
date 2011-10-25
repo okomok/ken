@@ -42,10 +42,10 @@ object Real extends RealInstance {
 
 
 sealed trait RealInstance { this: Real.type =>
-    implicit val ofDouble: Real[Double] = Double
-    implicit val ofFloat: Real[Float] = Float
-    implicit val ofInt: Real[Int] = Int
-    implicit val ofInteger: Real[Integer] = _Integer
+    implicit val _ofDouble: Real[Double] = Double
+    implicit val _ofFloat: Real[Float] = Float
+    implicit val _ofInt: Real[Int] = Int
+    implicit val _ofInteger: Real[Integer] = _Integer
 
-    implicit def ofNewtype[nt, ot, ds <: Kind.MethodList](implicit j: Newtype[nt, ot, ds], i: Real[ot], k: Kind.MethodList.Contains[ds, Real]): Real[nt] = deriving[Newtype[nt, ot, _]]
+    implicit def _ofNewtype[nt, ot, ds <: Kind.MethodList](implicit j: Newtype[nt, ot, ds], i: Real[ot], k: Kind.MethodList.Contains[ds, Real]): Real[nt] = deriving[Newtype[nt, ot, _]]
 }

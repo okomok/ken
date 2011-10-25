@@ -94,11 +94,11 @@ object Semigroup extends SemigroupInstance with SemigroupShortcut with Semigroup
 
 
 sealed trait SemigroupInstance { this: Semigroup.type =>
-    implicit val ofUnit: Semigroup[Unit] = Unit
-    implicit def ofFunction[z, b](implicit mb: Semigroup[b]): Semigroup[z => b] = Function._asSemigroup[z, b]
-    implicit def ofTuple2[a, b](implicit ma: Semigroup[a], mb: Semigroup[b]): Semigroup[(a, b)] = Tuple2._asSemigroup[a, b]
+    implicit val _ofUnit: Semigroup[Unit] = Unit
+    implicit def _ofFunction[z, b](implicit mb: Semigroup[b]): Semigroup[z => b] = Function._asSemigroup[z, b]
+    implicit def _ofTuple2[a, b](implicit ma: Semigroup[a], mb: Semigroup[b]): Semigroup[(a, b)] = Tuple2._asSemigroup[a, b]
 
-    implicit def ofNewtype[nt, ot, ds <: Kind.MethodList](implicit j: Newtype[nt, ot, ds], i: Semigroup[ot], k: Kind.MethodList.Contains[ds, Semigroup]): Semigroup[nt] = deriving[Newtype[nt, ot, _]]
+    implicit def _ofNewtype[nt, ot, ds <: Kind.MethodList](implicit j: Newtype[nt, ot, ds], i: Semigroup[ot], k: Kind.MethodList.Contains[ds, Semigroup]): Semigroup[nt] = deriving[Newtype[nt, ot, _]]
 }
 
 

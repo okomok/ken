@@ -77,9 +77,9 @@ object Monoid extends MonoidInstance with MonoidShortcut with MonoidType {
 
 
 sealed trait MonoidInstance { this: Monoid.type =>
-    implicit val ofUnit: Monoid[Unit] = Unit
-    implicit def ofFunction[z, b](implicit mb: Monoid[b]): Monoid[z => b] = Function._asMonoid[z, b]
-    implicit def ofTuple2[a, b](implicit ma: Monoid[a], mb: Monoid[b]): Monoid[(a, b)] = Tuple2._asMonoid[a, b]
+    implicit val _ofUnit: Monoid[Unit] = Unit
+    implicit def _ofFunction[z, b](implicit mb: Monoid[b]): Monoid[z => b] = Function._asMonoid[z, b]
+    implicit def _ofTuple2[a, b](implicit ma: Monoid[a], mb: Monoid[b]): Monoid[(a, b)] = Tuple2._asMonoid[a, b]
 }
 
 

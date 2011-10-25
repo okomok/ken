@@ -161,10 +161,10 @@ object RealFloat extends RealFloatInstance with RealFloatShortcut with RealFloat
 
 
 sealed trait RealFloatInstance { this: RealFloat.type =>
-    implicit val ofDouble: RealFloat[Double] = Double
-    implicit val ofFloat: RealFloat[Float] = Float
+    implicit val _ofDouble: RealFloat[Double] = Double
+    implicit val _ofFloat: RealFloat[Float] = Float
 
-    implicit def ofNewtype[nt, ot, ds <: Kind.MethodList](implicit j: Newtype[nt, ot, ds], i: RealFloat[ot], k: Kind.MethodList.Contains[ds, RealFloat]): RealFloat[nt] = deriving[Newtype[nt, ot, _]]
+    implicit def _ofNewtype[nt, ot, ds <: Kind.MethodList](implicit j: Newtype[nt, ot, ds], i: RealFloat[ot], k: Kind.MethodList.Contains[ds, RealFloat]): RealFloat[nt] = deriving[Newtype[nt, ot, _]]
 }
 
 
@@ -195,8 +195,8 @@ private[ken] sealed trait RealFloatDetail { this: RealFloat.type =>
             else if (n < 0) JDouble.NEGATIVE_INFINITY
             else JDouble.NaN
         } else {
-            if (n > 0) fromRat_(Ratio(n, d))(ofDouble)
-            else if (n < 0) -fromRat_(Ratio(-n, d))(ofDouble)
+            if (n > 0) fromRat_(Ratio(n, d))(_ofDouble)
+            else if (n < 0) -fromRat_(Ratio(-n, d))(_ofDouble)
             else 0.0D
         }
     }
@@ -207,8 +207,8 @@ private[ken] sealed trait RealFloatDetail { this: RealFloat.type =>
             else if (n < 0) JFloat.NEGATIVE_INFINITY
             else JFloat.NaN
         } else {
-            if (n > 0) fromRat_(Ratio(n, d))(ofFloat)
-            else if (n < 0) -fromRat_(Ratio(-n, d))(ofFloat)
+            if (n > 0) fromRat_(Ratio(n, d))(_ofFloat)
+            else if (n < 0) -fromRat_(Ratio(-n, d))(_ofFloat)
             else 0.0F
         }
     }

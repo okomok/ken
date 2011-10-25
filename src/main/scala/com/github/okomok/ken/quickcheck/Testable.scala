@@ -130,7 +130,7 @@ trait Testable[prop] extends Typeclass[prop] {
     }
 
     def op_:&:[prop2](p1: prop)(p2: prop2)(implicit j: Testable[prop2]): Property = {
-        Arbitary.ofBool.arbitary >>= { (b: Bool) =>
+        Arbitary._ofBool.arbitary >>= { (b: Bool) =>
             Testable.ofProperty.whenFail(IO.putStrLn(if (b) "LHS" else "RHS")) {
                 if (b) property(p1) else j.property(p2)
             }
@@ -226,24 +226,24 @@ trait TestableProxy[prop] extends Testable[prop] {
 object Testable extends TestableInstance with TestableShortcut {
     def apply[prop <: Kind.Function0](implicit i: Testable[prop#apply0]): Testable[prop#apply0] = i
 
-    val ofProperty: Testable[Property] = ofGen[Prop]
+    val ofProperty: Testable[Property] = _ofGen[Prop]
 }
 
 
 sealed trait TestableInstance { this: Testable.type =>
-    implicit val ofUnit: Testable[Unit] = new Testable[Unit] {
+    implicit val _ofUnit: Testable[Unit] = new Testable[Unit] {
         override val property: property = _ => Result.property(Result.rejected)
     }
 
-    implicit val ofBool: Testable[Bool] = new Testable[Bool] {
+    implicit val _ofBool: Testable[Bool] = new Testable[Bool] {
         override val property: property = x => ofProperty.property(Property.liftBool(x))
     }
 
-    implicit def ofGen[prop](implicit i: Testable[prop]): Testable[Gen[prop]] = new Testable[Gen[prop]] {
+    implicit def _ofGen[prop](implicit i: Testable[prop]): Testable[Gen[prop]] = new Testable[Gen[prop]] {
         override val property: property = mp => for { p <- mp } { i.property(p) }
     }
 
-    implicit def ofFunction[a, prop](implicit i: Testable[prop], j: Arbitary[a], k: Show[a]): Testable[a => prop] = new Testable[a => prop] {
+    implicit def _ofFunction[a, prop](implicit i: Testable[prop], j: Arbitary[a], k: Show[a]): Testable[a => prop] = new Testable[a => prop] {
         override val property: property = f => i.forAllShrink(j.arbitary)(j.shrink)(f)
     }
 }

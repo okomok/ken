@@ -51,12 +51,12 @@ object Newtype extends Newtype0Instance {
 
 
 sealed trait Newtype0Instance { this: Newtype.type =>
-    implicit def ofNewtype1[nt[+_], ot[+_], ds <: Kind.MethodList, a](implicit i: Newtype1[nt, ot]): Newtype[nt[a], ot[a], ds] = new Newtype[nt[a], ot[a], ds] {
+    implicit def _ofNewtype1[nt[+_], ot[+_], ds <: Kind.MethodList, a](implicit i: Newtype1[nt, ot]): Newtype[nt[a], ot[a], ds] = new Newtype[nt[a], ot[a], ds] {
         override val newOf: newOf = ot => i.newOf(ot)
         override val oldOf: oldOf = nt => i.oldOf(nt)
     }
 
-    implicit def ofNewtype2[nt[-_, +_], ot[-_, +_], ds <: Kind.MethodList, a, b](implicit i: Newtype2[nt, ot]): Newtype[nt[a, b], ot[a, b], ds] = new Newtype[nt[a, b], ot[a, b], ds] {
+    implicit def _ofNewtype2[nt[-_, +_], ot[-_, +_], ds <: Kind.MethodList, a, b](implicit i: Newtype2[nt, ot]): Newtype[nt[a, b], ot[a, b], ds] = new Newtype[nt[a, b], ot[a, b], ds] {
         override val newOf: newOf = ot => i.newOf(ot)
         override val oldOf: oldOf = nt => i.oldOf(nt)
     }

@@ -24,7 +24,7 @@ object Stream extends StreamInstance {
 
 
 sealed trait StreamInstance { this: Stream.type =>
-    implicit def ofList[tok, m[+_]](implicit i: Monad[m]): Stream[List[tok], m, tok] = new Stream[List[tok], m, tok] with MonadProxy[m] {
+    implicit def _ofList[tok, m[+_]](implicit i: Monad[m]): Stream[List[tok], m, tok] = new Stream[List[tok], m, tok] with MonadProxy[m] {
         private type s = List[tok]
         private type t = tok
         override val selfMonad = i

@@ -13,7 +13,7 @@ package ken
 
 
 trait Comonad[w[+_]] extends Extend[w] {
-    final val asComonad: Comonad[apply] = this
+    final val asComonad: Comonad[apply1] = this
 
     // Core
     //
@@ -51,5 +51,5 @@ object Comonad extends ComonadInstance {
 
 
 sealed trait ComonadInstance { this: Comonad.type =>
-    implicit def ofFunction[m](implicit i: Monoid[m]): Comonad[Function.apply[m]#apply1] = Function._asComonad(i)
+    implicit def _ofFunction[m](implicit i: Monoid[m]): Comonad[Function.apply[m]#apply1] = Function._asComonad(i)
 }

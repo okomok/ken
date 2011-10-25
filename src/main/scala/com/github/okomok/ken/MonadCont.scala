@@ -9,7 +9,7 @@ package ken
 
 
 trait MonadCont[m[+_]] extends Monad[m] {
-    final val asMonadCont: MonadCont[apply] = this
+    final val asMonadCont: MonadCont[apply1] = this
 
     // Core
     //

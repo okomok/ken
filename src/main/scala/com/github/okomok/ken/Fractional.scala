@@ -67,10 +67,10 @@ object Fractional extends FractionalInstance with FractionalShortcut {
 
 
 sealed trait FractionalInstance { this: Fractional.type =>
-    implicit val ofDouble: Fractional[Double] = Double
-    implicit val ofFloat: Fractional[Float] = Float
+    implicit val _ofDouble: Fractional[Double] = Double
+    implicit val _ofFloat: Fractional[Float] = Float
 
-    implicit def ofNewtype[nt, ot, ds <: Kind.MethodList](implicit j: Newtype[nt, ot, ds], i: Fractional[ot], k: Kind.MethodList.Contains[ds, Fractional]): Fractional[nt] = deriving[Newtype[nt, ot, _]]
+    implicit def _ofNewtype[nt, ot, ds <: Kind.MethodList](implicit j: Newtype[nt, ot, ds], i: Fractional[ot], k: Kind.MethodList.Contains[ds, Fractional]): Fractional[nt] = deriving[Newtype[nt, ot, _]]
 }
 
 

@@ -13,7 +13,7 @@ package ken
 
 
 trait Extend[w[+_]] extends Functor[w] {
-    final val asExtend: Extend[apply] = this
+    final val asExtend: Extend[apply1] = this
 
     // Core
     //
@@ -84,5 +84,5 @@ object Extend extends ExtendInstance {
 
 
 trait ExtendInstance { this: Extend.type =>
-    implicit def ofFunction[z](implicit i: Semigroup[z]): Extend[Function.apply[z]#apply1] = Function._asExtend(i)
+    implicit def _ofFunction[z](implicit i: Semigroup[z]): Extend[Function.apply[z]#apply1] = Function._asExtend(i)
 }

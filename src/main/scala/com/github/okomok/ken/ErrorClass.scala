@@ -42,16 +42,16 @@ object ErrorClass extends ErrorClassInstance with ErrorClassShortcut {
 
 
 sealed trait ErrorClassInstance { this: ErrorClass.type =>
-    implicit val ofString: ErrorClass[String] = new ErrorClass[String] {
+    implicit val _ofString: ErrorClass[String] = new ErrorClass[String] {
         override def noMsg = ""
         override val strMsg: strMsg = id
     }
 
-    implicit val ofAssertionError: ErrorClass[AssertionError] = new ErrorClass[AssertionError] {
+    implicit val _ofAssertionError: ErrorClass[AssertionError] = new ErrorClass[AssertionError] {
         override val strMsg: strMsg = msg => new AssertionError(msg)
     }
 
-    implicit def ofThrowable[x <: Throwable](implicit i: ClassManifest[x]): ErrorClass[x] = new ErrorClass[x] {
+    implicit def _ofThrowable[x <: Throwable](implicit i: ClassManifest[x]): ErrorClass[x] = new ErrorClass[x] {
         override val strMsg: strMsg = msg => i.erasure.getConstructor(classOf[JString]).newInstance(msg.asJString).asInstanceOf[x]
     }
 }

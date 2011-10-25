@@ -14,8 +14,8 @@ package quickcheck
 
 
 object Poly {
-    private val _ia = Arbitary.ofInteger
-    private val _ic = CoArbitary.ofInteger
+    private val _ia = Arbitary._ofInteger
+    private val _ic = CoArbitary._ofInteger
 
     // A
     //

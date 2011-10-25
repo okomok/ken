@@ -15,7 +15,7 @@ package ken
 
 
 trait Foldable[t[+_]] extends Typeclass1[t] { outer =>
-    final val asFoldable: Foldable[apply] = this
+    final val asFoldable: Foldable[apply1] = this
 
     // Core
     //

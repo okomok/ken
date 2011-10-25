@@ -29,7 +29,7 @@ trait Arbitary[a] extends Typeclass[a] {
     type vectorOf = Int => Gen[List[a]]
     def vectorOf: vectorOf = k => Gen.vectorOf(k)(arbitary)
 
-    def orderedList(implicit j: Ord[a]): Gen[List[a]] = Gen.fmap((xs: List[a]) => List.sort(xs))(Arbitary.ofList(this).arbitary)
+    def orderedList(implicit j: Ord[a]): Gen[List[a]] = Gen.fmap((xs: List[a]) => List.sort(xs))(Arbitary._ofList(this).arbitary)
 }
 
 
@@ -139,22 +139,22 @@ object Arbitary extends ArbitaryInstance with ArbitaryShortcut {
 
 
 sealed trait ArbitaryInstance { this: Arbitary.type =>
-    implicit def ofFunction[a, b](implicit i: CoArbitary[a], j: Arbitary[b]): Arbitary[a => b] = new Arbitary[a => b] {
+    implicit def _ofFunction[a, b](implicit i: CoArbitary[a], j: Arbitary[b]): Arbitary[a => b] = new Arbitary[a => b] {
         override val arbitary: arbitary = {
             implicit val fm = Monad[Function.apply[a]]
             Gen.promote[fm.apply, b]((x: a) => i.coarbitary(x)(j.arbitary))
         }
     }
 
-    implicit val ofUnit: Arbitary[Unit] = new Arbitary[Unit] {
+    implicit val _ofUnit: Arbitary[Unit] = new Arbitary[Unit] {
         override val arbitary: arbitary = Gen.`return`()
     }
 
-    implicit val ofBool: Arbitary[Bool] = new Arbitary[Bool] {
+    implicit val _ofBool: Arbitary[Bool] = new Arbitary[Bool] {
         override val arbitary: arbitary = Gen.choose(False, True)
     }
 
-    implicit def ofMaybe[a](implicit i: Arbitary[a]): Arbitary[Maybe[a]] = new Arbitary[Maybe[a]] {
+    implicit def _ofMaybe[a](implicit i: Arbitary[a]): Arbitary[Maybe[a]] = new Arbitary[Maybe[a]] {
         override val arbitary: arbitary = Gen.frequency( List( (1, Gen.`return`(Nothing.of[a])), (3, Gen.liftM((a: a) => Just(a).up)(i.arbitary)) ) )
         override val shrink: shrink = {
             case Just(x) => Nothing.of[a] :: ( for { x_ <- i.shrink(x) } yield Just(x_).up )
@@ -162,7 +162,7 @@ sealed trait ArbitaryInstance { this: Arbitary.type =>
         }
     }
 
-    implicit def ofEither[a, b](implicit i: Arbitary[a], j: Arbitary[b]): Arbitary[Either[a, b]] = new Arbitary[Either[a, b]] {
+    implicit def _ofEither[a, b](implicit i: Arbitary[a], j: Arbitary[b]): Arbitary[Either[a, b]] = new Arbitary[Either[a, b]] {
         override lazy val arbitary: arbitary = Gen.oneof( List( Gen.liftM((a: a) => Left(a).of[a, b])(i.arbitary), Gen.liftM((b: b) => Right(b).of[a, b])(j.arbitary) ) )
         override lazy val shrink: shrink = {
             case Left(x) => for { x_ <- i.shrink(x) } yield Left(x_)
@@ -170,7 +170,7 @@ sealed trait ArbitaryInstance { this: Arbitary.type =>
         }
     }
 
-    implicit def ofList[a](implicit i: Arbitary[a]): Arbitary[List[a]] = new Arbitary[List[a]] {
+    implicit def _ofList[a](implicit i: Arbitary[a]): Arbitary[List[a]] = new Arbitary[List[a]] {
         override val arbitary: arbitary = Gen.sized { n =>
             for {
                 k <- Gen.choose(0, n)
@@ -181,12 +181,12 @@ sealed trait ArbitaryInstance { this: Arbitary.type =>
         override val shrink: shrink = xs => shrinkList(i.shrink)(xs)
     }
 
-    implicit def ofRatio[a](implicit i: Integral[a]): Arbitary[Ratio[a]] = new Arbitary[Ratio[a]] {
+    implicit def _ofRatio[a](implicit i: Integral[a]): Arbitary[Ratio[a]] = new Arbitary[Ratio[a]] {
         override val arbitary: arbitary = sizedFractional[Ratio[a]]
         override val shrink: shrink = shrinkRealFrac[Ratio[a]]
     }
 
-    implicit def ofTuple2[a1, a2](implicit i1: Arbitary[a1], i2: Arbitary[a2]): Arbitary[(a1, a2)] = new Arbitary[(a1, a2)] {
+    implicit def _ofTuple2[a1, a2](implicit i1: Arbitary[a1], i2: Arbitary[a2]): Arbitary[(a1, a2)] = new Arbitary[(a1, a2)] {
         override val arbitary: arbitary = Gen.liftM2((x: a1) => (y: a2) => (x, y))(i1.arbitary)(i2.arbitary)
         override val shrink: shrink = { case (x, y) =>
             ( for { x_ <- i1.shrink(x) } yield (x_, y) ) ++:
@@ -194,7 +194,7 @@ sealed trait ArbitaryInstance { this: Arbitary.type =>
         }
     }
 
-    implicit def ofTuple3[a1, a2, a3](implicit i1: Arbitary[a1], i2: Arbitary[a2], i3: Arbitary[a3]): Arbitary[(a1, a2, a3)] = new Arbitary[(a1, a2, a3)] {
+    implicit def _ofTuple3[a1, a2, a3](implicit i1: Arbitary[a1], i2: Arbitary[a2], i3: Arbitary[a3]): Arbitary[(a1, a2, a3)] = new Arbitary[(a1, a2, a3)] {
         override val arbitary: arbitary = Gen.liftM3((x: a1) => (y: a2) => (z: a3) => (x, y, z))(i1.arbitary)(i2.arbitary)(i3.arbitary)
         override val shrink: shrink = { case (x, y, z) =>
             ( for { x_ <- i1.shrink(x) } yield (x_, y, z) ) ++:
@@ -203,17 +203,17 @@ sealed trait ArbitaryInstance { this: Arbitary.type =>
         }
     }
 
-    implicit val ofInteger: Arbitary[Integer] = new Arbitary[Integer] {
+    implicit val _ofInteger: Arbitary[Integer] = new Arbitary[Integer] {
         override val arbitary: arbitary = sizedIntegral[Integer]
         override val shrink: shrink = shrinkIntegral[Integer]
     }
 
-    implicit val ofInt: Arbitary[Int] = new Arbitary[Int] {
+    implicit val _ofInt: Arbitary[Int] = new Arbitary[Int] {
         override val arbitary: arbitary = sizedBoundedInt
         override val shrink: shrink = shrinkIntegral[Int]
     }
 
-    implicit val ofChar: Arbitary[Char] = new Arbitary[Char] {
+    implicit val _ofChar: Arbitary[Char] = new Arbitary[Char] {
         override val arbitary: arbitary = Gen.fmap(Char.chr)(Gen.oneof(List(Gen.choose(0, 127), Gen.choose(0, 255))))
         override val shrink: shrink = c => {
             import Bool.not
@@ -235,12 +235,12 @@ sealed trait ArbitaryInstance { this: Arbitary.type =>
         }
     }
 
-    implicit val ofFloat: Arbitary[Float] = new Arbitary[Float] {
+    implicit val _ofFloat: Arbitary[Float] = new Arbitary[Float] {
         override val arbitary: arbitary = sizedFractional[Float]
         override val shrink: shrink = shrinkRealFrac[Float]
     }
 
-    implicit val ofDouble: Arbitary[Double] = new Arbitary[Double] {
+    implicit val _ofDouble: Arbitary[Double] = new Arbitary[Double] {
         override val arbitary: arbitary = sizedFractional[Double]
         override val shrink: shrink = shrinkRealFrac[Double]
     }

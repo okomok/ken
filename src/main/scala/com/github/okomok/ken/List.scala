@@ -86,7 +86,7 @@ object List extends ListAs with MonadPlus[List] with Traversable[List] with Exte
         def ::(x: a): List[a] = op_::(x)(xs)
         def ++:(ys: List[a]): List[a] = op_++:(ys)(xs)
     }
-    implicit def ofName[a](xs: => List[a]): _OfName[a] = new _OfName(xs)
+    implicit def _ofName[a](xs: => List[a]): _OfName[a] = new _OfName(xs)
 
     // Overrides
     //

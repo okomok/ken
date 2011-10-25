@@ -12,7 +12,7 @@ package ken
 
 
 trait MonadControlIO[m[+_]] extends MonadIO[m] {
-    final val asMonadControlIO: MonadControlIO[apply] = this
+    final val asMonadControlIO: MonadControlIO[apply1] = this
 
     type RunInIO = MonadControlIO.RunInIO[m]
 

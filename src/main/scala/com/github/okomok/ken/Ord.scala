@@ -119,12 +119,12 @@ private[ken] sealed trait OrdInstance0 { this: Ord.type =>
 
     // Primitives
     //
-    implicit val ofBool: Ord[Bool] = _Bool
-    implicit val ofChar: Ord[Char] = Char
-    implicit val ofDouble: Ord[Double] = Double
-    implicit val ofFloat: Ord[Float] = Float
-    implicit val ofInt: Ord[Int] = Int
-    implicit val ofInteger: Ord[Integer] = _Integer
+    implicit val _ofBool: Ord[Bool] = _Bool
+    implicit val _ofChar: Ord[Char] = Char
+    implicit val _ofDouble: Ord[Double] = Double
+    implicit val _ofFloat: Ord[Float] = Float
+    implicit val _ofInt: Ord[Int] = Int
+    implicit val _ofInteger: Ord[Integer] = _Integer
 
     implicit def ofScalaOrdering[a](implicit i: scala.Ordering[a]): Ord[a] = new Ord[a] with EqProxy[a] {
         override val selfEq = Eq.ofScalaEquiv(i)
@@ -139,12 +139,12 @@ private[ken] sealed trait OrdInstance0 { this: Ord.type =>
         override val op_>= : op_>= = x => y => i.gteq(x, y)
     }
 
-    implicit def ofNewtype[nt, ot, ds <: Kind.MethodList](implicit j: Newtype[nt, ot, ds], i: Ord[ot], k: Kind.MethodList.Contains[ds, Ord]): Ord[nt] = deriving[Newtype[nt, ot, _]]
+    implicit def _ofNewtype[nt, ot, ds <: Kind.MethodList](implicit j: Newtype[nt, ot, ds], i: Ord[ot], k: Kind.MethodList.Contains[ds, Ord]): Ord[nt] = deriving[Newtype[nt, ot, _]]
 
     // Products
     //
-    implicit def ofProduct2[a, b, ds <: Kind.MethodList](implicit ord1: Ord[a], ord2: Ord[b], k: Kind.MethodList.Contains[ds, Ord]): Ord[Product2[a, b] with Deriving[ds]] = new Ord[Product2[a, b] with Deriving[ds]] with EqProxy[Product2[a, b] with Deriving[ds]] {
-        override val selfEq = Eq.ofProduct2[a, b, ds](ord1, ord2, null)
+    implicit def _ofProduct2[a, b, ds <: Kind.MethodList](implicit ord1: Ord[a], ord2: Ord[b], k: Kind.MethodList.Contains[ds, Ord]): Ord[Product2[a, b] with Deriving[ds]] = new Ord[Product2[a, b] with Deriving[ds]] with EqProxy[Product2[a, b] with Deriving[ds]] {
+        override val selfEq = Eq._ofProduct2[a, b, ds](ord1, ord2, null)
         override val compare: compare = x => y => {
             val compare1 = ord1.compare(x._1)(y._1)
             if (compare1 != EQ) compare1
@@ -158,8 +158,8 @@ private[ken] sealed trait OrdInstance0 { this: Ord.type =>
         }
     }
 
-    implicit def ofProduct3[a, b, c, ds <: Kind.MethodList](implicit ord1: Ord[a], ord2: Ord[b], ord3: Ord[c], k: Kind.MethodList.Contains[ds, Ord]) : Ord[Product3[a, b, c] with Deriving[ds]] = new Ord[Product3[a, b, c] with Deriving[ds]] with EqProxy[Product3[a, b, c] with Deriving[ds]] {
-        override val selfEq = Eq.ofProduct3[a, b, c, ds](ord1, ord2, ord3, null)
+    implicit def _ofProduct3[a, b, c, ds <: Kind.MethodList](implicit ord1: Ord[a], ord2: Ord[b], ord3: Ord[c], k: Kind.MethodList.Contains[ds, Ord]) : Ord[Product3[a, b, c] with Deriving[ds]] = new Ord[Product3[a, b, c] with Deriving[ds]] with EqProxy[Product3[a, b, c] with Deriving[ds]] {
+        override val selfEq = Eq._ofProduct3[a, b, c, ds](ord1, ord2, ord3, null)
         override val compare: compare = x => y => {
             val compare1 = ord1.compare(x._1)(y._1)
             if (compare1 != EQ) compare1
@@ -179,8 +179,8 @@ private[ken] sealed trait OrdInstance0 { this: Ord.type =>
 
     // Tuples
     //
-    implicit def ofTuple2[a, b](implicit ord1: Ord[a], ord2: Ord[b]): Ord[Tuple2[a, b]] = new Ord[Tuple2[a, b]] with EqProxy[Tuple2[a, b]] {
-        override val selfEq = Eq.ofTuple2[a, b]
+    implicit def _ofTuple2[a, b](implicit ord1: Ord[a], ord2: Ord[b]): Ord[Tuple2[a, b]] = new Ord[Tuple2[a, b]] with EqProxy[Tuple2[a, b]] {
+        override val selfEq = Eq._ofTuple2[a, b]
         override val compare: compare = x => y => {
             val compare1 = ord1.compare(x._1)(y._1)
             if (compare1 != EQ) compare1
@@ -194,8 +194,8 @@ private[ken] sealed trait OrdInstance0 { this: Ord.type =>
         }
     }
 
-    implicit def ofTuple3[a, b, c](implicit ord1: Ord[a], ord2: Ord[b], ord3: Ord[c]) : Ord[(a, b, c)] = new Ord[(a, b, c)] with EqProxy[Tuple3[a, b, c]] {
-        override val selfEq = Eq.ofTuple3[a, b, c]
+    implicit def _ofTuple3[a, b, c](implicit ord1: Ord[a], ord2: Ord[b], ord3: Ord[c]) : Ord[(a, b, c)] = new Ord[(a, b, c)] with EqProxy[Tuple3[a, b, c]] {
+        override val selfEq = Eq._ofTuple3[a, b, c]
         override val compare: compare = x => y => {
             val compare1 = ord1.compare(x._1)(y._1)
             if (compare1 != EQ) compare1
@@ -215,7 +215,7 @@ private[ken] sealed trait OrdInstance0 { this: Ord.type =>
 }
 
 sealed trait OrdInstance extends OrdInstance0 { this: Ord.type =>
-    implicit val ofNothing: Ord[Nothing] with HighPriority = new Ord[Nothing] with HighPriority {}
+    implicit val _ofNothing: Ord[Nothing] with HighPriority = new Ord[Nothing] with HighPriority {}
 }
 
 

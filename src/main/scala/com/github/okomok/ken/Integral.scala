@@ -165,8 +165,8 @@ object Integral extends IntegralInstance with IntegralShortcut {
 
 
 sealed trait IntegralInstance { this: Integral.type =>
-    implicit val ofInt: Integral[Int] = Int
-    implicit val ofInteger: Integral[Integer] = _Integer
+    implicit val _ofInt: Integral[Int] = Int
+    implicit val _ofInteger: Integral[Integer] = _Integer
 
     implicit def ofScalaIntegral[a](implicit i: scala.math.Integral[a]): Integral[a] = new Integral[a] with NumProxy[a] with OrdProxy[a] with EnumProxy[a] {
         override val selfNum = Num.ofScalaNumeric(i)
@@ -181,7 +181,7 @@ sealed trait IntegralInstance { this: Integral.type =>
         override val toInteger: toInteger = i.toInt
     }
 
-    implicit def ofNewtype[nt, ot, ds <: Kind.MethodList](implicit j: Newtype[nt, ot, ds], i: Integral[ot], k: Kind.MethodList.Contains[ds, Integral]): Integral[nt] = deriving[Newtype[nt, ot, _]]
+    implicit def _ofNewtype[nt, ot, ds <: Kind.MethodList](implicit j: Newtype[nt, ot, ds], i: Integral[ot], k: Kind.MethodList.Contains[ds, Integral]): Integral[nt] = deriving[Newtype[nt, ot, _]]
 }
 
 

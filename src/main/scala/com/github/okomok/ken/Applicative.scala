@@ -14,12 +14,11 @@ package com.github.okomok
 package ken
 
 
-trait Applicative[f[+_]] extends Functor[f] {
-    final val asApplicative: Applicative[apply] = this
+trait Applicative[f[+_]] extends Pointed[f] {
+    final val asApplicative: Applicative[apply1] = this
 
     // Core
     //
-    def pure[a](x: Lazy[a]): f[a]
     def op_<*>[a, b](x: f[a => b]): f[a] => f[b]
     def op_*>[a, b](x: f[a])(y: f[b]): f[b] = liftA2[a, b, b](const(id))(x)(y)
     def op_<*[a, b](x: f[a])(y: f[b]): f[a] = liftA2[a, b, a](const)(x)(y)
@@ -55,11 +54,10 @@ trait Applicative[f[+_]] extends Functor[f] {
 }
 
 
-trait ApplicativeProxy[f[+_]] extends Applicative[f] with FunctorProxy[f] {
+trait ApplicativeProxy[f[+_]] extends Applicative[f] with PointedProxy[f] {
     def selfApplicative: Applicative[f]
-    override def selfFunctor: Functor[f] = selfApplicative
+    override def selfPointed: Pointed[f] = selfApplicative
 
-    override def pure[a](x: Lazy[a]): f[a] = selfApplicative.pure(x)
     override def op_<*>[a, b](x: f[a => b]): f[a] => f[b] = selfApplicative.op_<*>(x)
     override def op_*>[a, b](x: f[a])(y: f[b]): f[b] = selfApplicative.op_*>(x)(y)
     override def op_<*[a, b](x: f[a])(y: f[b]): f[a] = selfApplicative.op_<*(x)(y)
@@ -74,11 +72,10 @@ trait ApplicativeProxy[f[+_]] extends Applicative[f] with FunctorProxy[f] {
 object Applicative extends ApplicativeInstance {
     def apply[f <: Kind.Function1](implicit i: Applicative[f#apply1]): Applicative[f#apply1] = i
 
-    def deriving[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply1, nt#oldtype1], i: Applicative[nt#oldtype1]): Applicative[nt#apply1] = new Applicative[nt#apply1] with FunctorProxy[nt#apply1] {
+    def deriving[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply1, nt#oldtype1], i: Applicative[nt#oldtype1]): Applicative[nt#apply1] = new Applicative[nt#apply1] with PointedProxy[nt#apply1] {
         private type f[+a] = nt#apply1[a]
-        override val selfFunctor = Functor.deriving[nt]
+        override val selfPointed = Pointed.deriving[nt]
 
-        override def pure[a](x: Lazy[a]): f[a] = j.newOf { i.pure(x) }
         override def op_<*>[a, b](x: f[a => b]): f[a] => f[b] = y => j.newOf { i.op_<*>(j.oldOf(x))(j.oldOf(y)) }
         override def op_*>[a, b](x: f[a])(y: f[b]): f[b] = j.newOf { i.op_*>(j.oldOf(x))(j.oldOf(y)) }
         override def op_<*[a, b](x: f[a])(y: f[b]): f[a] = j.newOf { i.op_<*(j.oldOf(x))(j.oldOf(y)) }
@@ -89,5 +86,4 @@ object Applicative extends ApplicativeInstance {
 
 
 sealed trait ApplicativeInstance { this: Applicative.type =>
-    implicit def ofTuple2[z](implicit ma: Monoid[z]): Applicative[Tuple2.apply[z]#apply1] = Tuple2._asApplicative(ma)
 }

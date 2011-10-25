@@ -151,10 +151,10 @@ object Floating extends FloatingInstance with FloatingShortcut {
 
 
 sealed trait FloatingInstance { this: Floating.type =>
-    implicit val ofDouble: Floating[Double] = Double
-    implicit val ofFloat: Floating[Float] = Float
+    implicit val _ofDouble: Floating[Double] = Double
+    implicit val _ofFloat: Floating[Float] = Float
 
-    implicit def ofNewtype[nt, ot, ds <: Kind.MethodList](implicit j: Newtype[nt, ot, ds], i: Floating[ot], k: Kind.MethodList.Contains[ds, Floating]): Floating[nt] = deriving[Newtype[nt, ot, _]]
+    implicit def _ofNewtype[nt, ot, ds <: Kind.MethodList](implicit j: Newtype[nt, ot, ds], i: Floating[ot], k: Kind.MethodList.Contains[ds, Floating]): Floating[nt] = deriving[Newtype[nt, ot, _]]
 }
 
 

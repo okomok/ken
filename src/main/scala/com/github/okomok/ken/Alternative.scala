@@ -15,7 +15,7 @@ package ken
 
 
 trait Alternative[f[+_]] extends Applicative[f] {
-    final val asAlternative: Alternative[apply] = this
+    final val asAlternative: Alternative[apply1] = this
 
     // Core
     //

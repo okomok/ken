@@ -10,7 +10,7 @@ package ken
 
 trait Functor[f[+_]] extends Typeclass1[f] { outer =>
     // Prefer `apply` to `f` for type-parameter inference.
-    final val asFunctor: Functor[apply] = this
+    final val asFunctor: Functor[apply1] = this
 
     // Core
     //
@@ -68,9 +68,9 @@ object Functor extends FunctorInstance {
 
 
 sealed trait FunctorInstance { this: Functor.type =>
-    implicit val ofWeakIdentity: MonadFix[WeakIdentity.apply] with Comonad[WeakIdentity.apply]= WeakIdentity
-    implicit def ofTuple2[z]: Comonad[Tuple2.apply[z]#apply1] = Tuple2._asComonad[z]
-    implicit def ofFunction[z]: MonadReader[z, Function.apply[z]#apply1] = Function._asMonadReader[z]
+    implicit val _ofWeakIdentity: MonadFix[WeakIdentity.apply] with Comonad[WeakIdentity.apply]= WeakIdentity
+    implicit def _ofTuple2[z]: Comonad[Tuple2.apply[z]#apply1] = Tuple2._asComonad[z]
+    implicit def _ofFunction[z]: MonadReader[z, Function.apply[z]#apply1] = Function._asMonadReader[z]
 
     implicit def ofScalaTraversable[CC[+X] <: scala.collection.GenTraversableLike[X, CC[X]]](implicit mf: Scala.CanMapFrom[CC]): MonadPlus[CC] = Scala.Traversable._asMonadPlus(mf)
     implicit val ofScalaOption: MonadPlus[Option] = Scala.Option

@@ -114,10 +114,10 @@ object Num extends NumInstance with NumShortcut {
 
 
 sealed trait NumInstance { this: Num.type =>
-    implicit val ofDouble: Num[Double] = Double
-    implicit val ofFloat: Num[Float] = Float
-    implicit val ofInt: Num[Int] = Int
-    implicit val ofInteger: Num[Integer] = _Integer
+    implicit val _ofDouble: Num[Double] = Double
+    implicit val _ofFloat: Num[Float] = Float
+    implicit val _ofInt: Num[Int] = Int
+    implicit val _ofInteger: Num[Integer] = _Integer
 
     implicit def ofScalaNumeric[a](implicit i: scala.Numeric[a]): Num[a] = new Num[a] {
         override val op_+ : op_+ = x => y => i.plus(x, y)
@@ -129,10 +129,10 @@ sealed trait NumInstance { this: Num.type =>
         override val fromInteger: fromInteger = n => i.fromInt(n.toInt)
     }
 
-    implicit def ofNewtype[nt, ot, ds <: Kind.MethodList](implicit j: Newtype[nt, ot, ds], i: Num[ot], k: Kind.MethodList.Contains[ds, Num]): Num[nt] = deriving[Newtype[nt, ot, _]]
+    implicit def _ofNewtype[nt, ot, ds <: Kind.MethodList](implicit j: Newtype[nt, ot, ds], i: Num[ot], k: Kind.MethodList.Contains[ds, Num]): Num[nt] = deriving[Newtype[nt, ot, _]]
 
 /*
-    implicit def _Fractional_ofScalaFractional[a](implicit i: scala.math.Fractional[a]): Fractional[a] = new Fractional[a] with NumProxy[a] {
+    implicit def _FractionalofScalaFractional[a](implicit i: scala.math.Fractional[a]): Fractional[a] = new Fractional[a] with NumProxy[a] {
         override val selfNum = ofScalaNumeric[a]
         override val op_/ : a => a => a = x => y => i.div(x, y)
         override lazy val fromRational: Rational => a = error("todo")

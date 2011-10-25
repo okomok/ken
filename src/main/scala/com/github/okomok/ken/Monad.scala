@@ -15,7 +15,7 @@ package ken
 
 
 trait Monad[m[+_]] extends Applicative[m] { outer =>
-    final val asMonad: Monad[apply] = this
+    final val asMonad: Monad[apply1] = this
 
     // Core
     //

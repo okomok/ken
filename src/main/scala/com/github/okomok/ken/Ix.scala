@@ -107,11 +107,11 @@ object Ix extends IxInstance with IxShortcut {
 
 
 sealed trait IxInstance { this: Ix.type =>
-    implicit val ofBool: Ix[Bool] = _Bool
-    implicit val ofInt: Ix[Int] = Int
-    implicit val ofInteger: Ix[Integer] = _Integer
-    implicit val ofOrdering: Ix[Ordering] = Ordering
-    implicit val ofUnit: Ix[Unit] = Unit
+    implicit val _ofBool: Ix[Bool] = _Bool
+    implicit val _ofInt: Ix[Int] = Int
+    implicit val _ofInteger: Ix[Integer] = _Integer
+    implicit val _ofOrdering: Ix[Ordering] = Ordering
+    implicit val _ofUnit: Ix[Unit] = Unit
 
     implicit def ofScalaNumeric[a](implicit i: scala.Numeric[a]): Ix[a] = new Ix[a] with OrdProxy[a] {
         override val selfOrd = Ord.ofScalaOrdering(i)
@@ -126,7 +126,7 @@ sealed trait IxInstance { this: Ix.type =>
         override val inRange: inRange = { case (n, m) => k => i.lteq(n, k) && i.lteq(k, m) }
     }
 
-    implicit def ofNewtype[nt, ot, ds <: Kind.MethodList](implicit j: Newtype[nt, ot, ds], i: Ix[ot], k: Kind.MethodList.Contains[ds, Ix]): Ix[nt] = deriving[Newtype[nt, ot, _]]
+    implicit def _ofNewtype[nt, ot, ds <: Kind.MethodList](implicit j: Newtype[nt, ot, ds], i: Ix[ot], k: Kind.MethodList.Contains[ds, Ix]): Ix[nt] = deriving[Newtype[nt, ot, _]]
 }
 
 

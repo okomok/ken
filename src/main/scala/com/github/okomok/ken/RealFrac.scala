@@ -98,10 +98,10 @@ object RealFrac extends RealFracInstance with RealFracShortcut {
 
 
 sealed trait RealFracInstance { this: RealFrac.type =>
-    implicit val ofDouble: RealFrac[Double] = Double
-    implicit val ofFloat: RealFrac[Float] = Float
+    implicit val _ofDouble: RealFrac[Double] = Double
+    implicit val _ofFloat: RealFrac[Float] = Float
 
-    implicit def ofNewtype[nt, ot, ds <: Kind.MethodList](implicit j: Newtype[nt, ot, ds], i: RealFrac[ot], k: Kind.MethodList.Contains[ds, RealFrac]): RealFrac[nt] = deriving[Newtype[nt, ot, _]]
+    implicit def _ofNewtype[nt, ot, ds <: Kind.MethodList](implicit j: Newtype[nt, ot, ds], i: RealFrac[ot], k: Kind.MethodList.Contains[ds, RealFrac]): RealFrac[nt] = deriving[Newtype[nt, ot, _]]
 }
 
 
