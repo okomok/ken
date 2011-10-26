@@ -130,7 +130,7 @@ object Float extends Enum[Float] with Eq.Of[Float] with RealFloat[Float] with Ra
     private lazy val _expBits: Float => Int = x =>  ((JFloat.floatToRawIntBits(x) & _expMask) >>> _fractBitCount).toInt
     private lazy val _fractBits: Float => Int = x => JFloat.floatToRawIntBits(x) & _fractMask
 
-    import XsbtWorkaround._
+    import WorkaroundNotFound._
 
     private lazy val _decodeFloat: Float => (Integer, Int) = x => {
         val sign: Integer = if (_signBits(x) != 0) -1 else 1
@@ -163,8 +163,8 @@ object Float extends Enum[Float] with Eq.Of[Float] with RealFloat[Float] with Ra
         impl(_normalizedDecode(m, n))
     }
 
-    @Annotation.compilerWorkaround("2.9.1") // xsbt incremental compilation broken - not found: value _isNormalizedDecode
-    private object XsbtWorkaround {
+    @Annotation.compilerWorkaround("2.9.1") // scalac sucks - not found: value _isNormalizedDecode
+    private object WorkaroundNotFound {
         lazy val _isNormalizedDecode: Pair[Integer, Int] => Bool = { case (m, n) =>
             import Integer._pow_
             val b: Integer = floatRadix(0.0F)
@@ -172,6 +172,8 @@ object Float extends Enum[Float] with Eq.Of[Float] with RealFloat[Float] with Ra
             val m_ : Integer = Integer.abs(m)
             (m == 0 && n == 0) || ((b _pow_ (d-1)) <= m_ && m_ < (b _pow_ d))
         }
+
+        final val _expNormalizedBias = 127
     }
 
     @tailrec

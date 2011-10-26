@@ -124,6 +124,11 @@ object Maybe extends MaybeAs with MonadPlus[Maybe] with Traversable[Maybe] with 
             }
         }
     }
+
+    def orElse[a](x: Maybe[a])(y: Maybe[a]): Maybe[a] = x match {
+        case Just(_) => x
+        case Nothing => y
+    }
 }
 
 

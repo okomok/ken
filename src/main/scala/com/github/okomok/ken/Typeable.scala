@@ -66,6 +66,20 @@ object Typeable extends TypeableInstance with TypeableShortcut {
         case Just(b) => q(b)
     }
 
+    def mkM[a, b, m[+_]](f: b => m[b])(x: a)(implicit i: Typeable[a], j: Typeable[b], m: Monad[m]): m[a] = cast(x, Type[b]) match {
+        case Nothing => m.`return`(x)
+        case Just(y) => {
+            if (j.typeOf(0) <:< i.typeOf(0)) f(y).asInstanceOf[m[a]] // b <: a implies m[b] <: m[a]
+            else m.`return`(x)
+        }
+        /* Typeable[m[x]] can't be built from Typeable[x].
+        case Just(y) => cast(f(y), Type[m[a]]) match {
+            case Nothing => m.`return`(x)
+            case Just(r) => r
+        }
+        */
+    }
+
     // Rejected because Typeable[a => a] is bothersome.
     private def _original_mkT[a, b](f: b => b)(x: a)(implicit i: Typeable[a => a], j: Typeable[b => b]): a = cast(f, Type[a => a]) match {
         case Nothing => x
