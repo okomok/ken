@@ -22,7 +22,7 @@ class ScrapYourBoilerplateTest extends org.scalatest.junit.JUnit3Suite {
     object Company extends Data[Company] with TypeableProxy[Company] with ThisIsInstance {
         private type a = Company
         override val selfTypeable = Typeable.of[a]
-        override def gfoldl[c[_]](k: GenericApply[c])(z: Pure[c])(a: a): c[a] = a match {
+        override def gfoldl[c[_]](k: GenericL[c])(z: Pure[c])(a: a): c[a] = a match {
             case Company(v1) => k(z((w1: List[Dept]) => Company(w1)))(v1)
         }
     }
@@ -32,7 +32,7 @@ class ScrapYourBoilerplateTest extends org.scalatest.junit.JUnit3Suite {
     object Dept extends Data[Dept] with TypeableProxy[Dept] with ThisIsInstance {
         private type a = Dept
         override val selfTypeable = Typeable.of[a]
-        override def gfoldl[c[_]](k: GenericApply[c])(z: Pure[c])(a: a): c[a] = a match {
+        override def gfoldl[c[_]](k: GenericL[c])(z: Pure[c])(a: a): c[a] = a match {
             case Dept(v1, v2, v3) => k( k( k(z((w1: Name) => (w2: Manager) => (w3: List[SubUnit]) => Dept(w1, w2, w3)))(v1) )(v2) )(v3)
         }
     }
@@ -44,7 +44,7 @@ class ScrapYourBoilerplateTest extends org.scalatest.junit.JUnit3Suite {
     object SubUnit extends Data[SubUnit] with TypeableProxy[SubUnit] with ThisIsInstance {
         private type a = SubUnit
         override val selfTypeable = Typeable.of[a]
-        override def gfoldl[c[_]](k: GenericApply[c])(z: Pure[c])(a: a): c[a] = a match {
+        override def gfoldl[c[_]](k: GenericL[c])(z: Pure[c])(a: a): c[a] = a match {
             case PersonUnit(e) => k(z(PersonUnit(_: Employee).up))(e)
             case DeptUnit(d) => k(z(DeptUnit(_: Dept).up))(d)
         }
@@ -55,7 +55,7 @@ class ScrapYourBoilerplateTest extends org.scalatest.junit.JUnit3Suite {
     object Employee extends Data[Employee] with TypeableProxy[Employee] with ThisIsInstance {
         private type a = Employee
         override val selfTypeable = Typeable.of[a]
-        override def gfoldl[c[_]](k: GenericApply[c])(z: Pure[c])(a: a): c[a] = a match {
+        override def gfoldl[c[_]](k: GenericL[c])(z: Pure[c])(a: a): c[a] = a match {
             case Employee(p, s) => k( k(z((p: Person) => (s: Salary) => Employee(p, s)))(p) )(s)
         }
     }
@@ -65,7 +65,7 @@ class ScrapYourBoilerplateTest extends org.scalatest.junit.JUnit3Suite {
     object Person extends Data[Person] with TypeableProxy[Person] with ThisIsInstance {
         private type a = Person
         override val selfTypeable = Typeable.of[a]
-        override def gfoldl[c[_]](k: GenericApply[c])(z: Pure[c])(a: a): c[a] = a match {
+        override def gfoldl[c[_]](k: GenericL[c])(z: Pure[c])(a: a): c[a] = a match {
             case Person(p, s) => k( k(z((p: Name) => (s: Address) => Person(p, s)))(p) )(s)
         }
     }
@@ -75,7 +75,7 @@ class ScrapYourBoilerplateTest extends org.scalatest.junit.JUnit3Suite {
     object Salary extends Data[Salary] with TypeableProxy[Salary] with ThisIsInstance {
         private type a = Salary
         override val selfTypeable = Typeable.of[a]
-        override def gfoldl[c[_]](k: GenericApply[c])(z: Pure[c])(a: a): c[a] = a match {
+        override def gfoldl[c[_]](k: GenericL[c])(z: Pure[c])(a: a): c[a] = a match {
             case Salary(v1) => k(z((w1: Float) => Salary(w1)))(v1)
         }
     }

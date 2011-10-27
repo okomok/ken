@@ -58,7 +58,7 @@ object Char extends Bounded[Char] with Enum[Char] with Eq.Of[Char] with Ord[Char
     }
 
     @Annotation.compilerWorkaround("2.9.1") // Without this, clean compilation fails: "val isAlpha is not a member of Char".
-    private def isA: Char => Bool = undefined
+    private def isA = undefined
 
     val isAscii: Char => Bool = ch => ch < 128
     val isLatin1: Char => Bool = ch => ch <= 255
