@@ -13,7 +13,7 @@ object RealWorld extends World {
     // Coercions between IO and ST
     //
     def stToIO[a](st: ST[a]): IO[a] = st match {
-        case ST(m) => IO(m)
+        case ST(m) => IO(s => IORep.done(m(this)._1, s))
     }
 
     def ioToST[a](io: IO[a]): ST[a] = io match {

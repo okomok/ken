@@ -22,6 +22,6 @@ object Prim {
 
     val raise: Throwable => Nothing = a => throw a
 
-    val raiseIO: Throwable => IORep[Nothing] = a => s => (throw a, s)
+    val raiseIO: Throwable => IORep[Nothing] = a => s => IORep.done(throw a, s)
 
 }

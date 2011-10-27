@@ -290,12 +290,10 @@ object Test {
                 List.from(")...") )
             _ <- callbackPostTest(st)(res_)
         } {
-            IO.tailcall {
-                if (res_.ok == Just(False)) {
-                    foundFailure(st.copy(numSuccessShrinks = st.numSuccessShrinks + 1))(res_)(ts_)
-                } else {
-                    localMin(st.copy(numTryShrinks = st.numTryShrinks + 1))(res)(ts)
-                }
+            if (res_.ok == Just(False)) {
+                foundFailure(st.copy(numSuccessShrinks = st.numSuccessShrinks + 1))(res_)(ts_)
+            } else {
+                localMin(st.copy(numTryShrinks = st.numTryShrinks + 1))(res)(ts)
             }
         }
     }

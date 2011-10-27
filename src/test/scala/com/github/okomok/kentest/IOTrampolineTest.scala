@@ -11,7 +11,7 @@ import com.github.okomok.ken._ //{IO =>_, IORep => _, _}
 import scala.annotation.tailrec
 
 
-class IOTailcallTest extends org.scalatest.junit.JUnit3Suite {
+class IOTrampolineTest extends org.scalatest.junit.JUnit3Suite {
 
 /*
     type IORep[+a] = RealWorld.type => Product2[a, RealWorld.type]
@@ -105,12 +105,19 @@ class IOTailcallTest extends org.scalatest.junit.JUnit3Suite {
 
     val isOdd2: Int => IO[Boolean] = {
         case 0 => IO.`return`(false)
-        case n => IO.`return`() >> IO.tailcall(isEven2(n - 1))
+        // complicated form for better test
+        case n => for {
+            _ <- IO.`return`()
+            * <- isEven2(n - 1)
+        } yield *
     }
 
     val isEven2: Int => IO[Boolean] = {
         case 0 => IO.`return`(true)
-        case n => IO.`return`() >> IO.tailcall(isOdd2(n - 1))
+        case n => for {
+            _ <- IO.`return`()
+            * <- isOdd2(n - 1)
+        } yield *
     }
 
     def testNoOverflow2 {
@@ -124,7 +131,7 @@ class IOTailcallTest extends org.scalatest.junit.JUnit3Suite {
         } IO.`return`(false)
         case n => for {
             _ <- IO.`return`()
-        } IO.tailcall(isEven3(n - 1))
+        } isEven3(n - 1)
     }
 
     val isEven3: Int => IO[Boolean] = {
@@ -133,7 +140,7 @@ class IOTailcallTest extends org.scalatest.junit.JUnit3Suite {
         } IO.`return`(true)
         case n => for {
             _ <- IO.`return`()
-        } IO.tailcall(isOdd3(n - 1))
+        } isOdd3(n - 1)
     }
 
     def testNoOverflow3 {

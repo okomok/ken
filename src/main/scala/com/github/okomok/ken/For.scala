@@ -11,7 +11,7 @@ package ken
 trait For[m[+_], +a] {
     def map[b](f: a => b): m[b] = error("shall be a Functor")
     def flatMap[b](k: a => m[b]): m[b] = error("shall be a Monad")
-    final def foreach[b](k: a => m[b]): m[b] = flatMap(k) // for `IO.tailcall`
+    final def foreach[b](k: a => m[b]): m[b] = flatMap(k)
     def filter(p: a => Bool): m[a] = map(a => a.ensuring(p, "shall be a MonadPlus"))
     final def withFilter(p: a => Bool): m[a] = filter(p)
 }

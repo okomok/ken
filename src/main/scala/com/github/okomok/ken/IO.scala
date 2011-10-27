@@ -15,7 +15,7 @@ package ken
 
 
 final case class IO[+a](override val old: IORep[a]) extends NewtypeOf[IORep[a]] {
-    def ! : a = IORep.eval(old)
+    def ! : a = old(RealWorld)._1
 }
 
 
@@ -30,17 +30,8 @@ object IO extends MonadControlIO[IO] with ThisIsInstance {
     override def liftIO[a](io: IO[a]): m[a] = io
     override def liftControlIO[a](f: RunInIO => IO[a]): m[a] = MonadTransControl.idLiftControl(f)
 
-    private def returnIO[a](x: => a): IO[a] = IO { s => IORep.Done(x, s) }
-
-    private def bindIO[a, b](m: IO[a])(k: a => IO[b]): IO[b] = IO { s =>
-        unIO(m)(s) match {
-            case Product2(a, new_s) => unIO(k(a))(new_s)
-        }
-    }
-
-    // Tail-call support
-    //
-    def tailcall[a](io: => IO[a]): IO[a] = IO { s => IORep.Call(() => unIO(io), s) }
+    private def returnIO[a](x: => a): IO[a] = IO { s => IORep.done(x, s) }
+    private def bindIO[a, b](m: IO[a])(k: a => IO[b]): IO[b] = IO { s => IORep.cont(unIO(m), (a: a) => unIO(k(a)), s) }
 
     // UnsafeIO operations
     //
