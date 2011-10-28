@@ -28,27 +28,26 @@ object Trampoline extends Monad[Trampoline] with ThisIsInstance with EvalOp {
     private[ken] case class Cont[z, +a](t: Trampoline[z], k: z => Trampoline[a]) extends Trampoline[a]
 
     private def __eval[a](t: Trampoline[a]): a = {
-        import scala.{List, Nil, ::}
-
         var cur: Trampoline[_] = t
         var stack: List[Any => Trampoline[a]] = Nil
-        var result: Option[a] = None
+        var result: Maybe[a] = Nothing
 
-        while (result.isEmpty) {
+        while (Maybe.isNothing(result)) {
             cur match {
                 case Done(a) => stack match {
-                    case Nil => result = Some(a.asInstanceOf[a])
-                    case k :: ks => {
+                    case Nil => result = Just(a.asInstanceOf[a])
+                    case k !:: ks => {
                         cur = k(a)
                         stack = ks
                     }
                 }
                 case Cont(t, k) => {
                     cur = t
-                    stack = k.asInstanceOf[Any => Trampoline[a]] :: stack
+                    stack = k.asInstanceOf[Any => Trampoline[a]] !:: stack
                 }
             }
         }
-        result.get
+
+        Maybe.fromJust(result)
     }
 }
