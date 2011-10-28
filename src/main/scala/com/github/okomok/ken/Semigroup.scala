@@ -102,7 +102,7 @@ sealed trait SemigroupInstance { this: Semigroup.type =>
 }
 
 
-sealed trait SemigroupShortcut { this: Semigroup.type =>
+trait SemigroupShortcut {
     def op_<>:[a](x: a)(y: Lazy[a])(implicit i: Semigroup[a]): a = i.op_<>:(x)(y)
     def sconcat[a](xs: List[a])(implicit i: Semigroup[a]): a = i.sconcat(xs)
     def times1p[a, n](y0: n)(x0: a)(implicit i: Semigroup[a], j: Integral[n]): a = i.times1p(y0)(x0)(j)

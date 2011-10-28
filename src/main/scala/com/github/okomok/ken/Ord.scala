@@ -182,7 +182,7 @@ sealed trait OrdInstance { this: Ord.type =>
 }
 
 
-sealed trait OrdShortcut { this: Ord.type =>
+trait OrdShortcut extends EqShortcut {
     def compare[a](x: a)(y: a)(implicit i: Ord[a]): Ordering = i.compare(x)(y)
     def op_<[a](x: a)(y: a)(implicit i: Ord[a]): Bool = i.op_<(x)(y)
     def op_<=[a](x: a)(y: a)(implicit i: Ord[a]): Bool = i.op_<=(x)(y)

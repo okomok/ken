@@ -212,7 +212,7 @@ sealed trait ExceptionInstance { this: Exception.type =>
 }
 
 
-sealed trait ExceptionShortcut { this: Exception.type =>
+trait ExceptionShortcut extends TypeableShortcut with ShowShortcut {
     def toException[e](e: e)(implicit i: Exception[e]): SomeException = i.toException(e)
     def fromException[e](se: SomeException)(implicit i: Exception[e]): Maybe[e] = i.fromException(se)
 

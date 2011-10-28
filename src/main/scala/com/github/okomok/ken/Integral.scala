@@ -185,7 +185,7 @@ sealed trait IntegralInstance { this: Integral.type =>
 }
 
 
-sealed trait IntegralShortcut { this: Integral.type =>
+trait IntegralShortcut extends RealShortcut with EnumShortcut {
     def quot[a](n: a)(d: a)(implicit i: Integral[a]): a = i.quot(n)(d)
     def rem[a](n: a)(d: a)(implicit i: Integral[a]): a = i.rem(n)(d)
     def div[a](n: a)(d: a)(implicit i: Integral[a]): a = i.div(n)(d)

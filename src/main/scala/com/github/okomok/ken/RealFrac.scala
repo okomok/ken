@@ -105,7 +105,7 @@ sealed trait RealFracInstance { this: RealFrac.type =>
 }
 
 
-sealed trait RealFracShortcut { this: RealFrac.type =>
+trait RealFracShortcut extends RealShortcut with FractionalShortcut {
     def properFraction[a, b](x: a)(implicit i: RealFrac[a], j: Integral[b]): (b, a) = i.properFraction(x)(j)
     def truncate[a, b](x: a)(implicit i: RealFrac[a], j: Integral[b]): b = i.truncate(x)(j)
     def round[a, b](x: a)(implicit i: RealFrac[a], j: Integral[b]): b = i.round(x)(j)

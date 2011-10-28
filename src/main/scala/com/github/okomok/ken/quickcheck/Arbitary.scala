@@ -247,7 +247,7 @@ sealed trait ArbitaryInstance { this: Arbitary.type =>
 }
 
 
-sealed trait ArbitaryShortcut { this: Arbitary.type =>
+trait ArbitaryShortcut {
     def arbitary[a](implicit i: Arbitary[a]): Gen[a] = i.arbitary
     def shrink[a](x: a)(implicit i: Arbitary[a]): List[a] = i.shrink(x)
 

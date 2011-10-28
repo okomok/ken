@@ -74,7 +74,7 @@ sealed trait FractionalInstance { this: Fractional.type =>
 }
 
 
-sealed trait FractionalShortcut { this: Fractional.type =>
+trait FractionalShortcut extends NumShortcut {
     def op_/[a](x: a)(y: a)(implicit i: Fractional[a]): a = i.op_/(x)(y)
     def recip[a](x: a)(implicit i: Fractional[a]): a = i.recip(x)
     def fromRational[a](x: Rational)(implicit i: Fractional[a]): a = i.fromRational(x)

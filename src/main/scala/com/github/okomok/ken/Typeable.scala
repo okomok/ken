@@ -95,6 +95,6 @@ sealed trait TypeableInstance { this: Typeable.type =>
 }
 
 
-private[ken] sealed trait TypeableShortcut { this: Typeable.type =>
+trait TypeableShortcut {
     def typeOf[a](x: Lazy[a])(implicit i: Typeable[a]): TypeRep = i.typeOf(x)
 }

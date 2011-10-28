@@ -141,7 +141,7 @@ sealed trait NumInstance { this: Num.type =>
 }
 
 
-sealed trait NumShortcut { this: Num.type =>
+trait NumShortcut {
     def op_+[a](x: a)(y: a)(implicit i: Num[a]): a = i.op_+(x)(y)
     def op_-[a](x: a)(y: a)(implicit i: Num[a]): a = i.op_-(x)(y)
     def op_*[a](x: a)(y: a)(implicit i: Num[a]): a = i.op_*(x)(y)

@@ -48,7 +48,7 @@ sealed trait RandomGenInstance { this: RandomGen.type =>
 }
 
 
-sealed trait RandomGenShortcut { this: RandomGen.type =>
+trait RandomGenShortcut {
     def next[g](g: g)(implicit i: RandomGen[g]): (Int, g) = i.next(g)
     def split[g](g: g)(implicit i: RandomGen[g]): (g, g) = i.split(g)
     def genRange[g](g: Lazy[g])(implicit i: RandomGen[g]): (Int, Int) = i.genRange(g)

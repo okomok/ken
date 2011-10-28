@@ -106,7 +106,7 @@ sealed trait EqInstance extends EqInstance0 { this: _Eq.type =>
 }
 
 
-sealed trait EqShortcut { this: _Eq.type =>
+trait EqShortcut {
     def op_===[a](x: a)(y: a)(implicit i: _Eq[a]): Bool = i.op_===(x)(y)
     def op_/==[a](x: a)(y: a)(implicit i: _Eq[a]): Bool = i.op_/==(x)(y)
 

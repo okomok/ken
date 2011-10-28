@@ -219,7 +219,7 @@ sealed trait DataInstance { this: Data.type =>
 }
 
 
-private[ken] sealed trait DataShortcut { this: Data.type =>
+trait DataShortcut extends TypeableShortcut {
     def gfoldl[a, c[_]](k: GenericL[c])(z: Pure[c])(a: a)(implicit i: Data[a]): c[a] = i.gfoldl(k)(z)(a)
     def gmapT[a](f: GenericT)(x: a)(implicit i: Data[a]): a = i.gmapT(f)(x)
     def gmapQl[a, r, r_](o: r => r_ => r)(r: r)(f: GenericQ[r_])(x0: a)(implicit i: Data[a]): r = i.gmapQl(o)(r)(f)(x0)

@@ -249,7 +249,7 @@ sealed trait TestableInstance { this: Testable.type =>
 }
 
 
-sealed trait TestableShortcut { this: Testable.type =>
+trait TestableShortcut {
     def property[prop](prop: prop)(implicit i: Testable[prop]): Property = i.property(prop)
 
     def mapResult[prop](f: Result => Result)(prop: prop)(implicit i: Testable[prop]): Property = i.mapResult(f)(prop)

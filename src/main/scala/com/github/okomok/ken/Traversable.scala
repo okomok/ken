@@ -37,14 +37,14 @@ trait Traversable[t[+_]] extends Functor[t] with Foldable[t] { outer =>
     def tfor[f[+_], a, b](t: t[a])(f: a => f[b])(implicit i: Applicative[f]): f[t[b]] = traverse(f)(t)
     def tforM[m[+_], a, b](t: t[a])(f: a => m[b])(implicit i: Monad[m]): m[t[b]] = mapM(f)(t)
 
-    def mapAccumL[a, b, c](f: a => b => (a, c)): a => t[b] => (a, t[c]) = s => t => {
+    def mapAccumL[a, b, c](f: a => b => (a, c))(s: a)(t: t[b]): (a, t[c]) = {
         //implicit val j = Applicative[StateL.apply[a]]
         //traverse( (x: b) => j.infer( StateL(flip(f)(x)) ) )(t).get.apply(s)
         val k = pull[StateL.apply[a]]
         k.traverse( (x: b) => StateL(flip(f)(x)) )(t).get.apply(s)
     }
 
-    def mapAccumR[a, b, c](f: Lazy[a] => b => (a, c)): a => t[b] => (a, t[c]) = s => t => {
+    def mapAccumR[a, b, c](f: Lazy[a] => b => (a, c))(s: a)(t: t[b]): (a, t[c]) = {
         implicit val j = Applicative[StateR.apply[a]]
         traverse( (x: b) => j.infer( StateR(flip(f)(x)) ) )(t).get.apply(s)
     }
@@ -84,8 +84,8 @@ trait TraversableProxy[t[+_]] extends Traversable[t] with FunctorProxy[t] with F
 
     override def tfor[f[+_], a, b](t: t[a])(f: a => f[b])(implicit i: Applicative[f]): f[t[b]] = selfTraversable.tfor(t)(f)(i)
     override def tforM[m[+_], a, b](t: t[a])(f: a => m[b])(implicit i: Monad[m]): m[t[b]] = selfTraversable.tforM(t)(f)(i)
-    override def mapAccumL[a, b, c](f: a => b => (a, c)): a => t[b] => (a, t[c]) = selfTraversable.mapAccumL(f)
-    override def mapAccumR[a, b, c](f: Lazy[a] => b => (a, c)): a => t[b] => (a, t[c]) = selfTraversable.mapAccumR(f)
+    override def mapAccumL[a, b, c](f: a => b => (a, c))(s: a)(t: t[b]): (a, t[c]) = selfTraversable.mapAccumL(f)(s)(t)
+    override def mapAccumR[a, b, c](f: Lazy[a] => b => (a, c))(s: a)(t: t[b]): (a, t[c]) = selfTraversable.mapAccumR(f)(s)(t)
     override def fmapDefault[a, b](f: a => b): t[a] => t[b] = selfTraversable.fmapDefault(f)
     override def foldMapDefault[m, a](f: a => m)(t: t[a])(implicit i: Monoid[m]): m = selfTraversable.foldMapDefault(f)(t)(i)
 }

@@ -57,7 +57,7 @@ sealed trait BoundedInstance { this: Bounded.type =>
 }
 
 
-sealed trait BoundedShortcut { this: Bounded.type =>
+trait BoundedShortcut {
     def minBound[a](a: a)(implicit i: Bounded[a]): a = i.minBound
     def maxBound[a](a: a)(implicit i: Bounded[a]): a = i.maxBound
 }

@@ -105,7 +105,7 @@ sealed trait EnumInstance { this: Enum.type =>
 }
 
 
-sealed trait EnumShortcut { this: Enum.type =>
+trait EnumShortcut {
     def succ[a](a: a)(implicit i: Enum[a]): a = i.succ(a)
     def pred[a](a: a)(implicit i: Enum[a]): a = i.pred(a)
     def toEnum[a](n: Int)(implicit i: Enum[a]): a = i.toEnum(n)

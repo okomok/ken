@@ -83,7 +83,7 @@ sealed trait MonoidInstance { this: Monoid.type =>
 }
 
 
-sealed trait MonoidShortcut { this: Monoid.type =>
+trait MonoidShortcut extends SemigroupShortcut {
     def mempty[m](implicit i: Monoid[m]): m = i.mempty
     def mappend[m](x: m)(y: Lazy[m])(implicit i: Monoid[m]): m = i.mappend(x)(y)
     def mconcat[m](xs: List[m])(implicit i: Monoid[m]): m = i.mconcat(xs)

@@ -130,7 +130,7 @@ sealed trait IxInstance { this: Ix.type =>
 }
 
 
-sealed trait IxShortcut { this: Ix.type =>
+trait IxShortcut extends OrdShortcut {
     def range[a](b: (a, a))(implicit ix: Ix[a]): List[a] = ix.range(b)
     def index[a](b: (a, a))(i: a)(implicit ix: Ix[a]): Int = ix.index(b)(i)
     def unsafeIndex[a](b: (a, a))(i: a)(implicit ix: Ix[a]): Int = ix.unsafeIndex(b)(i)

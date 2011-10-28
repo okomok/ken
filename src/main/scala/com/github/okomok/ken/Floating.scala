@@ -158,5 +158,5 @@ sealed trait FloatingInstance { this: Floating.type =>
 }
 
 
-sealed trait FloatingShortcut { this: Floating.type =>
+trait FloatingShortcut extends FractionalShortcut {
 }

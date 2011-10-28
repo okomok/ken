@@ -57,7 +57,7 @@ sealed trait ErrorClassInstance { this: ErrorClass.type =>
 }
 
 
-sealed trait ErrorClassShortcut { this: ErrorClass.type =>
+trait ErrorClassShortcut {
     def noMsg[a](implicit i: ErrorClass[a]): a = i.noMsg
     def strMsg[a](s: String)(implicit i: ErrorClass[a]): a = i.strMsg(s)
 }

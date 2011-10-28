@@ -112,7 +112,7 @@ sealed trait ShowInstance extends ShowInstance0 { this: Show.type =>
 }
 
 
-sealed trait ShowShortcut { this: Show.type =>
+trait ShowShortcut {
     def showsPrec[a](x: Int)(s: a)(implicit i: Show[a]): ShowS = i.showsPrec(x)(s)
     def show[a](s: a)(implicit i: Show[a]): String = i.show(s)
     def showList[a](ls: List[a])(implicit i: Show[a]): ShowS = i.showList(ls)

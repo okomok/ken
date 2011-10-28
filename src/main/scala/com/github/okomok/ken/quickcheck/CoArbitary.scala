@@ -133,6 +133,6 @@ sealed trait CoArbitaryInstance { outer: CoArbitary.type =>
 }
 
 
-sealed trait CoArbitaryShortcut { this: CoArbitary.type =>
+trait CoArbitaryShortcut {
     def coarbitary[a, c](f: a)(gen: Gen[c])(implicit i: CoArbitary[a]): Gen[c] = i.coarbitary(f)(gen)
 }

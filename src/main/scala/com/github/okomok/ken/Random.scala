@@ -65,7 +65,7 @@ sealed trait RandomInstance { this: Random.type =>
 }
 
 
-sealed trait RandomShortcut { this: Random.type =>
+trait RandomShortcut {
     def randomR[a, g](ival: (a, a))(g: g)(implicit ir: Random[a], i: RandomGen[g]): (a, g) = ir.randomR(ival)(g)(i)
     def random[a, g](g: g)(implicit ir: Random[a], i: RandomGen[g]): (a, g) = ir.random(g)(i)
     def randomRs[a, g](ival: (a, a))(g: g)(implicit ir: Random[a], i: RandomGen[g]): List[a] = ir.randomRs(ival)(g)(i)

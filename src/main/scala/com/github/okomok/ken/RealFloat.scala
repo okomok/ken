@@ -168,7 +168,8 @@ sealed trait RealFloatInstance { this: RealFloat.type =>
 }
 
 
-sealed trait RealFloatShortcut { this: RealFloat.type =>
+trait RealFloatShortcut extends RealFracShortcut with FloatingShortcut {
+    // TODO
 }
 
 

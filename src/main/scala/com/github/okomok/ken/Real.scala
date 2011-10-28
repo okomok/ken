@@ -49,3 +49,8 @@ sealed trait RealInstance { this: Real.type =>
 
     implicit def _ofNewtype[nt, ot, ds <: Kind.MethodList](implicit j: Newtype[nt, ot, ds], i: Real[ot], k: Kind.MethodList.Contains[ds, Real]): Real[nt] = deriving[Newtype[nt, ot, _]]
 }
+
+
+trait RealShortcut extends NumShortcut with OrdShortcut {
+    // TODO
+}
