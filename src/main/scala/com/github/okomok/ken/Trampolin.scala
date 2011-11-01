@@ -29,7 +29,7 @@ object Trampoline extends Monad[Trampoline] with ThisIsInstance with EvalOp {
 
     private def __eval[a](t: Trampoline[a]): a = {
         var cur: Trampoline[_] = t
-        var stack = new java.util.ArrayDeque[Any => Trampoline[a]]
+        val stack = new java.util.ArrayDeque[Any => Trampoline[a]]
         var result: Maybe[a] = Nothing
 
         while (Maybe.isNothing(result)) {
