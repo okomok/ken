@@ -21,6 +21,9 @@ trait Typeable[a] extends Typeclass[a] {
     //
     type typeOf = Lazy[_] => TypeRep
     def typeOf: typeOf
+
+    // For easy debugging
+    override def toString: JString = typeOf(0).toString
 }
 
 
