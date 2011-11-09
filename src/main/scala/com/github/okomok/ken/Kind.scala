@@ -23,7 +23,7 @@ object Kind {
 
     trait Function1 extends FunctionLike {
         type apply1[+a]
-        type apply[+a] = apply1[a] // alias of apply1
+        type apply[+a] = apply1[a]
     }
 
     trait Function2 extends FunctionLike {
@@ -31,6 +31,22 @@ object Kind {
     }
 
     type Function = Function1
+
+    // Unapply
+    //
+    trait Unapply0 extends Function0
+
+    trait Unapply1 extends Function1 {
+        type arg1
+        type arg = arg1
+    }
+
+    trait Unapply2 extends Function2 {
+        type arg1
+        type arg2
+    }
+
+    type Unapply = Unapply1
 
     // Newtypes
     //

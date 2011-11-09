@@ -69,6 +69,10 @@ trait Traversable[t[+_]] extends Functor[t] with Foldable[t] { outer =>
         final def tforM[a, b](t: t[a])(f: a => m[b])(implicit i: Monad[m]): m[t[b]] = outer.tforM(t)(f)
     }
     override def pull[f_ <: Kind.Function1]: TraversablePull[f_] = new TraversablePull[f_] {}
+
+    // Experimental
+    //
+    def traverseI[fb, a](f: a => fb)(t: t[a])(implicit _f: Instance1[Applicative, fb]): _f.apply1[t[_f.arg1]] = traverse((a: a) => _f(f(a)))(t)(_f.instance)
 }
 
 
@@ -91,8 +95,18 @@ trait TraversableProxy[t[+_]] extends Traversable[t] with FunctorProxy[t] with F
 }
 
 
-object Traversable {
+object Traversable extends TraversableShortcut {
     def apply[t <: Kind.Function1](implicit i: Traversable[t#apply1]): Traversable[t#apply1] = i
+}
+
+
+trait TraversableShortcut {
+    // hmm
+    /*
+    def traverseI[ta, fb](f: _t.arg1 => fb)(t: ta)(implicit _t: Instance1[Traversable, ta], _f: Instance1[Applicative, fb], ev: _t.arg1 =:= a): _f.apply1[_t.apply1[_f.arg1]] = {
+        _t.traverse((a: a) => _f(f(a)))(_t(t))(_f)
+    }
+    */
 }
 
 

@@ -14,4 +14,4 @@ libraryDependencies ++= Seq(
     "junit" % "junit" % "4.4" % "test"
 )
 
-scalacOptions ++= Seq("-deprecation", "-unchecked")
+scalacOptions ++= Seq("-deprecation", "-unchecked", "-Ydependent-method-types")
