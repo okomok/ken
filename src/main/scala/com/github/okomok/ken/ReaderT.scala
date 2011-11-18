@@ -93,9 +93,10 @@ private[ken] sealed trait ReaderTAs0 { this: ReaderT.type =>
 
     implicit def _asMonadState[r, n[+_], s](implicit i: MonadState[s, n]): MonadState[s, apply2[r, n]#apply1] = new MonadState[s, apply2[r, n]#apply1] with MonadProxy[apply2[r, n]#apply1] {
         private type m[+a] = ReaderT[r, n, a]
+        private val mt = _asMonadTrans[r]
         override val selfMonad = _asMonadReader[r, n]
-        override def get: m[s] = _asMonadTrans[r].lift(i.get)
-        override def put(s: s): m[Unit] = _asMonadTrans[r].lift(i.put(s))
+        override def get: m[s] = mt.lift(i.get)
+        override def put(s: s): m[Unit] = mt.lift(i.put(s))
     }
 
     implicit def _asMonadWriter[r, n[+_], w](implicit i: MonadWriter[w, n]): MonadWriter[w, apply2[r, n]#apply1] = new MonadWriter[w, apply2[r, n]#apply1] with MonadProxy[apply2[r, n]#apply1] {

@@ -100,6 +100,9 @@ package object ken {
     type Writer[w, +a] = WriterT[w, WeakIdentity.apply, a]
     val Writer = _Writer
 
+    type Cont[r, +a] = ContT[r, WeakIdentity.apply, a]
+    val Cont = _Cont
+
     // Aliases
     //
     type String = List[Char]

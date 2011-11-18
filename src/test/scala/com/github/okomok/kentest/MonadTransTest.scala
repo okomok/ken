@@ -44,6 +44,7 @@ class MonadTransTest extends org.scalatest.junit.JUnit3Suite {
         MonadIO[ListT.apply[IO]]
         MonadIO[ErrorT.apply2[String, IO]]
         MonadIO[ReaderT.apply2[String, IO]]
+        MonadIO[ContT.apply2[String, IO]]
         MonadIO[StateT.apply2[Int, IO]]
         MonadIO[WriterT.apply2[Monoid.All, IO]]
 
@@ -52,6 +53,7 @@ class MonadTransTest extends org.scalatest.junit.JUnit3Suite {
         Monad[ListT.apply[IO]]
         Monad[ErrorT.apply2[String, IO]]
         Monad[ReaderT.apply2[String, IO]]
+        Monad[ContT.apply2[String, IO]]
         Monad[StateT.apply2[Int, IO]]
         Monad[WriterT.apply2[Monoid.All, IO]]
 
