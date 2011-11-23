@@ -28,9 +28,9 @@ trait Traversable[t[+_]] extends Functor[t] with Foldable[t] { outer =>
     //
     // Functor
     private[this] type f[+a] = t[a]
-    override def fmap[a, b](x: a => b): f[a] => f[b] = y => {
-        traverse( (a: a) => Identity(x(a)) )(y).get
-    }
+    override def fmap[a, b](x: a => b): f[a] => f[b] = fmapDefault(x)
+    // Foldable
+    override def foldMap[a, m](f: a => m)(x: t[a])(implicit i: Monoid[m]): m = foldMapDefault(f)(x)(i)
 
     // Extra
     //

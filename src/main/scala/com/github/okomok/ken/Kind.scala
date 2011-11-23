@@ -87,6 +87,12 @@ object Kind {
         type monadTrans[m[+_], +a]
     }
 
+    // MonadFree
+    //
+    trait MonadFree {
+        type functor[+a]
+    }
+
     // Misc
     //
     trait const[z] extends Function0 with Function1 with Function2 {

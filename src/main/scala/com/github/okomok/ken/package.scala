@@ -103,6 +103,9 @@ package object ken {
     type Cont[r, +a] = ContT[r, WeakIdentity.apply, a]
     val Cont = _Cont
 
+    type Free[f[+_], +a] = FreeT[f, WeakIdentity.apply, a]
+    val Free = _Free
+
     // Aliases
     //
     type String = List[Char]
