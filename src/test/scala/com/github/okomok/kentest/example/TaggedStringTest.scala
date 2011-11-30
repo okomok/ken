@@ -215,7 +215,7 @@ class TaggedString2Test extends org.scalatest.junit.JUnit3Suite {
             tezt("data1")("data3").asJString
         }
 
-        intercept[java.lang.Error] {
+        intercept[ErrorError] {
             tezt("data1")("data2")
         }
     }

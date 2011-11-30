@@ -73,9 +73,9 @@ package object ken {
     @Annotation.ceremonial("useless in Scala")
     implicit def _asTypeOf_[a](x: a): Op_asTypeOf_[a] = new Op_asTypeOf_(x)
 
-    val error: String => Nothing = { msg => throw new java.lang.Error(msg.asJString) }
+    val error: String => Nothing = { msg => throw new ErrorError(msg.asJString) }
 
-    def undefined: Nothing = throw new java.lang.Error("undefined")
+    def undefined: Nothing = throw new UndefinedError
 
     @Annotation.ceremonial("no special effects")
     def seq[b](x: Any)(y: b): b = y
