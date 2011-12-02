@@ -18,16 +18,17 @@ class ExistentialTest extends org.scalatest.junit.JUnit3Suite {
         doShow ((Obj x):xs) = show x ++ doShow xs
 */
         type ObjRep[a] = (a, Show[a])
-        final case class Obj(rep: ObjRep[_]) {
-            // SI-5022 workaround
-            // Is there a better workaround?
-            def apply[b](f: ObjRep[_] => b): b = f(rep)
-        }
-        object Obj_ { // A different name works around yet another bug in local case classes.
+
+        // Order matters: SI-3772
+        object Obj {
             def apply[a](a: a)(implicit s: Show[a]): Obj = new Obj(a, s)
         }
+        final case class Obj(rep: ObjRep[_]) {
+            // Is there a better SI-5022 workaround?
+            def apply[b](f: ObjRep[_] => b): b = f(rep)
+        }
 
-        val xs: List[Obj] = List(Obj_(1), Obj_("foo"), Obj_('c'))
+        val xs: List[Obj] = List(Obj(1), Obj("foo"), Obj('c'))
 
         lazy val doShow: List[Obj] => String = {
             case Nil => ""
