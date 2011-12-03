@@ -30,3 +30,19 @@ class ForSomeVsUnapply {
     useRep(makeWrap.rep) // ok
 }
 
+
+class ForSomeVsUnapply2 {
+    type XXX = (a, a => Unit) forSome { type a }
+
+    // ok
+    def foo(x: XXX) {
+        x match { case (x, f) => f(x) }
+    }
+
+    /* no
+    // constructor of type (T1, T2) cannot be uniquely instantiated to expected type Tuple2[?>: Nothing <: Any, ?>: Nothing <: Any => Unit]
+    def foo2(x: (XXX, Int)) {
+        x match { case ((x, f), _) => f(x) }
+    }
+    */
+}
