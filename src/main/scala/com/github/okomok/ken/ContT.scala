@@ -14,7 +14,9 @@ package com.github.okomok
 package ken
 
 
-final case class ContT[r, n[+_], +a](override val old: (a => n[r]) => n[r]) extends NewtypeOf[(a => n[r]) => n[r]]
+final case class ContT[r, n[+_], +a](override val old: (a => n[r]) => n[r]) extends NewtypeOf[(a => n[r]) => n[r]] with ((a => n[r]) => n[r]) {
+    override def apply(x: a => n[r]): n[r] = old(x)
+}
 
 
 object ContT extends ContTOp with ContTAs with Kind.FunctionLike {

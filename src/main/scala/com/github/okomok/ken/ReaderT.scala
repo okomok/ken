@@ -14,7 +14,9 @@ package com.github.okomok
 package ken
 
 
-final case class ReaderT[r, n[+_], +a](override val old: r => n[a]) extends NewtypeOf[r => n[a]]
+final case class ReaderT[r, n[+_], +a](override val old: r => n[a]) extends NewtypeOf[r => n[a]] with (r => n[a]) {
+    override def apply(x: r): n[a] = old(x)
+}
 
 
 object ReaderT extends ReaderTOp with ReaderTAs with Kind.FunctionLike {
