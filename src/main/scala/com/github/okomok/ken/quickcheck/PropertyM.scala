@@ -13,7 +13,9 @@ package ken
 package quickcheck
 
 
-final case class PropertyM[n[+_], +a](override val old: (a => Gen[n[Property]]) => Gen[n[Property]]) extends NewtypeOf[(a => Gen[n[Property]]) => Gen[n[Property]]]
+final case class PropertyM[n[+_], +a](override val old: (a => Gen[n[Property]]) => Gen[n[Property]]) extends NewtypeOf[(a => Gen[n[Property]]) => Gen[n[Property]]] with ((a => Gen[n[Property]]) => Gen[n[Property]]) {
+    override def apply(x: a => Gen[n[Property]]): Gen[n[Property]] = old(x)
+}
 
 
 object PropertyM extends Kind.FunctionLike {

@@ -14,7 +14,9 @@ package com.github.okomok
 package ken
 
 
-final case class Kleisli[m[+_], -a, +b](override val old: a => m[b]) extends NewtypeOf[a => m[b]]
+final case class Kleisli[m[+_], -a, +b](override val old: a => m[b]) extends NewtypeOf[a => m[b]] with (a => m[b]) {
+    override def apply(x: a): m[b] = old(x)
+}
 
 
 object Kleisli extends KleisliOp with KleisliAs with Kind.FunctionLike {

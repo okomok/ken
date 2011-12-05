@@ -17,7 +17,9 @@ package com.github.okomok
 package ken
 
 
-final case class ReadPrec[+a](override val old: Int => ReadP[a]) extends NewtypeOf[Int => ReadP[a]]
+final case class ReadPrec[+a](override val old: Int => ReadP[a]) extends NewtypeOf[Int => ReadP[a]] with (Int => ReadP[a]) {
+    override def apply(x: Int): ReadP[a] = old(x)
+}
 
 
 object ReadPrec extends Newtype1[ReadPrec, ({type ot[+a] = Int => ReadP[a]})#ot] with MonadPlus[ReadPrec] with ThisIsInstance {

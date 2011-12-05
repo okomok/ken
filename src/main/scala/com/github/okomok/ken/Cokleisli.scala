@@ -12,7 +12,9 @@ package com.github.okomok
 package ken
 
 
-final case class Cokleisli[w[+_], -a, +b](override val old: w[a] => b) extends NewtypeOf[w[a] => b]
+final case class Cokleisli[w[+_], -a, +b](override val old: w[a] => b) extends NewtypeOf[w[a] => b] with (w[a] => b) {
+    override def apply(x: w[a]): b = old(x)
+}
 
 
 object Cokleisli extends CokleisliOp with CokleisliAs with Kind.FunctionLike {
