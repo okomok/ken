@@ -16,7 +16,7 @@ object Function extends FunctionAs with
         x
     }
 
-    def fixfun[a](f: (a => a) => a => a): a => a = x => f(fixfun(f))(x)
+    def fixfun[a, b](f: (a => b) => a => b): a => b = a => f(fixfun(f))(a)
 
     def on[a, b, c](* : b => b => c)(f: a => b): a => a => c = x => y => *(f(x))(f(y))
 
