@@ -155,6 +155,7 @@ class IteratorEssenceTest extends org.scalatest.junit.JUnit3Suite {
     // 4.1 Shape and contents
     //
 
+    // `Const` makes a trivial Applicative for a Monoid.
     def contentsBody[a](x: a): Const[List[a], Nothing] = Const(List(x))
 
     // In case `Monoid[a]` missing, you need a List wrapping around.
@@ -314,5 +315,53 @@ class IteratorEssenceTest extends org.scalatest.junit.JUnit3Suite {
     // 5. Laws of traverse
     //
 
+    // 6 Modular programming with applicative functors
+    //
 
+    import Monoid.Sum
+
+    type Count[+a] = Const[Sum[Int], a]
+
+    lazy val count: Any => Count[Nothing] = _ => Const(Sum(1))
+
+    lazy val cciBody = count
+
+    lazy val cci: String => Count[List[Nothing]] = List.traverse(cciBody)
+
+    def testCci {
+        val res = cci("hello").old.old
+        expect(5)(res)
+    }
+
+    lazy val testInt: Bool => Sum[Int] = b => if (b) Sum(1) else Sum(0)
+
+    lazy val lciBody: Char => Count[Nothing] = c => Const(testInt(c == '\n'))
+
+    lazy val lci: String => Count[List[Nothing]] = List.traverse(lciBody)
+
+    def testLci {
+        val res = lci("hello\nworld\n!").old.old
+        expect(2)(res)
+    }
+
+    type IsWithinWord[+a] = State[Bool, a]
+    type WciApp[+a] = Comp[IsWithinWord, Count, a]
+
+    lazy val wciBody: Char => WciApp[Nothing] = c => {
+        val updateState: Char => Bool => (Count[Nothing], Bool) = c => w => {
+            val s = Bool.not(Char.isSpace(c))
+            ( Const(testInt(Bool.not(w) && s)), s )
+        }
+        Comp[IsWithinWord, Count, Nothing](State((b: Bool) => updateState(c)(b)))
+    }
+
+    lazy val wci: String => WciApp[List[Nothing]] = List.traverse(wciBody)
+
+    lazy val runWci: String => Int = s => wci(s)._1.apply(False)._1.old.old
+
+    def testWci {
+        expect(false)(Char.isSpace('\n')) // wow
+        val res = runWci("hello  world   ! ")
+        expect(3)(res)
+    }
 }
