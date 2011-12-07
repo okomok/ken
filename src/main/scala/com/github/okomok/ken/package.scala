@@ -134,6 +134,9 @@ package object ken {
 
     type TypeRep = ClassManifest[_]
 
+    type Id[+a] = Identity[a]
+    val Id = Identity
+
     // Unsafe.Coerce
     //
     def unsafeCoerce[a, b](a: a, * : Type[b] = null): b = a.asInstanceOf[b]
