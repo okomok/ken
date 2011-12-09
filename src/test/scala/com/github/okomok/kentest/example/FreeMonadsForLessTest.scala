@@ -64,7 +64,7 @@ class FreeMonadsForLess extends org.scalatest.junit.JUnit3Suite {
     object MonadFree {
         def apply[f[+_], m <: Kind.Function1](implicit i: MonadFree[f, m#apply1]): MonadFree[f, m#apply1] = i
 
-        implicit def _ofReaderT[f[+_], n[+_], e](implicit i: Functor[f], j: MonadFree[f, n]): MonadFree[f, ReaderT.apply2[e, n]#apply1] = new MonadFree[f, ReaderT.apply2[e, n]#apply1] {
+        implicit def _ofReaderT[f[+_], n[+_], e](implicit i: Functor[f], j: MonadFree[f, n]): MonadFree[f, ({type L[+a] = ReaderT[e, n, a]})#L] = new MonadFree[f, ({type L[+a] = ReaderT[e, n, a]})#L] {
             private type m[+a] = ReaderT[e, n, a]
             override def wrap[a](fs: f[m[a]]): m[a] = ReaderT { (e: e) => j.wrap {
                 import i.`for`

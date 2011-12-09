@@ -15,15 +15,15 @@ final case class FreeT[f[+_], n[+_], +a](override val old: n[Either[a, f[FreeT[f
 
 
 object FreeT extends FreeTOp with FreeTAs with Kind.FunctionLike {
-    trait apply[f[+_]] extends apply1[f]
-    trait apply1[f[+_]] extends Kind.MonadTrans with Kind.MonadFree {
-        override type monadTrans[n[+_], +a] = FreeT[f, n, a]
-        override type functor[+a] = f[a]
+    trait apply[f <: Kind.Function1] extends apply1[f]
+    trait apply1[f <: Kind.Function1] extends Kind.MonadTrans with Kind.MonadFree {
+        override type monadTrans[n[+_], +a] = FreeT[f#apply1, n, a]
+        override type functor[+a] = f#apply1[a]
     }
 
-    trait apply2[f[+_], n[+_]] extends Kind.Newtype1 {
-        override type apply1[+a] = FreeT[f, n, a]
-        override type oldtype1[+a] = n[Either[a, f[FreeT[f, n, a]]]]
+    trait apply2[f <: Kind.Function1, n <: Kind.Function1] extends Kind.Newtype1 {
+        override type apply1[+a] = FreeT[f#apply1, n#apply1, a]
+        override type oldtype1[+a] = n#apply1[Either[a, f#apply1[FreeT[f#apply1, n#apply1, a]]]]
     }
 }
 
@@ -68,12 +68,12 @@ private[ken] trait FreeTOp {
 
 
 private[ken] sealed trait FreeTAs0 { this: FreeT.type =>
-    implicit def _asFunctor[f[+_], n[+_]](implicit fF: Functor[f], nM: Monad[n]): Functor[apply2[f, n]#apply1] = new Functor[apply2[f, n]#apply1] {
+    implicit def _asFunctor[f[+_], n[+_]](implicit fF: Functor[f], nM: Monad[n]): Functor[({type L[+a] = FreeT[f, n, a]})#L] = new Functor[({type L[+a] = FreeT[f, n, a]})#L] {
         private type g[+a] = FreeT[f, n, a]
         override def fmap[a, b](g: a => b): g[a] => g[b] = conj { nM.fmap(editEither(g)(fF.fmap(p => fmap(g)(p)))) }
     }
 
-    implicit def _asMonadTrans[f[+_], n[+_]]: MonadTrans[apply1[f]#monadTrans] = new MonadTrans[apply1[f]#monadTrans] {
+    implicit def _asMonadTrans[f[+_]]: MonadTrans[({type L[n[+_], +a] = FreeT[f, n, a]})#L] = new MonadTrans[({type L[n[+_], +a] = FreeT[f, n, a]})#L] {
         private type t[n[+_], +a] = FreeT[f, n, a]
         override def lift[n[+_], a](n: n[a])(implicit i: Monad[n]): t[n, a] = FreeT {
             import i.`for`
@@ -83,7 +83,7 @@ private[ken] sealed trait FreeTAs0 { this: FreeT.type =>
 }
 
 private[ken] sealed trait FreeTAs extends FreeTAs0 { this: FreeT.type =>
-    implicit def _asTraversable[g[+_], n[+_]](implicit nT: Traversable[n], gT: Traversable[g]): Traversable[apply2[g, n]#apply1] = new Traversable[apply2[g, n]#apply1] {
+    implicit def _asTraversable[g[+_], n[+_]](implicit nT: Traversable[n], gT: Traversable[g]): Traversable[({type L[+a] = FreeT[g, n, a]})#L] = new Traversable[({type L[+a] = FreeT[g, n, a]})#L] {
         private type t[+a] = FreeT[g, n, a]
         override def traverse[f[+_], a, b](f: a => f[b])(t: t[a])(implicit fA: Applicative[f]): f[t[b]] = {
             import fA.`for`
@@ -95,7 +95,7 @@ private[ken] sealed trait FreeTAs extends FreeTAs0 { this: FreeT.type =>
         }
     }
 
-    implicit def _asMonadFree[f[+_], n[+_]](implicit fF: Functor[f], nM: Monad[n]): MonadFree[f, apply2[f, n]#apply1] = new MonadFree[f, apply2[f, n]#apply1] with FunctorProxy[apply2[f, n]#apply1] {
+    implicit def _asMonadFree[f[+_], n[+_]](implicit fF: Functor[f], nM: Monad[n]): MonadFree[f, ({type L[+a] = FreeT[f, n, a]})#L] = new MonadFree[f, ({type L[+a] = FreeT[f, n, a]})#L] with FunctorProxy[({type L[+a] = FreeT[f, n, a]})#L] {
         override val selfFunctor = _asFunctor(fF, nM)
         // Monad
         private type m[+a] = FreeT[f, n, a]
@@ -116,7 +116,7 @@ private[ken] sealed trait FreeTAs extends FreeTAs0 { this: FreeT.type =>
         }
         // MonadFree
         override val functor: Functor[f] = fF
-        override def free[a, b](m: m[a]): m[Either[a, f[m[a]]]] = _asMonadTrans[f, m].lift(run(m))
+        override def free[a, b](m: m[a]): m[Either[a, f[m[a]]]] = _asMonadTrans[f].lift(run(m))
         override def wrap[a](f: f[m[a]]): m[a] = FreeT(nM.`return`(Right(f)))
     }
 }

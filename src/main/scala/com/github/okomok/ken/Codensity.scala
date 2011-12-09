@@ -19,9 +19,9 @@ trait Codensity[n[+_], +a] {
 
 
 object Codensity extends CodensityAs with MonadTrans[Codensity] with Kind.FunctionLike with ThisIsInstance {
-    trait apply[n[+_]] extends apply1[n]
-    trait apply1[n[+_]] extends Kind.Function1 {
-        override type apply1[+a] = Codensity[n, a]
+    trait apply[n <: Kind.Function1] extends apply1[n]
+    trait apply1[n <: Kind.Function1] extends Kind.Function1 {
+        override type apply1[+a] = Codensity[n#apply1, a]
     }
 
     def rep[n[+_], a](n: n[a])(implicit nM: Monad[n]): Codensity[n, a] = new Codensity[n, a] {
@@ -38,7 +38,7 @@ object Codensity extends CodensityAs with MonadTrans[Codensity] with Kind.Functi
 }
 
 private[ken] sealed trait CodensityAs0 { this: Codensity.type =>
-    implicit def _asFunctor[n[+_]]: Functor[apply1[n]#apply1] = new Functor[apply1[n]#apply1] {
+    implicit def _asFunctor[n[+_]]: Functor[({type L[+a] = Codensity[n, a]})#L] = new Functor[({type L[+a] = Codensity[n, a]})#L] {
         private type f[+a] = Codensity[n, a]
         override def fmap[a, b](f: a => b): f[a] => f[b] = m => new Codensity[n, b] {
             override def apply[r](h: b => n[r]): n[r] = m(h `.` f)
@@ -47,7 +47,7 @@ private[ken] sealed trait CodensityAs0 { this: Codensity.type =>
 }
 
 private[ken] sealed trait CodensityAs1 extends CodensityAs0 { this: Codensity.type =>
-    implicit def _asMonad[n[+_]]: Monad[apply1[n]#apply1] = new Monad[apply1[n]#apply1] with FunctorProxy[apply1[n]#apply1] {
+    implicit def _asMonad[n[+_]]: Monad[({type L[+a] = Codensity[n, a]})#L] = new Monad[({type L[+a] = Codensity[n, a]})#L] with FunctorProxy[({type L[+a] = Codensity[n, a]})#L] {
         private type m[+a] = Codensity[n, a]
         override val selfFunctor = _asFunctor[n]
         override def `return`[a](x: Lazy[a]): m[a] = new Codensity[n, a] {
@@ -60,7 +60,7 @@ private[ken] sealed trait CodensityAs1 extends CodensityAs0 { this: Codensity.ty
 }
 
 private[ken] sealed trait CodensityAs2 extends CodensityAs1 { this: Codensity.type =>
-    implicit def _asMonadPlus[n[+_]](implicit nM: MonadPlus[n]): MonadPlus[apply1[n]#apply1] = new MonadPlus[apply1[n]#apply1] with MonadProxy[apply1[n]#apply1] {
+    implicit def _asMonadPlus[n[+_]](implicit nM: MonadPlus[n]): MonadPlus[({type L[+a] = Codensity[n, a]})#L] = new MonadPlus[({type L[+a] = Codensity[n, a]})#L] with MonadProxy[({type L[+a] = Codensity[n, a]})#L] {
         private type m[+a] = Codensity[n, a]
         override val selfMonad = _asMonad[n]
         override val mzero: m[Nothing] = rep(nM.mzero)
@@ -69,7 +69,7 @@ private[ken] sealed trait CodensityAs2 extends CodensityAs1 { this: Codensity.ty
 }
 
 private[ken] sealed trait CodensityAs extends CodensityAs2 { this: Codensity.type =>
-    implicit def _asMonadFree[f[+_], n[+_]](implicit fF: Functor[f], nM: MonadFree[f, n]): MonadFree[f, apply1[n]#apply1] = new MonadFree[f, apply1[n]#apply1] with MonadProxy[apply1[n]#apply1] {
+    implicit def _asMonadFree[f[+_], n[+_]](implicit fF: Functor[f], nM: MonadFree[f, n]): MonadFree[f, ({type L[+a] = Codensity[n, a]})#L] = new MonadFree[f, ({type L[+a] = Codensity[n, a]})#L] with MonadProxy[({type L[+a] = Codensity[n, a]})#L] {
         private type m[+a] = Codensity[n, a]
         override val selfMonad = _asMonad[n]
         override val functor: Functor[f] = fF

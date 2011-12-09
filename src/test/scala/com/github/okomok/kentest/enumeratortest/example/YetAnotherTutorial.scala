@@ -15,7 +15,7 @@ import Enumerator._
 class YetAnotherTutorialTest extends org.scalatest.junit.JUnit3Suite {
 
     def sum6[m[+_]](implicit in: Monad[m]): Iteratee[Int, m, Int] = {
-        val itm = Monad[Iteratee.apply2[Int, m]]
+        val itm = Monad[Iteratee.apply2[Int, Kind.quote1[m]]]
         import itm._
         for {
             maybeNum <- head[Int, m]

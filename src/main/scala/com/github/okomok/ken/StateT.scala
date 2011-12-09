@@ -25,9 +25,9 @@ object StateT extends StateTOp with StateTAs with Kind.FunctionLike {
         override type monadTrans[n[+_], +a] = StateT[s, n, a]
     }
 
-    trait apply2[s, n[+_]] extends Kind.Newtype1 {
-        override type apply1[+a] = StateT[s, n, a]
-        override type oldtype1[+a] = s => n[(a, s)]
+    trait apply2[s, n <: Kind.Function1] extends Kind.Newtype1 {
+        override type apply1[+a] = StateT[s, n#apply1, a]
+        override type oldtype1[+a] = s => n#apply1[(a, s)]
     }
 }
 
@@ -52,7 +52,7 @@ private[ken] trait StateTOp {
 
 
 private[ken] sealed trait StateTAs0 { this: StateT.type =>
-    implicit def _asNewtype1[s, n[+_]]: Newtype1[apply2[s, n]#apply1, apply2[s, n]#oldtype1] = new Newtype1[apply2[s, n]#apply1, apply2[s, n]#oldtype1] {
+    implicit def _asNewtype1[s, n[+_]]: Newtype1[({type L[+a] = StateT[s, n, a]})#L, ({type L[+a] = s => n[(a, s)]})#L] = new Newtype1[({type L[+a] = StateT[s, n, a]})#L, ({type L[+a] = s => n[(a, s)]})#L] {
         private type nt[+a] = StateT[s, n, a]
         private type ot[+a] = s => n[(a, s)]
         override def newOf[a](ot: Lazy[ot[a]]): nt[a] = StateT(ot)
@@ -80,7 +80,7 @@ private[ken] sealed trait StateTAs0 { this: StateT.type =>
         }
     }
 
-    implicit def _asMonadPlus[s, n[+_]](implicit i: MonadPlus[n]): MonadPlus[apply2[s, n]#apply1] = new MonadPlus[apply2[s, n]#apply1] with MonadProxy[apply2[s, n]#apply1] {
+    implicit def _asMonadPlus[s, n[+_]](implicit i: MonadPlus[n]): MonadPlus[({type L[+a] = StateT[s, n, a]})#L] = new MonadPlus[({type L[+a] = StateT[s, n, a]})#L] with MonadProxy[({type L[+a] = StateT[s, n, a]})#L] {
         private type m[+a] = StateT[s, n, a]
         override val selfMonad = _asMonadState[s, n]
         override def mzero: m[Nothing] = StateT { _ => i.mzero }
@@ -89,7 +89,7 @@ private[ken] sealed trait StateTAs0 { this: StateT.type =>
         }
     }
 
-    implicit def _asMonadFix[s, n[+_]](implicit i: MonadFix[n]): MonadFix[apply2[s, n]#apply1] = new MonadFix[apply2[s, n]#apply1] with MonadProxy[apply2[s, n]#apply1] {
+    implicit def _asMonadFix[s, n[+_]](implicit i: MonadFix[n]): MonadFix[({type L[+a] = StateT[s, n, a]})#L] = new MonadFix[({type L[+a] = StateT[s, n, a]})#L] with MonadProxy[({type L[+a] = StateT[s, n, a]})#L] {
         private type m[+a] = StateT[s, n, a]
         override val selfMonad = _asMonadState[s, n]
         override def mfix[a](f: Lazy[a] => m[a]): m[a] = StateT { s =>
@@ -97,7 +97,7 @@ private[ken] sealed trait StateTAs0 { this: StateT.type =>
         }
     }
 
-    implicit def _asMonadCont[s, n[+_]](implicit i: MonadCont[n]): MonadCont[apply2[s, n]#apply1] = new MonadCont[apply2[s, n]#apply1] with MonadProxy[apply2[s, n]#apply1] {
+    implicit def _asMonadCont[s, n[+_]](implicit i: MonadCont[n]): MonadCont[({type L[+a] = StateT[s, n, a]})#L] = new MonadCont[({type L[+a] = StateT[s, n, a]})#L] with MonadProxy[({type L[+a] = StateT[s, n, a]})#L] {
         private type m[+a] = StateT[s, n, a]
         override val selfMonad = _asMonadState[s, n]
         override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = StateT { s =>
@@ -107,7 +107,7 @@ private[ken] sealed trait StateTAs0 { this: StateT.type =>
         }
     }
 
-    implicit def _asMonadError[s, n[+_], e](implicit i: MonadError[e, n]): MonadError[e, apply2[s, n]#apply1] = new MonadError[e, apply2[s, n]#apply1] with MonadProxy[apply2[s, n]#apply1] {
+    implicit def _asMonadError[s, n[+_], e](implicit i: MonadError[e, n]): MonadError[e, ({type L[+a] = StateT[s, n, a]})#L] = new MonadError[e, ({type L[+a] = StateT[s, n, a]})#L] with MonadProxy[({type L[+a] = StateT[s, n, a]})#L] {
         private type m[+a] = StateT[s, n, a]
         override val selfMonad = _asMonadState[s, n]
         override def throwError[a](e: e): m[a] = _asMonadTrans.lift(i.throwError(e))
@@ -116,14 +116,14 @@ private[ken] sealed trait StateTAs0 { this: StateT.type =>
         }
     }
 
-    implicit def _asMonadReader[s, n[+_], r](implicit i: MonadReader[r, n]): MonadReader[r, apply2[s, n]#apply1] = new MonadReader[r, apply2[s, n]#apply1] with MonadProxy[apply2[s, n]#apply1] {
+    implicit def _asMonadReader[s, n[+_], r](implicit i: MonadReader[r, n]): MonadReader[r, ({type L[+a] = StateT[s, n, a]})#L] = new MonadReader[r, ({type L[+a] = StateT[s, n, a]})#L] with MonadProxy[({type L[+a] = StateT[s, n, a]})#L] {
         private type m[+a] = StateT[s, n, a]
         override val selfMonad = _asMonadState[s, n]
         override def ask: m[r] = _asMonadTrans.lift(i.ask)
         override def local[a](f: r => r)(m: m[a]): m[a] = StateT { s => i.local(f)(run(m)(s)) }
     }
 
-    implicit def _asMonadWriter[s, n[+_], w](implicit i: MonadWriter[w, n]): MonadWriter[w, apply2[s, n]#apply1] = new MonadWriter[w, apply2[s, n]#apply1] with MonadProxy[apply2[s, n]#apply1] {
+    implicit def _asMonadWriter[s, n[+_], w](implicit i: MonadWriter[w, n]): MonadWriter[w, ({type L[+a] = StateT[s, n, a]})#L] = new MonadWriter[w, ({type L[+a] = StateT[s, n, a]})#L] with MonadProxy[({type L[+a] = StateT[s, n, a]})#L] {
         private type m[+a] = StateT[s, n, a]
         override val selfMonad = _asMonadState[s, n]
         override def monoid: Monoid[w] = i.monoid
@@ -140,7 +140,7 @@ private[ken] sealed trait StateTAs0 { this: StateT.type =>
         }
     }
 
-    implicit def _asMonadIO[s, n[+_]](implicit i: MonadIO[n]): MonadIO[apply2[s, n]#apply1] = new MonadIO[apply2[s, n]#apply1] with MonadProxy[apply2[s, n]#apply1] {
+    implicit def _asMonadIO[s, n[+_]](implicit i: MonadIO[n]): MonadIO[({type L[+a] = StateT[s, n, a]})#L] = new MonadIO[({type L[+a] = StateT[s, n, a]})#L] with MonadProxy[({type L[+a] = StateT[s, n, a]})#L] {
         private type m[+a] = StateT[s, n, a]
         override val selfMonad = _asMonadState[s, n]
         override def liftIO[a](io: IO[a]): m[a] = _asMonadTrans.lift(i.liftIO(io))
@@ -149,7 +149,7 @@ private[ken] sealed trait StateTAs0 { this: StateT.type =>
 
 @Annotation.compilerWorkaround("2.9.1") // ambiguous with `_asMonadIO` for some reason.
 private[ken] sealed trait StateTAs1 extends StateTAs0 { this: StateT.type =>
-    implicit def _asMonadControlIO[s, n[+_]](implicit i: MonadControlIO[n]): MonadControlIO[apply2[s, n]#apply1] = new MonadControlIO[apply2[s, n]#apply1] with MonadIOProxy[apply2[s, n]#apply1] {
+    implicit def _asMonadControlIO[s, n[+_]](implicit i: MonadControlIO[n]): MonadControlIO[({type L[+a] = StateT[s, n, a]})#L] = new MonadControlIO[({type L[+a] = StateT[s, n, a]})#L] with MonadIOProxy[({type L[+a] = StateT[s, n, a]})#L] {
         private type m[+a] = StateT[s, n, a]
         private val mt = _asMonadTrans[s]
         override val selfMonadIO = _asMonadIO[s, n]
@@ -169,7 +169,7 @@ private[ken] sealed trait StateTAs1 extends StateTAs0 { this: StateT.type =>
 }
 
 private[ken] sealed trait StateTAs extends StateTAs1 { this: StateT.type =>
-    implicit def _asMonadState[s, n[+_]](implicit i: Monad[n]): MonadState[s, apply2[s, n]#apply1] = new MonadState[s, apply2[s, n]#apply1] {
+    implicit def _asMonadState[s, n[+_]](implicit i: Monad[n]): MonadState[s, ({type L[+a] = StateT[s, n, a]})#L] = new MonadState[s, ({type L[+a] = StateT[s, n, a]})#L] {
         // Functor
         private type f[+a] = StateT[s, n, a]
         override def fmap[a, b](f: a => b): f[a] => f[b] = m => StateT { s =>

@@ -102,7 +102,7 @@ class MaybeTest extends org.scalatest.junit.JUnit3Suite {
 
     def testStrongMonadT2 {
 
-        val m = MonadPlus[MaybeT.apply[IO]]
+        val m = MonadPlus[MaybeT.apply[IO.type]]
         import m._
 
         val mt = MonadTrans[MaybeT.type]

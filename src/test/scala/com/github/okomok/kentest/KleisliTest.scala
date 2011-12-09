@@ -13,9 +13,9 @@ import com.github.okomok.ken._
 class KleisliTest extends org.scalatest.junit.JUnit3Suite {
 
     def testTrivial {
-        Arrow[Kleisli.apply[WeakIdentity.apply]] // not ambiguous
+        Arrow[Kleisli.apply[WeakIdentity.type]] // not ambiguous
 
-        val a = ArrowApply[Kleisli.apply[WeakIdentity.apply]]
+        val a = ArrowApply[Kleisli.apply[WeakIdentity.type]]
         Monad[ArrowMonad.apply[a.apply2]]
     }
 }

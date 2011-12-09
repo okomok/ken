@@ -18,14 +18,14 @@ final case class Cokleisli[w[+_], -a, +b](override val old: w[a] => b) extends N
 
 
 object Cokleisli extends CokleisliOp with CokleisliAs with Kind.FunctionLike {
-    trait apply[w[+_]] extends apply1[w]
-    trait apply1[w[+_]] extends Kind.Newtype2 {
-        override type apply2[-a, +b] = Cokleisli[w, a, b]
-        override type oldtype2[-a, +b] = w[a] => b
+    trait apply[w <: Kind.Function1] extends apply1[w]
+    trait apply1[w <: Kind.Function1] extends Kind.Newtype2 {
+        override type apply2[-a, +b] = Cokleisli[w#apply1, a, b]
+        override type oldtype2[-a, +b] = w#apply1[a] => b
     }
 
-    trait apply2[w[+_], a] extends Kind.Function1 {
-        override type apply1[+b] = Cokleisli[w, a, b]
+    trait apply2[w <: Kind.Function1, a] extends Kind.Function1 {
+        override type apply1[+b] = Cokleisli[w#apply1, a, b]
     }
 }
 
@@ -37,14 +37,14 @@ private[ken] sealed trait CokleisliOp { this: Cokleisli.type =>
 
 private[ken] sealed trait CokleisliAs { this: Cokleisli.type =>
 /*
-    implicit def _asNewtype2[w[+_]]: Newtype2[apply1[w]#apply2, ({type ot[-a, +b] = w[a] => b})#ot] = new Newtype2[apply1[w]#apply2, ({type ot[-a, +b] = w[a] => b})#ot] {
+    implicit def _asNewtype2[w[+_]]: Newtype2[({type L[-a, +b] = Cokleisli[w, a, b]})#L, ({type ot[-a, +b] = w[a] => b})#ot] = new Newtype2[({type L[-a, +b] = Cokleisli[w, a, b]})#L, ({type ot[-a, +b] = w[a] => b})#ot] {
         private type nt[-a, +b] = Cokleisli[w, a, b]
         private type ot[-a, +b] = w[a] => b
         override def newOf[a, b](ot: Lazy[ot[a, b]]): nt[a, b] = Cokleisli(ot)
         override def oldOf[a, b](nt: Lazy[nt[a, b]]): ot[a, b] = nt.run
     }
 */
-    implicit def _asArrow[w[+_]](implicit i: Comonad[w]): ArrowApply[apply1[w]#apply2] with ArrowChoice[apply1[w]#apply2] = new ArrowApply[apply1[w]#apply2] with ArrowChoice[apply1[w]#apply2] {
+    implicit def _asArrow[w[+_]](implicit i: Comonad[w]): ArrowApply[({type L[-a, +b] = Cokleisli[w, a, b]})#L] with ArrowChoice[({type L[-a, +b] = Cokleisli[w, a, b]})#L] = new ArrowApply[({type L[-a, +b] = Cokleisli[w, a, b]})#L] with ArrowChoice[({type L[-a, +b] = Cokleisli[w, a, b]})#L] {
         // Category
         private type cat[-a, +b] = Cokleisli[w, a, b]
         override def cid[a]: cat[a, a] = Cokleisli { (w: w[a]) => i.extract(w) }
@@ -76,7 +76,7 @@ private[ken] sealed trait CokleisliAs { this: Cokleisli.type =>
         override def left[b, c, d](f: a[b, c], * : Type[d] = null): a[Either[b, d], Either[c, d]] = leftApp(f, *)
     }
 
-    implicit def _asMonad[w[+_], z]: Monad[apply2[w, z]#apply1] = new Monad[apply2[w, z]#apply1] {
+    implicit def _asMonad[w[+_], z]: Monad[({type L[+a] = Cokleisli[w, z, a]})#L] = new Monad[({type L[+a] = Cokleisli[w, z, a]})#L] {
         // Functor
         private type f[+a] = Cokleisli[w, z, a]
         override def fmap[a, b](f: a => b): f[a] => f[b] = g => Cokleisli { f `.` g.run }

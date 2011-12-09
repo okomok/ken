@@ -23,9 +23,9 @@ object ErrorT extends ErrorTOp with ErrorTAs with Kind.FunctionLike {
         override type monadTrans[n[+_], +a] = ErrorT[e, n, a]
     }
 
-    trait apply2[e, n[+_]] extends Kind.Newtype1 {
-        override type apply1[+a] = ErrorT[e, n, a]
-        override type oldtype1[+a] = n[Either[e, a]]
+    trait apply2[e, n <: Kind.Function1] extends Kind.Newtype1 {
+        override type apply1[+a] = ErrorT[e, n#apply1, a]
+        override type oldtype1[+a] = n#apply1[Either[e, a]]
     }
 }
 
@@ -41,7 +41,7 @@ private[ken] sealed trait ErrorTAs0 { this: ErrorT.type =>
 /*
     // No longer works...
     @Annotation.typeAliasWorkaround
-    implicit def _asNewtype1[e, n[+_]]: Newtype1[apply2[e, n]#apply1, apply2[e, n]#oldtype1] = new Newtype1[apply2[e, n]#apply1, apply2[e, n]#oldtype1] {
+    implicit def _asNewtype1[e, n[+_]]: Newtype1[({type L[+a] = ErrorT[e, n, a]})#L, apply2[e, n]#oldtype1] = new Newtype1[({type L[+a] = ErrorT[e, n, a]})#L, apply2[e, n]#oldtype1] {
         // private type nt[+a] = ErrorT[e, n, a]
         // private type ot[+a] = n[Either[e, a]]
         override def newOf[a](ot: Lazy[n[Either[e, a]]]): ErrorT[e, n, a] = ErrorT(ot)
@@ -70,7 +70,7 @@ private[ken] sealed trait ErrorTAs0 { this: ErrorT.type =>
         }
     }
 
-    implicit def _asMonadFix[e, n[+_]](implicit i: MonadFix[n]): MonadFix[apply2[e, n]#apply1] = new MonadFix[apply2[e, n]#apply1] with MonadProxy[apply2[e, n]#apply1] {
+    implicit def _asMonadFix[e, n[+_]](implicit i: MonadFix[n]): MonadFix[({type L[+a] = ErrorT[e, n, a]})#L] = new MonadFix[({type L[+a] = ErrorT[e, n, a]})#L] with MonadProxy[({type L[+a] = ErrorT[e, n, a]})#L] {
         private type m[+a] = ErrorT[e, n, a]
         override val selfMonad = _asMonadError[e, n]
         override def mfix[a](f: Lazy[a] => m[a]): m[a] = ErrorT {
@@ -82,7 +82,7 @@ private[ken] sealed trait ErrorTAs0 { this: ErrorT.type =>
         }
     }
 
-    implicit def _asMonadCont[e, n[+_]](implicit i: MonadCont[n]): MonadCont[apply2[e, n]#apply1] = new MonadCont[apply2[e, n]#apply1] with MonadProxy[apply2[e, n]#apply1] {
+    implicit def _asMonadCont[e, n[+_]](implicit i: MonadCont[n]): MonadCont[({type L[+a] = ErrorT[e, n, a]})#L] = new MonadCont[({type L[+a] = ErrorT[e, n, a]})#L] with MonadProxy[({type L[+a] = ErrorT[e, n, a]})#L] {
         private type m[+a] = ErrorT[e, n, a]
         override val selfMonad = _asMonadError[e, n]
         override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = ErrorT {
@@ -92,7 +92,7 @@ private[ken] sealed trait ErrorTAs0 { this: ErrorT.type =>
         }
     }
 
-    implicit def _asMonadState[e, n[+_], s](implicit i: MonadState[s, n]): MonadState[s, apply2[e, n]#apply1] = new MonadState[s, apply2[e, n]#apply1] with MonadProxy[apply2[e, n]#apply1] {
+    implicit def _asMonadState[e, n[+_], s](implicit i: MonadState[s, n]): MonadState[s, ({type L[+a] = ErrorT[e, n, a]})#L] = new MonadState[s, ({type L[+a] = ErrorT[e, n, a]})#L] with MonadProxy[({type L[+a] = ErrorT[e, n, a]})#L] {
         private type m[+a] = ErrorT[e, n, a]
         private val mt = _asMonadTrans[e, n]
         override val selfMonad = _asMonadError[e, n]
@@ -100,14 +100,14 @@ private[ken] sealed trait ErrorTAs0 { this: ErrorT.type =>
         override def put(s: s): m[Unit] = mt.lift(i.put(s))
     }
 
-    implicit def _asMonadReader[e, n[+_], r](implicit i: MonadReader[r, n]): MonadReader[r, apply2[e, n]#apply1] = new MonadReader[r, apply2[e, n]#apply1] with MonadProxy[apply2[e, n]#apply1] {
+    implicit def _asMonadReader[e, n[+_], r](implicit i: MonadReader[r, n]): MonadReader[r, ({type L[+a] = ErrorT[e, n, a]})#L] = new MonadReader[r, ({type L[+a] = ErrorT[e, n, a]})#L] with MonadProxy[({type L[+a] = ErrorT[e, n, a]})#L] {
         private type m[+a] = ErrorT[e, n, a]
         override val selfMonad = _asMonadError[e, n]
         override def ask: m[r] = _asMonadTrans.lift(i.ask)
         override def local[a](f: r => r)(m: m[a]): m[a] = ErrorT { i.local(f)(run(m)) }
     }
 
-    implicit def _asMonadWriter[e, n[+_], w](implicit i: MonadWriter[w, n]): MonadWriter[w, apply2[e, n]#apply1] = new MonadWriter[w, apply2[e, n]#apply1] with MonadProxy[apply2[e, n]#apply1] {
+    implicit def _asMonadWriter[e, n[+_], w](implicit i: MonadWriter[w, n]): MonadWriter[w, ({type L[+a] = ErrorT[e, n, a]})#L] = new MonadWriter[w, ({type L[+a] = ErrorT[e, n, a]})#L] with MonadProxy[({type L[+a] = ErrorT[e, n, a]})#L] {
         private type m[+a] = ErrorT[e, n, a]
         override val selfMonad = _asMonadError[e, n]
         override def monoid: Monoid[w] = i.monoid
@@ -138,7 +138,7 @@ private[ken] sealed trait ErrorTAs0 { this: ErrorT.type =>
         }
     }
 
-    implicit def _asMonadPlus[e, n[+_]](implicit i: Monad[n], j: ErrorClass[e]): MonadPlus[apply2[e, n]#apply1] = new MonadPlus[apply2[e, n]#apply1] with MonadProxy[apply2[e, n]#apply1] {
+    implicit def _asMonadPlus[e, n[+_]](implicit i: Monad[n], j: ErrorClass[e]): MonadPlus[({type L[+a] = ErrorT[e, n, a]})#L] = new MonadPlus[({type L[+a] = ErrorT[e, n, a]})#L] with MonadProxy[({type L[+a] = ErrorT[e, n, a]})#L] {
         private type m[+a] = ErrorT[e, n, a]
         override val selfMonad = _asMonadError[e, n]
         override def mzero: m[Nothing] = ErrorT { i.`return`(Left(j.noMsg)) }
@@ -155,7 +155,7 @@ private[ken] sealed trait ErrorTAs0 { this: ErrorT.type =>
         }
     }
 
-    implicit def _asMonadIO[e, n[+_]](implicit i: MonadIO[n]): MonadIO[apply2[e, n]#apply1] = new MonadIO[apply2[e, n]#apply1] with MonadProxy[apply2[e, n]#apply1] {
+    implicit def _asMonadIO[e, n[+_]](implicit i: MonadIO[n]): MonadIO[({type L[+a] = ErrorT[e, n, a]})#L] = new MonadIO[({type L[+a] = ErrorT[e, n, a]})#L] with MonadProxy[({type L[+a] = ErrorT[e, n, a]})#L] {
         private type m[+a] = ErrorT[e, n, a]
         private val mt = _asMonadTrans[e, n]
         override val selfMonad = _asMonadError[e, n]
@@ -166,7 +166,7 @@ private[ken] sealed trait ErrorTAs0 { this: ErrorT.type =>
 @Annotation.compilerWorkaround("2.9.1") // ambiguous with `_asMonadIO` for some reason.
 private[ken] sealed trait ErrorTAs1 extends ErrorTAs0 { this: ErrorT.type =>
     @Annotation.compilerWorkaround("2.9.1") // `e` instead of `e_` confuses scalac.
-    implicit def _asMonadControlIO[e_, n[+_]](implicit i: MonadControlIO[n]): MonadControlIO[apply2[e_, n]#apply1] = new MonadControlIO[apply2[e_, n]#apply1] with MonadIOProxy[apply2[e_, n]#apply1] {
+    implicit def _asMonadControlIO[e_, n[+_]](implicit i: MonadControlIO[n]): MonadControlIO[({type L[+a] = ErrorT[e_, n, a]})#L] = new MonadControlIO[({type L[+a] = ErrorT[e_, n, a]})#L] with MonadIOProxy[({type L[+a] = ErrorT[e_, n, a]})#L] {
         private type m[+a] = ErrorT[e_, n, a]
         private val mt = _asMonadTrans[e_, n]
         override val selfMonadIO = _asMonadIO[e_, n]
@@ -185,7 +185,7 @@ private[ken] sealed trait ErrorTAs1 extends ErrorTAs0 { this: ErrorT.type =>
 }
 
 private[ken] sealed trait ErrorTAs extends ErrorTAs1 { this: ErrorT.type =>
-    implicit def _asMonadError[e, n[+_]](implicit i: Monad[n]): MonadError[e, apply2[e, n]#apply1] = new MonadError[e, apply2[e, n]#apply1] {
+    implicit def _asMonadError[e, n[+_]](implicit i: Monad[n]): MonadError[e, ({type L[+a] = ErrorT[e, n, a]})#L] = new MonadError[e, ({type L[+a] = ErrorT[e, n, a]})#L] {
         // Functor
         private type f[+a] = ErrorT[e, n, a]
         override def fmap[a, b](f: a => b): f[a] => f[b] = m => ErrorT {

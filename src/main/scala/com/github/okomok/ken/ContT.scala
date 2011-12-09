@@ -25,9 +25,9 @@ object ContT extends ContTOp with ContTAs with Kind.FunctionLike {
         override type monadTrans[n[+_], +a] = ContT[r, n, a]
     }
 
-    trait apply2[r, n[+_]] extends Kind.Newtype1 {
-        override type apply1[+a] = ContT[r, n, a]
-        override type oldtype1[+a] = r => n[a]
+    trait apply2[r, n <: Kind.Function1] extends Kind.Newtype1 {
+        override type apply1[+a] = ContT[r, n#apply1, a]
+        override type oldtype1[+a] = r => n#apply1[a]
     }
 }
 
@@ -48,7 +48,7 @@ private[ken] sealed trait ContTAs0 { this: ContT.type =>
         override def lift[n[+_], a](n: n[a])(implicit i: Monad[n]): t[n, a] = ContT { c => i.op_>>=(n)(c) }
     }
 
-    implicit def _asMonadReader[r, n[+_], r_](implicit i: MonadReader[r_, n]): MonadReader[r_, apply2[r, n]#apply1] = new MonadReader[r_, apply2[r, n]#apply1] with MonadProxy[apply2[r, n]#apply1] {
+    implicit def _asMonadReader[r, n[+_], r_](implicit i: MonadReader[r_, n]): MonadReader[r_, ({type L[+a] = ContT[r, n, a]})#L] = new MonadReader[r_, ({type L[+a] = ContT[r, n, a]})#L] with MonadProxy[({type L[+a] = ContT[r, n, a]})#L] {
         private type m[+a] = ContT[r, n, a]
         override val selfMonad = _asMonadCont[r, n]
         override def ask: m[r_] = _asMonadTrans[r].lift(i.ask)
@@ -62,7 +62,7 @@ private[ken] sealed trait ContTAs0 { this: ContT.type =>
         }
     }
 
-    implicit def _asMonadState[r, n[+_], s](implicit i: MonadState[s, n]): MonadState[s, apply2[r, n]#apply1] = new MonadState[s, apply2[r, n]#apply1] with MonadProxy[apply2[r, n]#apply1] {
+    implicit def _asMonadState[r, n[+_], s](implicit i: MonadState[s, n]): MonadState[s, ({type L[+a] = ContT[r, n, a]})#L] = new MonadState[s, ({type L[+a] = ContT[r, n, a]})#L] with MonadProxy[({type L[+a] = ContT[r, n, a]})#L] {
         private type m[+a] = ContT[r, n, a]
         private val mt = _asMonadTrans[r]
         override val selfMonad = _asMonadCont[r, n]
@@ -70,7 +70,7 @@ private[ken] sealed trait ContTAs0 { this: ContT.type =>
         override def put(s: s): m[Unit] = mt.lift(i.put(s))
     }
 
-    implicit def _asMonadIO[r, n[+_]](implicit i: MonadIO[n]): MonadIO[apply2[r, n]#apply1] = new MonadIO[apply2[r, n]#apply1] with MonadProxy[apply2[r, n]#apply1] {
+    implicit def _asMonadIO[r, n[+_]](implicit i: MonadIO[n]): MonadIO[({type L[+a] = ContT[r, n, a]})#L] = new MonadIO[({type L[+a] = ContT[r, n, a]})#L] with MonadProxy[({type L[+a] = ContT[r, n, a]})#L] {
         private type m[+a] = ContT[r, n, a]
         private val mt = _asMonadTrans[r]
         override val selfMonad = _asMonadCont[r, n]
@@ -80,7 +80,7 @@ private[ken] sealed trait ContTAs0 { this: ContT.type =>
 
 
 private[ken] sealed trait ContTAs extends ContTAs0 { this: ContT.type =>
-    implicit def _asMonadCont[r, n[+_]](implicit i: Monad[n]): MonadCont[apply2[r, n]#apply1] = new MonadCont[apply2[r, n]#apply1] {
+    implicit def _asMonadCont[r, n[+_]](implicit i: Monad[n]): MonadCont[({type L[+a] = ContT[r, n, a]})#L] = new MonadCont[({type L[+a] = ContT[r, n, a]})#L] {
         // Functor
         private type f[+a] = ContT[r, n, a]
         override def fmap[a, b](f: a => b): f[a] => f[b] = m => ContT { c => run(m)(c `.` f) }

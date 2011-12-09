@@ -13,9 +13,9 @@ import com.github.okomok.ken._
 class MonadTransTest extends org.scalatest.junit.JUnit3Suite {
 
     def testGetInstance {
-        val i = MonadIO[MaybeT.apply[IO]]
+        val i = MonadIO[MaybeT.apply[IO.type]]
         val me = Monad[Error.apply[String]]
-        val j = MonadError[String, MaybeT.apply[me.apply]]
+        val j = MonadError[String, MaybeT.apply[me.type]]
     }
 /*
     Legacy
@@ -39,26 +39,26 @@ class MonadTransTest extends org.scalatest.junit.JUnit3Suite {
     }
 */
     def testImplicit {
-        MonadError[String, ErrorT.apply2[String, WeakIdentity.apply]]
-        MonadError[String, ErrorT.apply2[String, IO]]
-        MonadIO[ListT.apply[IO]]
-        MonadIO[ErrorT.apply2[String, IO]]
-        MonadIO[ReaderT.apply2[String, IO]]
-        MonadIO[ContT.apply2[String, IO]]
-        MonadIO[StateT.apply2[Int, IO]]
-        MonadIO[WriterT.apply2[Monoid.All, IO]]
+        MonadError[String, ErrorT.apply2[String, WeakIdentity.type]]
+        MonadError[String, ErrorT.apply2[String, IO.type]]
+        MonadIO[ListT.apply[IO.type]]
+        MonadIO[ErrorT.apply2[String, IO.type]]
+        MonadIO[ReaderT.apply2[String, IO.type]]
+        MonadIO[ContT.apply2[String, IO.type]]
+        MonadIO[StateT.apply2[Int, IO.type]]
+        MonadIO[WriterT.apply2[Monoid.All, IO.type]]
 
-        Monad[ErrorT.apply2[String, WeakIdentity.apply]]
-        Monad[ErrorT.apply2[String, IO]]
-        Monad[ListT.apply[IO]]
-        Monad[ErrorT.apply2[String, IO]]
-        Monad[ReaderT.apply2[String, IO]]
-        Monad[ContT.apply2[String, IO]]
-        Monad[StateT.apply2[Int, IO]]
-        Monad[WriterT.apply2[Monoid.All, IO]]
+        Monad[ErrorT.apply2[String, WeakIdentity.type]]
+        Monad[ErrorT.apply2[String, IO.type]]
+        Monad[ListT.apply[IO.type]]
+        Monad[ErrorT.apply2[String, IO.type]]
+        Monad[ReaderT.apply2[String, IO.type]]
+        Monad[ContT.apply2[String, IO.type]]
+        Monad[StateT.apply2[Int, IO.type]]
+        Monad[WriterT.apply2[Monoid.All, IO.type]]
 
         val wr = MonadWriter[Monoid.All, Writer.apply[Monoid.All]]
-        MonadWriter[Monoid.All, ErrorT.apply2[String, wr.apply]]
+        MonadWriter[Monoid.All, ErrorT.apply2[String, wr.type]]
     }
 
     def testControlInstance {

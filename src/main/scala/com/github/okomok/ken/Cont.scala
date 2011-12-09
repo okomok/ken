@@ -20,7 +20,7 @@ package ken
 @Annotation.compilerWorkaround("2.9.1", 5031)
 object _Cont extends ContTOp with Kind.FunctionLike {
     trait apply[r] extends apply1[r]
-    trait apply1[r] extends ContT.apply2[r, WeakIdentity.apply]
+    trait apply1[r] extends ContT.apply2[r, WeakIdentity.type]
 
     def apply[r, a](n: (a => r) => r): Cont[r, a] = new ContT[r, WeakIdentity.apply, a](n)
     def unapply[r, a](m: Cont[r, a]): Option[(a => r) => r] = Some(m.run)

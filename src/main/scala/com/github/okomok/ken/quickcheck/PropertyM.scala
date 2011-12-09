@@ -19,12 +19,12 @@ final case class PropertyM[n[+_], +a](override val old: (a => Gen[n[Property]]) 
 
 
 object PropertyM extends Kind.FunctionLike {
-    trait apply[n[+_]] extends apply1[n]
-    trait apply1[n[+_]] extends Kind.Function1 {
-        override type apply1[+a] = PropertyM[n, a]
+    trait apply[n <: Kind.Function1] extends apply1[n]
+    trait apply1[n <: Kind.Function1] extends Kind.Function1 {
+        override type apply1[+a] = PropertyM[n#apply1, a]
     }
 
-    implicit def _asMonad[n[+_]]: Monad[apply1[n]#apply1] = new Monad[apply1[n]#apply1] {
+    implicit def _asMonad[n[+_]]: Monad[({type L[+a] = PropertyM[n, a]})#L] = new Monad[({type L[+a] = PropertyM[n, a]})#L] {
         // Functor
         private type f[+a] = PropertyM[n, a]
         override def fmap[a, b](f: a => b): f[a] => f[b] = m => PropertyM(k => (m.old)(k `.` f))
@@ -60,13 +60,13 @@ object PropertyM extends Kind.FunctionLike {
     }
 
     def wp[n[+_], a, b](n: n[a])(k: (a => PropertyM[n, b]))(implicit i: Monad[n]): PropertyM[n, b] = {
-        val pm = Monad[apply1[n]]
+        val pm = Monad[apply1[Kind.quote1[n]]]
         import pm.>>=
         run(n) >>= k
     }
 
     def forAllM[n[+_], a, b](gen: Gen[a])(k: a => PropertyM[n, b])(implicit i: Monad[n], j: Show[a]): PropertyM[n, b] = {
-        val pm = Monad[apply1[n]]
+        val pm = Monad[apply1[Kind.quote1[n]]]
         import pm.>>=
         pick(gen) >>= k
     }

@@ -15,18 +15,18 @@ class MonadFreeTest extends org.scalatest.junit.JUnit3Suite {
     def testFreeT {
         FreeT._asMonadFree[Identity, Identity]
         Functor[Function.apply[Int]]
-        MonadFree[Identity.type, FreeT.apply2[Identity, Identity]]
-        Functor[FreeT.apply2[Identity, Identity]]
-//        MonadFree[Function.apply[Int], FreeT.apply2[Identity, Identity]] // `f` isn't binded, so that lookup fails.
+        MonadFree[Identity.type, FreeT.apply2[Identity.type, Identity.type]]
+        Functor[FreeT.apply2[Identity.type, Identity.type]]
+//        MonadFree[Function.apply[Int], FreeT.apply2[Identity.type, Identity.type]] // `f` isn't binded, so that lookup fails.
     }
 
     def testFree {
-        MonadFree[Identity.type, Free.apply[Identity]]
-        Functor[Free.apply[Identity]]
+        MonadFree[Identity.type, Free.apply[Identity.type]]
+        Functor[Free.apply[Identity.type]]
     }
 
     def testCodensity {
-        Monad[Codensity.apply[Identity]]
-        Functor[Codensity.apply[Identity]]
+        Monad[Codensity.apply[Identity.type]]
+        Functor[Codensity.apply[Identity.type]]
     }
 }

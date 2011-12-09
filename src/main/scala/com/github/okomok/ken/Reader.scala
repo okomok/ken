@@ -20,7 +20,7 @@ package ken
 @Annotation.compilerWorkaround("2.9.1", 5031)
 object _Reader extends ReaderTOp with Kind.FunctionLike {
     trait apply[r] extends apply1[r]
-    trait apply1[r] extends ReaderT.apply2[r, WeakIdentity.apply]
+    trait apply1[r] extends ReaderT.apply2[r, WeakIdentity.type]
 
     def apply[r, a](n: r => a): Reader[r, a] = new ReaderT[r, WeakIdentity.apply, a](n)
     def unapply[r, a](m: Reader[r, a]): Option[r => a] = Some(m.run)

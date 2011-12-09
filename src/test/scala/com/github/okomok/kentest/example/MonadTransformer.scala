@@ -18,7 +18,7 @@ class MonadTransformerTezt { // extends org.scalatest.junit.JUnit3Suite {
     // Strongly-typed monad; Haskell way.
     def testStrongMonadT {
         // Pull the monad explicitly.
-        val m = MonadPlus[MaybeT.apply[IO]]
+        val m = MonadPlus[MaybeT.apply[IO.type]]
         import m._
 
         val mt = MonadTrans[MaybeT.type]

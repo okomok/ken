@@ -20,7 +20,7 @@ package ken
 @Annotation.compilerWorkaround("2.9.1", 5031)
 object _Writer extends WriterTOp with Kind.FunctionLike {
     trait apply[w] extends apply1[w]
-    trait apply1[w] extends WriterT.apply2[w, WeakIdentity.apply]
+    trait apply1[w] extends WriterT.apply2[w, WeakIdentity.type]
 
     def apply[w, a](n: (a, w)): Writer[w, a] = new WriterT[w, WeakIdentity.apply, a](n)
     def unapply[w, a](m: Writer[w, a]): Option[(a, w)] = Some(m.run)

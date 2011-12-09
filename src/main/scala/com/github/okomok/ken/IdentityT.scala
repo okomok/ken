@@ -15,10 +15,10 @@ final case class IdentityT[n[+_], +a](override val old: n[a]) extends NewtypeOf[
 
 
 object IdentityT extends IdentityTOp with IdentityTAs with MonadTransControl[IdentityT] {
-    trait apply[n[+_]] extends apply1[n]
-    trait apply1[n[+_]] extends Kind.Newtype1 {
-        override type apply1[+a] = IdentityT[n, a]
-        override type oldtype1[+a] = n[a]
+    trait apply[n <: Kind.Function1] extends apply1[n]
+    trait apply1[n <: Kind.Function1] extends Kind.Newtype1 {
+        override type apply1[+a] = IdentityT[n#apply1, a]
+        override type oldtype1[+a] = n#apply1[a]
     }
 
     // Overrides
@@ -53,14 +53,14 @@ private[ken] trait IdentityTOp {
 private[ken] sealed trait IdentityTAs0 { this: IdentityT.type =>
     implicit val _asMonadTrans: MonadTransControl[IdentityT] = this
 
-    implicit def _asMonadPlus[n[+_]](implicit i: MonadPlus[n]): MonadPlus[apply1[n]#apply1] = new MonadPlus[apply1[n]#apply1] with MonadProxy[apply1[n]#apply1] {
+    implicit def _asMonadPlus[n[+_]](implicit i: MonadPlus[n]): MonadPlus[({type L[+a] = IdentityT[n, a]})#L] = new MonadPlus[({type L[+a] = IdentityT[n, a]})#L] with MonadProxy[({type L[+a] = IdentityT[n, a]})#L] {
         private type m[+a] = IdentityT[n, a]
         override val selfMonad = _asMonad[n]
         override def mzero: m[Nothing] = IdentityT(i.mzero)
         override def mplus[a](m: m[a])(n: Lazy[m[a]]): m[a] = IdentityT { i.mplus(run(m))(Lazy(run(n.!))) }
     }
 
-    implicit def _asMonadCont[n[+_]](implicit i: MonadCont[n]): MonadCont[apply1[n]#apply1] = new MonadCont[apply1[n]#apply1] with MonadProxy[apply1[n]#apply1] {
+    implicit def _asMonadCont[n[+_]](implicit i: MonadCont[n]): MonadCont[({type L[+a] = IdentityT[n, a]})#L] = new MonadCont[({type L[+a] = IdentityT[n, a]})#L] with MonadProxy[({type L[+a] = IdentityT[n, a]})#L] {
         private type m[+a] = IdentityT[n, a]
         override val selfMonad = _asMonad[n]
         override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = IdentityT {
@@ -70,7 +70,7 @@ private[ken] sealed trait IdentityTAs0 { this: IdentityT.type =>
         }
     }
 
-    implicit def _asMonadError[n[+_], e](implicit i: MonadError[e, n]): MonadError[e, apply1[n]#apply1] = new MonadError[e, apply1[n]#apply1] with MonadProxy[apply1[n]#apply1] {
+    implicit def _asMonadError[n[+_], e](implicit i: MonadError[e, n]): MonadError[e, ({type L[+a] = IdentityT[n, a]})#L] = new MonadError[e, ({type L[+a] = IdentityT[n, a]})#L] with MonadProxy[({type L[+a] = IdentityT[n, a]})#L] {
         private type m[+a] = IdentityT[n, a]
         override val selfMonad = _asMonad[n]
         override def throwError[a](e: e): m[a] = _asMonadTrans.lift(i.throwError(e))
@@ -79,21 +79,21 @@ private[ken] sealed trait IdentityTAs0 { this: IdentityT.type =>
         }
     }
 
-    implicit def _asMonadReader[n[+_], r](implicit i: MonadReader[r, n]): MonadReader[r, apply1[n]#apply1] = new MonadReader[r, apply1[n]#apply1] with MonadProxy[apply1[n]#apply1] {
+    implicit def _asMonadReader[n[+_], r](implicit i: MonadReader[r, n]): MonadReader[r, ({type L[+a] = IdentityT[n, a]})#L] = new MonadReader[r, ({type L[+a] = IdentityT[n, a]})#L] with MonadProxy[({type L[+a] = IdentityT[n, a]})#L] {
         private type m[+a] = IdentityT[n, a]
         override val selfMonad = _asMonad[n]
         override def ask: m[r] = _asMonadTrans.lift(i.ask)
         override def local[a](f: r => r)(m: m[a]): m[a] = IdentityT { i.local(f)(run(m)) }
     }
 
-    implicit def _asMonadState[n[+_], s](implicit i: MonadState[s, n]): MonadState[s, apply1[n]#apply1] = new MonadState[s, apply1[n]#apply1] with MonadProxy[apply1[n]#apply1] {
+    implicit def _asMonadState[n[+_], s](implicit i: MonadState[s, n]): MonadState[s, ({type L[+a] = IdentityT[n, a]})#L] = new MonadState[s, ({type L[+a] = IdentityT[n, a]})#L] with MonadProxy[({type L[+a] = IdentityT[n, a]})#L] {
         private type m[+a] = IdentityT[n, a]
         override val selfMonad = _asMonad[n]
         override def get: m[s] = _asMonadTrans.lift(i.get)
         override def put(s: s): m[Unit] = _asMonadTrans.lift(i.put(s))
     }
 
-    implicit def _asMonadIO[n[+_]](implicit i: MonadIO[n]): MonadIO[apply1[n]#apply1] = new MonadIO[apply1[n]#apply1] with MonadProxy[apply1[n]#apply1] {
+    implicit def _asMonadIO[n[+_]](implicit i: MonadIO[n]): MonadIO[({type L[+a] = IdentityT[n, a]})#L] = new MonadIO[({type L[+a] = IdentityT[n, a]})#L] with MonadProxy[({type L[+a] = IdentityT[n, a]})#L] {
         private type m[+a] = IdentityT[n, a]
         override val selfMonad = _asMonad[n]
         override def liftIO[a](io: IO[a]): m[a] = _asMonadTrans.lift(i.liftIO(io))
@@ -102,7 +102,7 @@ private[ken] sealed trait IdentityTAs0 { this: IdentityT.type =>
 
 @Annotation.compilerWorkaround("2.9.1") // ambiguous with `_asMonadIO` for some reason.
 private[ken] sealed trait IdentityTAs1 extends IdentityTAs0 { this: IdentityT.type =>
-    implicit def _asMonadControlIO[n[+_]](implicit i: MonadControlIO[n]): MonadControlIO[apply1[n]#apply1] = new MonadControlIO[apply1[n]#apply1] with MonadIOProxy[apply1[n]#apply1] {
+    implicit def _asMonadControlIO[n[+_]](implicit i: MonadControlIO[n]): MonadControlIO[({type L[+a] = IdentityT[n, a]})#L] = new MonadControlIO[({type L[+a] = IdentityT[n, a]})#L] with MonadIOProxy[({type L[+a] = IdentityT[n, a]})#L] {
         private type m[+a] = IdentityT[n, a]
         private val mt = _asMonadTrans
         override val selfMonadIO = _asMonadIO[n]
@@ -122,7 +122,7 @@ private[ken] sealed trait IdentityTAs1 extends IdentityTAs0 { this: IdentityT.ty
 }
 
 private[ken] sealed trait IdentityTAs extends IdentityTAs1 { this: IdentityT.type =>
-    implicit def _asMonad[n[+_]](implicit i: Monad[n]): Monad[apply1[n]#apply1] with HighPriority = new Monad[apply1[n]#apply1] with HighPriority {
+    implicit def _asMonad[n[+_]](implicit i: Monad[n]): Monad[({type L[+a] = IdentityT[n, a]})#L] with HighPriority = new Monad[({type L[+a] = IdentityT[n, a]})#L] with HighPriority {
         // Functor
         private type f[+a] = IdentityT[n, a]
         override def fmap[a, b](f: a => b): f[a] => f[b] = m => IdentityT { i.fmap(f)(run(m)) }

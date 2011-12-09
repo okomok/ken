@@ -138,6 +138,8 @@ package object ken {
     type Id[+a] = Identity[a]
     val Id = Identity
 
+    val WeakId = WeakIdentity
+
     // Unsafe.Coerce
     //
     def unsafeCoerce[a, b](a: a, * : Type[b] = null): b = a.asInstanceOf[b]

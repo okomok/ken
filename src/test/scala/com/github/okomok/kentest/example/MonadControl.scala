@@ -20,7 +20,7 @@ class MonadControlTest extends org.scalatest.junit.JUnit3Suite {
     val MyError = List.from("my error")
 
     val mt = MonadTransControl[ErrorT.apply1[MyError]]
-    val me = MonadError[MyError, ErrorT.apply2[MyError, IO]]
+    val me = MonadError[MyError, ErrorT.apply2[MyError, IO.type]]
 
     def simple {
         val sayHi: IO[Unit] = IO.putStrLn("Hello")
@@ -56,7 +56,7 @@ class MonadControlTest extends org.scalatest.junit.JUnit3Suite {
         withMyFile { h => run(sayHiError(h), IO) }
     }
 
-    val mi = MonadControlIO[ErrorT.apply2[MyError, IO]]
+    val mi = MonadControlIO[ErrorT.apply2[MyError, IO.type]]
 
     val useMyFileError7: ErrorT[MyError, IO, Unit] = mi.controlIO { run =>
         withMyFile { h => run(sayHiError(h)) }

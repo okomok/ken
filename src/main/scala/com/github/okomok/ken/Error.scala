@@ -20,7 +20,7 @@ package ken
 @Annotation.compilerWorkaround("2.9.1", 5031)
 object _Error extends ErrorTOp with Kind.FunctionLike {
     trait apply[e] extends apply1[e]
-    trait apply1[e] extends ErrorT.apply2[e, WeakIdentity.apply]
+    trait apply1[e] extends ErrorT.apply2[e, WeakIdentity.type]
 
     def apply[e, a](n: Either[e, a]): Error[e, a] = new ErrorT[e, WeakIdentity.apply, a](n)
     def unapply[e, a](m: Error[e, a]): Option[Either[e, a]] = Some(m.run)

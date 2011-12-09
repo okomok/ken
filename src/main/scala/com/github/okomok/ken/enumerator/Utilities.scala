@@ -20,7 +20,7 @@ private[enumerator] trait Utilities { this: _Enumerator.type =>
     def concatEnums[a, n[+_], b](es: List[Enumerator[a, n, b]])(implicit im: Monad[n]): Enumerator[a, n, b] = List.foldl[Enumerator[a, n, b], Enumerator[a, n, b]](op_>==>:)(returnI)(es)
 
     def joinI[a, n[+_], a_, b](outer: Iteratee[a, n, Step[a_, n, b]])(implicit im: Monad[n]): Iteratee[a, n, b] = {
-        val m = Monad[Iteratee.apply2[a, n]]
+        val m = Monad[Iteratee.apply2[a, Kind.quote1[n]]]
         import m.{>>=, `return`}
         lazy val check: Step[a_, n, b] => Iteratee[a, n, b] = {
             case Continue(k) => k(EOF) >>== {
@@ -61,7 +61,7 @@ private[enumerator] trait Utilities { this: _Enumerator.type =>
     implicit def @=:[ao, ai, n[+_], b](enee: Enumeratee[ao, ai, n, b]): Op_@=:[ao, ai, n, b] = new Op_@=:(enee)
 
     def sequence[ao, ai, n[+_], b](i: Iteratee[ao, n, ai])(implicit im: Monad[n]): Enumeratee[ao, ai, n, b] = {
-        val mi = Monad[Iteratee.apply2[ao, n]]
+        val mi = Monad[Iteratee.apply2[ao, Kind.quote1[n]]]
         import mi.>>=
         lazy val loop: Enumeratee[ao, ai, n, b] = checkDone(check)
         lazy val check: (Stream[ai] => Iteratee[ai, n, b]) => Iteratee[ao, n, Step[ai, n, b]] = k => isEOF >>= { f =>
@@ -128,7 +128,7 @@ private[enumerator] trait Utilities { this: _Enumerator.type =>
     // Utilities for testing and debugging
     //
     def printChunks[n[+_]](printEmpty: Bool)(implicit i: MonadIO[n]): Iteratee[Any, n, Unit] = {
-        val mi = MonadIO[Iteratee.apply2[Any, n]]
+        val mi = MonadIO[Iteratee.apply2[Any, Kind.quote1[n]]]
         import mi.`for`
         implicit val as = Show.of[Any]
         lazy val loop: Stream[Any] => Iteratee[Any, n, Unit] = {

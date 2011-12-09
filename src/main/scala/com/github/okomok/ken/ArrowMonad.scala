@@ -28,14 +28,14 @@ object ArrowMonad extends ArrowMonadAs with Kind.FunctionLike {
 
 private[ken] sealed trait ArrowMonadAs { this: ArrowMonad.type =>
 /*
-    implicit def _asNewtype1[k[-_, +_]]: Newtype1[apply1[k]#apply1, ({type ot[+a] = k[Unit, a]})#ot] = new Newtype1[apply1[k]#apply1, ({type ot[+a] = k[Unit, a]})#ot] {
+    implicit def _asNewtype1[k[-_, +_]]: Newtype1[({type L[+a] = ArrowMonad[k, a]})#L, ({type ot[+a] = k[Unit, a]})#ot] = new Newtype1[({type L[+a] = ArrowMonad[k, a]})#L, ({type ot[+a] = k[Unit, a]})#ot] {
         private type nt[+a] = ArrowMonad[k, a]
         private type ot[+a] = k[Unit, a]
         override def newOf[a](ot: Lazy[ot[a]]): nt[a] = ArrowMonad(ot)
         override def oldOf[a](nt: Lazy[nt[a]]): ot[a] = nt.run
     }
 */
-    implicit def _asMonad[k[-_, +_]](implicit i: ArrowApply[k]): Monad[apply1[k]#apply1] = new Monad[apply1[k]#apply1] {
+    implicit def _asMonad[k[-_, +_]](implicit i: ArrowApply[k]): Monad[({type L[+a] = ArrowMonad[k, a]})#L] = new Monad[({type L[+a] = ArrowMonad[k, a]})#L] {
         import i.{>>>:, arr}
         private type m[+a] = ArrowMonad[k, a]
         override def `return`[a](x: Lazy[a]): m[a] = ArrowMonad { arr(_ => x) }
