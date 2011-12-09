@@ -109,6 +109,7 @@ package object ken {
     // Aliases
     //
     type String = List[Char]
+    val String = _String
     type JString = Predef.String
 
     type Bool = Boolean

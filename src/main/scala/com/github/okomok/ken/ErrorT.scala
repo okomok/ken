@@ -92,6 +92,14 @@ private[ken] sealed trait ErrorTAs0 { this: ErrorT.type =>
         }
     }
 
+    implicit def _asMonadState[e, n[+_], s](implicit i: MonadState[s, n]): MonadState[s, apply2[e, n]#apply1] = new MonadState[s, apply2[e, n]#apply1] with MonadProxy[apply2[e, n]#apply1] {
+        private type m[+a] = ErrorT[e, n, a]
+        private val mt = _asMonadTrans[e, n]
+        override val selfMonad = _asMonadError[e, n]
+        override def get: m[s] = mt.lift(i.get)
+        override def put(s: s): m[Unit] = mt.lift(i.put(s))
+    }
+
     implicit def _asMonadReader[e, n[+_], r](implicit i: MonadReader[r, n]): MonadReader[r, apply2[e, n]#apply1] = new MonadReader[r, apply2[e, n]#apply1] with MonadProxy[apply2[e, n]#apply1] {
         private type m[+a] = ErrorT[e, n, a]
         override val selfMonad = _asMonadError[e, n]
