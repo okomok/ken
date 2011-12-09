@@ -101,7 +101,7 @@ class MonadTransformersStepByStepTest extends org.scalatest.junit.JUnit3Suite {
             } {
                 (e1_, e2_) match {
                     case (IntVal(i1), IntVal(i2)) => `return` { IntVal(i1 + i2) }
-                    case _ => throwError(String("type error in addition"))
+                    case _ => throwError("type error in addition")
                 }
             }
             case Abs(n, e) => `return` { FunVal(env, n, e) }
@@ -111,7 +111,7 @@ class MonadTransformersStepByStepTest extends org.scalatest.junit.JUnit3Suite {
             } {
                 val1 match {
                     case FunVal(env_, n, body) => eval2(env_ + ((n, val2)))(body)
-                    case _ => throwError(String("type error in application"))
+                    case _ => throwError("type error in application")
                 }
             }
         }
@@ -146,7 +146,7 @@ class MonadTransformersStepByStepTest extends org.scalatest.junit.JUnit3Suite {
             } {
                 (e1_, e2_) match {
                     case (IntVal(i1), IntVal(i2)) => `return` { IntVal(i1 + i2) }
-                    case _ => throwError(String("type error in addition"))
+                    case _ => throwError("type error in addition")
                 }
             }
             case Abs(n, e) => for {
@@ -160,7 +160,7 @@ class MonadTransformersStepByStepTest extends org.scalatest.junit.JUnit3Suite {
                     case FunVal(env_, n, body) => {
                         local(const(env_ + ((n, val3))))(eval3(body))
                     }
-                    case _ => throwError(String("type error in application"))
+                    case _ => throwError("type error in application")
                 }
             }
         }
@@ -202,7 +202,7 @@ class MonadTransformersStepByStepTest extends org.scalatest.junit.JUnit3Suite {
             } {
                 (e1_, e2_) match {
                     case (IntVal(i1), IntVal(i2)) => `return` { IntVal(i1 + i2) }
-                    case _ => throwError(String("type error in addition"))
+                    case _ => throwError("type error in addition")
                 }
             }
             case Abs(n, e) => for {
@@ -218,7 +218,7 @@ class MonadTransformersStepByStepTest extends org.scalatest.junit.JUnit3Suite {
                     case FunVal(env_, n, body) => {
                         local(const(env_ + ((n, val4))))(eval4(body))
                     }
-                    case _ => throwError(String("type error in application"))
+                    case _ => throwError("type error in application")
                 }
             }
         }
@@ -257,7 +257,7 @@ class MonadTransformersStepByStepTest extends org.scalatest.junit.JUnit3Suite {
             } {
                 (e1_, e2_) match {
                     case (IntVal(i1), IntVal(i2)) => `return` { IntVal(i1 + i2) }
-                    case _ => throwError(String("type error in addition"))
+                    case _ => throwError("type error in addition")
                 }
             }
             case Abs(n, e) => for {
@@ -273,7 +273,7 @@ class MonadTransformersStepByStepTest extends org.scalatest.junit.JUnit3Suite {
                     case FunVal(env_, n, body) => {
                         local(const(env_ + ((n, val5))))(eval5(body))
                     }
-                    case _ => throwError(String("type error in application"))
+                    case _ => throwError("type error in application")
                 }
             }
         }
@@ -318,7 +318,7 @@ class MonadTransformersStepByStepTest extends org.scalatest.junit.JUnit3Suite {
             } {
                 (e1_, e2_) match {
                     case (IntVal(i1), IntVal(i2)) => `return` { IntVal(i1 + i2) }
-                    case _ => throwError(String("type error in addition"))
+                    case _ => throwError("type error in addition")
                 }
             }
             case Abs(n, e) => for {
@@ -334,7 +334,7 @@ class MonadTransformersStepByStepTest extends org.scalatest.junit.JUnit3Suite {
                     case FunVal(env_, n, body) => {
                         local(const(env_ + ((n, val6))))(eval6(body))
                     }
-                    case _ => throwError(String("type error in application"))
+                    case _ => throwError("type error in application")
                 }
             }
         }
