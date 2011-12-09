@@ -5,6 +5,7 @@ package com.github.okomok.kentest.example
 import com.github.okomok.ken._
 
 // http://www.grabmueller.de/martin/www/pub/Transformers.en.html
+// http://debasishg.blogspot.com/2011/07/monad-transformers-in-scala.html
 
 class MonadTransformersStepByStepTest extends org.scalatest.junit.JUnit3Suite {
 

@@ -5,6 +5,7 @@ package com.github.okomok.kentest.example
 import com.github.okomok.ken._
 
 // The Essence of the Iterator Pattern
+// http://etorreborre.blogspot.com/2011/06/essence-of-iterator-pattern.html
 
 class IteratorEssenceTest extends org.scalatest.junit.JUnit3Suite {
 
