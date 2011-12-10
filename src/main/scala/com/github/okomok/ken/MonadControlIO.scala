@@ -139,7 +139,9 @@ object MonadControlIO {
 
     type RunInIO[m[+_]] = MonadTransControl.RunInBase[m, IO]
 
-    case class Handler[m[+_], a](rep: (e => m[a], Exception[e]) forSome { type e })
+    case class Handler[m[+_], a](rep: (e => m[a], Exception[e]) forSome { type e }) {
+        def apply[r](f: Function[(e => m[a], Exception[e]) forSome { type e }, r]): r = f(rep)
+    }
 
     object Handler {
         def apply[e, m[+_], a](h: e => m[a])(implicit i: Exception[e]): Handler[m, a] = new Handler(h, i)

@@ -15,7 +15,9 @@ package ken
 
 
 // See: SI-5022
-final case class SomeException(rep: (e, Exception[e]) forSome { type e }) extends Throwable
+final case class SomeException(rep: (e, Exception[e]) forSome { type e }) extends Throwable {
+    def apply[r](f: Function[(e, Exception[e]) forSome { type e }, r]): r = f(rep)
+}
 
 
 object SomeException extends Exception[SomeException] with TypeableProxy[SomeException] with ThisIsInstance {
