@@ -58,7 +58,7 @@ private[enumerator] sealed trait IterateeAs0 { this: Iteratee.type =>
         }.apply(m0)
     }
 
-    implicit def _asMonadTrans[z]: MonadTrans[apply1[z]#monadTrans] = new MonadTrans[apply1[z]#monadTrans] {
+    implicit def _asMonadTrans[z]: MonadTrans[({type L[n[+_], +a] = Iteratee[z, n, a]})#L] = new MonadTrans[({type L[n[+_], +a] = Iteratee[z, n, a]})#L] {
         private type t[n[+_], +a] = Iteratee[z, n, a]
         override def lift[n[+_], a](n: n[a])(implicit i: Monad[n]): t[n, a] = Iteratee {
             import i.>>=

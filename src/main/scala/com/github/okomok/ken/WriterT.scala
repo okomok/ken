@@ -43,7 +43,7 @@ private[ken] trait WriterTOp {
 
 
 private[ken] sealed trait WriterTAs0 { this: WriterT.type =>
-    implicit def _asMonadTrans[w](implicit j: Monoid[w]): MonadTransControl[apply1[w]#monadTrans] = new MonadTransControl[apply1[w]#monadTrans] {
+    implicit def _asMonadTrans[w](implicit j: Monoid[w]): MonadTransControl[({type L[n[+_], +a] = WriterT[w, n, a]})#L] = new MonadTransControl[({type L[n[+_], +a] = WriterT[w, n, a]})#L] {
         // MonadTrans
         private type t[n[+_], +a] = WriterT[w, n, a]
         override def lift[n[+_], a](n: n[a])(implicit i: Monad[n]): t[n, a] = WriterT {

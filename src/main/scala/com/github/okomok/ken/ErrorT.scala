@@ -48,7 +48,7 @@ private[ken] sealed trait ErrorTAs0 { this: ErrorT.type =>
         override def oldOf[a](nt: Lazy[ErrorT[e, n, a]]): n[Either[e, a]] = nt.run
     }
 */
-    implicit def _asMonadTrans[e, n[+_]]: MonadTransControl[apply1[e]#monadTrans] = new MonadTransControl[apply1[e]#monadTrans] {
+    implicit def _asMonadTrans[e, n[+_]]: MonadTransControl[({type L[n[+_], +a] = ErrorT[e, n, a]})#L] = new MonadTransControl[({type L[n[+_], +a] = ErrorT[e, n, a]})#L] {
         // MonadTrans
         private type t[n[+_], +a] = ErrorT[e, n, a]
         override def lift[n[+_], a](n: n[a])(implicit i: Monad[n]): t[n, a] = ErrorT {

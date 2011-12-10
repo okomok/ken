@@ -59,7 +59,7 @@ private[ken] sealed trait StateTAs0 { this: StateT.type =>
         override def oldOf[a](nt: Lazy[nt[a]]): ot[a] = nt.run
     }
 
-    implicit def _asMonadTrans[s]: MonadTransControl[apply1[s]#monadTrans] = new MonadTransControl[apply1[s]#monadTrans] {
+    implicit def _asMonadTrans[s]: MonadTransControl[({type L[n[+_], +a] = StateT[s, n, a]})#L] = new MonadTransControl[({type L[n[+_], +a] = StateT[s, n, a]})#L] {
         // MonadTrans
         private type t[n[+_], +a] = StateT[s, n, a]
         override def lift[n[+_], a](n: n[a])(implicit i: Monad[n]): t[n, a] = StateT { s => {

@@ -42,7 +42,7 @@ private[ken] trait ReaderTOp {
 
 
 private[ken] sealed trait ReaderTAs0 { this: ReaderT.type =>
-    implicit def _asMonadTrans[r]: MonadTransControl[apply1[r]#monadTrans] = new MonadTransControl[apply1[r]#monadTrans] {
+    implicit def _asMonadTrans[r]: MonadTransControl[({type L[n[+_], +a] = ReaderT[r, n, a]})#L] = new MonadTransControl[({type L[n[+_], +a] = ReaderT[r, n, a]})#L] {
         // MonadTrans
         private type t[n[+_], +a] = ReaderT[r, n, a]
         override def lift[n[+_], a](n: n[a])(implicit i: Monad[n]): t[n, a] = ReaderT { _ => n }

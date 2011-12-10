@@ -39,7 +39,7 @@ object ParsecT extends ParsecTAs {
 
 
 private[parsec] sealed trait ParsecTAs0 { this: ParsecT.type =>
-    implicit def _asMonadTrans[s, u]: MonadTrans[apply2[s, u]#monadTrans] = new MonadTrans[apply2[s, u]#monadTrans] {
+    implicit def _asMonadTrans[s, u]: MonadTrans[({type L[n[+_], +a] = ParsecT[s, u, n, a]})#L] = new MonadTrans[({type L[n[+_], +a] = ParsecT[s, u, n, a]})#L] {
         private type t[n[+_], +a] = ParsecT[s, u, n, a]
         override def lift[n[+_], a](amb: n[a])(implicit i: Monad[n]): t[n, a] = ParsecT { new UnParser[s, u, n, a] {
             override def apply[b](v: UnParserParam[s, u, n, a, b]): n[b] = {

@@ -42,7 +42,7 @@ private[ken] trait ContTOp {
 
 
 private[ken] sealed trait ContTAs0 { this: ContT.type =>
-    implicit def _asMonadTrans[r]: MonadTrans[apply1[r]#monadTrans] = new MonadTrans[apply1[r]#monadTrans] {
+    implicit def _asMonadTrans[r]: MonadTrans[({type L[n[+_], +a] = ContT[r, n, a]})#L] = new MonadTrans[({type L[n[+_], +a] = ContT[r, n, a]})#L] {
         // MonadTrans
         private type t[n[+_], +a] = ContT[r, n, a]
         override def lift[n[+_], a](n: n[a])(implicit i: Monad[n]): t[n, a] = ContT { c => i.op_>>=(n)(c) }
