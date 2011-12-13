@@ -33,15 +33,6 @@ sealed abstract class List[+a] extends Up[List[a]] {
 
     final def \\[b >: a](that: List[b])(implicit j: Eq[b]): List[b] = List.op_\\[b](this)(that)
 
-    @tailrec
-    final def foreach(f: a => Unit): Unit = this match {
-        case Nil => ()
-        case x :: xs => {
-            f(x)
-            xs.!.foreach(f)
-        }
-    }
-
     final def asJString[b >: a](implicit ev: List[b] =:= String): JString = {
         List.foldl((sb: StringBuilder) => (c: Char) => sb += c)(new StringBuilder)(ev(this)).toString
     }
@@ -686,6 +677,15 @@ object List extends ListAs with MonadPlus[List] with Traversable[List] with Exte
         xs match {
             case Nil => Nil
             case x :: xs => x :: List.step(n)(List.drop(n - 1)(xs.!))
+        }
+    }
+
+    @tailrec
+    def foreach[a](f: a => Unit)(xs: List[a]): Unit = xs match {
+        case Nil => ()
+        case x :: xs => {
+            f(x)
+            foreach(f)(xs.!)
         }
     }
 }

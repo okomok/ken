@@ -54,7 +54,7 @@ object IO extends MonadControlIO[IO] with ThisIsInstance {
     }
 
     val putStr: String => IO[Unit] = s => returnIO {
-        s.foreach(Predef.print)
+        List.foreach(Predef.print)(s)
     }
 
     val putStrLn: String => IO[Unit] = s => {

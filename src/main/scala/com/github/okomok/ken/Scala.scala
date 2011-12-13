@@ -56,9 +56,7 @@ object Scala {
                 val tmp: f[List[b]] = foldr(cons_f)(i.pure(Nil))(t)
                 ((xs: List[b]) => {
                     val b = mf.apply[b]
-                    xs.foreach { x =>
-                        b += x
-                    }
+                    List.foreach((x: b) => b += x)(xs)
                     b.result
                 }) <@> tmp
             }
