@@ -111,8 +111,8 @@ private[ken] sealed trait WriterTAs0 { this: WriterT.type =>
     implicit def _asMonadState[w, n[+_], s](implicit i: MonadState[s, n], j: Monoid[w]): MonadState[s, ({type L[+a] = WriterT[w, n, a]})#L] = new MonadState[s, ({type L[+a] = WriterT[w, n, a]})#L] with MonadProxy[({type L[+a] = WriterT[w, n, a]})#L] {
         private type m[+a] = WriterT[w, n, a]
         override val selfMonad = _asMonadWriter[w, n]
-        override def get: m[s] = _asMonadTrans[w].lift(i.get)
-        override def put(s: s): m[Unit] = _asMonadTrans[w].lift(i.put(s))
+        override val get: m[s] = _asMonadTrans[w].lift(i.get)
+        override val put: s => m[Unit] = s => _asMonadTrans[w].lift(i.put(s))
     }
 
     implicit def _asMonadIO[w, n[+_]](implicit i: MonadIO[n], j: Monoid[w]): MonadIO[({type L[+a] = WriterT[w, n, a]})#L] = new MonadIO[({type L[+a] = WriterT[w, n, a]})#L] with MonadProxy[({type L[+a] = WriterT[w, n, a]})#L] {
@@ -160,7 +160,7 @@ private[ken] sealed trait WriterTAs extends WriterTAs1 { this: WriterT.type =>
         }
         // MonadWriter
         override def monoid: Monoid[w] = j
-        override def tell(w: w): m[Unit] = WriterT { i.`return`((), w) }
+        override val tell: w => m[Unit] = w => WriterT { i.`return`((), w) }
         override def listen[a](m: m[a]): m[(a, w)] = WriterT {
             import i.`for`
             for { (a, w) <- run(m) } yield ((a, w), w)

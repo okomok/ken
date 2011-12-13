@@ -63,15 +63,15 @@ private[parsec] sealed trait ParsecTAs0 { this: ParsecT.type =>
         private type m[+a] = ParsecT[s, u, n, a]
         private val prim = ParsecTOp[apply3[s, u, Kind.quote1[n]]]
         override def selfMonad = _asMonadPlus
-        override def ask: m[r] = _asMonadTrans.lift(i.ask)
+        override val ask: m[r] = _asMonadTrans.lift(i.ask)
         override def local[a](f: r => r)(p: m[a]): m[a] = prim.mkPT { s => i.local(f)(prim.runParsecT(p)(s)) }
     }
 
     implicit def _asMonadState[s, u, n[+_], s_](implicit i: MonadState[s_, n]): MonadState[s_, ({type L[+a] = ParsecT[s, u, n, a]})#L] = new MonadState[s_, ({type L[+a] = ParsecT[s, u, n, a]})#L] with MonadProxy[({type L[+a] = ParsecT[s, u, n, a]})#L] {
         private type m[+a] = ParsecT[s, u, n, a]
         override def selfMonad = _asMonadPlus[s, u, n]
-        override def get: m[s_] = _asMonadTrans.lift(i.get)
-        override def put(s: s_): m[Unit] = _asMonadTrans[s, u].lift(i.put(s))
+        override val get: m[s_] = _asMonadTrans.lift(i.get)
+        override val put: s_ => m[Unit] = s => _asMonadTrans[s, u].lift(i.put(s))
     }
 
     implicit def _asMonadCont[s, u, n[+_]](implicit i: MonadCont[n]): MonadCont[({type L[+a] = ParsecT[s, u, n, a]})#L] = new MonadCont[({type L[+a] = ParsecT[s, u, n, a]})#L] with MonadProxy[({type L[+a] = ParsecT[s, u, n, a]})#L] {

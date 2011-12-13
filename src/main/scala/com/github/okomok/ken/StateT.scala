@@ -127,7 +127,7 @@ private[ken] sealed trait StateTAs0 { this: StateT.type =>
         private type m[+a] = StateT[s, n, a]
         override val selfMonad = _asMonadState[s, n]
         override def monoid: Monoid[w] = i.monoid
-        override def tell(x: w): m[Unit] = _asMonadTrans.lift(i.tell(x))
+        override val tell: w => m[Unit] = x => _asMonadTrans.lift(i.tell(x))
         override def listen[a](m: m[a]): m[(a, w)] = StateT { s => {
             import i.`for`
             for { ((a, s_), w) <- i.listen(run(m)(s)) } yield ((a, w), s_)
@@ -184,7 +184,7 @@ private[ken] sealed trait StateTAs extends StateTAs1 { this: StateT.type =>
             for { (a, s_) <- run(m)(s) } { run(k(a))(s_) }
         }
         // MonadState
-        override def get: m[s] = StateT { s => i.`return`(s, s) }
-        override def put(s: s): m[Unit] = StateT { _ => i.`return`((), s) }
+        override val get: m[s] = StateT { s => i.`return`(s, s) }
+        override val put: s => m[Unit] = s => StateT { _ => i.`return`((), s) }
     }
 }

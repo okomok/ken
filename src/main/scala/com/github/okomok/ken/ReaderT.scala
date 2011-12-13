@@ -97,15 +97,15 @@ private[ken] sealed trait ReaderTAs0 { this: ReaderT.type =>
         private type m[+a] = ReaderT[r, n, a]
         private val mt = _asMonadTrans[r]
         override val selfMonad = _asMonadReader[r, n]
-        override def get: m[s] = mt.lift(i.get)
-        override def put(s: s): m[Unit] = mt.lift(i.put(s))
+        override val get: m[s] = mt.lift(i.get)
+        override val put: s => m[Unit] = s => mt.lift(i.put(s))
     }
 
     implicit def _asMonadWriter[r, n[+_], w](implicit i: MonadWriter[w, n]): MonadWriter[w, ({type L[+a] = ReaderT[r, n, a]})#L] = new MonadWriter[w, ({type L[+a] = ReaderT[r, n, a]})#L] with MonadProxy[({type L[+a] = ReaderT[r, n, a]})#L] {
         private type m[+a] = ReaderT[r, n, a]
         override val selfMonad = _asMonadReader[r, n]
         override def monoid: Monoid[w] = i.monoid
-        override def tell(x: w): m[Unit] = _asMonadTrans[r].lift(i.tell(x))
+        override val tell: w => m[Unit] = x => _asMonadTrans[r].lift(i.tell(x))
         override def listen[a](m: m[a]): m[(a, w)] = ReaderT { w => i.listen(run(m)(w)) }
         override def pass[a](m: m[(a, w => w)]): m[a] = ReaderT { w => i.pass(run(m)(w)) }
     }

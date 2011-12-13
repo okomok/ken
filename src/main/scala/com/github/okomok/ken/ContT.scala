@@ -51,7 +51,7 @@ private[ken] sealed trait ContTAs0 { this: ContT.type =>
     implicit def _asMonadReader[r, n[+_], r_](implicit i: MonadReader[r_, n]): MonadReader[r_, ({type L[+a] = ContT[r, n, a]})#L] = new MonadReader[r_, ({type L[+a] = ContT[r, n, a]})#L] with MonadProxy[({type L[+a] = ContT[r, n, a]})#L] {
         private type m[+a] = ContT[r, n, a]
         override val selfMonad = _asMonadCont[r, n]
-        override def ask: m[r_] = _asMonadTrans[r].lift(i.ask)
+        override val ask: m[r_] = _asMonadTrans[r].lift(i.ask)
         override def local[a](f: r_ => r_)(m: m[a]): m[a] = ContT { c =>
             import i.`for`
             for {
@@ -66,8 +66,8 @@ private[ken] sealed trait ContTAs0 { this: ContT.type =>
         private type m[+a] = ContT[r, n, a]
         private val mt = _asMonadTrans[r]
         override val selfMonad = _asMonadCont[r, n]
-        override def get: m[s] = mt.lift(i.get)
-        override def put(s: s): m[Unit] = mt.lift(i.put(s))
+        override val get: m[s] = mt.lift(i.get)
+        override val put: s => m[Unit] = s => mt.lift(i.put(s))
     }
 
     implicit def _asMonadIO[r, n[+_]](implicit i: MonadIO[n]): MonadIO[({type L[+a] = ContT[r, n, a]})#L] = new MonadIO[({type L[+a] = ContT[r, n, a]})#L] with MonadProxy[({type L[+a] = ContT[r, n, a]})#L] {

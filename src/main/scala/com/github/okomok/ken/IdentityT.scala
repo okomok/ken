@@ -56,7 +56,7 @@ private[ken] sealed trait IdentityTAs0 { this: IdentityT.type =>
     implicit def _asMonadPlus[n[+_]](implicit i: MonadPlus[n]): MonadPlus[({type L[+a] = IdentityT[n, a]})#L] = new MonadPlus[({type L[+a] = IdentityT[n, a]})#L] with MonadProxy[({type L[+a] = IdentityT[n, a]})#L] {
         private type m[+a] = IdentityT[n, a]
         override val selfMonad = _asMonad[n]
-        override def mzero: m[Nothing] = IdentityT(i.mzero)
+        override val mzero: m[Nothing] = IdentityT(i.mzero)
         override def mplus[a](m: m[a])(n: Lazy[m[a]]): m[a] = IdentityT { i.mplus(run(m))(Lazy(run(n.!))) }
     }
 
@@ -82,15 +82,15 @@ private[ken] sealed trait IdentityTAs0 { this: IdentityT.type =>
     implicit def _asMonadReader[n[+_], r](implicit i: MonadReader[r, n]): MonadReader[r, ({type L[+a] = IdentityT[n, a]})#L] = new MonadReader[r, ({type L[+a] = IdentityT[n, a]})#L] with MonadProxy[({type L[+a] = IdentityT[n, a]})#L] {
         private type m[+a] = IdentityT[n, a]
         override val selfMonad = _asMonad[n]
-        override def ask: m[r] = _asMonadTrans.lift(i.ask)
+        override val ask: m[r] = _asMonadTrans.lift(i.ask)
         override def local[a](f: r => r)(m: m[a]): m[a] = IdentityT { i.local(f)(run(m)) }
     }
 
     implicit def _asMonadState[n[+_], s](implicit i: MonadState[s, n]): MonadState[s, ({type L[+a] = IdentityT[n, a]})#L] = new MonadState[s, ({type L[+a] = IdentityT[n, a]})#L] with MonadProxy[({type L[+a] = IdentityT[n, a]})#L] {
         private type m[+a] = IdentityT[n, a]
         override val selfMonad = _asMonad[n]
-        override def get: m[s] = _asMonadTrans.lift(i.get)
-        override def put(s: s): m[Unit] = _asMonadTrans.lift(i.put(s))
+        override val get: m[s] = _asMonadTrans.lift(i.get)
+        override val put: s => m[Unit] = s => _asMonadTrans.lift(i.put(s))
     }
 
     implicit def _asMonadIO[n[+_]](implicit i: MonadIO[n]): MonadIO[({type L[+a] = IdentityT[n, a]})#L] = new MonadIO[({type L[+a] = IdentityT[n, a]})#L] with MonadProxy[({type L[+a] = IdentityT[n, a]})#L] {

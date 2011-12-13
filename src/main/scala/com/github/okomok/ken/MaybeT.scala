@@ -89,15 +89,15 @@ private[ken] sealed trait MaybeTAs0 { this: MaybeT.type =>
     implicit def _asMonadReader[n[+_], r](implicit i: MonadReader[r, n]): MonadReader[r, ({type L[+a] = MaybeT[n, a]})#L] = new MonadReader[r, ({type L[+a] = MaybeT[n, a]})#L] with MonadProxy[({type L[+a] = MaybeT[n, a]})#L] {
         private type m[+a] = MaybeT[n, a]
         override val selfMonad = _asMonadPlus[n]
-        override def ask: m[r] = _asMonadTrans.lift(i.ask)
+        override val ask: m[r] = _asMonadTrans.lift(i.ask)
         override def local[a](f: r => r)(m: m[a]): m[a] = MaybeT { i.local(f)(run(m)) }
     }
 
     implicit def _asMonadState[n[+_], s](implicit i: MonadState[s, n]): MonadState[s, ({type L[+a] = MaybeT[n, a]})#L] = new MonadState[s, ({type L[+a] = MaybeT[n, a]})#L] with MonadProxy[({type L[+a] = MaybeT[n, a]})#L] {
         private type m[+a] = MaybeT[n, a]
         override val selfMonad = _asMonadPlus[n]
-        override def get: m[s] = _asMonadTrans.lift(i.get)
-        override def put(s: s): m[Unit] = _asMonadTrans.lift(i.put(s))
+        override val get: m[s] = _asMonadTrans.lift(i.get)
+        override val put: s => m[Unit] = s => _asMonadTrans.lift(i.put(s))
     }
 
     implicit def _asMonadIO[n[+_]](implicit i: MonadIO[n]): MonadIO[({type L[+a] = MaybeT[n, a]})#L] = new MonadIO[({type L[+a] = MaybeT[n, a]})#L] with MonadProxy[({type L[+a] = MaybeT[n, a]})#L] {

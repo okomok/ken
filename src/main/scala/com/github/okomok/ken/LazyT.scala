@@ -96,8 +96,8 @@ private[ken] sealed trait LazyTAs0 { this: LazyT.type =>
     implicit def _asMonadState[n[+_], s](implicit i: MonadState[s, n]): MonadState[s, ({type L[+a] = LazyT[n, a]})#L] = new MonadState[s, ({type L[+a] = LazyT[n, a]})#L] with MonadProxy[({type L[+a] = LazyT[n, a]})#L] {
         private type m[+a] = LazyT[n, a]
         override val selfMonad = _asMonad[n]
-        override def get: m[s] = _asMonadTrans.lift(i.get)
-        override def put(s: s): m[Unit] = _asMonadTrans.lift(i.put(s))
+        override val get: m[s] = _asMonadTrans.lift(i.get)
+        override val put: s => m[Unit] = s => _asMonadTrans.lift(i.put(s))
     }
 
     implicit def _asMonadIO[n[+_]](implicit i: MonadIO[n]): MonadIO[({type L[+a] = LazyT[n, a]})#L] = new MonadIO[({type L[+a] = LazyT[n, a]})#L] with MonadProxy[({type L[+a] = LazyT[n, a]})#L] {

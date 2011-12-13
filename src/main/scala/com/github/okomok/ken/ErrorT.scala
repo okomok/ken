@@ -96,14 +96,14 @@ private[ken] sealed trait ErrorTAs0 { this: ErrorT.type =>
         private type m[+a] = ErrorT[e, n, a]
         private val mt = _asMonadTrans[e, n]
         override val selfMonad = _asMonadError[e, n]
-        override def get: m[s] = mt.lift(i.get)
-        override def put(s: s): m[Unit] = mt.lift(i.put(s))
+        override val get: m[s] = mt.lift(i.get)
+        override val put: s => m[Unit] = s => mt.lift(i.put(s))
     }
 
     implicit def _asMonadReader[e, n[+_], r](implicit i: MonadReader[r, n]): MonadReader[r, ({type L[+a] = ErrorT[e, n, a]})#L] = new MonadReader[r, ({type L[+a] = ErrorT[e, n, a]})#L] with MonadProxy[({type L[+a] = ErrorT[e, n, a]})#L] {
         private type m[+a] = ErrorT[e, n, a]
         override val selfMonad = _asMonadError[e, n]
-        override def ask: m[r] = _asMonadTrans.lift(i.ask)
+        override val ask: m[r] = _asMonadTrans.lift(i.ask)
         override def local[a](f: r => r)(m: m[a]): m[a] = ErrorT { i.local(f)(run(m)) }
     }
 
@@ -111,7 +111,7 @@ private[ken] sealed trait ErrorTAs0 { this: ErrorT.type =>
         private type m[+a] = ErrorT[e, n, a]
         override val selfMonad = _asMonadError[e, n]
         override def monoid: Monoid[w] = i.monoid
-        override def tell(x: w): m[Unit] = _asMonadTrans.lift(i.tell(x))
+        override val tell: w => m[Unit] = x => _asMonadTrans.lift(i.tell(x))
         override def listen[a](m: m[a]): m[(a, w)] = ErrorT {
             import i.`for`
             for {
@@ -141,7 +141,7 @@ private[ken] sealed trait ErrorTAs0 { this: ErrorT.type =>
     implicit def _asMonadPlus[e, n[+_]](implicit i: Monad[n], j: ErrorClass[e]): MonadPlus[({type L[+a] = ErrorT[e, n, a]})#L] = new MonadPlus[({type L[+a] = ErrorT[e, n, a]})#L] with MonadProxy[({type L[+a] = ErrorT[e, n, a]})#L] {
         private type m[+a] = ErrorT[e, n, a]
         override val selfMonad = _asMonadError[e, n]
-        override def mzero: m[Nothing] = ErrorT { i.`return`(Left(j.noMsg)) }
+        override val mzero: m[Nothing] = ErrorT { i.`return`(Left(j.noMsg)) }
         override def mplus[a](m: m[a])(n: Lazy[m[a]]): m[a] = ErrorT {
             import i.`for`
             for {

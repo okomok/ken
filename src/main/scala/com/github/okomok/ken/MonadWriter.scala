@@ -19,8 +19,12 @@ trait MonadWriter[w, m[+_]] extends Monad[m] {
 
     // Core
     //
-    def monoid: Monoid[w]
-    def tell(x: w): m[Unit]
+    type monoid = Monoid[w]
+    def monoid: monoid
+
+    type tell = w => m[Unit]
+    def tell: tell
+
     def listen[a](x: m[a]): m[(a, w)]
     def pass[a](x: m[(a, w => w)]): m[a]
 
@@ -35,8 +39,8 @@ trait MonadWriterProxy[w, m[+_]] extends MonadWriter[w, m] with MonadProxy[m] {
     def selfMonadWriter: MonadWriter[w, m]
     override def selfMonad: Monad[m] = selfMonadWriter
 
-    override def monoid: Monoid[w] = selfMonadWriter.monoid
-    override def tell(x: w): m[Unit] = selfMonadWriter.tell(x)
+    override def monoid: monoid = selfMonadWriter.monoid
+    override def tell: tell = selfMonadWriter.tell
     override def listen[a](x: m[a]): m[(a, w)] = selfMonadWriter.listen(x)
     override def pass[a](x: m[(a, w => w)]): m[a] = selfMonadWriter.pass(x)
 
@@ -53,7 +57,7 @@ object MonadWriter {
         override val selfMonad = Monad.deriving[nt]
 
         override def monoid: Monoid[w] = i.monoid
-        override def tell(x: w): m[Unit] = j.newOf { i.tell(x) }
+        override val tell: tell = x => j.newOf { i.tell(x) }
         override def listen[a](x: m[a]): m[(a, w)] = j.newOf { i.listen(j.oldOf(x)) }
         override def pass[a](x: m[(a, w => w)]): m[a] = j.newOf { i.pass(j.oldOf(x)) }
     }
