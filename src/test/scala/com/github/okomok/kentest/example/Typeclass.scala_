@@ -1,0 +1,113 @@
+// Public domain
+
+package com.github.okomok.kentest.example
+
+class TypeclassTest extends org.scalatest.junit.JUnit3Suite {
+
+    // Terms
+
+    class Strong1[a]
+
+    trait Strong2[a, b]
+
+    type Strong3[a] = List[a]
+
+    type Strong4[a, b] = (a, b)
+
+    class Wrap[Strong5[_]] {
+        type Strong6[a] = Strong5[a]
+    }
+
+    def testNamed {
+
+        def foo[f[_]](x: f[Int]): Unit = ()
+
+        val x1: List[Int] = List(1,2,3)
+        foo(x1) // ok
+
+        val x2: ({type L[a] = Char => a})#L[Int] = (c: Char) => 3
+        //foo(x2) // error!
+
+        type Named[a] = Char => a
+        val x3: Named[Int] = x2
+        foo(x3) // ok
+
+
+        type Tmp = {type L[a] = Char => a}
+        val x4: Tmp#L[Int] = (c: Char) => 3
+        //foo(x4) // error!
+
+        object K {
+            type L[a] = Char => a
+        }
+        implicitly[K.L[Int] =:= Function1[Char, Int]]
+        val x5: K.L[Int] = (c: Char) => 3
+        foo(x5) // ok
+
+        class TT {
+            type L[a] = Char => a
+        }
+        implicitly[TT#L[Int] =:= Function1[Char, Int]]
+        val x6: TT#L[Int] = (c: Char) => 3
+        //foo(x6) // error
+
+        trait dddd extends TT#L[Int]
+
+    }
+
+/*
+    type Weak1[a] = (a, Int)
+    type Weak2[a] = a
+    type Weak3[a, b] = List[a]
+    type Weak4[a] = (a, a)
+*/
+    def search[x](x: x)(implicit n: Ordering[x]): Unit = ()
+
+    trait KindFunc {
+        type apply[a]
+    }
+
+    trait Foo[f[_]]
+    object Foo {
+        implicit def _of[g[_]]: Foo[g] = new Foo[g]{}
+        def apply[f <: KindFunc](implicit _F: Foo[f#apply]): Foo[f#apply] = _F
+    }
+
+    class Help[f[_]] extends KindFunc {
+        type apply[a] = f[a]
+    }
+
+    def testTrivial {
+        implicitly[Foo[({type L[a] = List[a]})#L]]
+
+        type named[a] = Int => a
+        implicitly[ Foo[named] ] // ok
+
+        object Wrap {
+            type named[a] = Int => a
+        }
+        implicitly[ Foo[Wrap.named] ] // ok
+
+        trait WrapT {
+            type named[a] = Int => a
+        }
+        //implicitly[ Foo[WrapT#named] ] // error
+
+        //implicitly[ Foo[({type L[a] = Int => a})#L] ] // error
+
+        //implicitly[ Foo[Help[({type L[a] = Int => a})#L]#apply] ] // error
+
+        Foo[Help[({type L[a] = Int => a})#L]] // ok
+    }
+
+    trait MyState[s, a]
+    trait Bar[f[_]]
+    object Bar {
+        implicit def _ofMyState[s]: Bar[({type L[a] = MyState[s, a]})#L] = new Bar[({type L[a] = MyState[s, a]})#L]{}
+    }
+
+    def testBar {
+        implicitly[ Bar[({type L[a] = MyState[Int, a]})#L] ]
+    }
+
+}

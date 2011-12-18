@@ -1,0 +1,61 @@
+
+// Public domain
+
+package com.github.okomok.kentest.langtest
+
+class NewtypeTezt {
+
+    trait KindFunc {
+        type apply[+a]
+    }
+
+    trait Newtype1[nt[+_], ot[+_]]
+
+    trait MonadState[s, m[+_]]
+    object MonadState {
+        def apply[s, m <: KindFunc](implicit _M: MonadState[s, m#apply]): MonadState[s, m#apply] = _M
+
+        implicit def _ofNewtype1[s, nt[+_], ot[+_]](implicit _N: Newtype1[nt, ot]/*, _M: MonadState[s, ot]*/): MonadState[s, nt] = new MonadState[s, nt]{}
+    }
+
+    trait MyState[s, +a]
+    object MyState {
+        trait apply[s] extends KindFunc {
+            override type apply[+a] = MyState[s, a]
+        }
+
+        implicit def _asMonadState[s]: MonadState[s, ({type L[+a] = MyState[s, a]})#L] = new MonadState[s, ({type L[+a] = MyState[s, a]})#L]{}
+    }
+
+    trait StateT[s, n[+_], +a]
+    object StateT {
+        trait apply[s, n <: KindFunc] extends KindFunc {
+            override type apply[+a] = StateT[s, n#apply, a]
+        }
+
+        implicit def _asMonadState[s, n[+_]](implicit _N: MonadState[s, n]): MonadState[s, ({type L[+a] = StateT[s, n, a]})#L] = new MonadState[s, ({type L[+a] = StateT[s, n, a]})#L]{}
+
+ //       implicit def _asNewtype1[s, n[+_]]: Newtype1[({type L[+a] = StateT[s, n, a]})#L, ({type L[+a] = s => n[(a, s)]})#L] = new Newtype1[({type L[+a] = StateT[s, n, a]})#L, ({type L[+a] = s => n[(a, s)]})#L] {}
+    }
+
+    final case class YourState[+a](run: StateT.apply[Int, MyState.apply[Int]]#apply[a])
+    object YourState extends KindFunc {
+        override type apply[+a] = YourState[a]
+       // implicit val _asNewtype1: Newtype1[YourState, StateT.apply[Int, MyState.apply[Int]]#apply] = new Newtype1[YourState, StateT.apply[Int, MyState.apply[Int]]#apply]{}
+        implicit val _asNewtype1: Newtype1[YourState, List] = new Newtype1[YourState, List]{}
+    }
+
+    def testChain {
+        implicitly[ MonadState[Int, ({type L[+a] = MyState[Int, a]})#L] ]
+        MonadState[Int, MyState.apply[Int]]
+
+        //implicitly[ MonadState[Int, ({type K[+x] = StateT[Int, ({type L[+a] = MyState[Int, a]})#L, x]})#K] ]
+
+        type Named[+a] = MyState[Int, a]
+        type NamedK[+x] = StateT[Int, Named, x]
+        implicitly[ MonadState[Int, NamedK] ]
+
+        MonadState[Int, StateT.apply[Int, MyState.apply[Int]]]
+        MonadState[Int, YourState.type]
+    }
+}
