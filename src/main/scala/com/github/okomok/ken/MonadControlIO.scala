@@ -137,7 +137,7 @@ object MonadControlIO {
 
     def weak[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply1, nt#oldtype1], i: MonadControlIO[nt#apply1]): MonadControlIO[nt#oldtype1] = deriving[Kind.coNewtype1[nt]](j.coNewtype, i)
 
-    type RunInIO[m[+_]] = MonadTransControl.RunInBase[m, IO]
+    type RunInIO[m[+_]] = MonadTrans.RunInBase[m, IO]
 
     case class Handler[m[+_], a](rep: (e => m[a], Exception[e]) forSome { type e }) {
         def apply[r](f: Function[(e => m[a], Exception[e]) forSome { type e }, r]): r = f(rep)

@@ -130,7 +130,7 @@ class MonadZipperTest extends org.scalatest.junit.JUnit3Suite {
     // In order to make `evalAdds` from `evalAdd`, you need "unlift" in addition to `MonadTrans.lift`.
     // M[Int] --MonadTrans.lift--> Ms[Int]
     // Ms[Int] --UNLIFT--> M[Int]
-    // Probably `MonadTransControl` can kick in.
+    // Probably `MonadTrans` can kick in.
 
     // 3. The Monad Zipper
 
@@ -145,6 +145,7 @@ class MonadZipperTest extends org.scalatest.junit.JUnit3Suite {
                 val m1: t1[({type n_[+x] = t2[n, x]})#n_, a] = _mt1.lift[({type n_[+x] = t2[n, x]})#n_, a](m2)(undefined/*hmm*/)
                 ZipperT[t1, t2, n, a](m1)
             }
+            override def liftWith[n[+_], a](f: Run => n[a])(implicit i: Monad[n]): t[n, a] = error("todo")
         }
     }
 

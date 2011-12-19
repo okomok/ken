@@ -43,9 +43,9 @@ private[ken] trait ContTOp {
 
 private[ken] sealed trait ContTAs0 { this: ContT.type =>
     implicit def _asMonadTrans[r]: MonadTrans[({type L[n[+_], +a] = ContT[r, n, a]})#L] = new MonadTrans[({type L[n[+_], +a] = ContT[r, n, a]})#L] {
-        // MonadTrans
         private type t[n[+_], +a] = ContT[r, n, a]
         override def lift[n[+_], a](n: n[a])(implicit i: Monad[n]): t[n, a] = ContT { c => i.op_>>=(n)(c) }
+        override def liftWith[n[+_], a](f: Run => n[a])(implicit i: Monad[n]): t[n, a] = error("todo")
     }
 
     implicit def _asMonadReader[r, n[+_], r_](implicit i: MonadReader[r_, n]): MonadReader[r_, ({type L[+a] = ContT[r, n, a]})#L] = new MonadReader[r_, ({type L[+a] = ContT[r, n, a]})#L] with MonadProxy[({type L[+a] = ContT[r, n, a]})#L] {

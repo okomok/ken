@@ -35,6 +35,7 @@ object Codensity extends CodensityAs with MonadTrans[Codensity] with Kind.Functi
     override def lift[n[+_], a](n: n[a])(implicit nM: Monad[n]): t[n, a] = new Codensity[n, a] {
         override def apply[r](h: a => n[r]): n[r] = nM.op_>>=(n)(h)
     }
+    override def liftWith[n[+_], a](f: Run => n[a])(implicit i: Monad[n]): t[n, a] = error("todo")
 }
 
 private[ken] sealed trait CodensityAs0 { this: Codensity.type =>

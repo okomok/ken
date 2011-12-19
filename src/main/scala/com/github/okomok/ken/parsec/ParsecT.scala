@@ -51,6 +51,7 @@ private[parsec] sealed trait ParsecTAs0 { this: ParsecT.type =>
                 }
             }
         } }
+        override def liftWith[n[+_], a](f: Run => n[a])(implicit i: Monad[n]): t[n, a] = error("todo")
     }
 
     implicit def _asMonadIO[s, u, n[+_]](implicit i: MonadIO[n]): MonadIO[({type L[+a] = ParsecT[s, u, n, a]})#L] = new MonadIO[({type L[+a] = ParsecT[s, u, n, a]})#L] with MonadProxy[({type L[+a] = ParsecT[s, u, n, a]})#L] {

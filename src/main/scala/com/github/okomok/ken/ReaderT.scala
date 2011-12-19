@@ -42,12 +42,10 @@ private[ken] trait ReaderTOp {
 
 
 private[ken] sealed trait ReaderTAs0 { this: ReaderT.type =>
-    implicit def _asMonadTrans[r]: MonadTransControl[({type L[n[+_], +a] = ReaderT[r, n, a]})#L] = new MonadTransControl[({type L[n[+_], +a] = ReaderT[r, n, a]})#L] {
-        // MonadTrans
+    implicit def _asMonadTrans[r]: MonadTrans[({type L[n[+_], +a] = ReaderT[r, n, a]})#L] = new MonadTrans[({type L[n[+_], +a] = ReaderT[r, n, a]})#L] {
         private type t[n[+_], +a] = ReaderT[r, n, a]
         override def lift[n[+_], a](n: n[a])(implicit i: Monad[n]): t[n, a] = ReaderT { _ => n }
-        // MonadTransControl
-        override def liftControl[n[+_], a](f: Run => n[a])(implicit i: Monad[n]): t[n, a] = ReaderT { r =>
+        override def liftWith[n[+_], a](f: Run => n[a])(implicit i: Monad[n]): t[n, a] = ReaderT { r =>
             f {
                 new Run {
                     override def apply[n_[+_], o[+_], b](t: t[n_, b], * : Type1[o] = null)(implicit ri: Monad[n_], rj: Monad[o], rk: Monad[({type m[+a] = t[o, a]})#m]): n_[t[o, b]] = {
@@ -126,7 +124,7 @@ private[ken] sealed trait ReaderTAs1 extends ReaderTAs0 { this: ReaderT.type =>
         override val selfMonadIO = _asMonadIO[r, n]
         override def liftIO[a](io: IO[a]): m[a] = mt.lift(i.liftIO(io))
         override def liftControlIO[a](f: RunInIO => IO[a]): m[a] = {
-            mt.liftControl { run1 =>
+            mt.liftWith { run1 =>
                 i.liftControlIO { runInBase =>
                     f {
                         new RunInIO {

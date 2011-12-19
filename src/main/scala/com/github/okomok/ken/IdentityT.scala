@@ -14,7 +14,7 @@ package ken
 final case class IdentityT[n[+_], +a](override val old: n[a]) extends NewtypeOf[n[a]]
 
 
-object IdentityT extends IdentityTOp with IdentityTAs with MonadTransControl[IdentityT] {
+object IdentityT extends IdentityTOp with IdentityTAs with MonadTrans[IdentityT] {
     trait apply[n <: Kind.Function1] extends apply1[n]
     trait apply1[n <: Kind.Function1] extends Kind.Newtype1 {
         override type apply1[+a] = IdentityT[n#apply1, a]
@@ -26,8 +26,7 @@ object IdentityT extends IdentityTOp with IdentityTAs with MonadTransControl[Ide
     // MonadTrans
     private type t[n[+_], +a] = IdentityT[n, a]
     override def lift[n[+_], a](n: n[a])(implicit i: Monad[n]): t[n, a] = IdentityT(n)
-    // MonadTransControl
-    override def liftControl[n[+_], a](f: Run => n[a])(implicit i: Monad[n]): t[n, a] = IdentityT {
+    override def liftWith[n[+_], a](f: Run => n[a])(implicit i: Monad[n]): t[n, a] = IdentityT {
          i.liftM((x: a) => x) {
             f {
                 new Run {
@@ -51,7 +50,7 @@ private[ken] trait IdentityTOp {
 
 
 private[ken] sealed trait IdentityTAs0 { this: IdentityT.type =>
-    implicit val _asMonadTrans: MonadTransControl[IdentityT] = this
+    implicit val _asMonadTrans: MonadTrans[IdentityT] = this
 
     implicit def _asMonadPlus[n[+_]](implicit i: MonadPlus[n]): MonadPlus[({type L[+a] = IdentityT[n, a]})#L] = new MonadPlus[({type L[+a] = IdentityT[n, a]})#L] with MonadProxy[({type L[+a] = IdentityT[n, a]})#L] {
         private type m[+a] = IdentityT[n, a]
@@ -108,7 +107,7 @@ private[ken] sealed trait IdentityTAs1 extends IdentityTAs0 { this: IdentityT.ty
         override val selfMonadIO = _asMonadIO[n]
         override def liftIO[a](io: IO[a]): m[a] = mt.lift(i.liftIO(io))
         override def liftControlIO[a](f: RunInIO => IO[a]): m[a] = {
-            mt.liftControl { run1 =>
+            mt.liftWith { run1 =>
                 i.liftControlIO { runInBase =>
                     f {
                         new RunInIO {

@@ -17,7 +17,7 @@ package ken
 final case class ListT[n[+_], +a](override val old: n[List[a]]) extends NewtypeOf[n[List[a]]]
 
 
-object ListT extends ListTOp with ListTAs with MonadTransControl[ListT] {
+object ListT extends ListTOp with ListTAs with MonadTrans[ListT] {
     trait apply[n <: Kind.Function1] extends apply1[n]
     trait apply1[n <: Kind.Function1] extends Kind.Newtype1 {
         override type apply1[+a] = ListT[n#apply1, a]
@@ -32,8 +32,7 @@ object ListT extends ListTOp with ListTAs with MonadTransControl[ListT] {
         import i.`for`
         for { a <- n } yield List(a)
     }
-    // MonadTransControl
-    override def liftControl[n[+_], a](f: Run => n[a])(implicit i: Monad[n]): t[n, a] = ListT {
+    override def liftWith[n[+_], a](f: Run => n[a])(implicit i: Monad[n]): t[n, a] = ListT {
          i.liftM((x: a) => List.`return`(x)) {
             f {
                 new Run {
@@ -64,7 +63,7 @@ private[ken] sealed trait ListTAs0 { this: ListT.type =>
         override def oldOf[a](nt: Lazy[ListT[n, a]]): n[List[a]] = nt.run
     }
     */
-    implicit val _asMonadTrans: MonadTransControl[ListT] = this
+    implicit val _asMonadTrans: MonadTrans[ListT] = this
 
     implicit def _asMonadCont[n[+_]](implicit i: MonadCont[n]): MonadCont[({type L[+a] = ListT[n, a]})#L] = new MonadCont[({type L[+a] = ListT[n, a]})#L] with MonadProxy[({type L[+a] = ListT[n, a]})#L] {
         private type m[+a] = ListT[n, a]
@@ -114,7 +113,7 @@ private[ken] sealed trait ListTAs1 extends ListTAs0 { this: ListT.type =>
         override val selfMonadIO = _asMonadIO[n]
         override def liftIO[a](io: IO[a]): m[a] = mt.lift(i.liftIO(io))
         override def liftControlIO[a](f: RunInIO => IO[a]): m[a] = {
-            mt.liftControl { run1 =>
+            mt.liftWith { run1 =>
                 i.liftControlIO { runInBase =>
                     f {
                         new RunInIO {

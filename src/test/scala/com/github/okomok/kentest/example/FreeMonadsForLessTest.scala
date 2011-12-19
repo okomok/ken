@@ -41,6 +41,7 @@ class FreeMonadsForLess extends org.scalatest.junit.JUnit3Suite {
             import i.`for`
             for { a <- n } yield Pure(a)
         }
+        override def liftWith[n[+_], a](f: Run => n[a])(implicit i: Monad[n]): t[n, a] = error("todo")
 
         implicit def _asMonadFree[f[+_]]: MonadFree[f, apply1[f]#apply1] = new MonadFree[f, apply1[f]#apply1] {
             private type m[+a] = Free[f, a]
@@ -98,6 +99,7 @@ class FreeMonadsForLess extends org.scalatest.junit.JUnit3Suite {
         override def lift[n[+_], a](n: n[a])(implicit i: Monad[n]): t[n, a] = new Codensity[n, a] {
             override def apply[r](k: a => n[r]): n[r] = i.op_>>=(n)(k)
         }
+        override def liftWith[n[+_], a](f: Run => n[a])(implicit i: Monad[n]): t[n, a] = error("todo")
 
         implicit def _asMonadFree[f[+_], n[+_]](implicit i: MonadFree[f, n], j: Functor[f]): MonadFree[f, apply1[n]#apply1] = new MonadFree[f, apply1[n]#apply1] {
             private type m[+a] = Codensity[n, a]

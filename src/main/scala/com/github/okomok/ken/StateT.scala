@@ -59,15 +59,13 @@ private[ken] sealed trait StateTAs0 { this: StateT.type =>
         override def oldOf[a](nt: Lazy[nt[a]]): ot[a] = nt.run
     }
 
-    implicit def _asMonadTrans[s]: MonadTransControl[({type L[n[+_], +a] = StateT[s, n, a]})#L] = new MonadTransControl[({type L[n[+_], +a] = StateT[s, n, a]})#L] {
-        // MonadTrans
+    implicit def _asMonadTrans[s]: MonadTrans[({type L[n[+_], +a] = StateT[s, n, a]})#L] = new MonadTrans[({type L[n[+_], +a] = StateT[s, n, a]})#L] {
         private type t[n[+_], +a] = StateT[s, n, a]
         override def lift[n[+_], a](n: n[a])(implicit i: Monad[n]): t[n, a] = StateT { s => {
             import i.`for`
             for { a <- n } yield (a, s)
         } }
-        // MonadTransControl
-        override def liftControl[n[+_], a](f: Run => n[a])(implicit i: Monad[n]): t[n, a] = StateT { s =>
+        override def liftWith[n[+_], a](f: Run => n[a])(implicit i: Monad[n]): t[n, a] = StateT { s =>
             i.liftM((x: a) => (x, s)) {
                 f {
                     new Run {
@@ -155,7 +153,7 @@ private[ken] sealed trait StateTAs1 extends StateTAs0 { this: StateT.type =>
         override val selfMonadIO = _asMonadIO[s, n]
         override def liftIO[a](io: IO[a]): m[a] = mt.lift(i.liftIO(io))
         override def liftControlIO[a](f: RunInIO => IO[a]): m[a] = {
-            mt.liftControl { run1 =>
+            mt.liftWith { run1 =>
                 i.liftControlIO { runInBase =>
                     f {
                         new RunInIO {
