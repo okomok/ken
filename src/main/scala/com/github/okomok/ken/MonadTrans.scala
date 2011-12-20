@@ -32,7 +32,7 @@ trait MonadTransProxy[t[_[+_], +_]] extends MonadTrans[t] {
     val selfMonadTrans: MonadTrans[t]
     override type StT[+a] = selfMonadTrans.StT[a]
 
-    private def run2run(run: selfMonadTrans.Run): Run = new Run {
+    private[this] def run2run(run: selfMonadTrans.Run): Run = new Run {
         override def apply[u[+_], b](t: t[u, b])(implicit _U: Monad[u]): u[StT[b]] = run(t)
     }
 

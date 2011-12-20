@@ -72,7 +72,7 @@ trait Traversable[t[+_]] extends Functor[t] with Foldable[t] { outer =>
 
     // Experimental
     //
-    def traverseI[fb, a](f: a => fb)(t: t[a])(implicit _f: Instance1[Applicative, fb]): _f.apply1[t[_f.arg1]] = traverse((a: a) => _f(f(a)))(t)(_f.instance)
+    // def traverseI[fb, a](f: a => fb)(t: t[a])(implicit _f: Instance1[Applicative, fb]): _f.apply1[t[_f.arg1]] = traverse((a: a) => _f(f(a)))(t)(_f.instance)
 }
 
 

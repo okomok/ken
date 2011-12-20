@@ -24,6 +24,5 @@ class SemigroupTest extends org.scalatest.junit.JUnit3Suite {
         val i = Monoid[Semigroup.Min[Int]]
         import i._
         m <>: m
-        m _mappend_ m
     }
 }

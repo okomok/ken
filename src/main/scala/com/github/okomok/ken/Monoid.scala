@@ -39,13 +39,6 @@ trait Monoid[m] extends Semigroup[m] { outer =>
         override val mempty: m = outer.mempty
         override val mappend: m => Lazy[m] => m = x => y => outer.mappend(y.!)(x)
     }
-
-    // Operators
-    //
-    private[ken] sealed class Op_mappend_(x: m) {
-        def _mappend_(y: Lazy[m]): m = mappend(x)(y)
-    }
-    final implicit def _mappend_(x: m): Op_mappend_ = new Op_mappend_(x)
 }
 
 
@@ -89,11 +82,6 @@ trait MonoidShortcut extends SemigroupShortcut {
     def mconcat[m](xs: List[m])(implicit i: Monoid[m]): m = i.mconcat(xs)
 
     def dual[m](implicit i: Monoid[m]): Monoid[m] = i.dual
-
-    private[ken] class _Op_mappend[m](x: m) {
-        def _mappend_(y: Lazy[m])(implicit i: Monoid[m]): m = mappend(x)(y)
-    }
-    implicit def _mappend_[m](x: m): _Op_mappend[m] = new _Op_mappend(x)
 }
 
 
