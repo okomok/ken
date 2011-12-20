@@ -25,17 +25,18 @@ object IdentityT extends IdentityTOp with IdentityTAs with MonadTrans[IdentityT]
     //
     // MonadTrans
     private type t[n[+_], +a] = IdentityT[n, a]
-    override def lift[n[+_], a](n: n[a])(implicit i: Monad[n]): t[n, a] = IdentityT(n)
-    override def liftWith[n[+_], a](f: Run => n[a])(implicit i: Monad[n]): t[n, a] = IdentityT {
-         i.liftM((x: a) => x) {
-            f {
-                new Run {
-                    override def apply[n_[+_], o[+_], b](t: t[n_, b], * : Type1[o] = null)(implicit ri: Monad[n_], rj: Monad[o], rk: Monad[({type m[+a] = t[o, a]})#m]): n_[t[o, b]] = {
-                        ri.liftM((x: b) => IdentityT(rj.`return`(x)))(run(t))
-                    }
+    final case class StT[+a](override val old: a) extends NewtypeOf[a]
+    override def liftWith[n[+_], a](f: Run => n[a])(implicit _N: Monad[n]): t[n, a] = IdentityT {
+        f {
+            new Run {
+                override def apply[u[+_], b](t: t[u, b])(implicit _U: Monad[u]): u[StT[b]] = {
+                    _U.liftM((x: b) => StT(x))(run(t))
                 }
             }
         }
+    }
+    override def restoreT[n[+_], a](nSt: n[StT[a]])(implicit _N: Monad[n]): t[n, a] = IdentityT {
+        _N.liftM((St: StT[a]) => St.old)(nSt)
     }
 }
 
@@ -97,30 +98,33 @@ private[ken] sealed trait IdentityTAs0 { this: IdentityT.type =>
         override val selfMonad = _asMonad[n]
         override def liftIO[a](io: IO[a]): m[a] = _asMonadTrans.lift(i.liftIO(io))
     }
-}
 
-@Annotation.compilerWorkaround("2.9.1") // ambiguous with `_asMonadIO` for some reason.
-private[ken] sealed trait IdentityTAs1 extends IdentityTAs0 { this: IdentityT.type =>
-    implicit def _asMonadControlIO[n[+_]](implicit i: MonadControlIO[n]): MonadControlIO[({type L[+a] = IdentityT[n, a]})#L] = new MonadControlIO[({type L[+a] = IdentityT[n, a]})#L] with MonadIOProxy[({type L[+a] = IdentityT[n, a]})#L] {
+    implicit def _asMonadBase[n[+_], b[+_]](implicit _N: MonadBase[b, n]): MonadBase[b, ({type L[+a] = IdentityT[n, a]})#L] = new MonadBaseProxy[b, ({type L[+a] = IdentityT[n, a]})#L] {
+        type t[n[+_], +a] = IdentityT[n, a]
+        override val selfMonadBase = new MonadBase.TransDefault[t, n, b](_asMonadTrans, _N, _asMonad(_N))
+/*
         private type m[+a] = IdentityT[n, a]
-        private val mt = _asMonadTrans
-        override val selfMonadIO = _asMonadIO[n]
-        override def liftIO[a](io: IO[a]): m[a] = mt.lift(i.liftIO(io))
-        override def liftControlIO[a](f: RunInIO => IO[a]): m[a] = {
-            mt.liftWith { run1 =>
-                i.liftControlIO { runInBase =>
+        val _T = _asMonadTrans
+        override val selfMonad = _asMonad(_N)
+        override val baseMonad = _N.baseMonad
+        final case class StM[+a](override val old: _N.StM[_T.StT[a]]) extends NewtypeOf[_N.StM[_T.StT[a]]]
+        override def liftBaseWith[a](f: RunInBase => b[a]): m[a] = {
+            _T.liftWith { run1 =>
+                _N.liftBaseWith { runInBase =>
                     f {
-                        new RunInIO {
-                            override def apply[b](t: m[b]): IO[m[b]] = IO.liftM((x: n[m[b]]) => join(mt.lift(x)))(runInBase(run1(t)))
+                        new RunInBase {
+                            override def apply[c](m: m[c]): b[StM[c]] = baseMonad.liftM((x: _N.StM[_T.StT[c]]) => StM(x))(runInBase(run1(m)))
                         }
                     }
                 }
             }
         }
+        override def restoreM[a](St: StM[a]): m[a] = _T.restoreT(_N.restoreM(St.old))
+*/
     }
 }
 
-private[ken] sealed trait IdentityTAs extends IdentityTAs1 { this: IdentityT.type =>
+private[ken] sealed trait IdentityTAs extends IdentityTAs0 { this: IdentityT.type =>
     implicit def _asMonad[n[+_]](implicit i: Monad[n]): Monad[({type L[+a] = IdentityT[n, a]})#L] with HighPriority = new Monad[({type L[+a] = IdentityT[n, a]})#L] with HighPriority {
         // Functor
         private type f[+a] = IdentityT[n, a]

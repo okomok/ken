@@ -11,6 +11,9 @@ package com.github.okomok
 package ken
 
 
+// Will be removed?
+
+
 trait MonadControlIO[m[+_]] extends MonadIO[m] {
     final val asMonadControlIO: MonadControlIO[apply1] = this
 
@@ -18,7 +21,14 @@ trait MonadControlIO[m[+_]] extends MonadIO[m] {
 
     // Core
     //
-    def liftControlIO[a](f: RunInIO => IO[a]): m[a]
+    val monadBaseIO: MonadBase[IO, m]
+    def liftControlIO[a](f: RunInIO => IO[a]): m[a] = monadBaseIO.liftBaseWith { run =>
+        f {
+            new RunInIO {
+                override def apply[c](m: m[c]): IO[m[c]] = for { x <- run(m) } yield monadBaseIO.restoreM(x)
+            }
+        }
+    }
 
     // Extra
     //
@@ -117,25 +127,10 @@ trait MonadControlIOProxy[m[+_]] extends MonadControlIO[m] with MonadIOProxy[m] 
 
 
 object MonadControlIO {
-    def apply[m <: Kind.Function1](implicit i: MonadControlIO[m#apply1]): MonadControlIO[m#apply1] = i
-
-    def deriving[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply1, nt#oldtype1], i: MonadControlIO[nt#oldtype1]): MonadControlIO[nt#apply1] = new MonadControlIO[nt#apply1] with MonadIOProxy[nt#apply1] {
-        private type m[+a] = nt#apply1[a]
-        override val selfMonadIO = MonadIO.deriving[nt]
-
-        override def liftIO[a](io: IO[a]): m[a] = j.newOf { i.liftIO(io) }
-        override def liftControlIO[a](f: RunInIO => IO[a]): m[a] = j.newOf {
-            i.liftControlIO { run =>
-                f {
-                    new RunInIO {
-                        override def apply[b](t: m[b]): IO[m[b]] = for { x <- run(j.oldOf(t)) } yield j.newOf(x)
-                    }
-                }
-            }
-        }
+    def apply[m <: Kind.Function1](implicit _M: MonadBase[IO, m#apply1], _Mio: MonadIO[m#apply1]): MonadControlIO[m#apply1] = new MonadControlIO[m#apply1] with MonadIOProxy[m#apply1] {
+        override val selfMonadIO = _Mio
+        override val monadBaseIO = _M
     }
-
-    def weak[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply1, nt#oldtype1], i: MonadControlIO[nt#apply1]): MonadControlIO[nt#oldtype1] = deriving[Kind.coNewtype1[nt]](j.coNewtype, i)
 
     type RunInIO[m[+_]] = MonadTrans.RunInBase[m, IO]
 

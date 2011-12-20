@@ -76,6 +76,7 @@ class TypeSafeEventsTest extends org.scalatest.junit.JUnit3Suite {
                 _MT.lift(n)
             }
             override def liftWith[n[+_], a](f: Run => n[a])(implicit i: Monad[n]): t[n, a] = error("todo")
+            override def restoreT[n[+_], a](nSt: n[StT[a]])(implicit _N: Monad[n]): t[n, a] = error("todo")
         }
 
         implicit def _asMonad[n[+_], s](implicit _N: Monad[n]): Monad[({type L[+a] = RespondsT[s, n, a]})#L] = new Monad[({type L[+a] = RespondsT[s, n, a]})#L] {

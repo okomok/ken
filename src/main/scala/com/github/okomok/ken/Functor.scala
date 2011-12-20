@@ -23,6 +23,9 @@ trait Functor[f[+_]] extends Typeclass1[f] { outer =>
 
     def op_<@[a, b](x: Lazy[a])(y: f[b]): f[a] = fmap[b, a](_ => x)(y)
 
+    type void = f[_] => f[Unit]
+    def void: void = f => fmap((_: Any) => ())(f)
+
     // Operators
     //
     private[ken] sealed class Op_<@>[a, b](x: a => b) {
@@ -53,6 +56,7 @@ trait FunctorProxy[f[+_]] extends Functor[f] {
     override def fmap[a, b](x: a => b): f[a] => f[b] = selfFunctor.fmap(x)
     override def op_<@[a, b](x: Lazy[a])(y: f[b]): f[a] = selfFunctor.op_<@(x)(y)
 
+    override def void: void = selfFunctor.void
     override implicit def `for`[a](x: f[a]): ken.For[f, a] = selfFunctor.`for`(x)
 }
 

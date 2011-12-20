@@ -80,6 +80,7 @@ private[ken] sealed trait FreeTAs0 { this: FreeT.type =>
             for { a <- n } yield Left(a)
         }
         override def liftWith[n[+_], a](f: Run => n[a])(implicit i: Monad[n]): t[n, a] = error("todo")
+        override def restoreT[n[+_], a](nSt: n[StT[a]])(implicit _N: Monad[n]): t[n, a] = error("todo")
     }
 }
 

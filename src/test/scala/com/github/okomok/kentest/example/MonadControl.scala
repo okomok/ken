@@ -51,11 +51,11 @@ class MonadControlTest extends org.scalatest.junit.JUnit3Suite {
         val rewrapped: ErrorT[MyError, IO, Unit] = ErrorT(applied)
         rewrapped
     }
-
+/*
     val useMyFileError6: ErrorT[MyError, IO, Unit] = mt.control { run =>
         withMyFile { h => run(sayHiError(h), IO) }
     }
-
+*/
     val mi = MonadControlIO[ErrorT.apply2[MyError, IO.type]]
 
     val useMyFileError7: ErrorT[MyError, IO, Unit] = mi.controlIO { run =>

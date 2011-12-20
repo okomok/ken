@@ -28,20 +28,20 @@ object ListT extends ListTOp with ListTAs with MonadTrans[ListT] {
     //
     // MonadTrans
     private type t[n[+_], +a] = ListT[n, a]
-    override def lift[n[+_], a](n: n[a])(implicit i: Monad[n]): t[n, a] = ListT {
-        import i.`for`
-        for { a <- n } yield List(a)
-    }
-    override def liftWith[n[+_], a](f: Run => n[a])(implicit i: Monad[n]): t[n, a] = ListT {
-         i.liftM((x: a) => List.`return`(x)) {
+    final case class StT[+a](override val old: List[a]) extends NewtypeOf[List[a]]
+    override def liftWith[n[+_], a](f: Run => n[a])(implicit _N: Monad[n]): t[n, a] = ListT {
+        _N.liftM((a: a) => List.`return`(a)) {
             f {
                 new Run {
-                    override def apply[n_[+_], o[+_], b](t: t[n_, b], * : Type1[o] = null)(implicit ri: Monad[n_], rj: Monad[o], rk: Monad[({type m[+a] = t[o, a]})#m]): n_[t[o, b]] = {
-                        ri.liftM((x: List[b]) => ListT(rj.`return`(x)))(run(t))
+                    override def apply[u[+_], b](t: t[u, b])(implicit _U: Monad[u]): u[StT[b]] = {
+                        _U.liftM((x: List[b]) => StT(x))(run(t))
                     }
                 }
             }
         }
+    }
+    override def restoreT[n[+_], a](nSt: n[StT[a]])(implicit _N: Monad[n]): t[n, a] = ListT {
+        _N.liftM((St: StT[a]) => St.old)(nSt)
     }
 }
 
@@ -103,30 +103,14 @@ private[ken] sealed trait ListTAs0 { this: ListT.type =>
         override val selfMonad = _asMonadPlus[n]
         override def liftIO[a](io: IO[a]): m[a] = _asMonadTrans.lift(i.liftIO(io))
     }
-}
 
-@Annotation.compilerWorkaround("2.9.1") // ambiguous with `_asMonadIO` for some reason.
-private[ken] sealed trait ListTAs1 extends ListTAs0 { this: ListT.type =>
-    implicit def _asMonadControlIO[n[+_]](implicit i: MonadControlIO[n]): MonadControlIO[({type L[+a] = ListT[n, a]})#L] = new MonadControlIO[({type L[+a] = ListT[n, a]})#L] with MonadIOProxy[({type L[+a] = ListT[n, a]})#L] {
-        private type m[+a] = ListT[n, a]
-        private val mt = _asMonadTrans
-        override val selfMonadIO = _asMonadIO[n]
-        override def liftIO[a](io: IO[a]): m[a] = mt.lift(i.liftIO(io))
-        override def liftControlIO[a](f: RunInIO => IO[a]): m[a] = {
-            mt.liftWith { run1 =>
-                i.liftControlIO { runInBase =>
-                    f {
-                        new RunInIO {
-                            override def apply[b](t: m[b]): IO[m[b]] = IO.liftM((x: n[m[b]]) => join(mt.lift(x)))(runInBase(run1(t)))
-                        }
-                    }
-                }
-            }
-        }
+    implicit def _asMonadBase[n[+_], b[+_]](implicit _N: MonadBase[b, n]): MonadBase[b, ({type L[+a] = ListT[n, a]})#L] = new MonadBaseProxy[b, ({type L[+a] = ListT[n, a]})#L] {
+        type t[n[+_], +a] = ListT[n, a]
+        override val selfMonadBase = new MonadBase.TransDefault[t, n, b](_asMonadTrans, _N, _asMonadPlus(_N))
     }
 }
 
-private[ken] sealed trait ListTAs extends ListTAs1 { this: ListT.type =>
+private[ken] sealed trait ListTAs extends ListTAs0 { this: ListT.type =>
     implicit def _asMonadPlus[n[+_]](implicit i: Monad[n]): MonadPlus[({type L[+a] = ListT[n, a]})#L] = new MonadPlus[({type L[+a] = ListT[n, a]})#L] {
         // Functor
         private type f[+a] = ListT[n, a]

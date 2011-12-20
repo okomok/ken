@@ -146,6 +146,7 @@ class MonadZipperTest extends org.scalatest.junit.JUnit3Suite {
                 ZipperT[t1, t2, n, a](m1)
             }
             override def liftWith[n[+_], a](f: Run => n[a])(implicit i: Monad[n]): t[n, a] = error("todo")
+            override def restoreT[n[+_], a](nSt: n[StT[a]])(implicit _N: Monad[n]): t[n, a] = error("todo")
         }
     }
 
