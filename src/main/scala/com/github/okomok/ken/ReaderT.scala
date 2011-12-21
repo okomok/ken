@@ -41,8 +41,10 @@ private[ken] trait ReaderTOp {
 }
 
 
-private[ken] sealed trait ReaderTAs0 { this: ReaderT.type =>
-    implicit def _asMonadTrans[r]: MonadTrans[({type L[n[+_], +a] = ReaderT[r, n, a]})#L] = new MonadTrans[({type L[n[+_], +a] = ReaderT[r, n, a]})#L] {
+private[ken] sealed trait ReaderTAs0 extends MonadTrans.Deriving1[ReaderT, Trivial, MonadBase.type ^: MonadError.type ^: MonadFix.type ^: MonadIO.type ^: MonadPlus.type ^: MonadState.type ^: Kind.Nil] { this: ReaderT.type =>
+    private type c[x] = Trivial[x]
+
+    override protected def deriveMonadTrans[r](_C: c[r]): MonadTrans[({type L[n[+_], +a] = ReaderT[r, n, a]})#L] = new MonadTrans[({type L[n[+_], +a] = ReaderT[r, n, a]})#L] {
         private type t[n[+_], +a] = ReaderT[r, n, a]
         final case class StT[+a](override val old: a) extends NewtypeOf[a]
         override def liftWith[n[+_], a](f: Run => n[a])(implicit _N: Monad[n]): t[n, a] = ReaderT { r =>
@@ -59,25 +61,11 @@ private[ken] sealed trait ReaderTAs0 { this: ReaderT.type =>
         }
     }
 
-    implicit def _asMonadPlus[r, n[+_]](implicit i: MonadPlus[n]): MonadPlus[({type L[+a] = ReaderT[r, n, a]})#L] = new MonadPlus[({type L[+a] = ReaderT[r, n, a]})#L] with MonadProxy[({type L[+a] = ReaderT[r, n, a]})#L] {
-        private type m[+a] = ReaderT[r, n, a]
-        override val selfMonad = _asMonadReader[r, n]
-        override def mzero: m[Nothing] = ReaderT { _ => i.mzero }
-        override def mplus[a](m: m[a])(n: Lazy[m[a]]): m[a] = ReaderT { r => i.mplus(run(m)(r))(run(n)(r)) }
-    }
-
-    implicit def _asMonadFix[r, n[+_]](implicit i: MonadFix[n]): MonadFix[({type L[+a] = ReaderT[r, n, a]})#L] = new MonadFix[({type L[+a] = ReaderT[r, n, a]})#L] with MonadProxy[({type L[+a] = ReaderT[r, n, a]})#L] {
-        private type m[+a] = ReaderT[r, n, a]
-        override val selfMonad = _asMonadReader[r, n]
-        override def mfix[a](f: Lazy[a] => m[a]): m[a] = ReaderT { r =>
-            def k(a: Lazy[a]) = run(f(a))(r)
-            i.mfix(k)
-        }
-    }
+    override protected def deriveMonad[r, n[+_]](_N: Monad[n], _C: c[r]): Monad[({type L[+a] = ReaderT[r, n, a]})#L] = _asMonadReader(_N)
 
     implicit def _asMonadCont[r, n[+_]](implicit i: MonadCont[n]): MonadCont[({type L[+a] = ReaderT[r, n, a]})#L] = new MonadCont[({type L[+a] = ReaderT[r, n, a]})#L] with MonadProxy[({type L[+a] = ReaderT[r, n, a]})#L] {
         private type m[+a] = ReaderT[r, n, a]
-        override val selfMonad = _asMonadReader[r, n]
+        override val selfMonad = deriveMonad(i, Trivial.of[r])
         override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = ReaderT { r =>
             i.callCC { (c: a => n[b]) =>
                 run( f( a => ReaderT { s_ => c(a) } ) )(r)
@@ -85,42 +73,13 @@ private[ken] sealed trait ReaderTAs0 { this: ReaderT.type =>
         }
     }
 
-    implicit def _asMonadError[r, n[+_], e](implicit i: MonadError[e, n]): MonadError[e, ({type L[+a] = ReaderT[r, n, a]})#L] = new MonadError[e, ({type L[+a] = ReaderT[r, n, a]})#L] with MonadProxy[({type L[+a] = ReaderT[r, n, a]})#L] {
-        private type m[+a] = ReaderT[r, n, a]
-        override val selfMonad = _asMonadReader[r, n]
-        override def throwError[a](e: e): m[a] = _asMonadTrans[r].lift(i.throwError(e))
-        override def catchError[a](m: m[a])(h: e => m[a]): m[a] = ReaderT { r =>
-            i.catchError(run(m)(r)) { e => run(h(e))(r) }
-        }
-    }
-
-    implicit def _asMonadState[r, n[+_], s](implicit i: MonadState[s, n]): MonadState[s, ({type L[+a] = ReaderT[r, n, a]})#L] = new MonadState[s, ({type L[+a] = ReaderT[r, n, a]})#L] with MonadProxy[({type L[+a] = ReaderT[r, n, a]})#L] {
-        private type m[+a] = ReaderT[r, n, a]
-        private val mt = _asMonadTrans[r]
-        override val selfMonad = _asMonadReader[r, n]
-        override val get: m[s] = mt.lift(i.get)
-        override val put: s => m[Unit] = s => mt.lift(i.put(s))
-    }
-
     implicit def _asMonadWriter[r, n[+_], w](implicit i: MonadWriter[w, n]): MonadWriter[w, ({type L[+a] = ReaderT[r, n, a]})#L] = new MonadWriter[w, ({type L[+a] = ReaderT[r, n, a]})#L] with MonadProxy[({type L[+a] = ReaderT[r, n, a]})#L] {
         private type m[+a] = ReaderT[r, n, a]
-        override val selfMonad = _asMonadReader[r, n]
+        override val selfMonad = deriveMonad(i, Trivial.of[r])
         override def monoid: Monoid[w] = i.monoid
-        override val tell: w => m[Unit] = x => _asMonadTrans[r].lift(i.tell(x))
+        override val tell: w => m[Unit] = x => deriveMonadTrans(Trivial.of[r]).lift(i.tell(x))
         override def listen[a](m: m[a]): m[(a, w)] = ReaderT { w => i.listen(run(m)(w)) }
         override def pass[a](m: m[(a, w => w)]): m[a] = ReaderT { w => i.pass(run(m)(w)) }
-    }
-
-    implicit def _asMonadIO[r, n[+_]](implicit i: MonadIO[n]): MonadIO[({type L[+a] = ReaderT[r, n, a]})#L] = new MonadIO[({type L[+a] = ReaderT[r, n, a]})#L] with MonadProxy[({type L[+a] = ReaderT[r, n, a]})#L] {
-        private type m[+a] = ReaderT[r, n, a]
-        private val mt = _asMonadTrans[r]
-        override val selfMonad = _asMonadReader[r, n]
-        override def liftIO[a](io: IO[a]): m[a] = mt.lift(i.liftIO(io))
-    }
-
-    implicit def _asMonadBase[r, n[+_], b[+_]](implicit _N: MonadBase[b, n]): MonadBase[b, ({type L[+a] = ReaderT[r, n, a]})#L] = new MonadBaseProxy[b, ({type L[+a] = ReaderT[r, n, a]})#L] {
-        type t[n[+_], +a] = ReaderT[r, n, a]
-        override val selfMonadBase = new MonadBase.TransDefault[t, n, b](_asMonadTrans[r], _N, _asMonadReader[r, n](_N))
     }
 }
 

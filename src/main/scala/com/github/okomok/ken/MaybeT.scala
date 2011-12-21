@@ -53,61 +53,17 @@ private[ken] trait MaybeTOp {
 }
 
 
-private[ken] sealed trait MaybeTAs0 { this: MaybeT.type =>
-    /*
-    @Annotation.typeAliasWorkaround
-    implicit def _asNewtype1[n[+_]]: Newtype1[({type L[+a] = MaybeT[n, a]})#L, apply1[n]#oldtype1] = new Newtype1[({type L[+a] = MaybeT[n, a]})#L, apply1[n]#oldtype1] {
-        // private type nt[+a] = MaybeT[n, a]
-        // private type ot[+a] = n[Maybe[a]]
-        override def newOf[a](ot: Lazy[n[Maybe[a]]]): MaybeT[n, a] = MaybeT(ot)
-        override def oldOf[a](nt: Lazy[MaybeT[n, a]]): n[Maybe[a]] = nt.run
-    }
-    */
-
-    implicit val _asMonadTrans: MonadTrans[MaybeT] = this
+private[ken] sealed trait MaybeTAs0 extends MonadTrans.Deriving0[MaybeT, MonadBase.type ^: MonadError.type ^: MonadFix.type ^: MonadIO.type ^: MonadReader.type ^: MonadState.type ^: Kind.Nil] { this: MaybeT.type =>
+    override protected def deriveMonad[n[+_]](_N: Monad[n]) = _asMonadPlus(_N)
 
     implicit def _asMonadCont[n[+_]](implicit i: MonadCont[n]): MonadCont[({type L[+a] = MaybeT[n, a]})#L] = new MonadCont[({type L[+a] = MaybeT[n, a]})#L] with MonadProxy[({type L[+a] = MaybeT[n, a]})#L] {
         private type m[+a] = MaybeT[n, a]
-        override val selfMonad = _asMonadPlus[n]
+        override val selfMonad = deriveMonad[n](i)
         override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = MaybeT {
             i.callCC { (c: Maybe[a] => n[Maybe[b]]) =>
                 run( f( a => MaybeT { c(Just(a)) } ) )
             }
         }
-    }
-
-    implicit def _asMonadError[n[+_], e](implicit i: MonadError[e, n]): MonadError[e, ({type L[+a] = MaybeT[n, a]})#L] = new MonadError[e, ({type L[+a] = MaybeT[n, a]})#L] with MonadProxy[({type L[+a] = MaybeT[n, a]})#L] {
-        private type m[+a] = MaybeT[n, a]
-        override val selfMonad = _asMonadPlus[n]
-        override def throwError[a](e: e): m[a] = _asMonadTrans.lift(i.throwError(e))
-        override def catchError[a](m: m[a])(h: e => m[a]): m[a] = MaybeT {
-            i.catchError(run(m)) { e => run(h(e)) }
-        }
-    }
-
-    implicit def _asMonadReader[n[+_], r](implicit i: MonadReader[r, n]): MonadReader[r, ({type L[+a] = MaybeT[n, a]})#L] = new MonadReader[r, ({type L[+a] = MaybeT[n, a]})#L] with MonadProxy[({type L[+a] = MaybeT[n, a]})#L] {
-        private type m[+a] = MaybeT[n, a]
-        override val selfMonad = _asMonadPlus[n]
-        override val ask: m[r] = _asMonadTrans.lift(i.ask)
-        override def local[a](f: r => r)(m: m[a]): m[a] = MaybeT { i.local(f)(run(m)) }
-    }
-
-    implicit def _asMonadState[n[+_], s](implicit i: MonadState[s, n]): MonadState[s, ({type L[+a] = MaybeT[n, a]})#L] = new MonadState[s, ({type L[+a] = MaybeT[n, a]})#L] with MonadProxy[({type L[+a] = MaybeT[n, a]})#L] {
-        private type m[+a] = MaybeT[n, a]
-        override val selfMonad = _asMonadPlus[n]
-        override val get: m[s] = _asMonadTrans.lift(i.get)
-        override val put: s => m[Unit] = s => _asMonadTrans.lift(i.put(s))
-    }
-
-    implicit def _asMonadIO[n[+_]](implicit i: MonadIO[n]): MonadIO[({type L[+a] = MaybeT[n, a]})#L] = new MonadIO[({type L[+a] = MaybeT[n, a]})#L] with MonadProxy[({type L[+a] = MaybeT[n, a]})#L] {
-        private type m[+a] = MaybeT[n, a]
-        override val selfMonad = _asMonadPlus[n]
-        override def liftIO[a](io: IO[a]): m[a] = _asMonadTrans.lift(i.liftIO(io))
-    }
-
-    implicit def _asMonadBase[n[+_], b[+_]](implicit _N: MonadBase[b, n]): MonadBase[b, ({type L[+a] = MaybeT[n, a]})#L] = new MonadBaseProxy[b, ({type L[+a] = MaybeT[n, a]})#L] {
-        type t[n[+_], +a] = MaybeT[n, a]
-        override val selfMonadBase = new MonadBase.TransDefault[t, n, b](_asMonadTrans, _N, _asMonadPlus(_N))
     }
 }
 

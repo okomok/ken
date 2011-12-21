@@ -139,47 +139,93 @@ object MonadTrans extends MonadTransInstance {
 
     import Kind.List.Contains
 
-    trait Deriving0[t[_[+_], +_], ds <: Kind.List] extends Deriving0_8[t, ds] {
-        protected def asMonadTrans: MonadTrans[t]
-        protected def asMonad[n[+_]](_N: Monad[n]): Monad[({type L[+a] = t[n, a]})#L]
-        protected def asMonadBase[n[+_], b[+_]](implicit _N: MonadBase[b, n]): MonadBase[b, ({type L[+a] = t[n, a]})#L] = asMonadTrans.defaultMonadBase(asMonad(_N), _N)
-        protected def asMonadBase1[n[+_]](implicit _N: Monad[n]): MonadBase[n, ({type L[+a] = t[n, a]})#L] = asMonadBase(MonadBase._ofSame(_N))
-        protected def asMonadCont[n[+_]](implicit _N: MonadCont[n]): MonadCont[({type L[+a] = t[n, a]})#L] = asMonadTrans.defaultMonadCont(asMonadBase1(_N), _N)
-        protected def asMonadError[n[+_], e](implicit _N: MonadError[e, n]): MonadError[e, ({type L[+a] = t[n, a]})#L] = asMonadTrans.defaultMonadError(asMonadBase1(_N), _N)
-        protected def asMonadFix[n[+_]](implicit _N: MonadFix[n]): MonadFix[({type L[+a] = t[n, a]})#L] = asMonadTrans.defaultMonadFix(asMonadBase1(_N), _N)
-        protected def asMonadIO[n[+_]](implicit _N: MonadIO[n]): MonadIO[({type L[+a] = t[n, a]})#L] = asMonadTrans.defaultMonadIO(asMonadBase1(_N), _N)
-        protected def asMonadPlus[n[+_]](implicit _N: MonadPlus[n]): MonadPlus[({type L[+a] = t[n, a]})#L] = asMonadTrans.defaultMonadPlus(asMonadBase1(_N), _N)
-        protected def asMonadReader[n[+_], r](implicit _N: MonadReader[r, n]): MonadReader[r, ({type L[+a] = t[n, a]})#L] = asMonadTrans.defaultMonadReader(asMonadBase1(_N), _N)
-        protected def asMonadState[n[+_], s](implicit _N: MonadState[s, n]): MonadState[s, ({type L[+a] = t[n, a]})#L] = asMonadTrans.defaultMonadState(asMonad(_N), _N)
+    // No extra parameters
+    //
+    trait Deriving0[t[_[+_], +_], ds <: Kind.List] extends Deriving0_8[t, ds] with MonadTrans[t] {
+        protected def deriveMonad[n[+_]](_N: Monad[n]): Monad[({type L[+a] = t[n, a]})#L]
+        protected def deriveMonadBase[n[+_], b[+_]](_N: MonadBase[b, n]): MonadBase[b, ({type L[+a] = t[n, a]})#L] = defaultMonadBase(deriveMonad(_N), _N)
+        protected def deriveMonadBase1[n[+_]](_N: Monad[n]): MonadBase[n, ({type L[+a] = t[n, a]})#L] = deriveMonadBase(MonadBase._ofSame(_N))
+        protected def deriveMonadCont[n[+_]](_N: MonadCont[n]): MonadCont[({type L[+a] = t[n, a]})#L] = defaultMonadCont(deriveMonadBase1(_N), _N)
+        protected def deriveMonadError[n[+_], e](_N: MonadError[e, n]): MonadError[e, ({type L[+a] = t[n, a]})#L] = defaultMonadError(deriveMonadBase1(_N), _N)
+        protected def deriveMonadFix[n[+_]](_N: MonadFix[n]): MonadFix[({type L[+a] = t[n, a]})#L] = defaultMonadFix(deriveMonadBase1(_N), _N)
+        protected def deriveMonadIO[n[+_]](_N: MonadIO[n]): MonadIO[({type L[+a] = t[n, a]})#L] = defaultMonadIO(deriveMonadBase1(_N), _N)
+        protected def deriveMonadPlus[n[+_]](_N: MonadPlus[n]): MonadPlus[({type L[+a] = t[n, a]})#L] = defaultMonadPlus(deriveMonadBase1(_N), _N)
+        protected def deriveMonadReader[n[+_], r](_N: MonadReader[r, n]): MonadReader[r, ({type L[+a] = t[n, a]})#L] = defaultMonadReader(deriveMonadBase1(_N), _N)
+        protected def deriveMonadState[n[+_], s](_N: MonadState[s, n]): MonadState[s, ({type L[+a] = t[n, a]})#L] = defaultMonadState(deriveMonad(_N), _N)
     }
 
     private[ken] sealed trait Deriving0_0[t[_[+_], +_], ds <: Kind.List] { this: Deriving0[t, ds] =>
-        final implicit def _asMonadTrans: MonadTrans[t] = asMonadTrans
-        final implicit def _asMonad[n[+_]](implicit _C: Contains[ds, Monad.type],  _N: Monad[n]): Monad[({type L[+a] = t[n, a]})#L] = asMonad(_N)
+        final implicit def __asMonadTrans: MonadTrans[t] = this
+        final implicit def __asMonad[n[+_]](implicit _On: Contains[ds, Monad.type], _N: Monad[n]): Monad[({type L[+a] = t[n, a]})#L] = deriveMonad(_N)
     }
     private[ken] sealed trait Deriving0_1[t[_[+_], +_], ds <: Kind.List] extends Deriving0_0[t, ds] { this: Deriving0[t, ds] =>
-        final implicit def _asMonadBase[n[+_], b[+_]](implicit _C: Contains[ds, MonadBase.type], _N: MonadBase[b, n]): MonadBase[b, ({type L[+a] = t[n, a]})#L] = asMonadBase(_N)
+        final implicit def __asMonadBase[n[+_], b[+_]](implicit _On: Contains[ds, MonadBase.type], _N: MonadBase[b, n]): MonadBase[b, ({type L[+a] = t[n, a]})#L] = deriveMonadBase(_N)
     }
     private[ken] sealed trait Deriving0_2[t[_[+_], +_], ds <: Kind.List] extends Deriving0_1[t, ds] { this: Deriving0[t, ds] =>
-        // final implicit def _asMonadCont[n[+_]](implicit _C: Contains[ds, MonadCont.type], _N: MonadCont[n]): MonadCont[({type L[+a] = t[n, a]})#L] = asMonadCont(_N)
+        // final implicit def __asMonadCont[n[+_]](implicit _On: Contains[ds, MonadCont.type], _N: MonadCont[n]): MonadCont[({type L[+a] = t[n, a]})#L] = deriveMonadCont(_N)
     }
     private[ken] sealed trait Deriving0_3[t[_[+_], +_], ds <: Kind.List] extends Deriving0_2[t, ds] { this: Deriving0[t, ds] =>
-        final implicit def _asMonadError[n[+_], e](implicit _C: Contains[ds, MonadError.type], _N: MonadError[e, n]): MonadError[e, ({type L[+a] = t[n, a]})#L] = asMonadError(_N)
+        final implicit def __asMonadError[n[+_], e](implicit _On: Contains[ds, MonadError.type], _N: MonadError[e, n]): MonadError[e, ({type L[+a] = t[n, a]})#L] = deriveMonadError(_N)
     }
     private[ken] sealed trait Deriving0_4[t[_[+_], +_], ds <: Kind.List] extends Deriving0_3[t, ds] { this: Deriving0[t, ds] =>
-        final implicit def _asMonadFix[n[+_]](implicit _C: Contains[ds, MonadFix.type], _N: MonadFix[n]): MonadFix[({type L[+a] = t[n, a]})#L] = asMonadFix(_N)
+        final implicit def __asMonadFix[n[+_]](implicit _On: Contains[ds, MonadFix.type], _N: MonadFix[n]): MonadFix[({type L[+a] = t[n, a]})#L] = deriveMonadFix(_N)
     }
     private[ken] sealed trait Deriving0_5[t[_[+_], +_], ds <: Kind.List] extends Deriving0_4[t, ds] { this: Deriving0[t, ds] =>
-        final implicit def _asMonadIO[n[+_]](implicit _C: Contains[ds, MonadIO.type], _N: MonadIO[n]): MonadIO[({type L[+a] = t[n, a]})#L] = asMonadIO(_N)
+        final implicit def __asMonadIO[n[+_]](implicit _On: Contains[ds, MonadIO.type], _N: MonadIO[n]): MonadIO[({type L[+a] = t[n, a]})#L] = deriveMonadIO(_N)
     }
     private[ken] sealed trait Deriving0_6[t[_[+_], +_], ds <: Kind.List] extends Deriving0_5[t, ds] { this: Deriving0[t, ds] =>
-        final implicit def _asMonadPlus[n[+_]](implicit _C: Contains[ds, MonadPlus.type], _N: MonadPlus[n]): MonadPlus[({type L[+a] = t[n, a]})#L] = asMonadPlus(_N)
+        final implicit def __asMonadPlus[n[+_]](implicit _On: Contains[ds, MonadPlus.type], _N: MonadPlus[n]): MonadPlus[({type L[+a] = t[n, a]})#L] = deriveMonadPlus(_N)
     }
     private[ken] sealed trait Deriving0_7[t[_[+_], +_], ds <: Kind.List] extends Deriving0_6[t, ds] { this: Deriving0[t, ds] =>
-        final implicit def _asMonadReader[n[+_], r](implicit _C: Contains[ds, MonadReader.type], _N: MonadReader[r, n]): MonadReader[r, ({type L[+a] = t[n, a]})#L] = asMonadReader(_N)
+        final implicit def __asMonadReader[n[+_], r](implicit _On: Contains[ds, MonadReader.type], _N: MonadReader[r, n]): MonadReader[r, ({type L[+a] = t[n, a]})#L] = deriveMonadReader(_N)
     }
     private[ken] sealed trait Deriving0_8[t[_[+_], +_], ds <: Kind.List] extends Deriving0_7[t, ds] { this: Deriving0[t, ds] =>
-        final implicit def _asMonadState[n[+_], s](implicit _C: Contains[ds, MonadState.type], _N: MonadState[s, n]): MonadState[s, ({type L[+a] = t[n, a]})#L] = asMonadState(_N)
+        final implicit def __asMonadState[n[+_], s](implicit _On: Contains[ds, MonadState.type], _N: MonadState[s, n]): MonadState[s, ({type L[+a] = t[n, a]})#L] = deriveMonadState(_N)
+    }
+
+    // One extra parameter
+    //
+    trait Deriving1[t1[_, _[+_], +_], c[_], ds <: Kind.List] extends Deriving1_8[t1, c, ds] {
+        protected def deriveMonadTrans[x](_C: c[x]): MonadTrans[({type L[n[+_], +a] = t1[x, n, a]})#L]
+        protected def deriveMonad[x, n[+_]](_N: Monad[n], _C: c[x]): Monad[({type L[+a] = t1[x, n, a]})#L]
+        protected def deriveMonadBase[x, n[+_], b[+_]](_N: MonadBase[b, n], _C: c[x]): MonadBase[b, ({type L[+a] = t1[x, n, a]})#L] = deriveMonadTrans(_C).defaultMonadBase(deriveMonad(_N, _C), _N)
+        protected def deriveMonadBase1[x, n[+_]](_N: Monad[n], _C: c[x]): MonadBase[n, ({type L[+a] = t1[x, n, a]})#L] = deriveMonadBase(MonadBase._ofSame(_N), _C)
+        protected def deriveMonadCont[x, n[+_]](_N: MonadCont[n], _C: c[x]): MonadCont[({type L[+a] = t1[x, n, a]})#L] = deriveMonadTrans(_C).defaultMonadCont(deriveMonadBase1(_N, _C), _N)
+        protected def deriveMonadError[x, n[+_], e](_N: MonadError[e, n], _C: c[x]): MonadError[e, ({type L[+a] = t1[x, n, a]})#L] = deriveMonadTrans(_C).defaultMonadError(deriveMonadBase1(_N, _C), _N)
+        protected def deriveMonadFix[x, n[+_]](_N: MonadFix[n], _C: c[x]): MonadFix[({type L[+a] = t1[x, n, a]})#L] = deriveMonadTrans(_C).defaultMonadFix(deriveMonadBase1(_N, _C), _N)
+        protected def deriveMonadIO[x, n[+_]](_N: MonadIO[n], _C: c[x]): MonadIO[({type L[+a] = t1[x, n, a]})#L] = deriveMonadTrans(_C).defaultMonadIO(deriveMonadBase1(_N, _C), _N)
+        protected def deriveMonadPlus[x, n[+_]](_N: MonadPlus[n], _C: c[x]): MonadPlus[({type L[+a] = t1[x, n, a]})#L] = deriveMonadTrans(_C).defaultMonadPlus(deriveMonadBase1(_N, _C), _N)
+        protected def deriveMonadReader[x, n[+_], r](_N: MonadReader[r, n], _C: c[x]): MonadReader[r, ({type L[+a] = t1[x, n, a]})#L] = deriveMonadTrans(_C).defaultMonadReader(deriveMonadBase1(_N, _C), _N)
+        protected def deriveMonadState[x, n[+_], s](_N: MonadState[s, n], _C: c[x]): MonadState[s, ({type L[+a] = t1[x, n, a]})#L] = deriveMonadTrans(_C).defaultMonadState(deriveMonad(_N, _C), _N)
+    }
+
+    private[ken] sealed trait Deriving1_0[t1[x, _[+_], +_], c[_], ds <: Kind.List] { this: Deriving1[t1, c, ds] =>
+        final implicit def __asMonadTrans[x](implicit _C: c[x]): MonadTrans[({type L[n[+_], +a] = t1[x, n, a]})#L] = deriveMonadTrans(_C)
+        final implicit def __asMonad[x, n[+_]](implicit _On: Contains[ds, Monad.type], _N: Monad[n], _C: c[x]): Monad[({type L[+a] = t1[x, n, a]})#L] = deriveMonad(_N, _C)
+    }
+    private[ken] sealed trait Deriving1_1[t1[x, _[+_], +_], c[_], ds <: Kind.List] extends Deriving1_0[t1, c, ds] { this: Deriving1[t1, c, ds] =>
+        final implicit def __asMonadBase[x, n[+_], b[+_]](implicit _On: Contains[ds, MonadBase.type], _N: MonadBase[b, n], _C: c[x]): MonadBase[b, ({type L[+a] = t1[x, n, a]})#L] = deriveMonadBase(_N, _C)
+    }
+    private[ken] sealed trait Deriving1_2[t1[x, _[+_], +_], c[_], ds <: Kind.List] extends Deriving1_1[t1, c, ds] { this: Deriving1[t1, c, ds] =>
+        // final implicit def __asMonadCont[x, n[+_]](implicit _On: Contains[ds, MonadCont.type], _N: MonadCont[n], _C: c[x]): MonadCont[({type L[+a] = t1[x, n, a]})#L] = deriveMonadCont(_N, _C)
+    }
+    private[ken] sealed trait Deriving1_3[t1[x, _[+_], +_], c[_], ds <: Kind.List] extends Deriving1_2[t1, c, ds] { this: Deriving1[t1, c, ds] =>
+        final implicit def __asMonadError[x, n[+_], e](implicit _On: Contains[ds, MonadError.type], _N: MonadError[e, n], _C: c[x]): MonadError[e, ({type L[+a] = t1[x, n, a]})#L] = deriveMonadError(_N, _C)
+    }
+    private[ken] sealed trait Deriving1_4[t1[x, _[+_], +_], c[_], ds <: Kind.List] extends Deriving1_3[t1, c, ds] { this: Deriving1[t1, c, ds] =>
+        final implicit def __asMonadFix[x, n[+_]](implicit _On: Contains[ds, MonadFix.type], _N: MonadFix[n], _C: c[x]): MonadFix[({type L[+a] = t1[x, n, a]})#L] = deriveMonadFix(_N, _C)
+    }
+    private[ken] sealed trait Deriving1_5[t1[x, _[+_], +_], c[_], ds <: Kind.List] extends Deriving1_4[t1, c, ds] { this: Deriving1[t1, c, ds] =>
+        final implicit def __asMonadIO[x, n[+_]](implicit _On: Contains[ds, MonadIO.type], _N: MonadIO[n], _C: c[x]): MonadIO[({type L[+a] = t1[x, n, a]})#L] = deriveMonadIO(_N, _C)
+    }
+    private[ken] sealed trait Deriving1_6[t1[x, _[+_], +_], c[_], ds <: Kind.List] extends Deriving1_5[t1, c, ds] { this: Deriving1[t1, c, ds] =>
+        final implicit def __asMonadPlus[x, n[+_]](implicit _On: Contains[ds, MonadPlus.type], _N: MonadPlus[n], _C: c[x]): MonadPlus[({type L[+a] = t1[x, n, a]})#L] = deriveMonadPlus(_N, _C)
+    }
+    private[ken] sealed trait Deriving1_7[t1[x, _[+_], +_], c[_], ds <: Kind.List] extends Deriving1_6[t1, c, ds] { this: Deriving1[t1, c, ds] =>
+        final implicit def __asMonadReader[x, n[+_], r](implicit _On: Contains[ds, MonadReader.type], _N: MonadReader[r, n], _C: c[x]): MonadReader[r, ({type L[+a] = t1[x, n, a]})#L] = deriveMonadReader(_N, _C)
+    }
+    private[ken] sealed trait Deriving1_8[t1[x, _[+_], +_], c[_], ds <: Kind.List] extends Deriving1_7[t1, c, ds] { this: Deriving1[t1, c, ds] =>
+        final implicit def __asMonadState[x, n[+_], s](implicit _On: Contains[ds, MonadState.type], _N: MonadState[s, n], _C: c[x]): MonadState[s, ({type L[+a] = t1[x, n, a]})#L] = deriveMonadState(_N, _C)
     }
 }
 

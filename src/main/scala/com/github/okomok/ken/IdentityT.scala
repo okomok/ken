@@ -50,77 +50,17 @@ private[ken] trait IdentityTOp {
 }
 
 
-private[ken] sealed trait IdentityTAs0 { this: IdentityT.type =>
-    implicit val _asMonadTrans: MonadTrans[IdentityT] = this
-
-    implicit def _asMonadPlus[n[+_]](implicit i: MonadPlus[n]): MonadPlus[({type L[+a] = IdentityT[n, a]})#L] = new MonadPlus[({type L[+a] = IdentityT[n, a]})#L] with MonadProxy[({type L[+a] = IdentityT[n, a]})#L] {
-        private type m[+a] = IdentityT[n, a]
-        override val selfMonad = _asMonad[n]
-        override val mzero: m[Nothing] = IdentityT(i.mzero)
-        override def mplus[a](m: m[a])(n: Lazy[m[a]]): m[a] = IdentityT { i.mplus(run(m))(Lazy(run(n.!))) }
-    }
+private[ken] sealed trait IdentityTAs0 extends MonadTrans.Deriving0[IdentityT, MonadBase.type ^: MonadError.type ^: MonadFix.type ^: MonadIO.type ^: MonadPlus.type ^: MonadReader.type ^: MonadState.type ^: Kind.Nil] { this: IdentityT.type =>
+    override protected def deriveMonad[n[+_]](_N: Monad[n]) = _asMonad(_N)
 
     implicit def _asMonadCont[n[+_]](implicit i: MonadCont[n]): MonadCont[({type L[+a] = IdentityT[n, a]})#L] = new MonadCont[({type L[+a] = IdentityT[n, a]})#L] with MonadProxy[({type L[+a] = IdentityT[n, a]})#L] {
         private type m[+a] = IdentityT[n, a]
-        override val selfMonad = _asMonad[n]
+        override val selfMonad = deriveMonad(i)
         override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = IdentityT {
             i.callCC { (c: a => n[b]) =>
                 run( f( a => IdentityT { c(a) } ) )
             }
         }
-    }
-
-    implicit def _asMonadError[n[+_], e](implicit i: MonadError[e, n]): MonadError[e, ({type L[+a] = IdentityT[n, a]})#L] = new MonadError[e, ({type L[+a] = IdentityT[n, a]})#L] with MonadProxy[({type L[+a] = IdentityT[n, a]})#L] {
-        private type m[+a] = IdentityT[n, a]
-        override val selfMonad = _asMonad[n]
-        override def throwError[a](e: e): m[a] = _asMonadTrans.lift(i.throwError(e))
-        override def catchError[a](m: m[a])(h: e => m[a]): m[a] = IdentityT {
-            i.catchError(run(m)) { e => run(h(e)) }
-        }
-    }
-
-    implicit def _asMonadReader[n[+_], r](implicit i: MonadReader[r, n]): MonadReader[r, ({type L[+a] = IdentityT[n, a]})#L] = new MonadReader[r, ({type L[+a] = IdentityT[n, a]})#L] with MonadProxy[({type L[+a] = IdentityT[n, a]})#L] {
-        private type m[+a] = IdentityT[n, a]
-        override val selfMonad = _asMonad[n]
-        override val ask: m[r] = _asMonadTrans.lift(i.ask)
-        override def local[a](f: r => r)(m: m[a]): m[a] = IdentityT { i.local(f)(run(m)) }
-    }
-
-    implicit def _asMonadState[n[+_], s](implicit i: MonadState[s, n]): MonadState[s, ({type L[+a] = IdentityT[n, a]})#L] = new MonadState[s, ({type L[+a] = IdentityT[n, a]})#L] with MonadProxy[({type L[+a] = IdentityT[n, a]})#L] {
-        private type m[+a] = IdentityT[n, a]
-        override val selfMonad = _asMonad[n]
-        override val get: m[s] = _asMonadTrans.lift(i.get)
-        override val put: s => m[Unit] = s => _asMonadTrans.lift(i.put(s))
-    }
-
-    implicit def _asMonadIO[n[+_]](implicit i: MonadIO[n]): MonadIO[({type L[+a] = IdentityT[n, a]})#L] = new MonadIO[({type L[+a] = IdentityT[n, a]})#L] with MonadProxy[({type L[+a] = IdentityT[n, a]})#L] {
-        private type m[+a] = IdentityT[n, a]
-        override val selfMonad = _asMonad[n]
-        override def liftIO[a](io: IO[a]): m[a] = _asMonadTrans.lift(i.liftIO(io))
-    }
-
-    implicit def _asMonadBase[n[+_], b[+_]](implicit _N: MonadBase[b, n]): MonadBase[b, ({type L[+a] = IdentityT[n, a]})#L] = new MonadBaseProxy[b, ({type L[+a] = IdentityT[n, a]})#L] {
-        type t[n[+_], +a] = IdentityT[n, a]
-        override val selfMonadBase = new MonadBase.TransDefault[t, n, b](_asMonadTrans, _N, _asMonad(_N))
-/*
-        private type m[+a] = IdentityT[n, a]
-        val _T = _asMonadTrans
-        override val selfMonad = _asMonad(_N)
-        override val baseMonad = _N.baseMonad
-        final case class StM[+a](override val old: _N.StM[_T.StT[a]]) extends NewtypeOf[_N.StM[_T.StT[a]]]
-        override def liftBaseWith[a](f: RunInBase => b[a]): m[a] = {
-            _T.liftWith { run1 =>
-                _N.liftBaseWith { runInBase =>
-                    f {
-                        new RunInBase {
-                            override def apply[c](m: m[c]): b[StM[c]] = baseMonad.liftM((x: _N.StM[_T.StT[c]]) => StM(x))(runInBase(run1(m)))
-                        }
-                    }
-                }
-            }
-        }
-        override def restoreM[a](St: StM[a]): m[a] = _T.restoreT(_N.restoreM(St.old))
-*/
     }
 }
 

@@ -17,7 +17,7 @@ package ken
 final case class LazyT[n[+_], +a](override val old: n[Lazy[a]]) extends NewtypeOf[n[Lazy[a]]]
 
 
-object LazyT extends LazyTOp with LazyTAs with MonadTrans[LazyT] {
+object LazyT extends LazyTOp with LazyTAs {
     trait apply[n <: Kind.Function1] extends apply1[n]
     trait apply1[n <: Kind.Function1] extends Kind.Newtype1 {
         override type apply1[+a] = LazyT[n#apply1, a]
@@ -53,61 +53,17 @@ private[ken] trait LazyTOp {
 }
 
 
-private[ken] sealed trait LazyTAs0 { this: LazyT.type =>
-    /*
-    @Annotation.typeAliasWorkaround
-    implicit def _asNewtype1[n[+_]]: Newtype1[({type L[+a] = LazyT[n, a]})#L, apply1[n]#oldtype1] = new Newtype1[({type L[+a] = LazyT[n, a]})#L, apply1[n]#oldtype1] {
-        // private type nt[+a] = LazyT[n, a]
-        // private type ot[+a] = n[Lazy[a]]
-        override def newOf[a](ot: Lazy[n[Lazy[a]]]): LazyT[n, a] = LazyT(ot)
-        override def oldOf[a](nt: Lazy[LazyT[n, a]]): n[Lazy[a]] = nt.run
-    }
-    */
-
-    implicit val _asMonadTrans: MonadTrans[LazyT] = this
+private[ken] sealed trait LazyTAs0 extends MonadTrans.Deriving0[LazyT, MonadBase.type ^: MonadError.type ^: MonadFix.type ^: MonadIO.type ^: MonadReader.type ^: MonadState.type ^: Kind.Nil] { this: LazyT.type =>
+    override protected def deriveMonad[n[+_]](_N: Monad[n]) = _asMonad(_N)
 
     implicit def _asMonadCont[n[+_]](implicit i: MonadCont[n]): MonadCont[({type L[+a] = LazyT[n, a]})#L] = new MonadCont[({type L[+a] = LazyT[n, a]})#L] with MonadProxy[({type L[+a] = LazyT[n, a]})#L] {
         private type m[+a] = LazyT[n, a]
-        override val selfMonad = _asMonad[n]
+        override val selfMonad = deriveMonad(i)
         override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = LazyT {
             i.callCC { (c: Lazy[a] => n[Lazy[b]]) =>
                 run( f( a => LazyT { c(Lazy(a)) } ) )
             }
         }
-    }
-
-    implicit def _asMonadError[n[+_], e](implicit i: MonadError[e, n]): MonadError[e, ({type L[+a] = LazyT[n, a]})#L] = new MonadError[e, ({type L[+a] = LazyT[n, a]})#L] with MonadProxy[({type L[+a] = LazyT[n, a]})#L] {
-        private type m[+a] = LazyT[n, a]
-        override val selfMonad = _asMonad[n]
-        override def throwError[a](e: e): m[a] = _asMonadTrans.lift(i.throwError(e))
-        override def catchError[a](m: m[a])(h: e => m[a]): m[a] = LazyT {
-            i.catchError(run(m)) { e => run(h(e)) }
-        }
-    }
-
-    implicit def _asMonadReader[n[+_], r](implicit i: MonadReader[r, n]): MonadReader[r, ({type L[+a] = LazyT[n, a]})#L] = new MonadReader[r, ({type L[+a] = LazyT[n, a]})#L] with MonadProxy[({type L[+a] = LazyT[n, a]})#L] {
-        private type m[+a] = LazyT[n, a]
-        override val selfMonad = _asMonad[n]
-        override def ask: m[r] = _asMonadTrans.lift(i.ask)
-        override def local[a](f: r => r)(m: m[a]): m[a] = LazyT { i.local(f)(run(m)) }
-    }
-
-    implicit def _asMonadState[n[+_], s](implicit i: MonadState[s, n]): MonadState[s, ({type L[+a] = LazyT[n, a]})#L] = new MonadState[s, ({type L[+a] = LazyT[n, a]})#L] with MonadProxy[({type L[+a] = LazyT[n, a]})#L] {
-        private type m[+a] = LazyT[n, a]
-        override val selfMonad = _asMonad[n]
-        override val get: m[s] = _asMonadTrans.lift(i.get)
-        override val put: s => m[Unit] = s => _asMonadTrans.lift(i.put(s))
-    }
-
-    implicit def _asMonadIO[n[+_]](implicit i: MonadIO[n]): MonadIO[({type L[+a] = LazyT[n, a]})#L] = new MonadIO[({type L[+a] = LazyT[n, a]})#L] with MonadProxy[({type L[+a] = LazyT[n, a]})#L] {
-        private type m[+a] = LazyT[n, a]
-        override val selfMonad = _asMonad[n]
-        override def liftIO[a](io: IO[a]): m[a] = _asMonadTrans.lift(i.liftIO(io))
-    }
-
-    implicit def _asMonadBase[n[+_], b[+_]](implicit _N: MonadBase[b, n]): MonadBase[b, ({type L[+a] = LazyT[n, a]})#L] = new MonadBaseProxy[b, ({type L[+a] = LazyT[n, a]})#L] {
-        type t[n[+_], +a] = LazyT[n, a]
-        override val selfMonadBase = new MonadBase.TransDefault[t, n, b](_asMonadTrans, _N, _asMonad(_N))
     }
 }
 
