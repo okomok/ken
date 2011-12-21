@@ -11,7 +11,7 @@ package com.github.okomok
 package ken
 
 
-trait MonadTrans[t[_[+_], +_]] extends TypeclassLike with Kind.MonadTrans {
+trait MonadTrans[t[_[+_], +_]] extends TypeclassLike with Kind.MonadTrans { outer =>
     override type monadTrans[n[+_], +a] = t[n, a]
     final val asMonadTrans: MonadTrans[monadTrans] = this
 
@@ -25,6 +25,82 @@ trait MonadTrans[t[_[+_], +_]] extends TypeclassLike with Kind.MonadTrans {
     def lift[n[+_], a](n: n[a])(implicit _N: Monad[n]): t[n, a] = liftWith(_ => n)(_N)
     def liftWith[n[+_], a](f: Run => n[a])(implicit _N: Monad[n]): t[n, a]
     def restoreT[n[+_], a](nSt: n[StT[a]])(implicit _N: Monad[n]): t[n, a]
+
+    // Default implementations
+    //
+    final def defaultMonadBase[n[+_], b[+_]](_M: Monad[({type L[+a] = t[n, a]})#L], _N: MonadBase[b, n]): MonadBase[b, ({type L[+a] = t[n, a]})#L] = new MonadBase[b, ({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {
+        final case class StM[+a](override val old: _N.StM[outer.StT[a]]) extends NewtypeOf[_N.StM[outer.StT[a]]]
+        private type m[+a] = t[n, a]
+        override def selfMonad = _M
+        override def baseMonad = _N.baseMonad
+        override def liftBaseWith[a](f: RunInBase => b[a]): m[a] = outer.liftWith(run1 =>
+            _N.liftBaseWith { runInBase =>
+                f {
+                    new RunInBase {
+                        override def apply[c](m: m[c]): b[StM[c]] = baseMonad.liftM((x: _N.StM[outer.StT[c]]) => StM(x))(runInBase(run1(m)(_N)))
+                    }
+                }
+            }
+        )(_N)
+        override def restoreM[a](St: StM[a]): m[a] = outer.restoreT(_N.restoreM(St.old))(_N)
+    }
+
+    final def defaultMonadCont[n[+_]](_M: MonadBase[n, ({type L[+a] = t[n, a]})#L], _N: MonadCont[n]): MonadCont[({type L[+a] = t[n, a]})#L] = new MonadCont[({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {
+        private type m[+a] = t[n, a]
+        override def selfMonad = _M
+        override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = error("how?")
+    }
+
+    final def defaultMonadError[n[+_], e](_M: MonadBase[n, ({type L[+a] = t[n, a]})#L], _N: MonadError[e, n]): MonadError[e, ({type L[+a] = t[n, a]})#L] = new MonadError[e, ({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {
+        private type m[+a] = t[n, a]
+        override def selfMonad = _M
+        override def throwError[a](e: e): m[a] = outer.lift(_N.throwError(e))(_N)
+        override def catchError[a](m: m[a])(h: e => m[a]): m[a] = _M.control { run =>
+            _N.catchError(run(m)) { e => run(h(e)) }
+        }
+    }
+
+    final def defaultMonadFix[n[+_]](_M: MonadBase[n, ({type L[+a] = t[n, a]})#L], _N: MonadFix[n]): MonadFix[({type L[+a] = t[n, a]})#L] = new MonadFix[({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {
+        private type m[+a] = t[n, a]
+        override def selfMonad = _M
+        override def mfix[a](f: Lazy[a] => m[a]): m[a] = _M.control { run =>
+            val k: Lazy[_M.StM[a]] => n[_M.StM[a]] = st => {
+                run(_M.op_>>=(_M.restoreM(st.!))(a => f(a)))
+            }
+            _N.mfix(k)
+        }
+    }
+
+    final def defaultMonadIO[n[+_]](_M: Monad[({type L[+a] = t[n, a]})#L], _N: MonadIO[n]): MonadIO[({type L[+a] = t[n, a]})#L] = new MonadIO[({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {
+        private type m[+a] = t[n, a]
+        override def selfMonad = _M
+        override def liftIO[a](io: IO[a]): m[a] = outer.lift(_N.liftIO(io))(_N)
+    }
+
+    final def defaultMonadPlus[n[+_]](_M: MonadBase[n, ({type L[+a] = t[n, a]})#L], _N: MonadPlus[n]): MonadPlus[({type L[+a] = t[n, a]})#L] = new MonadPlus[({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {
+        private type m[+a] = t[n, a]
+        override def selfMonad = _M
+        override val mzero: mzero = outer.lift(_N.mzero)(_N)
+        override def mplus[a](m: m[a])(n: Lazy[m[a]]): m[a] = _M.control { run =>
+            _N.mplus(run(m))(run(n.!))
+        }
+    }
+
+    final def defaultMonadReader[n[+_], r](_M: MonadBase[n, ({type L[+a] = t[n, a]})#L], _N: MonadReader[r, n]): MonadReader[r, ({type L[+a] = t[n, a]})#L] = new MonadReader[r, ({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {
+        private type m[+a] = t[n, a]
+        override def selfMonad = _M
+        override val ask: m[r] = outer.lift(_N.ask)(_N)
+        override def local[a](f: r => r)(m: m[a]): m[a] = _M.control { run =>
+            _N.local(f)(run(m))
+        }
+    }
+
+    final def defaultMonadState[n[+_], s](_M: Monad[({type L[+a] = t[n, a]})#L], _N: MonadState[s, n]): MonadState[s, ({type L[+a] = t[n, a]})#L] = new MonadState[s, ({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {
+        private type m[+a] = t[n, a]
+        override def selfMonad = _M
+        override val get: get = outer.lift(_N.get)(_N)
+        override val put: put = s => outer.lift(_N.put(s))(_N)
+    }
 }
 
 
@@ -55,6 +131,55 @@ object MonadTrans extends MonadTransInstance {
         new RunInBase[m, m] {
             override def apply[b](t: m[b]): m[m[b]] = j.liftM[b, m[b]](j.`return`[b])(t)
         }
+    }
+
+    // Default implementation providers
+    //
+    type AnyMonad = Monad.type ^: MonadBase.type ^: MonadError.type ^: MonadFix.type ^: MonadIO.type ^: MonadPlus.type ^: MonadReader.type ^: MonadState.type ^: Kind.Nil
+
+    import Kind.List.Contains
+
+    trait Deriving0[t[_[+_], +_], ds <: Kind.List] extends Deriving0_8[t, ds] {
+        protected def asMonadTrans: MonadTrans[t]
+        protected def asMonad[n[+_]](_N: Monad[n]): Monad[({type L[+a] = t[n, a]})#L]
+        protected def asMonadBase[n[+_], b[+_]](implicit _N: MonadBase[b, n]): MonadBase[b, ({type L[+a] = t[n, a]})#L] = asMonadTrans.defaultMonadBase(asMonad(_N), _N)
+        protected def asMonadBase1[n[+_]](implicit _N: Monad[n]): MonadBase[n, ({type L[+a] = t[n, a]})#L] = asMonadBase(MonadBase._ofSame(_N))
+        protected def asMonadCont[n[+_]](implicit _N: MonadCont[n]): MonadCont[({type L[+a] = t[n, a]})#L] = asMonadTrans.defaultMonadCont(asMonadBase1(_N), _N)
+        protected def asMonadError[n[+_], e](implicit _N: MonadError[e, n]): MonadError[e, ({type L[+a] = t[n, a]})#L] = asMonadTrans.defaultMonadError(asMonadBase1(_N), _N)
+        protected def asMonadFix[n[+_]](implicit _N: MonadFix[n]): MonadFix[({type L[+a] = t[n, a]})#L] = asMonadTrans.defaultMonadFix(asMonadBase1(_N), _N)
+        protected def asMonadIO[n[+_]](implicit _N: MonadIO[n]): MonadIO[({type L[+a] = t[n, a]})#L] = asMonadTrans.defaultMonadIO(asMonadBase1(_N), _N)
+        protected def asMonadPlus[n[+_]](implicit _N: MonadPlus[n]): MonadPlus[({type L[+a] = t[n, a]})#L] = asMonadTrans.defaultMonadPlus(asMonadBase1(_N), _N)
+        protected def asMonadReader[n[+_], r](implicit _N: MonadReader[r, n]): MonadReader[r, ({type L[+a] = t[n, a]})#L] = asMonadTrans.defaultMonadReader(asMonadBase1(_N), _N)
+        protected def asMonadState[n[+_], s](implicit _N: MonadState[s, n]): MonadState[s, ({type L[+a] = t[n, a]})#L] = asMonadTrans.defaultMonadState(asMonad(_N), _N)
+    }
+
+    private[ken] sealed trait Deriving0_0[t[_[+_], +_], ds <: Kind.List] { this: Deriving0[t, ds] =>
+        final implicit def _asMonadTrans: MonadTrans[t] = asMonadTrans
+        final implicit def _asMonad[n[+_]](implicit _C: Contains[ds, Monad.type],  _N: Monad[n]): Monad[({type L[+a] = t[n, a]})#L] = asMonad(_N)
+    }
+    private[ken] sealed trait Deriving0_1[t[_[+_], +_], ds <: Kind.List] extends Deriving0_0[t, ds] { this: Deriving0[t, ds] =>
+        final implicit def _asMonadBase[n[+_], b[+_]](implicit _C: Contains[ds, MonadBase.type], _N: MonadBase[b, n]): MonadBase[b, ({type L[+a] = t[n, a]})#L] = asMonadBase(_N)
+    }
+    private[ken] sealed trait Deriving0_2[t[_[+_], +_], ds <: Kind.List] extends Deriving0_1[t, ds] { this: Deriving0[t, ds] =>
+        // final implicit def _asMonadCont[n[+_]](implicit _C: Contains[ds, MonadCont.type], _N: MonadCont[n]): MonadCont[({type L[+a] = t[n, a]})#L] = asMonadCont(_N)
+    }
+    private[ken] sealed trait Deriving0_3[t[_[+_], +_], ds <: Kind.List] extends Deriving0_2[t, ds] { this: Deriving0[t, ds] =>
+        final implicit def _asMonadError[n[+_], e](implicit _C: Contains[ds, MonadError.type], _N: MonadError[e, n]): MonadError[e, ({type L[+a] = t[n, a]})#L] = asMonadError(_N)
+    }
+    private[ken] sealed trait Deriving0_4[t[_[+_], +_], ds <: Kind.List] extends Deriving0_3[t, ds] { this: Deriving0[t, ds] =>
+        final implicit def _asMonadFix[n[+_]](implicit _C: Contains[ds, MonadFix.type], _N: MonadFix[n]): MonadFix[({type L[+a] = t[n, a]})#L] = asMonadFix(_N)
+    }
+    private[ken] sealed trait Deriving0_5[t[_[+_], +_], ds <: Kind.List] extends Deriving0_4[t, ds] { this: Deriving0[t, ds] =>
+        final implicit def _asMonadIO[n[+_]](implicit _C: Contains[ds, MonadIO.type], _N: MonadIO[n]): MonadIO[({type L[+a] = t[n, a]})#L] = asMonadIO(_N)
+    }
+    private[ken] sealed trait Deriving0_6[t[_[+_], +_], ds <: Kind.List] extends Deriving0_5[t, ds] { this: Deriving0[t, ds] =>
+        final implicit def _asMonadPlus[n[+_]](implicit _C: Contains[ds, MonadPlus.type], _N: MonadPlus[n]): MonadPlus[({type L[+a] = t[n, a]})#L] = asMonadPlus(_N)
+    }
+    private[ken] sealed trait Deriving0_7[t[_[+_], +_], ds <: Kind.List] extends Deriving0_6[t, ds] { this: Deriving0[t, ds] =>
+        final implicit def _asMonadReader[n[+_], r](implicit _C: Contains[ds, MonadReader.type], _N: MonadReader[r, n]): MonadReader[r, ({type L[+a] = t[n, a]})#L] = asMonadReader(_N)
+    }
+    private[ken] sealed trait Deriving0_8[t[_[+_], +_], ds <: Kind.List] extends Deriving0_7[t, ds] { this: Deriving0[t, ds] =>
+        final implicit def _asMonadState[n[+_], s](implicit _C: Contains[ds, MonadState.type], _N: MonadState[s, n]): MonadState[s, ({type L[+a] = t[n, a]})#L] = asMonadState(_N)
     }
 }
 
