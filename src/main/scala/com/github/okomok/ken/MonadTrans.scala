@@ -233,7 +233,7 @@ object MonadTrans extends MonadTransInstance {
         final implicit def __asMonadState[z, n[+_], s](implicit _On: Contains[ds, MonadState.type], _N: MonadState[s, n], _C: c[z]): MonadState[s, ({type L[+a] = t1[z, n, a]})#L] = deriveMonadState(_N, _C)
     }
     private[ken] sealed trait Deriving1_9[t1[z, _[+_], +_], c[_], ds <: Kind.List] extends Deriving1_8[t1, c, ds] { this: Deriving1[t1, c, ds] =>
-        final implicit def __asMonadWriter[z, n[+_], w](implicit _On: Contains[ds, MonadState.type], _N: MonadWriter[w, n], _C: c[z]): MonadWriter[w, ({type L[+a] = t1[z, n, a]})#L] = deriveMonadWriter(_N, _C)
+        final implicit def __asMonadWriter[z, n[+_], w](implicit _On: Contains[ds, MonadWriter.type], _N: MonadWriter[w, n], _C: c[z]): MonadWriter[w, ({type L[+a] = t1[z, n, a]})#L] = deriveMonadWriter(_N, _C)
     }
 }
 
