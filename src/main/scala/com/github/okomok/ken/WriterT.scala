@@ -42,11 +42,13 @@ private[ken] trait WriterTOp {
 }
 
 
-private[ken] sealed trait WriterTAs0 extends MonadTrans.Deriving1[WriterT, Monoid, MonadBase.type ^: MonadError.type ^: MonadFix.type ^: MonadIO.type ^: MonadPlus.type ^: MonadReader.type ^: MonadState.type ^: Kind.Nil] { this: WriterT.type =>
-    private type c[x] = Monoid[x]
+private[ken] sealed trait WriterTAs extends MonadTrans.Deriving1[WriterT, Monoid, Monad.type ^: MonadBase.type ^: MonadError.type ^: MonadFix.type ^: MonadIO.type ^: MonadPlus.type ^: MonadReader.type ^: MonadState.type ^: Kind.Nil] { this: WriterT.type =>
+    private type t1[z, n[+_], +a] = WriterT[z, n, a]
+    private type c[z] = Monoid[z]
 
-    override protected def deriveMonadTrans[w](_C: c[w]): MonadTrans[({type L[n[+_], +a] = WriterT[w, n, a]})#L] = new MonadTrans[({type L[n[+_], +a] = WriterT[w, n, a]})#L] {
-        private type t[n[+_], +a] = WriterT[w, n, a]
+    override protected def deriveMonadTrans[z](_C: c[z]): MonadTrans[({type L[n[+_], +a] = t1[z, n, a]})#L] = new MonadTrans[({type L[n[+_], +a] = t1[z, n, a]})#L] {
+        private type t[n[+_], +a] = t1[z, n, a]
+        private type w = z
         final case class StT[+a](override val old: (a, w)) extends NewtypeOf[(a, w)]
         override def liftWith[n[+_], a](f: Run => n[a])(implicit _N: Monad[n]): t[n, a] = WriterT {
             _N.liftM((x: a) => (x, _C.mempty)) {
@@ -64,43 +66,42 @@ private[ken] sealed trait WriterTAs0 extends MonadTrans.Deriving1[WriterT, Monoi
         }
     }
 
-    override protected def deriveMonad[w, n[+_]](_N: Monad[n], _C: c[w]): Monad[({type L[+a] = WriterT[w, n, a]})#L] = _asMonadWriter(_N, _C)
+    override protected def deriveMonad[z, n[+_]](_N: Monad[n], _C: c[z]): Monad[({type L[+a] = t1[z, n, a]})#L] = _asMonadWriter(_N, _C)
 
-    implicit def _asMonadCont[w, n[+_]](implicit i: MonadCont[n], j: Monoid[w]): MonadCont[({type L[+a] = WriterT[w, n, a]})#L] = new MonadCont[({type L[+a] = WriterT[w, n, a]})#L] with MonadProxy[({type L[+a] = WriterT[w, n, a]})#L] {
-        private type m[+a] = WriterT[w, n, a]
-        override val selfMonad = deriveMonad(i, j)
+    override protected def deriveMonadCont[z, n[+_]](_N: MonadCont[n], _C: c[z]): MonadCont[({type L[+a] = t1[z, n, a]})#L] = new MonadCont[({type L[+a] = t1[z, n, a]})#L] with MonadProxy[({type L[+a] = t1[z, n, a]})#L] {
+        private type m[+a] = t1[z, n, a]
+        private type w = z
+        override val selfMonad = deriveMonad(_N, _C)
         override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = WriterT {
-            i.callCC { (c: ((a, w)) => n[(b, w)]) =>
-                run( f(a => WriterT { c((a, j.mempty)) }) )
+            _N.callCC { (c: ((a, w)) => n[(b, w)]) =>
+                run( f(a => WriterT { c((a, _C.mempty)) }) )
             }
         }
     }
-}
 
-private[ken] sealed trait WriterTAs extends WriterTAs0 { this: WriterT.type =>
-    implicit def _asMonadWriter[w, n[+_]](implicit i: Monad[n], j: Monoid[w]): MonadWriter[w, ({type L[+a] = WriterT[w, n, a]})#L] = new MonadWriter[w, ({type L[+a] = WriterT[w, n, a]})#L] {
+    implicit def _asMonadWriter[w, n[+_]](implicit _N: Monad[n], _C: Monoid[w]): MonadWriter[w, ({type L[+a] = WriterT[w, n, a]})#L] = new MonadWriter[w, ({type L[+a] = WriterT[w, n, a]})#L] {
         // Functor
         private type f[+a] = WriterT[w, n, a]
         override def fmap[a, b](f: a => b): f[a] => f[b] = m => WriterT {
-            import i.`for`
+            import _N.`for`
             for { (a, w) <- run(m) } yield (f(a), w)
         }
         // Monad
         private type m[+a] = f[a]
-        override def `return`[a](a: Lazy[a]): m[a] = WriterT { i.`return`(a.!, j.mempty) }
+        override def `return`[a](a: Lazy[a]): m[a] = WriterT { _N.`return`(a.!, _C.mempty) }
         override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = WriterT {
-            import i.`for`
-            for { (a, w) <- run(m); (b, w_) <- run(k(a)) } yield (b, j.mappend(w)(w_))
+            import _N.`for`
+            for { (a, w) <- run(m); (b, w_) <- run(k(a)) } yield (b, _C.mappend(w)(w_))
         }
         // MonadWriter
-        override def monoid: Monoid[w] = j
-        override val tell: w => m[Unit] = w => WriterT { i.`return`((), w) }
+        override def monoid: Monoid[w] = _C
+        override val tell: w => m[Unit] = w => WriterT { _N.`return`((), w) }
         override def listen[a](m: m[a]): m[(a, w)] = WriterT {
-            import i.`for`
+            import _N.`for`
             for { (a, w) <- run(m) } yield ((a, w), w)
         }
         override def pass[a](m: m[(a, w => w)]): m[a] = WriterT {
-            import i.`for`
+            import _N.`for`
             for { ((a, f), w) <- run(m) } yield (a, f(w))
         }
     }

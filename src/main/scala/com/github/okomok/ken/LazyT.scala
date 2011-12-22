@@ -27,7 +27,7 @@ object LazyT extends LazyTOp with LazyTAs {
     // Overrides
     //
     // MonadTrans
-    private type t[n[+_], +a] = LazyT[n, a]
+    protected type t[n[+_], +a] = LazyT[n, a]
     final case class StT[+a](override val old: Lazy[a]) extends NewtypeOf[Lazy[a]]
     override def liftWith[n[+_], a](f: Run => n[a])(implicit _N: Monad[n]): t[n, a] = LazyT {
          _N.liftM((a: a) => Lazy.`return`(a)) {
@@ -53,34 +53,30 @@ private[ken] trait LazyTOp {
 }
 
 
-private[ken] sealed trait LazyTAs0 extends MonadTrans.Deriving0[LazyT, MonadBase.type ^: MonadError.type ^: MonadFix.type ^: MonadIO.type ^: MonadReader.type ^: MonadState.type ^: Kind.Nil] { this: LazyT.type =>
-    override protected def deriveMonad[n[+_]](_N: Monad[n]) = _asMonad(_N)
-
-    implicit def _asMonadCont[n[+_]](implicit i: MonadCont[n]): MonadCont[({type L[+a] = LazyT[n, a]})#L] = new MonadCont[({type L[+a] = LazyT[n, a]})#L] with MonadProxy[({type L[+a] = LazyT[n, a]})#L] {
-        private type m[+a] = LazyT[n, a]
-        override val selfMonad = deriveMonad(i)
-        override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = LazyT {
-            i.callCC { (c: Lazy[a] => n[Lazy[b]]) =>
-                run( f( a => LazyT { c(Lazy(a)) } ) )
-            }
-        }
-    }
-}
-
-private[ken] sealed trait LazyTAs extends LazyTAs0 { this: LazyT.type =>
-    implicit def _asMonad[n[+_]](implicit i: Monad[n]): Monad[({type L[+a] = LazyT[n, a]})#L] with HighPriority = new Monad[({type L[+a] = LazyT[n, a]})#L] with HighPriority {
+private[ken] sealed trait LazyTAs extends MonadTrans.Deriving0[LazyT, MonadTrans.AnyMonad] { this: LazyT.type =>
+    override protected def deriveMonad[n[+_]](_N: Monad[n]): Monad[({type L[+a] = t[n, a]})#L] = new Monad[({type L[+a] = t[n, a]})#L] {
         // Functor
-        private type f[+a] = LazyT[n, a]
+        private type f[+a] = t[n, a]
         override def fmap[a, b](f: a => b): f[a] => f[b] = m => LazyT {
-            import i.`for`
+            import _N.`for`
             for { a <- run(m) } yield Lazy(f(a.!))
         }
         // Monad
-        private type m[+a] = LazyT[n, a]
-        override def `return`[a](a: Lazy[a]): m[a] = LazyT { i.`return`(Lazy(a)) }
+        private type m[+a] = t[n, a]
+        override def `return`[a](a: Lazy[a]): m[a] = LazyT { _N.`return`(Lazy(a)) }
         override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = LazyT {
-            import i.`for`
+            import _N.`for`
             for { a <- run(m) } { run(k(a.!)) }
+        }
+    }
+
+    override protected def deriveMonadCont[n[+_]](_N: MonadCont[n]): MonadCont[({type L[+a] = t[n, a]})#L] = new MonadCont[({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {
+        private type m[+a] = t[n, a]
+        override val selfMonad = deriveMonad(_N)
+        override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = LazyT {
+            _N.callCC { (c: Lazy[a] => n[Lazy[b]]) =>
+                run( f( a => LazyT { c(Lazy(a)) } ) )
+            }
         }
     }
 }

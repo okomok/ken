@@ -63,26 +63,6 @@ trait MonadBaseProxy[b[+_], m[+_]] extends MonadBase[b, m] with MonadProxy[m] {
 
 object MonadBase extends MonadBaseInstance {
     def apply[b <: Kind.Function1, m <: Kind.Function1](implicit _M: MonadBase[b#apply1, m#apply1]): MonadBase[b#apply1, m#apply1] = _M
-
-    // Helper
-    final class TransDefault[t[_[+_], +_], n[+_], b[+_]](val _T: MonadTrans[t], val _N: MonadBase[b, n], _M: Monad[({type L[+a] = t[n, a]})#L]) extends MonadBase[b, ({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {
-        final case class StM[+a](override val old: _N.StM[_T.StT[a]]) extends NewtypeOf[_N.StM[_T.StT[a]]]
-        private type m[+a] = t[n, a]
-        override def selfMonad = _M
-        override def baseMonad = _N.baseMonad
-        override def liftBaseWith[a](f: RunInBase => b[a]): m[a] = {
-            _T.liftWith(run1 =>
-                _N.liftBaseWith { runInBase =>
-                    f {
-                        new RunInBase {
-                            override def apply[c](m: m[c]): b[StM[c]] = baseMonad.liftM((x: _N.StM[_T.StT[c]]) => StM(x))(runInBase(run1(m)(_N)))
-                        }
-                    }
-                }
-            )(_N)
-        }
-        override def restoreM[a](St: StM[a]): m[a] = _T.restoreT(_N.restoreM(St.old))(_N)
-    }
 }
 
 

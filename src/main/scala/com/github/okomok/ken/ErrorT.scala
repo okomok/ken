@@ -37,11 +37,13 @@ private[ken] trait ErrorTOp {
 }
 
 
-private[ken] sealed trait ErrorTAs0 extends MonadTrans.Deriving1[ErrorT, ErrorClass, MonadBase.type ^: MonadIO.type ^: MonadReader.type ^: MonadState.type ^: Kind.Nil] { this: ErrorT.type =>
-    private type c[x] = ErrorClass[x]
+private[ken] sealed trait ErrorTAs0 extends MonadTrans.Deriving1[ErrorT, ErrorClass, Monad.type ^: MonadBase.type ^: MonadCont.type ^: MonadIO.type ^: MonadReader.type ^: MonadState.type ^: MonadWriter.type ^: Kind.Nil] { this: ErrorT.type =>
+    private type t1[z, n[+_], +a] = ErrorT[z, n, a]
+    private type c[z] = ErrorClass[z]
 
-    override protected def deriveMonadTrans[e](_C: c[e]): MonadTrans[({type L[n[+_], +a] = ErrorT[e, n, a]})#L] = new MonadTrans[({type L[n[+_], +a] = ErrorT[e, n, a]})#L] {
-        private type t[n[+_], +a] = ErrorT[e, n, a]
+    override protected def deriveMonadTrans[z](_C: c[z]): MonadTrans[({type L[n[+_], +a] = t1[z, n, a]})#L] = new MonadTrans[({type L[n[+_], +a] = t1[z, n, a]})#L] {
+        private type t[n[+_], +a] = t1[z, n, a]
+        private type e = z
         final case class StT[+a](override val old: Either[e, a]) extends NewtypeOf[Either[e, a]]
         override def liftWith[n[+_], a](f: Run => n[a])(implicit _N: Monad[n]): t[n, a] = ErrorT {
             val _Me = Monad[Either.apply[e]]
@@ -60,73 +62,77 @@ private[ken] sealed trait ErrorTAs0 extends MonadTrans.Deriving1[ErrorT, ErrorCl
         }
     }
 
-    override protected def deriveMonad[e, n[+_]](_N: Monad[n], _C: c[e]): Monad[({type L[+a] = ErrorT[e, n, a]})#L] = _asMonadError(_N)
+    override protected def deriveMonad[z, n[+_]](_N: Monad[n], _C: c[z]): Monad[({type L[+a] = t1[z, n, a]})#L] = _asMonadError(_N)
 
-    implicit def _asMonadFix[e, n[+_]](implicit i: MonadFix[n]): MonadFix[({type L[+a] = ErrorT[e, n, a]})#L] = new MonadFix[({type L[+a] = ErrorT[e, n, a]})#L] with MonadProxy[({type L[+a] = ErrorT[e, n, a]})#L] {
-        private type m[+a] = ErrorT[e, n, a]
-        override val selfMonad = _asMonadError[e, n]
+    override protected def deriveMonadFix[z, n[+_]](_N: MonadFix[n], _C: c[z]): MonadFix[({type L[+a] = t1[z, n, a]})#L] = new MonadFix[({type L[+a] = t1[z, n, a]})#L] with MonadProxy[({type L[+a] = t1[z, n, a]})#L] {
+        private type m[+a] = t1[z, n, a]
+        private type e = z
+        override val selfMonad = deriveMonad(_N, _C)
         override def mfix[a](f: Lazy[a] => m[a]): m[a] = ErrorT {
             def k(a: Lazy[Either[e, a]]) = run { f { a.! match {
                 case Right(r) => r
                 case _ => error("empty mfix argument")
             } } }
-            i.mfix(k)
+            _N.mfix(k)
         }
     }
 
-    implicit def _asMonadCont[e, n[+_]](implicit i: MonadCont[n], _C: c[e]): MonadCont[({type L[+a] = ErrorT[e, n, a]})#L] = new MonadCont[({type L[+a] = ErrorT[e, n, a]})#L] with MonadProxy[({type L[+a] = ErrorT[e, n, a]})#L] {
-        private type m[+a] = ErrorT[e, n, a]
-        override val selfMonad = deriveMonad(i, _C)
+    override protected def deriveMonadCont[z, n[+_]](_N: MonadCont[n], _C: c[z]): MonadCont[({type L[+a] = t1[z, n, a]})#L] = new MonadCont[({type L[+a] = t1[z, n, a]})#L] with MonadProxy[({type L[+a] = t1[z, n, a]})#L] {
+        private type m[+a] = t1[z, n, a]
+        private type e = z
+        override val selfMonad = deriveMonad(_N, _C)
         override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = ErrorT {
-            i.callCC { (c: Either[e, a] => n[Either[e, b]]) =>
+            _N.callCC { (c: Either[e, a] => n[Either[e, b]]) =>
                 run { f(a => ErrorT { c(Right(a)) }) }
             }
         }
     }
 
-    implicit def _asMonadWriter[e, n[+_], w](implicit i: MonadWriter[w, n], _C: c[e]): MonadWriter[w, ({type L[+a] = ErrorT[e, n, a]})#L] = new MonadWriter[w, ({type L[+a] = ErrorT[e, n, a]})#L] with MonadProxy[({type L[+a] = ErrorT[e, n, a]})#L] {
-        private type m[+a] = ErrorT[e, n, a]
-        override val selfMonad = deriveMonad(i, _C)
-        override def monoid: Monoid[w] = i.monoid
-        override val tell: w => m[Unit] = x => deriveMonadTrans(_C).lift(i.tell(x))
+    override protected def deriveMonadWriter[z, n[+_], w](_N: MonadWriter[w, n], _C: c[z]): MonadWriter[w, ({type L[+a] = t1[z, n, a]})#L] = new MonadWriter[w, ({type L[+a] = t1[z, n, a]})#L] with MonadProxy[({type L[+a] = t1[z, n, a]})#L] {
+        private type m[+a] = t1[z, n, a]
+        private type e = z
+        override val selfMonad = deriveMonad(_N, _C)
+        override def monoid: Monoid[w] = _N.monoid
+        override val tell: w => m[Unit] = x => deriveMonadTrans(_C).lift(_N.tell(x))(_N)
         override def listen[a](m: m[a]): m[(a, w)] = ErrorT {
-            import i.`for`
+            import _N.`for`
             for {
-                (a, w) <- i.listen(run(m))
+                (a, w) <- _N.listen(run(m))
             } {
                 a match {
-                    case Left(l) => i.`return`(Left(l))
-                    case Right(r) => i.`return`(Right(r, w))
+                    case Left(l) => _N.`return`(Left(l))
+                    case Right(r) => _N.`return`(Right(r, w))
                 }
             }
         }
         override def pass[a](m: m[(a, w => w)]): m[a] = ErrorT {
-            import i.`for`
-            i.pass {
+            import _N.`for`
+            _N.pass {
                 for {
                     a <- run(m)
                 } {
                     a match {
-                        case Left(l) => i.`return`(Left(l), id[w])
-                        case Right((r, f)) => i.`return`(Right(r), f)
+                        case Left(l) => _N.`return`(Left(l), id[w])
+                        case Right((r, f)) => _N.`return`(Right(r), f)
                     }
                 }
             }
         }
     }
 
-    implicit def _asMonadPlus[e, n[+_]](implicit i: Monad[n], j: ErrorClass[e]): MonadPlus[({type L[+a] = ErrorT[e, n, a]})#L] = new MonadPlus[({type L[+a] = ErrorT[e, n, a]})#L] with MonadProxy[({type L[+a] = ErrorT[e, n, a]})#L] {
-        private type m[+a] = ErrorT[e, n, a]
-        override val selfMonad = deriveMonad(i, j)
-        override val mzero: m[Nothing] = ErrorT { i.`return`(Left(j.noMsg)) }
+    implicit def _asMonadPlus[z, n[+_]](implicit _N: Monad[n], _C: c[z]): MonadPlus[({type L[+a] = t1[z, n, a]})#L] = new MonadPlus[({type L[+a] = t1[z, n, a]})#L] with MonadProxy[({type L[+a] = t1[z, n, a]})#L] {
+        private type m[+a] = t1[z, n, a]
+        private type e = z
+        override val selfMonad = deriveMonad(_N, _C)
+        override val mzero: m[Nothing] = ErrorT { _N.`return`(Left(_C.noMsg)) }
         override def mplus[a](m: m[a])(n: Lazy[m[a]]): m[a] = ErrorT {
-            import i.`for`
+            import _N.`for`
             for {
                 a <- run(m)
             } {
                 a match {
                     case Left(_) => run(n)
-                    case Right(r) => i.`return`(Right(r))
+                    case Right(r) => _N.`return`(Right(r))
                 }
             }
         }
@@ -134,44 +140,44 @@ private[ken] sealed trait ErrorTAs0 extends MonadTrans.Deriving1[ErrorT, ErrorCl
 }
 
 private[ken] sealed trait ErrorTAs extends ErrorTAs0 { this: ErrorT.type =>
-    implicit def _asMonadError[e, n[+_]](implicit i: Monad[n]): MonadError[e, ({type L[+a] = ErrorT[e, n, a]})#L] = new MonadError[e, ({type L[+a] = ErrorT[e, n, a]})#L] {
+    implicit def _asMonadError[e, n[+_]](implicit _N: Monad[n]): MonadError[e, ({type L[+a] = ErrorT[e, n, a]})#L] = new MonadError[e, ({type L[+a] = ErrorT[e, n, a]})#L] {
         // Functor
         private type f[+a] = ErrorT[e, n, a]
         override def fmap[a, b](f: a => b): f[a] => f[b] = m => ErrorT {
-            import i.`for`
+            import _N.`for`
             for {
                 a <- run(m)
             } {
                 a match {
-                    case Left(l) => i.`return`(Left(l))
-                    case Right(r) => i.`return`(Right(f(r)))
+                    case Left(l) => _N.`return`(Left(l))
+                    case Right(r) => _N.`return`(Right(f(r)))
                 }
             }
         }
         // Monad
         private type m[+a] = f[a]
-        override def `return`[a](a: Lazy[a]): m[a] = ErrorT { i.`return`(Right(a.!)) }
+        override def `return`[a](a: Lazy[a]): m[a] = ErrorT { _N.`return`(Right(a.!)) }
         override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = ErrorT {
-            import i.`for`
+            import _N.`for`
             for {
                 a <- run(m)
             } {
                 a match {
-                    case Left(l) => i.`return`(Left(l))
+                    case Left(l) => _N.`return`(Left(l))
                     case Right(r) => run(k(r))
                 }
             }
         }
         // MonadError
-        override def throwError[a](l: e): m[a] = ErrorT { i.`return`(Left(l)) }
+        override val throwError: throwError = l => ErrorT { _N.`return`(Left(l)) }
         override def catchError[a](m: m[a])(h: e => m[a]): m[a] = ErrorT {
-            import i.`for`
+            import _N.`for`
             for {
                 a <- run(m)
             } {
                 a match {
                     case Left(l) => run(h(l))
-                    case Right(r) => i.`return`(Right(r))
+                    case Right(r) => _N.`return`(Right(r))
                 }
             }
         }

@@ -24,7 +24,7 @@ object IdentityT extends IdentityTOp with IdentityTAs with MonadTrans[IdentityT]
     // Overrides
     //
     // MonadTrans
-    private type t[n[+_], +a] = IdentityT[n, a]
+    protected type t[n[+_], +a] = IdentityT[n, a]
     final case class StT[+a](override val old: a) extends NewtypeOf[a]
     override def liftWith[n[+_], a](f: Run => n[a])(implicit _N: Monad[n]): t[n, a] = IdentityT {
         f {
@@ -50,33 +50,29 @@ private[ken] trait IdentityTOp {
 }
 
 
-private[ken] sealed trait IdentityTAs0 extends MonadTrans.Deriving0[IdentityT, MonadBase.type ^: MonadError.type ^: MonadFix.type ^: MonadIO.type ^: MonadPlus.type ^: MonadReader.type ^: MonadState.type ^: Kind.Nil] { this: IdentityT.type =>
-    override protected def deriveMonad[n[+_]](_N: Monad[n]) = _asMonad(_N)
-
-    implicit def _asMonadCont[n[+_]](implicit i: MonadCont[n]): MonadCont[({type L[+a] = IdentityT[n, a]})#L] = new MonadCont[({type L[+a] = IdentityT[n, a]})#L] with MonadProxy[({type L[+a] = IdentityT[n, a]})#L] {
-        private type m[+a] = IdentityT[n, a]
-        override val selfMonad = deriveMonad(i)
-        override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = IdentityT {
-            i.callCC { (c: a => n[b]) =>
-                run( f( a => IdentityT { c(a) } ) )
-            }
-        }
-    }
-}
-
-private[ken] sealed trait IdentityTAs extends IdentityTAs0 { this: IdentityT.type =>
-    implicit def _asMonad[n[+_]](implicit i: Monad[n]): Monad[({type L[+a] = IdentityT[n, a]})#L] with HighPriority = new Monad[({type L[+a] = IdentityT[n, a]})#L] with HighPriority {
+private[ken] sealed trait IdentityTAs extends MonadTrans.Deriving0[IdentityT, MonadTrans.AnyMonad] { this: IdentityT.type =>
+    override protected def deriveMonad[n[+_]](_N: Monad[n]): Monad[({type L[+a] = t[n, a]})#L] = new Monad[({type L[+a] = t[n, a]})#L] {
         // Functor
-        private type f[+a] = IdentityT[n, a]
-        override def fmap[a, b](f: a => b): f[a] => f[b] = m => IdentityT { i.fmap(f)(run(m)) }
+        private type f[+a] = t[n, a]
+        override def fmap[a, b](f: a => b): f[a] => f[b] = m => IdentityT { _N.fmap(f)(run(m)) }
         // Applicative
-        override def op_<*>[a, b](f: f[a => b]): f[a] => f[b] = m => IdentityT { i.op_<*>(run(f))(run(m)) }
+        override def op_<*>[a, b](f: f[a => b]): f[a] => f[b] = m => IdentityT { _N.op_<*>(run(f))(run(m)) }
         // Monad
         private type m[+a] = IdentityT[n, a]
-        override def `return`[a](a: Lazy[a]): m[a] = IdentityT { i.`return`(a) }
+        override def `return`[a](a: Lazy[a]): m[a] = IdentityT { _N.`return`(a) }
         override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = IdentityT {
-            import i.>>=
+            import _N.>>=
             run(m) >>= (x => run(k(x)))
+        }
+    }
+
+    override protected def deriveMonadCont[n[+_]](_N: MonadCont[n]): MonadCont[({type L[+a] = t[n, a]})#L] = new MonadCont[({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {
+        private type m[+a] = t[n, a]
+        override val selfMonad = deriveMonad(_N)
+        override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = IdentityT {
+            _N.callCC { (c: a => n[b]) =>
+                run( f( a => IdentityT { c(a) } ) )
+            }
         }
     }
 }

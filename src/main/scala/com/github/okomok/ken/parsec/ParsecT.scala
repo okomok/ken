@@ -92,7 +92,7 @@ private[parsec] sealed trait ParsecTAs0 { this: ParsecT.type =>
         private type m[+a] = ParsecT[s, u, n, a]
         private val prim = ParsecTOp[apply3[s, u, Kind.quote1[n]]]
         override def selfMonad = _asMonadPlus[s, u, n]
-        override def throwError[a](e: e): m[a] = _asMonadTrans[s, u].lift(i.throwError(e))
+        override val throwError: throwError = e => _asMonadTrans[s, u].lift(i.throwError(e))
         override def catchError[a](p: m[a])(h: e => m[a]): m[a] = prim.mkPT { s =>
             i.catchError(prim.runParsecT(p)(s)) { e =>
                 prim.runParsecT(h(e))(s)

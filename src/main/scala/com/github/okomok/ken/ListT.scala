@@ -27,7 +27,7 @@ object ListT extends ListTOp with ListTAs with MonadTrans[ListT] {
     // Overrides
     //
     // MonadTrans
-    private type t[n[+_], +a] = ListT[n, a]
+    protected type t[n[+_], +a] = ListT[n, a]
     final case class StT[+a](override val old: List[a]) extends NewtypeOf[List[a]]
     override def liftWith[n[+_], a](f: Run => n[a])(implicit _N: Monad[n]): t[n, a] = ListT {
         _N.liftM((a: a) => List.`return`(a)) {
@@ -53,39 +53,37 @@ private[ken] trait ListTOp {
 }
 
 
-private[ken] sealed trait ListTAs0 extends MonadTrans.Deriving0[ListT, MonadBase.type ^: MonadError.type ^: MonadFix.type ^: MonadIO.type ^: MonadReader.type ^: MonadState.type ^: Kind.Nil] { this: ListT.type =>
+private[ken] sealed trait ListTAs extends MonadTrans.Deriving0[ListT, MonadBase.type ^: MonadCont.type ^: MonadError.type ^: MonadFix.type ^: MonadIO.type ^: MonadReader.type ^: MonadState.type ^: Kind.Nil] { this: ListT.type =>
     override protected def deriveMonad[n[+_]](_N: Monad[n]) = _asMonadPlus(_N)
 
-    implicit def _asMonadCont[n[+_]](implicit i: MonadCont[n]): MonadCont[({type L[+a] = ListT[n, a]})#L] = new MonadCont[({type L[+a] = ListT[n, a]})#L] with MonadProxy[({type L[+a] = ListT[n, a]})#L] {
+    override protected def deriveMonadCont[n[+_]](_N: MonadCont[n]): MonadCont[({type L[+a] = t[n, a]})#L] = new MonadCont[({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {
         private type m[+a] = ListT[n, a]
-        override val selfMonad = deriveMonad(i)
+        override val selfMonad = deriveMonad(_N)
         override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = ListT {
-            i.callCC { (c: List[a] => n[List[b]]) =>
+            _N.callCC { (c: List[a] => n[List[b]]) =>
                 run( f( a => ListT { c(List(a)) } ) )
             }
         }
     }
-}
 
-private[ken] sealed trait ListTAs extends ListTAs0 { this: ListT.type =>
-    implicit def _asMonadPlus[n[+_]](implicit i: Monad[n]): MonadPlus[({type L[+a] = ListT[n, a]})#L] = new MonadPlus[({type L[+a] = ListT[n, a]})#L] {
+    implicit def _asMonadPlus[n[+_]](implicit _N: Monad[n]): MonadPlus[({type L[+a] = ListT[n, a]})#L] = new MonadPlus[({type L[+a] = ListT[n, a]})#L] {
         // Functor
         private type f[+a] = ListT[n, a]
         override def fmap[a, b](f: a => b): f[a] => f[b] = m => ListT {
-            import i.`for`
+            import _N.`for`
             for { a <- run(m) } yield List.map(f)(a)
         }
         // Monad
         private type m[+a] = ListT[n, a]
-        override def `return`[a](a: Lazy[a]): m[a] = ListT { i.`return`(Lazy(List(a))) }
+        override def `return`[a](a: Lazy[a]): m[a] = ListT { _N.`return`(Lazy(List(a))) }
         override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = ListT {
-            import i.`for`
-            for { a <- run(m); b <- i.mapM(run[n, b]_ compose k)(a) } yield List.concat(b)
+            import _N.`for`
+            for { a <- run(m); b <- _N.mapM(run[n, b]_ compose k)(a) } yield List.concat(b)
         }
         // MonadPlus
-        override def mzero: m[Nothing] = ListT { i.`return`(Nil) }
+        override def mzero: m[Nothing] = ListT { _N.`return`(Nil) }
         override def mplus[a](m: m[a])(n: Lazy[m[a]]): m[a] = ListT {
-            import i.`for`
+            import _N.`for`
             for { a <- run(m); b <- run(n) } yield a ++: b
         }
     }

@@ -51,11 +51,13 @@ private[ken] trait StateTOp {
 }
 
 
-private[ken] sealed trait StateTAs0 extends MonadTrans.Deriving1[StateT, Trivial, MonadBase.type ^: MonadError.type ^: MonadFix.type ^: MonadIO.type ^: MonadPlus.type ^: Kind.Nil] { this: StateT.type =>
-    private type c[x] = Trivial[x]
+private[ken] sealed trait StateTAs extends MonadTrans.Deriving1[StateT, Trivial, Monad.type ^: MonadBase.type ^: MonadCont.type ^: MonadError.type ^: MonadFix.type ^: MonadIO.type ^: MonadPlus.type ^: MonadWriter.type ^: Kind.Nil] { this: StateT.type =>
+    private type t1[z, n[+_], +a] = StateT[z, n, a]
+    private type c[z] = Trivial[z]
 
-    override protected def deriveMonadTrans[s](_C: c[s]): MonadTrans[({type L[n[+_], +a] = StateT[s, n, a]})#L] = new MonadTrans[({type L[n[+_], +a] = StateT[s, n, a]})#L] {
-        private type t[n[+_], +a] = StateT[s, n, a]
+    override protected def deriveMonadTrans[z](_C: c[z]): MonadTrans[({type L[n[+_], +a] = t1[z, n, a]})#L] = new MonadTrans[({type L[n[+_], +a] = t1[z, n, a]})#L] {
+        private type t[n[+_], +a] = t1[z, n, a]
+        private type s = z
         final case class StT[+a](override val old: (a, s)) extends NewtypeOf[(a, s)]
         override def liftWith[n[+_], a](f: Run => n[a])(implicit _N: Monad[n]): t[n, a] = StateT { s =>
             _N.liftM((x: a) => (x, s)) {
@@ -73,53 +75,53 @@ private[ken] sealed trait StateTAs0 extends MonadTrans.Deriving1[StateT, Trivial
         }
     }
 
-    override protected def deriveMonad[s, n[+_]](_N: Monad[n], _C: c[s]): Monad[({type L[+a] = StateT[s, n, a]})#L] = _asMonadState(_N)
+    override protected def deriveMonad[z, n[+_]](_N: Monad[n], _C: c[z]): Monad[({type L[+a] = t1[z, n, a]})#L] = _asMonadState(_N)
 
-    implicit def _asMonadCont[s, n[+_]](implicit i: MonadCont[n]): MonadCont[({type L[+a] = StateT[s, n, a]})#L] = new MonadCont[({type L[+a] = StateT[s, n, a]})#L] with MonadProxy[({type L[+a] = StateT[s, n, a]})#L] {
-        private type m[+a] = StateT[s, n, a]
-        override val selfMonad = deriveMonad(i, Trivial.of[s])
+    override protected def deriveMonadCont[z, n[+_]](_N: MonadCont[n], _C: c[z]): MonadCont[({type L[+a] = t1[z, n, a]})#L] = new MonadCont[({type L[+a] = t1[z, n, a]})#L] with MonadProxy[({type L[+a] = t1[z, n, a]})#L] {
+        private type m[+a] = t1[z, n, a]
+        private type s = z
+        override val selfMonad = deriveMonad(_N, Trivial.of[s])
         override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = StateT { s =>
-            i.callCC { (c: ((a, s)) => n[(b, s)]) =>
+            _N.callCC { (c: ((a, s)) => n[(b, s)]) =>
                 run( f( a => StateT { s_ => c((a, s_)) } ) )(s)
             }
         }
     }
 
-    implicit def _asMonadWriter[s, n[+_], w](implicit i: MonadWriter[w, n]): MonadWriter[w, ({type L[+a] = StateT[s, n, a]})#L] = new MonadWriter[w, ({type L[+a] = StateT[s, n, a]})#L] with MonadProxy[({type L[+a] = StateT[s, n, a]})#L] {
-        private type m[+a] = StateT[s, n, a]
-        override val selfMonad = deriveMonad(i, Trivial.of[s])
-        override def monoid: Monoid[w] = i.monoid
-        override val tell: w => m[Unit] = x => deriveMonadTrans(Trivial.of[s]).lift(i.tell(x))
+    override protected def deriveMonadWriter[z, n[+_], w](_N: MonadWriter[w, n], _C: c[z]): MonadWriter[w, ({type L[+a] = t1[z, n, a]})#L] = new MonadWriter[w, ({type L[+a] = t1[z, n, a]})#L] with MonadProxy[({type L[+a] = t1[z, n, a]})#L] {
+        private type m[+a] = t1[z, n, a]
+        private type s = z
+        override val selfMonad = deriveMonad(_N, Trivial.of[s])
+        override def monoid: monoid = _N.monoid
+        override val tell: tell = x => deriveMonadTrans(Trivial.of[s]).lift(_N.tell(x))(_N)
         override def listen[a](m: m[a]): m[(a, w)] = StateT { s => {
-            import i.`for`
-            for { ((a, s_), w) <- i.listen(run(m)(s)) } yield ((a, w), s_)
+            import _N.`for`
+            for { ((a, s_), w) <- _N.listen(run(m)(s)) } yield ((a, w), s_)
         } }
         override def pass[a](m: m[(a, w => w)]): m[a] = StateT { s =>
-            import i.`for`
-            i.pass {
+            import _N.`for`
+            _N.pass {
                 for { ((a, f), s_) <- run(m)(s) } yield ((a, s_), f)
             }
         }
     }
-}
 
-private[ken] sealed trait StateTAs extends StateTAs0 { this: StateT.type =>
-    implicit def _asMonadState[s, n[+_]](implicit i: Monad[n]): MonadState[s, ({type L[+a] = StateT[s, n, a]})#L] = new MonadState[s, ({type L[+a] = StateT[s, n, a]})#L] {
+    implicit def _asMonadState[s, n[+_]](implicit _N: Monad[n]): MonadState[s, ({type L[+a] = StateT[s, n, a]})#L] = new MonadState[s, ({type L[+a] = StateT[s, n, a]})#L] {
         // Functor
         private type f[+a] = StateT[s, n, a]
         override def fmap[a, b](f: a => b): f[a] => f[b] = m => StateT { s =>
-            import i.`for`
+            import _N.`for`
             for { (x, s_) <- run(m)(s) } yield (f(x), s_)
         }
         // Monad
         private type m[+a] = f[a]
-        override def `return`[a](a: Lazy[a]): m[a] = StateT { s => i.`return`(a.!, s) }
+        override def `return`[a](a: Lazy[a]): m[a] = StateT { s => _N.`return`(a.!, s) }
         override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = StateT { s =>
-            import i.`for`
+            import _N.`for`
             for { (a, s_) <- run(m)(s) } { run(k(a))(s_) }
         }
         // MonadState
-        override val get: m[s] = StateT { s => i.`return`(s, s) }
-        override val put: s => m[Unit] = s => StateT { _ => i.`return`((), s) }
+        override val get: m[s] = StateT { s => _N.`return`(s, s) }
+        override val put: s => m[Unit] = s => StateT { _ => _N.`return`((), s) }
     }
 }
