@@ -19,7 +19,7 @@ class MonadControlTest extends org.scalatest.junit.JUnit3Suite {
     type MyError = String
     val MyError = List.from("my error")
 
-    val mt = MonadTrans[ErrorT.apply1[MyError]]
+    val mt = MonadTransControl[ErrorT.apply1[MyError]]
     val me = MonadError[MyError, ErrorT.apply2[MyError, IO.type]]
 
     def simple {
@@ -67,7 +67,7 @@ class MonadControlTest extends org.scalatest.junit.JUnit3Suite {
     No longer works.
     // Weak way of Scala
     //
-    val mtw = MonadTrans.weak[IO.ErrorT.apply[MyError]]
+    val mtw = MonadTransControl.weak[IO.ErrorT.apply[MyError]]
     implicit val mew = MonadError.weak[MyError, IO.ErrorT.apply[MyError]]
 
     val sayHiErrorWeak: IO.Handle => IO[Either[MyError, Unit]] = handle => {

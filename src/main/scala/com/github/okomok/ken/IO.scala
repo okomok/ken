@@ -29,7 +29,7 @@ object IO extends MonadControlIO[IO] with ThisIsInstance {
     // MonadIO
     override def liftIO[a](io: IO[a]): m[a] = io
     override lazy val monadBaseIO = MonadBase._ofSame(this)
-    override def liftControlIO[a](f: RunInIO => IO[a]): m[a] = MonadTrans.idLiftControl(f)
+    override def liftControlIO[a](f: RunInIO => IO[a]): m[a] = MonadTransControl.idLiftControl(f)
 
     private def returnIO[a](x: => a): IO[a] = IO { s => IORep.done(x, s) }
     private def bindIO[a, b](m: IO[a])(k: a => IO[b]): IO[b] = IO { s => IORep.cont(unIO(m), (a: a) => unIO(k(a)), s) }

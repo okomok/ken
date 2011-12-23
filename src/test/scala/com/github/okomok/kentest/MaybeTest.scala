@@ -65,7 +65,7 @@ class MaybeTest extends org.scalatest.junit.JUnit3Suite {
         val wm = MonadPlus.weak[MaybeT.apply[IO]]
         import wm._
 
-        val wmt = MonadTrans.weak[MaybeT.apply[IO]]
+        val wmt = MonadTransControl.weak[MaybeT.apply[IO]]
         import wmt.lift
 
         def isValid(s: String): Boolean = Eq[Kind.const[String]].op_===(s)("valid")
@@ -105,7 +105,7 @@ class MaybeTest extends org.scalatest.junit.JUnit3Suite {
         val m = MonadPlus[MaybeT.apply[IO.type]]
         import m._
 
-        val mt = MonadTrans[MaybeT.type]
+        val mt = MonadTransControl[MaybeT.type]
         import mt.lift
 
         var valid = false

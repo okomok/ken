@@ -41,11 +41,11 @@ private[ken] trait ReaderTOp {
 }
 
 
-private[ken] sealed trait ReaderTAs extends MonadTrans.Deriving1[ReaderT, Trivial, Monad.type ^: MonadBase.type ^: MonadCont.type ^: MonadError.type ^: MonadFix.type ^: MonadIO.type ^: MonadPlus.type ^: MonadState.type ^: MonadWriter.type ^: Kind.Nil] { this: ReaderT.type =>
+private[ken] sealed trait ReaderTAs extends MonadTransControl.Deriving1[ReaderT, Trivial, Monad.type ^: MonadBaseControl.type ^: MonadCont.type ^: MonadError.type ^: MonadFix.type ^: MonadIO.type ^: MonadPlus.type ^: MonadState.type ^: MonadWriter.type ^: Kind.Nil] { this: ReaderT.type =>
     private type t1[z, n[+_], +a] = ReaderT[z, n, a]
     private type c[z] = Trivial[z]
 
-    override protected def deriveMonadTrans[z](_C: c[z]): MonadTrans[({type L[n[+_], +a] = t1[z, n, a]})#L] = new MonadTrans[({type L[n[+_], +a] = t1[z, n, a]})#L] {
+    override protected def asMonadTransControl[z](_C: c[z]): MonadTransControl[({type L[n[+_], +a] = t1[z, n, a]})#L] = new MonadTransControl[({type L[n[+_], +a] = t1[z, n, a]})#L] {
         private type t[n[+_], +a] = t1[z, n, a]
         private type r = z
         final case class StT[+a](override val old: a) extends NewtypeOf[a]
@@ -81,7 +81,7 @@ private[ken] sealed trait ReaderTAs extends MonadTrans.Deriving1[ReaderT, Trivia
         private type r = z
         override val selfMonad = deriveMonad(_N, Trivial.of[r])
         override def monoid: monoid = _N.monoid
-        override val tell: tell = x => deriveMonadTrans(Trivial.of[r]).lift(_N.tell(x))(_N)
+        override val tell: tell = x => asMonadTransControl(Trivial.of[r]).lift(_N.tell(x))(_N)
         override def listen[a](m: m[a]): m[(a, w)] = ReaderT { w => _N.listen(run(m)(w)) }
         override def pass[a](m: m[(a, w => w)]): m[a] = ReaderT { w => _N.pass(run(m)(w)) }
     }

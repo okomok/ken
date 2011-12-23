@@ -17,7 +17,7 @@ package ken
 final case class ListT[n[+_], +a](override val old: n[List[a]]) extends NewtypeOf[n[List[a]]]
 
 
-object ListT extends ListTOp with ListTAs with MonadTrans[ListT] {
+object ListT extends ListTOp with ListTAs with MonadTransControl[ListT] {
     trait apply[n <: Kind.Function1] extends apply1[n]
     trait apply1[n <: Kind.Function1] extends Kind.Newtype1 {
         override type apply1[+a] = ListT[n#apply1, a]
@@ -26,7 +26,7 @@ object ListT extends ListTOp with ListTAs with MonadTrans[ListT] {
 
     // Overrides
     //
-    // MonadTrans
+    // MonadTransControl
     protected type t[n[+_], +a] = ListT[n, a]
     final case class StT[+a](override val old: List[a]) extends NewtypeOf[List[a]]
     override def liftWith[n[+_], a](f: Run => n[a])(implicit _N: Monad[n]): t[n, a] = ListT {
@@ -53,7 +53,7 @@ private[ken] trait ListTOp {
 }
 
 
-private[ken] sealed trait ListTAs extends MonadTrans.Deriving0[ListT, MonadBase.type ^: MonadCont.type ^: MonadError.type ^: MonadFix.type ^: MonadIO.type ^: MonadReader.type ^: MonadState.type ^: Kind.Nil] { this: ListT.type =>
+private[ken] sealed trait ListTAs extends MonadTransControl.Deriving0[ListT, MonadBaseControl.type ^: MonadCont.type ^: MonadError.type ^: MonadFix.type ^: MonadIO.type ^: MonadReader.type ^: MonadState.type ^: Kind.Nil] { this: ListT.type =>
     override protected def deriveMonad[n[+_]](_N: Monad[n]) = _asMonadPlus(_N)
 
     override protected def deriveMonadCont[n[+_]](_N: MonadCont[n]): MonadCont[({type L[+a] = t[n, a]})#L] = new MonadCont[({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {

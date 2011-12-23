@@ -37,11 +37,11 @@ private[ken] trait ErrorTOp {
 }
 
 
-private[ken] sealed trait ErrorTAs0 extends MonadTrans.Deriving1[ErrorT, ErrorClass, Monad.type ^: MonadBase.type ^: MonadCont.type ^: MonadIO.type ^: MonadReader.type ^: MonadState.type ^: MonadWriter.type ^: Kind.Nil] { this: ErrorT.type =>
+private[ken] sealed trait ErrorTAs0 extends MonadTransControl.Deriving1[ErrorT, ErrorClass, Monad.type ^: MonadBaseControl.type ^: MonadCont.type ^: MonadIO.type ^: MonadReader.type ^: MonadState.type ^: MonadWriter.type ^: Kind.Nil] { this: ErrorT.type =>
     private type t1[z, n[+_], +a] = ErrorT[z, n, a]
     private type c[z] = ErrorClass[z]
 
-    override protected def deriveMonadTrans[z](_C: c[z]): MonadTrans[({type L[n[+_], +a] = t1[z, n, a]})#L] = new MonadTrans[({type L[n[+_], +a] = t1[z, n, a]})#L] {
+    override protected def asMonadTransControl[z](_C: c[z]): MonadTransControl[({type L[n[+_], +a] = t1[z, n, a]})#L] = new MonadTransControl[({type L[n[+_], +a] = t1[z, n, a]})#L] {
         private type t[n[+_], +a] = t1[z, n, a]
         private type e = z
         final case class StT[+a](override val old: Either[e, a]) extends NewtypeOf[Either[e, a]]
@@ -93,7 +93,7 @@ private[ken] sealed trait ErrorTAs0 extends MonadTrans.Deriving1[ErrorT, ErrorCl
         private type e = z
         override val selfMonad = deriveMonad(_N, _C)
         override def monoid: Monoid[w] = _N.monoid
-        override val tell: w => m[Unit] = x => deriveMonadTrans(_C).lift(_N.tell(x))(_N)
+        override val tell: w => m[Unit] = x => asMonadTransControl(_C).lift(_N.tell(x))(_N)
         override def listen[a](m: m[a]): m[(a, w)] = ErrorT {
             import _N.`for`
             for {

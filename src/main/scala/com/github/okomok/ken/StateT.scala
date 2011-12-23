@@ -51,11 +51,11 @@ private[ken] trait StateTOp {
 }
 
 
-private[ken] sealed trait StateTAs extends MonadTrans.Deriving1[StateT, Trivial, Monad.type ^: MonadBase.type ^: MonadCont.type ^: MonadError.type ^: MonadFix.type ^: MonadIO.type ^: MonadPlus.type ^: MonadWriter.type ^: Kind.Nil] { this: StateT.type =>
+private[ken] sealed trait StateTAs extends MonadTransControl.Deriving1[StateT, Trivial, Monad.type ^: MonadBaseControl.type ^: MonadCont.type ^: MonadError.type ^: MonadFix.type ^: MonadIO.type ^: MonadPlus.type ^: MonadWriter.type ^: Kind.Nil] { this: StateT.type =>
     private type t1[z, n[+_], +a] = StateT[z, n, a]
     private type c[z] = Trivial[z]
 
-    override protected def deriveMonadTrans[z](_C: c[z]): MonadTrans[({type L[n[+_], +a] = t1[z, n, a]})#L] = new MonadTrans[({type L[n[+_], +a] = t1[z, n, a]})#L] {
+    override protected def asMonadTransControl[z](_C: c[z]): MonadTransControl[({type L[n[+_], +a] = t1[z, n, a]})#L] = new MonadTransControl[({type L[n[+_], +a] = t1[z, n, a]})#L] {
         private type t[n[+_], +a] = t1[z, n, a]
         private type s = z
         final case class StT[+a](override val old: (a, s)) extends NewtypeOf[(a, s)]
@@ -93,7 +93,7 @@ private[ken] sealed trait StateTAs extends MonadTrans.Deriving1[StateT, Trivial,
         private type s = z
         override val selfMonad = deriveMonad(_N, Trivial.of[s])
         override def monoid: monoid = _N.monoid
-        override val tell: tell = x => deriveMonadTrans(Trivial.of[s]).lift(_N.tell(x))(_N)
+        override val tell: tell = x => asMonadTransControl(Trivial.of[s]).lift(_N.tell(x))(_N)
         override def listen[a](m: m[a]): m[(a, w)] = StateT { s => {
             import _N.`for`
             for { ((a, s_), w) <- _N.listen(run(m)(s)) } yield ((a, w), s_)

@@ -3,7 +3,6 @@
 // Copyright Shunsuke Sogame 2011.
 //
 // Copyright (c) 2011, Mikhail Vorozhtsov, Bas van Dijk
-// Copyright (c) 2010, Bas van Dijk, Anders Kaseorg
 //
 // Distributed under the New BSD license.
 
@@ -15,25 +14,12 @@ package ken
 trait MonadBase[b[+_], m[+_]] extends Monad[m] {
     final val asMonadBase: MonadBase[b, apply1] = this
 
-    type StM[+a]
-    trait RunInBase {
-        def apply[c](m: m[c]): b[StM[c]]
-    }
-
     // Core
     //
-    def baseMonad: Monad[b]
-    def liftBase[a](b: b[a]): m[a] = liftBaseWith(_ => b)
-    def liftBaseWith[a](f: RunInBase => b[a]): m[a]
-    def restoreM[a](St: StM[a]): m[a]
+    type baseMonad = Monad[b]
+    def baseMonad: baseMonad
 
-    // Extra
-    //
-    def control[a](f: RunInBase => b[StM[a]]): m[a] = liftBaseWith(f) >>= ((St: StM[a]) => restoreM(St))
-
-    def liftBaseOp[a, q, c](f: (a => b[StM[q]]) => b[StM[c]]): (a => m[q]) => m[c] = g => control { runInBase => f { a => runInBase(g(a)) } }
-    def liftBaseOp_[a, q](f: b[StM[a]] => b[StM[q]]): m[a] => m[q] = m => control { runInBase => f { runInBase(m) } }
-    def liftBaseDiscard[a](f: b[Unit] => b[a]): m[Unit] => m[a] = m => liftBaseWith { runInBase => f { baseMonad.void { runInBase(m) } } }
+    def liftBase[a](b: b[a]): m[a]
 
     // Helper
     //
@@ -42,22 +28,12 @@ trait MonadBase[b[+_], m[+_]] extends Monad[m] {
 
 
 trait MonadBaseProxy[b[+_], m[+_]] extends MonadBase[b, m] with MonadProxy[m] {
-    val selfMonadBase: MonadBase[b, m]
+    type selfMonadBase = MonadBase[b, m]
+    def selfMonadBase: MonadBase[b, m]
     override def selfMonad: Monad[m] = selfMonadBase
-    override type StM[+a] = selfMonadBase.StM[a]
 
-    private[this] def run2run(run: selfMonadBase.RunInBase): RunInBase = new RunInBase {
-        override def apply[c](m: m[c]): b[StM[c]] = run(m)
-    }
-
-    override def baseMonad: Monad[b] = selfMonadBase.baseMonad
+    override def baseMonad: baseMonad = selfMonadBase.baseMonad
     override def liftBase[a](b: b[a]): m[a] = selfMonadBase.liftBase(b)
-    override def liftBaseWith[a](f: RunInBase => b[a]): m[a] = selfMonadBase.liftBaseWith(run => f(run2run(run)))
-    override def restoreM[a](St: StM[a]): m[a] = selfMonadBase.restoreM(St)
-
-    override def liftBaseOp[a, q, c](f: (a => b[StM[q]]) => b[StM[c]]): (a => m[q]) => m[c] = selfMonadBase.liftBaseOp(f)
-    override def liftBaseOp_[a, q](f: b[StM[a]] => b[StM[q]]): m[a] => m[q] = selfMonadBase.liftBaseOp_(f)
-    override def liftBaseDiscard[a](f: b[Unit] => b[a]): m[Unit] => m[a] = selfMonadBase.liftBaseDiscard(f)
 }
 
 
@@ -67,7 +43,7 @@ object MonadBase extends MonadBaseInstance {
 
 
 sealed trait MonadBaseInstance { this: MonadBase.type =>
-    implicit def _ofSame[m[+_]](implicit _M: Monad[m]): MonadBase[m, m] = new MonadBase[m, m] with MonadProxy[m] {
+    implicit def _ofSame[m[+_]](implicit _M: Monad[m]): MonadBaseControl[m, m] = new MonadBaseControl[m, m] with MonadProxy[m] {
         private type b[+a] = m[a]
         override type StM[+a] = a
         override def selfMonad = _M

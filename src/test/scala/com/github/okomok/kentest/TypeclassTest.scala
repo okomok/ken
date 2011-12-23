@@ -60,9 +60,9 @@ class TypeclassTest extends org.scalatest.junit.JUnit3Suite {
         }
     }
 
-    def testMonadTrans {
-        //val mt1 = MonadTrans[IO.StateT.apply[Int]]
-        val mt2 = MonadTrans[LazyT.type]
+    def testMonadTransControl {
+        //val mt1 = MonadTransControl[IO.StateT.apply[Int]]
+        val mt2 = MonadTransControl[LazyT.type]
 
         val io1 = MonadIO[LazyT.apply[IO.type]]
     }

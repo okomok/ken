@@ -21,7 +21,7 @@ class MonadTransformerTezt { // extends org.scalatest.junit.JUnit3Suite {
         val m = MonadPlus[MaybeT.apply[IO.type]]
         import m._
 
-        val mt = MonadTrans[MaybeT.type]
+        val mt = MonadTransControl[MaybeT.type]
         import mt.lift
 
         def getValidPassword: m.apply[String] = {

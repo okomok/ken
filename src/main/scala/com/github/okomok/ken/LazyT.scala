@@ -26,7 +26,7 @@ object LazyT extends LazyTOp with LazyTAs {
 
     // Overrides
     //
-    // MonadTrans
+    // MonadTransControl
     protected type t[n[+_], +a] = LazyT[n, a]
     final case class StT[+a](override val old: Lazy[a]) extends NewtypeOf[Lazy[a]]
     override def liftWith[n[+_], a](f: Run => n[a])(implicit _N: Monad[n]): t[n, a] = LazyT {
@@ -53,7 +53,7 @@ private[ken] trait LazyTOp {
 }
 
 
-private[ken] sealed trait LazyTAs extends MonadTrans.Deriving0[LazyT, MonadTrans.AnyMonad] { this: LazyT.type =>
+private[ken] sealed trait LazyTAs extends MonadTransControl.Deriving0[LazyT, MonadTransControl.AnyMonad] { this: LazyT.type =>
     override protected def deriveMonad[n[+_]](_N: Monad[n]): Monad[({type L[+a] = t[n, a]})#L] = new Monad[({type L[+a] = t[n, a]})#L] {
         // Functor
         private type f[+a] = t[n, a]

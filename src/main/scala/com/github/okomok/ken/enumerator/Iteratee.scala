@@ -28,14 +28,6 @@ object Iteratee extends IterateeAs with Kind.FunctionLike {
 }
 
 private[enumerator] sealed trait IterateeAs0 { this: Iteratee.type =>
-/*
-    implicit def _asNewtype1[z]: Newtype1[({type nt[+a] = Iteratee[z, a]})#nt, ({type ot[+a] = n[Step[z, a]]})#ot] = new Newtype1[({type nt[+a] = Iteratee[z, a]})#nt, ({type ot[+a] = n[Step[z, a]]})#ot] {
-        private type nt[+a] = Iteratee[z, a]
-        private type ot[+a] = n[Step[z, a]]
-        override def newOf[a](ot: Lazy[ot[a]]): nt[a] = Iteratee(ot)
-        override def oldOf[a](nt: Lazy[nt[a]]): ot[a] = nt.run
-    }
-*/
     import Enumerator.runIteratee
 
     implicit def _asMonad[z, n[+_]](implicit i: Monad[n]): Monad[({type L[+a] = Iteratee[z, n, a]})#L] = new Monad[({type L[+a] = Iteratee[z, n, a]})#L] {
@@ -64,8 +56,6 @@ private[enumerator] sealed trait IterateeAs0 { this: Iteratee.type =>
             import i.>>=
             n >>= { Enumerator.runIteratee[z, n, a]_ `.` _asMonad[z, n].`return`[a] }
         }
-        override def liftWith[n[+_], a](f: Run => n[a])(implicit i: Monad[n]): t[n, a] = error("todo")
-        override def restoreT[n[+_], a](nSt: n[StT[a]])(implicit _N: Monad[n]): t[n, a] = error("todo")
     }
 }
 

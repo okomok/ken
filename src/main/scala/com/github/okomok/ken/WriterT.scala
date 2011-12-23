@@ -42,11 +42,11 @@ private[ken] trait WriterTOp {
 }
 
 
-private[ken] sealed trait WriterTAs extends MonadTrans.Deriving1[WriterT, Monoid, Monad.type ^: MonadBase.type ^: MonadError.type ^: MonadFix.type ^: MonadIO.type ^: MonadPlus.type ^: MonadReader.type ^: MonadState.type ^: Kind.Nil] { this: WriterT.type =>
+private[ken] sealed trait WriterTAs extends MonadTransControl.Deriving1[WriterT, Monoid, Monad.type ^: MonadBaseControl.type ^: MonadError.type ^: MonadFix.type ^: MonadIO.type ^: MonadPlus.type ^: MonadReader.type ^: MonadState.type ^: Kind.Nil] { this: WriterT.type =>
     private type t1[z, n[+_], +a] = WriterT[z, n, a]
     private type c[z] = Monoid[z]
 
-    override protected def deriveMonadTrans[z](_C: c[z]): MonadTrans[({type L[n[+_], +a] = t1[z, n, a]})#L] = new MonadTrans[({type L[n[+_], +a] = t1[z, n, a]})#L] {
+    override protected def asMonadTransControl[z](_C: c[z]): MonadTransControl[({type L[n[+_], +a] = t1[z, n, a]})#L] = new MonadTransControl[({type L[n[+_], +a] = t1[z, n, a]})#L] {
         private type t[n[+_], +a] = t1[z, n, a]
         private type w = z
         final case class StT[+a](override val old: (a, w)) extends NewtypeOf[(a, w)]

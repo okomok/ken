@@ -127,10 +127,10 @@ class MonadZipperTest extends org.scalatest.junit.JUnit3Suite {
     // evalAdd[e] : (e => M[Int]) => Add[e] => M[Int]
     // evalAdds[e] : (e => Ms[Int]) => Add[e] => Ms[Int]
     //
-    // In order to make `evalAdds` from `evalAdd`, you need "unlift" in addition to `MonadTrans.lift`.
-    // M[Int] --MonadTrans.lift--> Ms[Int]
+    // In order to make `evalAdds` from `evalAdd`, you need "unlift" in addition to `MonadTransControl.lift`.
+    // M[Int] --MonadTransControl.lift--> Ms[Int]
     // Ms[Int] --UNLIFT--> M[Int]
-    // Probably `MonadTrans` can kick in.
+    // Probably `MonadTransControl` can kick in.
 
     // 3. The Monad Zipper
 
@@ -138,15 +138,12 @@ class MonadZipperTest extends org.scalatest.junit.JUnit3Suite {
 
     object ZipperT {
         implicit def _asMonadTrans[t1[_[+_], +_], t2[_[+_], +_]](implicit _mt1: MonadTrans[t1], _mt2: MonadTrans[t2]): MonadTrans[({type t[n[+_], +a] = ZipperT[t1, t2, n, a]})#t] = new MonadTrans[({type t[n[+_], +a] = ZipperT[t1, t2, n, a]})#t] {
-            // MonadTrans
             private type t[n[+_], +a] = ZipperT[t1, t2, n, a]
             override def lift[n[+_], a](n: n[a])(implicit _mn: Monad[n]): t[n, a] = {
                 val m2: t2[n, a] = _mt2.lift(n)(_mn)
                 val m1: t1[({type n_[+x] = t2[n, x]})#n_, a] = _mt1.lift[({type n_[+x] = t2[n, x]})#n_, a](m2)(undefined/*hmm*/)
                 ZipperT[t1, t2, n, a](m1)
             }
-            override def liftWith[n[+_], a](f: Run => n[a])(implicit i: Monad[n]): t[n, a] = error("todo")
-            override def restoreT[n[+_], a](nSt: n[StT[a]])(implicit _N: Monad[n]): t[n, a] = error("todo")
         }
     }
 

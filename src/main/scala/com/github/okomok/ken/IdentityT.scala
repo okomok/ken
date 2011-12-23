@@ -14,7 +14,7 @@ package ken
 final case class IdentityT[n[+_], +a](override val old: n[a]) extends NewtypeOf[n[a]]
 
 
-object IdentityT extends IdentityTOp with IdentityTAs with MonadTrans[IdentityT] {
+object IdentityT extends IdentityTOp with IdentityTAs with MonadTransControl[IdentityT] {
     trait apply[n <: Kind.Function1] extends apply1[n]
     trait apply1[n <: Kind.Function1] extends Kind.Newtype1 {
         override type apply1[+a] = IdentityT[n#apply1, a]
@@ -23,7 +23,7 @@ object IdentityT extends IdentityTOp with IdentityTAs with MonadTrans[IdentityT]
 
     // Overrides
     //
-    // MonadTrans
+    // MonadTransControl
     protected type t[n[+_], +a] = IdentityT[n, a]
     final case class StT[+a](override val old: a) extends NewtypeOf[a]
     override def liftWith[n[+_], a](f: Run => n[a])(implicit _N: Monad[n]): t[n, a] = IdentityT {
@@ -50,7 +50,7 @@ private[ken] trait IdentityTOp {
 }
 
 
-private[ken] sealed trait IdentityTAs extends MonadTrans.Deriving0[IdentityT, MonadTrans.AnyMonad] { this: IdentityT.type =>
+private[ken] sealed trait IdentityTAs extends MonadTransControl.Deriving0[IdentityT, MonadTransControl.AnyMonad] { this: IdentityT.type =>
     override protected def deriveMonad[n[+_]](_N: Monad[n]): Monad[({type L[+a] = t[n, a]})#L] = new Monad[({type L[+a] = t[n, a]})#L] {
         // Functor
         private type f[+a] = t[n, a]

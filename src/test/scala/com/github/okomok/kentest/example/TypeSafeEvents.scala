@@ -69,10 +69,10 @@ class TypeSafeEventsTest extends org.scalatest.junit.JUnit3Suite {
     }
 
     trait RespondsTAs0 { this: RespondsT.type =>
-        implicit def _asMonadTrans[s]: MonadTrans[({type L[n[+_], +a] = RespondsT[s, n, a]})#L] = new MonadTrans[({type L[n[+_], +a] = RespondsT[s, n, a]})#L] {
+        implicit def _asMonadTransControl[s]: MonadTransControl[({type L[n[+_], +a] = RespondsT[s, n, a]})#L] = new MonadTransControl[({type L[n[+_], +a] = RespondsT[s, n, a]})#L] {
             private type t[n[+_], +a] = RespondsT[s, n, a]
             override def lift[n[+_], a](n: n[a])(implicit i: Monad[n]): t[n, a] = RespondsT {
-                val _MT = MonadTrans[ReaderT.apply1[Next[s, n]]]
+                val _MT = MonadTransControl[ReaderT.apply1[Next[s, n]]]
                 _MT.lift(n)
             }
             override def liftWith[n[+_], a](f: Run => n[a])(implicit i: Monad[n]): t[n, a] = error("todo")
@@ -94,7 +94,7 @@ class TypeSafeEventsTest extends org.scalatest.junit.JUnit3Suite {
     trait RespondsTAs1 extends RespondsTAs0 { this: RespondsT.type =>
         implicit def _asMonadIO[n[+_], s](implicit _N: MonadIO[n]): MonadIO[({type L[+a] = RespondsT[s, n, a]})#L] = new MonadIO[({type L[+a] = RespondsT[s, n, a]})#L] with MonadProxy[({type L[+a] = RespondsT[s, n, a]})#L] {
             private type m[+a] = RespondsT[s, n, a]
-            private val _MT = _asMonadTrans[s]
+            private val _MT = _asMonadTransControl[s]
             override val selfMonad = _asMonad[n, s]
             override def liftIO[a](io: IO[a]): m[a] = _MT.lift(_N.liftIO(io))
         }

@@ -21,7 +21,7 @@ trait MonadControlIO[m[+_]] extends MonadIO[m] {
 
     // Core
     //
-    val monadBaseIO: MonadBase[IO, m]
+    val monadBaseIO: MonadBaseControl[IO, m]
     def liftControlIO[a](f: RunInIO => IO[a]): m[a] = monadBaseIO.liftBaseWith { run =>
         f {
             new RunInIO {
@@ -127,12 +127,12 @@ trait MonadControlIOProxy[m[+_]] extends MonadControlIO[m] with MonadIOProxy[m] 
 
 
 object MonadControlIO {
-    def apply[m <: Kind.Function1](implicit _M: MonadBase[IO, m#apply1], _Mio: MonadIO[m#apply1]): MonadControlIO[m#apply1] = new MonadControlIO[m#apply1] with MonadIOProxy[m#apply1] {
+    def apply[m <: Kind.Function1](implicit _M: MonadBaseControl[IO, m#apply1], _Mio: MonadIO[m#apply1]): MonadControlIO[m#apply1] = new MonadControlIO[m#apply1] with MonadIOProxy[m#apply1] {
         override val selfMonadIO = _Mio
         override val monadBaseIO = _M
     }
 
-    type RunInIO[m[+_]] = MonadTrans.RunInBase[m, IO]
+    type RunInIO[m[+_]] = MonadTransControl.RunInBase[m, IO]
 
     case class Handler[m[+_], a](rep: (e => m[a], Exception[e]) forSome { type e }) {
         def apply[r](f: Function[(e => m[a], Exception[e]) forSome { type e }, r]): r = f(rep)
