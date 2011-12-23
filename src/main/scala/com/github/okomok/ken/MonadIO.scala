@@ -15,9 +15,9 @@ trait MonadIO[m[+_]] extends Monad[m] {
     //
     def liftIO[a](io: IO[a]): m[a]
 
-    // Monad-control
+    // Throwing exceptions (from monad-control)
     //
-    def throwIO[e](e: e)(implicit j: Exception[e]): m[Nothing] = liftIO(j.throwIO(e))
+    def throwIO[e](e: e)(implicit _E: Exception[e]): m[Nothing] = liftIO(_E.throwIO(e))
     def ioError(e: IOError): m[Nothing] = liftIO(IO.ioError(e))
 
     @Annotation.ceremonial("no special effects")
@@ -26,12 +26,13 @@ trait MonadIO[m[+_]] extends Monad[m] {
 
 
 trait MonadIOProxy[m[+_]] extends MonadIO[m] with MonadProxy[m] {
-    def selfMonadIO: MonadIO[m]
+    type selfMonadIO = MonadIO[m]
+    def selfMonadIO: selfMonadIO
     override def selfMonad: Monad[m] = selfMonadIO
 
     override def liftIO[a](io: IO[a]): m[a] = selfMonadIO.liftIO(io)
 
-    override def throwIO[e](e: e)(implicit j: Exception[e]): m[Nothing] = selfMonadIO.throwIO(e)(j)
+    override def throwIO[e](e: e)(implicit _E: Exception[e]): m[Nothing] = selfMonadIO.throwIO(e)(_E)
     override def ioError(e: IOError): m[Nothing] = selfMonadIO.ioError(e)
 }
 
@@ -45,7 +46,7 @@ object MonadIO extends MonadIOInstance {
 
         override def liftIO[a](io: IO[a]): m[a] = j.newOf { i.liftIO(io) }
 
-        override def throwIO[e](e: e)(implicit ee: Exception[e]): m[Nothing] = j.newOf { i.throwIO(e)(ee) }
+        override def throwIO[e](e: e)(implicit _E: Exception[e]): m[Nothing] = j.newOf { i.throwIO(e)(_E) }
         override def ioError(e: IOError): m[Nothing] = j.newOf { i.ioError(e) }
     }
 

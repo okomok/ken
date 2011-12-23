@@ -91,6 +91,15 @@ trait MonadTransControl[t[_[+_], +_]] extends MonadTrans[t] { outer =>
             _N.local(f)(run(m))
         }
     }
+
+    final def defaultMonadWriter[n[+_], w](_M: MonadBaseControl[n, ({type L[+a] = t[n, a]})#L], _N: MonadWriter[w, n]): MonadWriter[w, ({type L[+a] = t[n, a]})#L] = new MonadWriter[w, ({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {
+        private type m[+a] = t[n, a]
+        override val selfMonad = _M
+        override def monoid: monoid = _N.monoid
+        override val tell: tell = x => outer.lift(_N.tell(x))(_N)
+        override def listen[a](m: m[a]): m[(a, w)] = error("how?")
+        override def pass[a](m: m[(a, w => w)]): m[a] = error("how?")
+    }
 }
 
 
@@ -125,6 +134,7 @@ object MonadTransControl extends MonadTransInstance {
             override def apply[b](t: m[b]): m[m[b]] = j.liftM[b, m[b]](j.`return`[b])(t)
         }
     }
+
 
     // Default implementation providers
     //
@@ -231,5 +241,5 @@ object MonadTransControl extends MonadTransInstance {
 }
 
 
-trait MonadTransControlInstance extends MonadTransInstance {
+sealed trait MonadTransControlInstance extends { this: MonadTransControl.type =>
 }

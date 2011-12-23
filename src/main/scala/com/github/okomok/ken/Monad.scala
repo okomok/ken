@@ -139,12 +139,6 @@ trait Monad[m[+_]] extends Applicative[m] { outer =>
         override val selfFor = functorFor(m)
         override def flatMap[b](k: a => m[b]): m[b] = outer.op_>>=(m)(k)
     }
-
-    // Monad-control
-    //
-    def sequenceEither[e, a](x: Either[e, m[a]]): m[Either[e, a]] = {
-        Either.either((e: e) => `return`(Left(e).of[e, a]))(liftM((a: a) => Right(a).of[e, a]))(x)
-    }
 }
 
 

@@ -19,7 +19,7 @@ final case class IO[+a](override val old: IORep[a]) extends NewtypeOf[IORep[a]] 
 }
 
 
-object IO extends MonadControlIO[IO] with ThisIsInstance {
+object IO extends MonadIO[IO] with ThisIsInstance {
     // Overrides
     //
     private type m[+a] = IO[a]
@@ -28,8 +28,6 @@ object IO extends MonadControlIO[IO] with ThisIsInstance {
     override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = bindIO(m)(k)
     // MonadIO
     override def liftIO[a](io: IO[a]): m[a] = io
-    override lazy val monadBaseIO = MonadBase._ofSame(this)
-    override def liftControlIO[a](f: RunInIO => IO[a]): m[a] = MonadTransControl.idLiftControl(f)
 
     private def returnIO[a](x: => a): IO[a] = IO { s => IORep.done(x, s) }
     private def bindIO[a, b](m: IO[a])(k: a => IO[b]): IO[b] = IO { s => IORep.cont(unIO(m), (a: a) => unIO(k(a)), s) }
