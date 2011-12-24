@@ -22,7 +22,8 @@ trait ErrorClass[a] extends Typeclass[a] {
 
 
 trait ErrorClassProxy[a] extends ErrorClass[a] {
-    def selfErrorClass: ErrorClass[a]
+    type selfErrorClass = ErrorClass[a]
+    def selfErrorClass: selfErrorClass
 
     override def noMsg: noMsg = selfErrorClass.noMsg
     override def strMsg: strMsg = selfErrorClass.strMsg

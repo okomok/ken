@@ -38,7 +38,8 @@ trait _Eq[a] extends Typeclass[a] {
 
 
 trait EqProxy[a] extends _Eq[a] {
-    def selfEq: _Eq[a]
+    type selfEq = _Eq[a]
+    def selfEq: selfEq
 
     override def op_=== : op_=== = selfEq.op_===
     override def op_/== : op_/== = selfEq.op_/==

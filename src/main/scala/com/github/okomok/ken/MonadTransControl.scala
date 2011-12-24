@@ -34,8 +34,8 @@ trait MonadTransControl[t[_[+_], +_]] extends MonadTrans[t] { outer =>
     final def defaultMonadBaseControl[n[+_], b[+_]](_M: Monad[({type L[+a] = t[n, a]})#L], _N: MonadBaseControl[b, n]): MonadBaseControl[b, ({type L[+a] = t[n, a]})#L] = new MonadBaseControl[b, ({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {
         final case class StM[+a](override val old: _N.StM[outer.StT[a]]) extends NewtypeOf[_N.StM[outer.StT[a]]]
         private type m[+a] = t[n, a]
-        override def selfMonad = _M
-        override def baseMonad = _N.baseMonad
+        override def selfMonad: selfMonad = _M
+        override def baseMonad: baseMonad = _N.baseMonad
         override def liftBaseWith[a](f: RunInBase => b[a]): m[a] = outer.liftWith(run1 =>
             _N.liftBaseWith { runInBase =>
                 f {
@@ -50,13 +50,13 @@ trait MonadTransControl[t[_[+_], +_]] extends MonadTrans[t] { outer =>
 
     final def defaultMonadCont[n[+_]](_M: MonadBaseControl[n, ({type L[+a] = t[n, a]})#L], _N: MonadCont[n]): MonadCont[({type L[+a] = t[n, a]})#L] = new MonadCont[({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {
         private type m[+a] = t[n, a]
-        override def selfMonad = _M
+        override def selfMonad: selfMonad = _M
         override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = error("how?")
     }
 
     final def defaultMonadError[n[+_], e](_M: MonadBaseControl[n, ({type L[+a] = t[n, a]})#L], _N: MonadError[e, n]): MonadError[e, ({type L[+a] = t[n, a]})#L] = new MonadError[e, ({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {
         private type m[+a] = t[n, a]
-        override def selfMonad = _M
+        override def selfMonad: selfMonad = _M
         override val throwError: throwError = e => outer.lift(_N.throwError(e))(_N)
         override def catchError[a](m: m[a])(h: e => m[a]): m[a] = _M.control { run =>
             _N.catchError(run(m)) { e => run(h(e)) }
@@ -65,7 +65,7 @@ trait MonadTransControl[t[_[+_], +_]] extends MonadTrans[t] { outer =>
 
     final def defaultMonadFix[n[+_]](_M: MonadBaseControl[n, ({type L[+a] = t[n, a]})#L], _N: MonadFix[n]): MonadFix[({type L[+a] = t[n, a]})#L] = new MonadFix[({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {
         private type m[+a] = t[n, a]
-        override def selfMonad = _M
+        override def selfMonad: selfMonad = _M
         override def mfix[a](f: Lazy[a] => m[a]): m[a] = _M.control { run =>
             val k: Lazy[_M.StM[a]] => n[_M.StM[a]] = st => {
                 run(_M.op_>>=(_M.restoreM(st.!))(a => f(a)))
@@ -76,7 +76,7 @@ trait MonadTransControl[t[_[+_], +_]] extends MonadTrans[t] { outer =>
 
     final def defaultMonadPlus[n[+_]](_M: MonadBaseControl[n, ({type L[+a] = t[n, a]})#L], _N: MonadPlus[n]): MonadPlus[({type L[+a] = t[n, a]})#L] = new MonadPlus[({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {
         private type m[+a] = t[n, a]
-        override def selfMonad = _M
+        override def selfMonad: selfMonad = _M
         override val mzero: mzero = outer.lift(_N.mzero)(_N)
         override def mplus[a](m: m[a])(n: Lazy[m[a]]): m[a] = _M.control { run =>
             _N.mplus(run(m))(run(n.!))
@@ -85,7 +85,7 @@ trait MonadTransControl[t[_[+_], +_]] extends MonadTrans[t] { outer =>
 
     final def defaultMonadReader[n[+_], r](_M: MonadBaseControl[n, ({type L[+a] = t[n, a]})#L], _N: MonadReader[r, n]): MonadReader[r, ({type L[+a] = t[n, a]})#L] = new MonadReader[r, ({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {
         private type m[+a] = t[n, a]
-        override def selfMonad = _M
+        override def selfMonad: selfMonad = _M
         override val ask: m[r] = outer.lift(_N.ask)(_N)
         override def local[a](f: r => r)(m: m[a]): m[a] = _M.control { run =>
             _N.local(f)(run(m))
@@ -94,7 +94,7 @@ trait MonadTransControl[t[_[+_], +_]] extends MonadTrans[t] { outer =>
 
     final def defaultMonadWriter[n[+_], w](_M: MonadBaseControl[n, ({type L[+a] = t[n, a]})#L], _N: MonadWriter[w, n]): MonadWriter[w, ({type L[+a] = t[n, a]})#L] = new MonadWriter[w, ({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {
         private type m[+a] = t[n, a]
-        override val selfMonad = _M
+        override val selfMonad: selfMonad = _M
         override def monoid: monoid = _N.monoid
         override val tell: tell = x => outer.lift(_N.tell(x))(_N)
         override def listen[a](m: m[a]): m[(a, w)] = error("how?")

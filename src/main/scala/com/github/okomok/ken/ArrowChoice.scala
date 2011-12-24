@@ -56,8 +56,9 @@ trait ArrowChoice[a[-_, +_]] extends Arrow[a] {
 
 
 trait ArrowChoiceProxy[a[-_, +_]] extends ArrowChoice[a] with ArrowProxy[a] {
-    def selfArrowChoice: ArrowChoice[a]
-    override def selfArrow: Arrow[a] = selfArrowChoice
+    type selfArrowChoice = ArrowChoice[a]
+    def selfArrowChoice: selfArrowChoice
+    override def selfArrow: selfArrow = selfArrowChoice
 
     override def left[b, c, d](f: a[b, c], * : Type[d] = null): a[Either[b, d], Either[c, d]] = selfArrowChoice.left(f)
     override def right[b, c, d](f: a[b, c], * : Type[d] = null): a[Either[d, b], Either[d, c]] = selfArrowChoice.right(f)
@@ -71,7 +72,7 @@ object ArrowChoice {
 
     def deriving[nt <: Kind.Newtype2](implicit j: Newtype2[nt#apply2, nt#oldtype2], i: ArrowChoice[nt#oldtype2]): ArrowChoice[nt#apply2] = new ArrowChoice[nt#apply2] with ArrowProxy[nt#apply2] {
         private type a[-a, +b] = nt#apply2[a, b]
-        override val selfArrow = Arrow.deriving[nt]
+        override val selfArrow: selfArrow = Arrow.deriving[nt]
 
         override def left[b, c, d](f: a[b, c], * : Type[d] = null): a[Either[b, d], Either[c, d]] = j.newOf(Lazy(i.left(j.oldOf(Lazy(f)))))
         override def right[b, c, d](f: a[b, c], * : Type[d] = null): a[Either[d, b], Either[d, c]] = j.newOf(Lazy(i.right(j.oldOf(Lazy(f)))))

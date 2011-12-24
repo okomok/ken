@@ -23,13 +23,13 @@ trait MonadTrans[t[_[+_], +_]] extends TypeclassLike with Kind.MonadTrans { oute
     //
     final def defaultMonadIO[n[+_]](_M: Monad[({type L[+a] = t[n, a]})#L], _N: MonadIO[n]): MonadIO[({type L[+a] = t[n, a]})#L] = new MonadIO[({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {
         private type m[+a] = t[n, a]
-        override def selfMonad = _M
+        override def selfMonad: selfMonad = _M
         override def liftIO[a](io: IO[a]): m[a] = outer.lift(_N.liftIO(io))(_N)
     }
 
     final def defaultMonadState[n[+_], s](_M: Monad[({type L[+a] = t[n, a]})#L], _N: MonadState[s, n]): MonadState[s, ({type L[+a] = t[n, a]})#L] = new MonadState[s, ({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {
         private type m[+a] = t[n, a]
-        override def selfMonad = _M
+        override def selfMonad: selfMonad = _M
         override val get: get = outer.lift(_N.get)(_N)
         override val put: put = s => outer.lift(_N.put(s))(_N)
     }

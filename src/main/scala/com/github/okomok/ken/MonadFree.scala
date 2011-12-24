@@ -12,12 +12,13 @@ package ken
 
 
 trait MonadFree[f[+_], m[+_]] extends Monad[m] with Kind.MonadFree {
-    override type functor[+a] = f[a]
-    final val asMonadFree: MonadFree[functor, apply1] = this
+    override type freeFunctor[+a] = f[a]
+    final val asMonadFree: MonadFree[freeFunctor, apply1] = this
 
     // Core
     //
-    val functor: Functor[f]
+    type functor = Functor[f]
+    val functor: functor
 
     def free[a, b](m: m[a]): m[Either[a, f[m[a]]]]
 
@@ -26,10 +27,11 @@ trait MonadFree[f[+_], m[+_]] extends Monad[m] with Kind.MonadFree {
 
 
 trait MonadFreeProxy[f[+_], m[+_]] extends MonadFree[f, m] with MonadProxy[m] {
-    def selfMonadFree: MonadFree[f, m]
-    override def selfMonad: Monad[m] = selfMonadFree
+    type selfMonadFree = MonadFree[f, m]
+    def selfMonadFree: selfMonadFree
+    override def selfMonad: selfMonad = selfMonadFree
 
-    override val functor: Functor[f] = selfMonadFree.functor
+    override val functor: functor = selfMonadFree.functor
     override def free[a, b](m: m[a]): m[Either[a, f[m[a]]]] = selfMonadFree.free(m)
     override def wrap[a](f: f[m[a]]): m[a] = selfMonadFree.wrap(f)
 }

@@ -27,8 +27,9 @@ trait Comonad[w[+_]] extends Extend[w] {
 
 
 trait ComonadProxy[w[+_]] extends Comonad[w] with ExtendProxy[w] {
-    def selfComonad: Comonad[w]
-    override def selfExtend: Extend[w] = selfComonad
+    type selfComonad = Comonad[w]
+    def selfComonad: selfComonad
+    override def selfExtend: selfExtend = selfComonad
 
     override def extract[a](w: w[a]): a = selfComonad.extract(w)
 
@@ -42,7 +43,7 @@ object Comonad extends ComonadInstance {
 
     def deriving[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply1, nt#oldtype1], i: Comonad[nt#oldtype1]): Comonad[nt#apply1] = new Comonad[nt#apply1] with ExtendProxy[nt#apply1] {
         private type w[+a] = nt#apply1[a]
-        override val selfExtend = Extend.deriving[nt]
+        override val selfExtend: selfExtend = Extend.deriving[nt]
         override def extract[a](w: w[a]): a = i.extract(j.oldOf(w))
     }
 

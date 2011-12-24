@@ -50,7 +50,7 @@ private[ken] sealed trait EitherAs { this: Either.type =>
     }
 
     implicit def _asOrd[a, b](implicit i: Ord[a], j: Ord[b]): Ord[Either[a, b]] = new Ord[Either[a, b]] with EqProxy[Either[a, b]] {
-        override val selfEq = _asEq(i, j)
+        override val selfEq: selfEq = _asEq(i, j)
         override val compare: compare = x => y => (x, y) match {
             case (Left(x), Left(y)) => i.compare(x)(y)
             case (Left(x), _) => LT

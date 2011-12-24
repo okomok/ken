@@ -21,7 +21,8 @@ trait Iso1[f[_], g[_]] extends TypeclassLike {
 
 
 trait Iso1Proxy[f[_], g[_]] extends Iso1[f, g] {
-    def selfIso1: Iso1[f, g]
+    type selfIso1 = Iso1[f, g]
+    def selfIso1: selfIso1
 
     override def imply[a](f: f[a]): g[a] = selfIso1.imply(f)
     override def unimply[a](g: g[a]): f[a] = selfIso1.unimply(g)

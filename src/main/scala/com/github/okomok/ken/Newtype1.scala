@@ -34,7 +34,8 @@ trait Newtype1[nt[+_], ot[+_]] extends TypeclassLike with Kind.Newtype1 { outer 
 
 
 trait Newtype1Proxy[nt[+_], ot[+_]] extends Newtype1[nt, ot] {
-    def selfNewtype1: Newtype1[nt, ot]
+    type selfNewtype1 = Newtype1[nt, ot]
+    def selfNewtype1: selfNewtype1
 
     override def newOf[a](ot: Lazy[ot[a]]): nt[a] = selfNewtype1.newOf(ot)
     override def oldOf[a](nt: Lazy[nt[a]]): ot[a] = selfNewtype1.oldOf(nt)

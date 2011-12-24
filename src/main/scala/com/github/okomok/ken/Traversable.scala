@@ -77,9 +77,10 @@ trait Traversable[t[+_]] extends Functor[t] with Foldable[t] { outer =>
 
 
 trait TraversableProxy[t[+_]] extends Traversable[t] with FunctorProxy[t] with FoldableProxy[t] {
-    def selfTraversable: Traversable[t]
-    override def selfFunctor: Functor[t] = selfTraversable
-    override def selfFoldable: Foldable[t] = selfTraversable
+    type selfTraversable = Traversable[t]
+    def selfTraversable: selfTraversable
+    override def selfFunctor: selfFunctor = selfTraversable
+    override def selfFoldable: selfFoldable = selfTraversable
 
     override def traverse[f[+_], a, b](f: a => f[b])(t: t[a])(implicit i: Applicative[f]): f[t[b]] = selfTraversable.traverse(f)(t)(i)
     override def sequenceA[f[+_], a](t: t[f[a]])(implicit i: Applicative[f]): f[t[a]] = selfTraversable.sequenceA(t)(i)

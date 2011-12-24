@@ -21,8 +21,9 @@ trait MonadError[e, m[+_]] extends Monad[m] {
 
 
 trait MonadErrorProxy[e, m[+_]] extends MonadError[e, m] with MonadProxy[m] {
-    def selfMonadError: MonadError[e, m]
-    override def selfMonad: Monad[m] = selfMonadError
+    type selfMonadError = MonadError[e, m]
+    def selfMonadError: selfMonadError
+    override def selfMonad: selfMonad = selfMonadError
 
     override def throwError: throwError = selfMonadError.throwError
     override def catchError[a](m: m[a])(h: e => m[a]): m[a] = selfMonadError.catchError(m)(h)
@@ -34,7 +35,7 @@ object MonadError extends MonadErrorInstance {
 
     def deriving[e, nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply1, nt#oldtype1], i: MonadError[e, nt#oldtype1]): MonadError[e, nt#apply1] = new MonadError[e, nt#apply1] with MonadProxy[nt#apply1] {
         private type m[+a] = nt#apply1[a]
-        override val selfMonad = Monad.deriving[nt]
+        override val selfMonad: selfMonad = Monad.deriving[nt]
 
         override def throwError: throwError = e => j.newOf { i.throwError(e) }
         override def catchError[a](m: m[a])(h: e => m[a]): m[a] = j.newOf { i.catchError(j.oldOf(m))(e => j.oldOf(h(e))) }

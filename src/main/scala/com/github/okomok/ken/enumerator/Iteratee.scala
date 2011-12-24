@@ -62,7 +62,7 @@ private[enumerator] sealed trait IterateeAs0 { this: Iteratee.type =>
 private[enumerator] trait IterateeAs extends IterateeAs0 { this: Iteratee.type =>
     implicit def _asMonadIO[z, n[+_]](implicit i: MonadIO[n]): MonadIO[({type L[+a] = Iteratee[z, n, a]})#L] = new MonadIO[({type L[+a] = Iteratee[z, n, a]})#L] with MonadProxy[({type L[+a] = Iteratee[z, n, a]})#L] {
         private type m[+a] = Iteratee[z, n, a]
-        override val selfMonad = _asMonad[z, n]
+        override val selfMonad: selfMonad = _asMonad[z, n]
         override def liftIO[a](io: IO[a]): m[a] = _asMonadTrans[z].lift(i.liftIO(io))
     }
 }

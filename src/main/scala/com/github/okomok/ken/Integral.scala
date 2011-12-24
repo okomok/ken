@@ -113,9 +113,10 @@ trait Integral[a] extends Real[a] with Enum[a] { outer =>
 
 
 trait IntegralProxy[a] extends Integral[a] with RealProxy[a] with EnumProxy[a] {
-    def selfIntegral: Integral[a]
-    override def selfReal: Real[a] = selfIntegral
-    override def selfEnum: Enum[a] = selfIntegral
+    type selfIntegral = Integral[a]
+    def selfIntegral: selfIntegral
+    override def selfReal: selfReal = selfIntegral
+    override def selfEnum: selfEnum = selfIntegral
 
     override def quot: quot = selfIntegral.quot
     override def rem: rem = selfIntegral.rem
@@ -140,8 +141,8 @@ object Integral extends IntegralInstance with IntegralShortcut {
 
     def deriving[nt <: Kind.Newtype](implicit j: Newtype[nt#apply0, nt#oldtype, _], i: Integral[nt#oldtype]): Integral[nt#apply0] = new Integral[nt#apply0] with RealProxy[nt#apply0] with EnumProxy[nt#apply0] {
         private type a = nt#apply0
-        override val selfReal = Real.deriving[nt]
-        override val selfEnum = Enum.deriving[nt]
+        override val selfReal: selfReal = Real.deriving[nt]
+        override val selfEnum: selfEnum = Enum.deriving[nt]
 
         override def quot: quot = x => y => j.newOf(i.quot(j.oldOf(x))(j.oldOf(y)))
         override def rem: rem = x => y => j.newOf(i.rem(j.oldOf(x))(j.oldOf(y)))
@@ -169,9 +170,9 @@ sealed trait IntegralInstance { this: Integral.type =>
     implicit val _ofInteger: Integral[Integer] = _Integer
 
     implicit def ofScalaIntegral[a](implicit i: scala.math.Integral[a]): Integral[a] = new Integral[a] with NumProxy[a] with OrdProxy[a] with EnumProxy[a] {
-        override val selfNum = Num.ofScalaNumeric(i)
-        override val selfOrd = Ord.ofScalaOrdering(i)
-        override val selfEnum = Enum.ofScalaNumeric(i)
+        override val selfNum: selfNum = Num.ofScalaNumeric(i)
+        override val selfOrd: selfOrd = Ord.ofScalaOrdering(i)
+        override val selfEnum: selfEnum = Enum.ofScalaNumeric(i)
         // Real
         override val toRational: toRational = x => Ratio(toInteger(x), 1)
         // Integral

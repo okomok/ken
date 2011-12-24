@@ -55,8 +55,9 @@ trait Applicative[f[+_]] extends Pointed[f] {
 
 
 trait ApplicativeProxy[f[+_]] extends Applicative[f] with PointedProxy[f] {
-    def selfApplicative: Applicative[f]
-    override def selfPointed: Pointed[f] = selfApplicative
+    type selfApplicative = Applicative[f]
+    def selfApplicative: selfApplicative
+    override def selfPointed: selfPointed = selfApplicative
 
     override def op_<*>[a, b](x: f[a => b]): f[a] => f[b] = selfApplicative.op_<*>(x)
     override def op_*>[a, b](x: f[a])(y: f[b]): f[b] = selfApplicative.op_*>(x)(y)
@@ -74,7 +75,7 @@ object Applicative extends ApplicativeInstance {
 
     def deriving[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply1, nt#oldtype1], i: Applicative[nt#oldtype1]): Applicative[nt#apply1] = new Applicative[nt#apply1] with PointedProxy[nt#apply1] {
         private type f[+a] = nt#apply1[a]
-        override val selfPointed = Pointed.deriving[nt]
+        override val selfPointed: selfPointed = Pointed.deriving[nt]
 
         override def op_<*>[a, b](x: f[a => b]): f[a] => f[b] = y => j.newOf { i.op_<*>(j.oldOf(x))(j.oldOf(y)) }
         override def op_*>[a, b](x: f[a])(y: f[b]): f[b] = j.newOf { i.op_*>(j.oldOf(x))(j.oldOf(y)) }

@@ -35,8 +35,9 @@ trait MonadState[s, m[+_]] extends Monad[m] {
 
 
 trait MonadStateProxy[s, m[+_]] extends MonadState[s, m] with MonadProxy[m] {
-    def selfMonadState: MonadState[s, m]
-    override def selfMonad: Monad[m] = selfMonadState
+    type selfMonadState = MonadState[s, m]
+    def selfMonadState: selfMonadState
+    override def selfMonad: selfMonad = selfMonadState
 
     override def get: get = selfMonadState.get
     override def put: put = selfMonadState.put
@@ -51,7 +52,7 @@ object MonadState extends MonadStateInstance {
 
     def deriving[s, nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply1, nt#oldtype1], i: MonadState[s, nt#oldtype1]): MonadState[s, nt#apply1] = new MonadState[s, nt#apply1] with MonadProxy[nt#apply1] {
         private type m[+a] = nt#apply1[a]
-        override val selfMonad = Monad.deriving[nt]
+        override val selfMonad: selfMonad = Monad.deriving[nt]
 
         override val get: get = j.newOf { i.get }
         override val put: put = s => j.newOf { i.put(s) }

@@ -194,7 +194,8 @@ trait Testable[prop] extends Typeclass[prop] {
 
 
 trait TestableProxy[prop] extends Testable[prop] {
-    def selfTestable: Testable[prop]
+    type selfTestable = Testable[prop]
+    def selfTestable: selfTestable
 
     override def property: property = selfTestable.property
 

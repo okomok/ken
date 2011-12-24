@@ -26,7 +26,7 @@ trait MonadPlus[m[+_]] extends Monad[m] with Alternative[m] { outer =>
     // Overrides
     //
     // Alternative
-    override def empty: m[Nothing] = mzero
+    override def empty: empty = mzero
     override def op_<|>[a](x: m[a])(y: Lazy[m[a]]): m[a] = mplus(x)(y)
 
     // Extra
@@ -56,16 +56,17 @@ trait MonadPlus[m[+_]] extends Monad[m] with Alternative[m] { outer =>
 
     @Annotation.compilerWorkaround("2.9.1", 5070)
     override implicit def `for`[a](m: m[a]): ken.For[m, a] = new ForProxy[a] {
-        override val selfFor = monadFor(m)
+        override val selfFor: selfFor = monadFor(m)
         override def filter(p: a => Bool): m[a] = outer.filter(p)(m)
     }
 }
 
 
 trait MonadPlusProxy[m[+_]] extends MonadPlus[m] with MonadProxy[m] with AlternativeProxy[m] {
-    def selfMonadPlus: MonadPlus[m]
-    override def selfMonad: Monad[m] = selfMonadPlus
-    override def selfAlternative: Alternative[m] = selfMonadPlus
+    type selfMonadPlus = MonadPlus[m]
+    def selfMonadPlus: selfMonadPlus
+    override def selfMonad: selfMonad = selfMonadPlus
+    override def selfAlternative: selfAlternative = selfMonadPlus
 
     override def mzero: mzero = selfMonadPlus.mzero
     override def mplus[a](x: m[a])(y: Lazy[m[a]]): m[a] = selfMonadPlus.mplus(x)(y)
@@ -82,7 +83,7 @@ object MonadPlus extends MonadPlusInstance {
 
     def deriving[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply1, nt#oldtype1], i: MonadPlus[nt#oldtype1]): MonadPlus[nt#apply1] = new MonadPlus[nt#apply1] with MonadProxy[nt#apply1] {
         private type m[+a] = nt#apply1[a]
-        override val selfMonad = Monad.deriving[nt]
+        override val selfMonad: selfMonad = Monad.deriving[nt]
 
         override def mzero: mzero = j.newOf { i.mzero }
         override def mplus[a](x: m[a])(y: Lazy[m[a]]): m[a] = j.newOf { i.mplus(j.oldOf(x))(j.oldOf(y)) }

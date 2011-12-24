@@ -18,7 +18,9 @@ trait MonadIO[m[+_]] extends Monad[m] {
     // Throwing exceptions (from monad-control)
     //
     def throwIO[e](e: e)(implicit _E: Exception[e]): m[Nothing] = liftIO(_E.throwIO(e))
-    def ioError(e: IOError): m[Nothing] = liftIO(IO.ioError(e))
+
+    type ioError = IOError => m[Nothing]
+    def ioError: ioError = e => liftIO(IO.ioError(e))
 
     @Annotation.ceremonial("no special effects")
     final def evaluate[a](a: a): m[a] = liftIO(Exception.evaluate(a))
@@ -28,12 +30,12 @@ trait MonadIO[m[+_]] extends Monad[m] {
 trait MonadIOProxy[m[+_]] extends MonadIO[m] with MonadProxy[m] {
     type selfMonadIO = MonadIO[m]
     def selfMonadIO: selfMonadIO
-    override def selfMonad: Monad[m] = selfMonadIO
+    override def selfMonad: selfMonad = selfMonadIO
 
     override def liftIO[a](io: IO[a]): m[a] = selfMonadIO.liftIO(io)
 
     override def throwIO[e](e: e)(implicit _E: Exception[e]): m[Nothing] = selfMonadIO.throwIO(e)(_E)
-    override def ioError(e: IOError): m[Nothing] = selfMonadIO.ioError(e)
+    override def ioError: ioError = selfMonadIO.ioError
 }
 
 
@@ -42,12 +44,12 @@ object MonadIO extends MonadIOInstance {
 
     def deriving[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply1, nt#oldtype1], i: MonadIO[nt#oldtype1]): MonadIO[nt#apply1] = new MonadIO[nt#apply1] with MonadProxy[nt#apply1] {
         private type m[+a] = nt#apply1[a]
-        override val selfMonad = Monad.deriving[nt]
+        override val selfMonad: selfMonad = Monad.deriving[nt]
 
         override def liftIO[a](io: IO[a]): m[a] = j.newOf { i.liftIO(io) }
 
         override def throwIO[e](e: e)(implicit _E: Exception[e]): m[Nothing] = j.newOf { i.throwIO(e)(_E) }
-        override def ioError(e: IOError): m[Nothing] = j.newOf { i.ioError(e) }
+        override def ioError: ioError = e => j.newOf { i.ioError(e) }
     }
 
     def weak[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply1, nt#oldtype1], i: MonadIO[nt#apply1]): MonadIO[nt#oldtype1] = deriving[Kind.coNewtype1[nt]](j.coNewtype, i)

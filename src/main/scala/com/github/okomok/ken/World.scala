@@ -25,7 +25,7 @@ class World { world =>
     type ST[+a] = State[This, a]
 
     object ST extends MonadStateProxy[This, ST] {
-        override val selfMonadState = instance[MonadState[This, ST]]
+        override val selfMonadState: selfMonadState = instance[MonadState[This, ST]]
 
         def apply[a](run: This => (a, This)): ST[a] = State(run)
         def unapply[a](st: ST[a]): Option[This => (a, This)] = Some(st.run)

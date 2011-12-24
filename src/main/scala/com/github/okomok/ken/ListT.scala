@@ -58,7 +58,7 @@ private[ken] sealed trait ListTAs extends MonadTransControl.Deriving0[ListT, Mon
 
     override protected def deriveMonadCont[n[+_]](_N: MonadCont[n]): MonadCont[({type L[+a] = t[n, a]})#L] = new MonadCont[({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {
         private type m[+a] = ListT[n, a]
-        override val selfMonad = deriveMonad(_N)
+        override val selfMonad: selfMonad = deriveMonad(_N)
         override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = ListT {
             _N.callCC { (c: List[a] => n[List[b]]) =>
                 run( f( a => ListT { c(List(a)) } ) )

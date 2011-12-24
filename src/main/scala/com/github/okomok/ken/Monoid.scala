@@ -43,8 +43,9 @@ trait Monoid[m] extends Semigroup[m] { outer =>
 
 
 trait MonoidProxy[m] extends Monoid[m] with SemigroupProxy[m] {
-    def selfMonoid: Monoid[m]
-    override def selfSemigroup: Semigroup[m] = selfMonoid
+    type selfMonoid = Monoid[m]
+    def selfMonoid: selfMonoid
+    override def selfSemigroup: selfSemigroup = selfMonoid
 
     override def mempty: mempty = selfMonoid.mempty
     override def mappend: mappend = selfMonoid.mappend
@@ -58,7 +59,7 @@ object Monoid extends MonoidInstance with MonoidShortcut with MonoidType {
     def apply[m <: Kind.Function0](implicit i: Monoid[m#apply0]): Monoid[m#apply0] = i
 
     def deriving[nt <: Kind.Newtype](implicit j: Newtype[nt#apply0, nt#oldtype, _], i: Monoid[nt#oldtype]): Monoid[nt#apply0] = new Monoid[nt#apply0] with SemigroupProxy[nt#apply0] {
-        override val selfSemigroup = Semigroup.deriving[nt]
+        override val selfSemigroup: selfSemigroup = Semigroup.deriving[nt]
 
         override val mempty: mempty = j.newOf(i.mempty)
         override val mappend: mappend = x => y => j.newOf(i.mappend(j.oldOf(x))(j.oldOf(y)))

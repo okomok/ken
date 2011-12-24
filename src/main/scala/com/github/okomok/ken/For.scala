@@ -18,7 +18,8 @@ trait For[m[+_], +a] {
 
 
 trait ForProxy[m[+_], +a] extends For[m, a] {
-    def selfFor: For[m, a]
+    type selfFor = For[m, a]
+    def selfFor: selfFor
 
     override def map[b](f: a => b): m[b] = selfFor.map(f)
     override def flatMap[b](k: a => m[b]): m[b] = selfFor.flatMap(k)

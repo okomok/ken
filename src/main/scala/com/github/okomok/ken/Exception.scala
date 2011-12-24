@@ -82,9 +82,10 @@ trait Exception[e] extends Typeable[e] with Show[e] {
 
 
 trait ExceptionProxy[e] extends Exception[e] with TypeableProxy[e] with ShowProxy[e] {
-    def selfException: Exception[e]
-    override def selfTypeable = selfException
-    override def selfShow = selfException
+    type selfException = Exception[e]
+    def selfException: selfException
+    override def selfTypeable: selfTypeable = selfException
+    override def selfShow: selfShow = selfException
 
     override def toException: toException = selfException.toException
     override def fromException: fromException = selfException.fromException
@@ -104,8 +105,8 @@ object Exception extends ExceptionInstance with ExceptionShortcut {
 
     def deriving[nt <: Kind.Newtype](implicit j: Newtype[nt#apply0, nt#oldtype, _], i: Exception[nt#oldtype], k: Typeable[nt#apply0]): Exception[nt#apply0] = new Exception[nt#apply0] with TypeableProxy[nt#apply0] with ShowProxy[nt#apply0] {
         type e = nt#apply0
-        override val selfTypeable = k
-        override val selfShow = Show.deriving[nt]
+        override val selfTypeable: selfTypeable = k
+        override val selfShow: selfShow = Show.deriving[nt]
 
         override val toException: toException = e => i.toException(j.oldOf(e))
         override val fromException: fromException = se => for { ot <- i.fromException(se) } yield j.newOf(ot)

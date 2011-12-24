@@ -30,7 +30,7 @@ trait MonadBase[b[+_], m[+_]] extends Monad[m] {
 trait MonadBaseProxy[b[+_], m[+_]] extends MonadBase[b, m] with MonadProxy[m] {
     type selfMonadBase = MonadBase[b, m]
     def selfMonadBase: MonadBase[b, m]
-    override def selfMonad: Monad[m] = selfMonadBase
+    override def selfMonad: selfMonad = selfMonadBase
 
     override def baseMonad: baseMonad = selfMonadBase.baseMonad
     override def liftBase[a](b: b[a]): m[a] = selfMonadBase.liftBase(b)
@@ -46,8 +46,8 @@ sealed trait MonadBaseInstance { this: MonadBase.type =>
     implicit def _ofSame[m[+_]](implicit _M: Monad[m]): MonadBaseControl[m, m] = new MonadBaseControl[m, m] with MonadProxy[m] {
         private type b[+a] = m[a]
         override type StM[+a] = a
-        override def selfMonad = _M
-        override def baseMonad = _M
+        override def selfMonad: selfMonad = _M
+        override def baseMonad: baseMonad = _M
         override def liftBaseWith[a](f: RunInBase => b[a]): m[a] = f {
             new RunInBase {
                 override def apply[a](m: m[a]): b[StM[a]] = m

@@ -80,7 +80,7 @@ private[ken] sealed trait StateTAs extends MonadTransControl.Deriving1[StateT, T
     override protected def deriveMonadCont[z, n[+_]](_N: MonadCont[n], _C: c[z]): MonadCont[({type L[+a] = t1[z, n, a]})#L] = new MonadCont[({type L[+a] = t1[z, n, a]})#L] with MonadProxy[({type L[+a] = t1[z, n, a]})#L] {
         private type m[+a] = t1[z, n, a]
         private type s = z
-        override val selfMonad = deriveMonad(_N, Trivial.of[s])
+        override val selfMonad: selfMonad = deriveMonad(_N, Trivial.of[s])
         override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = StateT { s =>
             _N.callCC { (c: ((a, s)) => n[(b, s)]) =>
                 run( f( a => StateT { s_ => c((a, s_)) } ) )(s)
@@ -91,7 +91,7 @@ private[ken] sealed trait StateTAs extends MonadTransControl.Deriving1[StateT, T
     override protected def deriveMonadWriter[z, n[+_], w](_N: MonadWriter[w, n], _C: c[z]): MonadWriter[w, ({type L[+a] = t1[z, n, a]})#L] = new MonadWriter[w, ({type L[+a] = t1[z, n, a]})#L] with MonadProxy[({type L[+a] = t1[z, n, a]})#L] {
         private type m[+a] = t1[z, n, a]
         private type s = z
-        override val selfMonad = deriveMonad(_N, Trivial.of[s])
+        override val selfMonad: selfMonad = deriveMonad(_N, Trivial.of[s])
         override def monoid: monoid = _N.monoid
         override val tell: tell = x => asMonadTransControl(Trivial.of[s]).lift(_N.tell(x))(_N)
         override def listen[a](m: m[a]): m[(a, w)] = StateT { s => {

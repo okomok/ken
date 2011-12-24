@@ -58,7 +58,7 @@ private[ken] sealed trait MaybeTAs extends MonadTransControl.Deriving0[MaybeT, M
 
     override protected def deriveMonadCont[n[+_]](_N: MonadCont[n]): MonadCont[({type L[+a] = t[n, a]})#L] = new MonadCont[({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {
         private type m[+a] = t[n, a]
-        override val selfMonad = deriveMonad[n](_N)
+        override val selfMonad: selfMonad = deriveMonad[n](_N)
         override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = MaybeT {
             _N.callCC { (c: Maybe[a] => n[Maybe[b]]) =>
                 run( f( a => MaybeT { c(Just(a)) } ) )

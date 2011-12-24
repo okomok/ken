@@ -44,7 +44,7 @@ private[ken] sealed trait KleisliAs0 { this: Kleisli.type =>
 */
     implicit def _asArrowPlus[m[+_]](implicit i: MonadPlus[m]): ArrowPlus[({type L[-a, +b] = Kleisli[m, a, b]})#L] = new ArrowPlus[({type L[-a, +b] = Kleisli[m, a, b]})#L] with ArrowProxy[({type L[-a, +b] = Kleisli[m, a, b]})#L] {
         private type a[-a, +b] = Kleisli[m, a, b]
-        override val selfArrow = _asArrow(i)
+        override val selfArrow: selfArrow = _asArrow(i)
         override def zeroArrow[b, c]: a[b, c] = Kleisli { _ => i.mzero }
         override def op_<+>:[b, c](f: a[b, c])(g: Lazy[a[b, c]]): a[b, c] = Kleisli { x =>
             import i._mplus_
@@ -54,7 +54,7 @@ private[ken] sealed trait KleisliAs0 { this: Kleisli.type =>
 
     implicit def _asArrowLoop[m[+_]](implicit i: MonadFix[m]): ArrowLoop[({type L[-a, +b] = Kleisli[m, a, b]})#L] = new ArrowLoop[({type L[-a, +b] = Kleisli[m, a, b]})#L] with ArrowProxy[({type L[-a, +b] = Kleisli[m, a, b]})#L] {
         private type a[-a, +b] = Kleisli[m, a, b]
-        override val selfArrow = _asArrow(i)
+        override val selfArrow: selfArrow = _asArrow(i)
         override def loop[b, c, d](f: a[(b, Lazy[d]), (Lazy[c], Lazy[d])]): a[b, c] = {
             def f_(x: b)(y: Lazy[(c, d)]): m[(c, d)] = {
                 import i.`for`

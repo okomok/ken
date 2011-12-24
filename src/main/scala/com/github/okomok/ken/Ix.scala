@@ -71,8 +71,9 @@ trait Ix[a] extends Ord[a] {
 
 
 trait IxProxy[a] extends Ix[a] with OrdProxy[a] {
-    def selfIx: Ix[a]
-    override def selfOrd: Ord[a] = selfIx
+    type selfIx = Ix[a]
+    def selfIx: selfIx
+    override def selfOrd: selfOrd = selfIx
 
     override def range: range = selfIx.range
     override def index: index = selfIx.index
@@ -92,7 +93,7 @@ object Ix extends IxInstance with IxShortcut {
 
     def deriving[nt <: Kind.Newtype](implicit j: Newtype[nt#apply0, nt#oldtype, _], i: Ix[nt#oldtype]): Ix[nt#apply0] = new Ix[nt#apply0] with OrdProxy[nt#apply0] {
         private type a = nt#apply0
-        override val selfOrd = Ord.deriving[nt]
+        override val selfOrd: selfOrd = Ord.deriving[nt]
 
         override val range: range = t => List.map[nt#oldtype, a](j.newOf)(i.range(j.oldOf(t._1), j.oldOf(t._2)))
         override val index: index = t => x => i.index(j.oldOf(t._1), j.oldOf(t._2))(j.oldOf(x))
@@ -114,7 +115,7 @@ sealed trait IxInstance { this: Ix.type =>
     implicit val _ofUnit: Ix[Unit] = Unit
 
     implicit def ofScalaNumeric[a](implicit i: scala.Numeric[a]): Ix[a] = new Ix[a] with OrdProxy[a] {
-        override val selfOrd = Ord.ofScalaOrdering(i)
+        override val selfOrd: selfOrd = Ord.ofScalaOrdering(i)
         override val range: range = { case (n, m) =>
             Predef.require(i.lteq(n, m))
             if (i.equiv(n, m)) Nil else n :: range(i.plus(n, i.one), m)

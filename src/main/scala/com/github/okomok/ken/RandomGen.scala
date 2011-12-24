@@ -31,7 +31,8 @@ trait RandomGen[g] extends Typeclass[g] {
 
 
 trait RandomGenProxy[g] extends RandomGen[g] {
-    def selfRandomGen: RandomGen[g]
+    type selfRandomGen = RandomGen[g]
+    def selfRandomGen: selfRandomGen
 
     override def next: next = selfRandomGen.next
     override def split: split = selfRandomGen.split

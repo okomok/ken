@@ -54,7 +54,8 @@ trait Enum[a] extends Typeclass[a] {
 
 
 trait EnumProxy[a] extends Enum[a] {
-    def selfEnum: Enum[a]
+    type selfEnum = Enum[a]
+    def selfEnum: selfEnum
 
     override def succ: succ = selfEnum.succ
     override def pred: pred = selfEnum.pred

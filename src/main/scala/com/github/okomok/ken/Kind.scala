@@ -90,7 +90,7 @@ object Kind {
     // MonadFree
     //
     trait MonadFree {
-        type functor[+a]
+        type freeFunctor[+a]
     }
 
     // Misc

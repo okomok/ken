@@ -78,8 +78,9 @@ trait Arrow[a[-_, +_]] extends Category[a] {
 
 
 trait ArrowProxy[a[-_, +_]] extends Arrow[a] with CategoryProxy[a] {
-    def selfArrow: Arrow[a]
-    override def selfCategory: Category[a] = selfArrow
+    type selfArrow = Arrow[a]
+    def selfArrow: selfArrow
+    override def selfCategory: selfCategory = selfArrow
 
     override def arr[b, c](f: b => c): a[b, c] = selfArrow.arr(f)
     override def first[b, c, d](f: a[b, c], * : Type[d] = null): a[(b, d), (c, d)] = selfArrow.first(f)
@@ -100,7 +101,7 @@ object Arrow {
 
     def deriving[nt <: Kind.Newtype2](implicit j: Newtype2[nt#apply2, nt#oldtype2], i: Arrow[nt#oldtype2]): Arrow[nt#apply2] = new Arrow[nt#apply2] with CategoryProxy[nt#apply2] {
         private type a[-a, +b] = nt#apply2[a, b]
-        override val selfCategory = Category.deriving[nt]
+        override val selfCategory: selfCategory = Category.deriving[nt]
 
         override def arr[b, c](f: b => c): a[b, c] = j.newOf(i.arr(f))
         override def first[b, c, d](f: a[b, c], * : Type[d] = null): a[(b, d), (c, d)] = j.newOf(Lazy(i.first(j.oldOf(Lazy(f)))))

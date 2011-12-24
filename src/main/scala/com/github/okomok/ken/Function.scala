@@ -61,7 +61,7 @@ private[ken] sealed trait FunctionAs { this: Function.type =>
         override def `return`[a](x: Lazy[a]): m[a] = const(x)
         override def op_>>=[a, b](f: m[a])(k: a => m[b]): m[b] = z => k(f(z))(z)
         // MonadReader
-        override def ask: m[z] = id
+        override def ask: ask = id
         override def local[a](f: z => z)(m: m[a]): m[a] = m `.` f
     }
 
@@ -73,19 +73,19 @@ private[ken] sealed trait FunctionAs { this: Function.type =>
 
     private[ken] def _asExtend[m](implicit i: Semigroup[m]): Extend[apply[m]#apply1] = new Extend[apply[m]#apply1] with FunctorProxy[apply[m]#apply1] {
         private type w[+a] = Function[m, a]
-        override val selfFunctor = _asMonadReader[m]
+        override val selfFunctor: selfFunctor = _asMonadReader[m]
         override def duplicate[a](f: w[a]): w[w[a]] = m => f `.` i.op_<>:(m)
     }
 
     private[ken] def _asComonad[m](implicit i: Monoid[m]): Comonad[apply[m]#apply1] = new Comonad[apply[m]#apply1] with ExtendProxy[apply[m]#apply1] {
         private type w[+a] = Function[m, a]
-        override val selfExtend = _asExtend(i)
+        override val selfExtend: selfExtend = _asExtend(i)
         override def extract[a](f: w[a]): a = f(i.mempty)
     }
 
     private[ken] def _asMonoid[z, b](implicit mb: Monoid[b]): Monoid[z => b] = new Monoid[z => b] with SemigroupProxy[z => b] {
         private type m = z => b
-        override val selfSemigroup = _asSemigroup[z, b](mb)
+        override val selfSemigroup: selfSemigroup = _asSemigroup[z, b](mb)
         override val mempty: m = _ => mb.mempty
         override val mappend: m => Lazy[m] => m = x => y => z => mb.mappend(x(z))(y(z))
     }

@@ -708,7 +708,7 @@ private[ken] sealed trait ListAs { this: List.type =>
     }
 
     implicit def _asOrd[a](implicit i: Ord[a]): Ord[List[a]] = new Ord[List[a]] with EqProxy[List[a]] {
-        override val selfEq = _asEq[a]
+        override val selfEq: selfEq = _asEq[a]
         override val compare: compare = {
             @tailrec
             def impl(x: List[a])(y: List[a]): Ordering = (x, y) match {

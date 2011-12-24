@@ -34,7 +34,8 @@ trait Arbitary[a] extends Typeclass[a] {
 
 
 trait ArbitaryProxy[a] extends Arbitary[a] {
-    def selfArbitary: Arbitary[a]
+    type selfArbitary = Arbitary[a]
+    def selfArbitary: selfArbitary
 
     override def arbitary: arbitary = selfArbitary.arbitary
     override def shrink: shrink = selfArbitary.shrink

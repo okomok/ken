@@ -8,13 +8,17 @@ package com.github.okomok
 package ken
 
 
+// A typeclass which any type conforms.
+
+
 trait Trivial[a] extends Typeclass[a] {
     final val asTrivial: Trivial[apply0] = this
 }
 
 
 trait TrivialProxy[a] {
-    def selfTrivial: Trivial[a]
+    type selfTrivial = Trivial[a]
+    def selfTrivial: selfTrivial
 }
 
 

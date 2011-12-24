@@ -43,7 +43,8 @@ trait Random[a] extends Typeclass[a] {
 
 
 trait RandomProxy[a] extends Random[a] {
-    def selfRandom: Random[a]
+    type selfRandom = Random[a]
+    def selfRandom: selfRandom
 
     override def randomR[g](ival: (a, a))(g: g)(implicit i: RandomGen[g]): (a, g) = selfRandom.randomR(ival)(g)(i)
     override def random[g](g: g)(implicit i: RandomGen[g]): (a, g) = selfRandom.random(g)(i)

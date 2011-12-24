@@ -72,7 +72,7 @@ private[ken] sealed trait LazyTAs extends MonadTransControl.Deriving0[LazyT, Mon
 
     override protected def deriveMonadCont[n[+_]](_N: MonadCont[n]): MonadCont[({type L[+a] = t[n, a]})#L] = new MonadCont[({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {
         private type m[+a] = t[n, a]
-        override val selfMonad = deriveMonad(_N)
+        override val selfMonad: selfMonad = deriveMonad(_N)
         override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = LazyT {
             _N.callCC { (c: Lazy[a] => n[Lazy[b]]) =>
                 run( f( a => LazyT { c(Lazy(a)) } ) )

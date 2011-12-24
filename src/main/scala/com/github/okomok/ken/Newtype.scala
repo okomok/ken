@@ -36,7 +36,8 @@ trait Newtype[nt, ot, ds <: Kind.MethodList] extends TypeclassLike with Kind.New
 
 
 trait Newtype0Proxy[nt, ot, ds <: Kind.MethodList] extends Newtype[nt, ot, ds] {
-    def selfNewtype: Newtype[nt, ot, ds]
+    type selfNewtype = Newtype[nt, ot, ds]
+    def selfNewtype: selfNewtype
 
     override def newOf: newOf = selfNewtype.newOf
     override def oldOf: oldOf = selfNewtype.oldOf

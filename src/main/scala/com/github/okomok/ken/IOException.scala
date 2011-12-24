@@ -12,5 +12,5 @@ final case class IOException(rep: java.io.IOException)
 
 
 object IOException extends Exception[IOException] with TypeableProxy[IOException] with ThisIsInstance {
-    override val selfTypeable = Typeable.of[IOException]
+    override val selfTypeable: selfTypeable = Typeable.of[IOException]
 }

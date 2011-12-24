@@ -76,7 +76,8 @@ trait Num[a] extends Typeclass[a] {
 
 
 trait NumProxy[a] extends Num[a] {
-    def selfNum: Num[a]
+    type selfNum = Num[a]
+    def selfNum: selfNum
 
     override def op_+ : op_+ = selfNum.op_+
     override def op_- : op_- = selfNum.op_-
@@ -133,7 +134,7 @@ sealed trait NumInstance { this: Num.type =>
 
 /*
     implicit def _FractionalofScalaFractional[a](implicit i: scala.math.Fractional[a]): Fractional[a] = new Fractional[a] with NumProxy[a] {
-        override val selfNum = ofScalaNumeric[a]
+        override val selfNum: selfNum = ofScalaNumeric[a]
         override val op_/ : a => a => a = x => y => i.div(x, y)
         override lazy val fromRational: Rational => a = error("todo")
     }

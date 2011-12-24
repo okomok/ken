@@ -136,15 +136,16 @@ trait Monad[m[+_]] extends Applicative[m] { outer =>
 
     @Annotation.compilerWorkaround("2.9.1", 5070)
     override implicit def `for`[a](m: m[a]): ken.For[m, a] = new ForProxy[a] {
-        override val selfFor = functorFor(m)
+        override val selfFor: selfFor = functorFor(m)
         override def flatMap[b](k: a => m[b]): m[b] = outer.op_>>=(m)(k)
     }
 }
 
 
 trait MonadProxy[m[+_]] extends Monad[m] with ApplicativeProxy[m] {
-    def selfMonad: Monad[m]
-    override def selfApplicative: Applicative[m] = selfMonad
+    type selfMonad = Monad[m]
+    def selfMonad: selfMonad
+    override def selfApplicative: selfApplicative = selfMonad
 
     override def `return`[a](x: Lazy[a]): m[a] = selfMonad.`return`(x)
     override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = selfMonad.op_>>=(x)(y)
@@ -185,7 +186,7 @@ object Monad {
 
     def deriving[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply1, nt#oldtype1], i: Monad[nt#oldtype1]): Monad[nt#apply1] = new Monad[nt#apply1] with ApplicativeProxy[nt#apply1] {
         private type m[+a] = nt#apply1[a]
-        override val selfApplicative = Applicative.deriving[nt]
+        override val selfApplicative: selfApplicative = Applicative.deriving[nt]
 
         override def `return`[a](x: Lazy[a]): m[a] = j.newOf { i.`return`(x) }
         override def op_>>=[a, b](x: m[a])(y: a => m[b]): m[b] = j.newOf { i.op_>>=(j.oldOf(x))(a => j.oldOf(y(a))) }

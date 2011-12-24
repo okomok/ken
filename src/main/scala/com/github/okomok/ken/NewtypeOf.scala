@@ -15,16 +15,21 @@ trait NewtypeOf[+a] extends Up[NewtypeOf[a]] with Kind.Newtype {
     override type apply0 = this.type
     override type oldtype = a @uncheckedVariance
 
-    def old: a
+    type old = a
+    def old: old
 
-    final def get: a = old
-    final def run: a = old
-    final def app: a = old
+    type get = a
+    final def get: get = old
+    type run = a
+    final def run: run = old
+    type app = a
+    final def app: app = old
 }
 
 
 trait NewtypeOfProxy[+a] extends NewtypeOf[a] {
-    def selfNewtypeOf: NewtypeOf[a]
+    type selfNewtypeOf = NewtypeOf[a]
+    def selfNewtypeOf: selfNewtypeOf
 
-    override def old: a = selfNewtypeOf.old
+    override def old: old = selfNewtypeOf.old
 }

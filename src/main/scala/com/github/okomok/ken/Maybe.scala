@@ -143,7 +143,7 @@ private[ken] sealed trait MaybeAs { this: Maybe.type =>
     }
 
     implicit def _asOrd[a](implicit i: Ord[a]): Ord[Maybe[a]] = new Ord[Maybe[a]] with EqProxy[Maybe[a]] {
-        override val selfEq = _asEq(i)
+        override val selfEq: selfEq = _asEq(i)
         override val compare: compare = x => y => (x, y) match {
             case (Nothing, Nothing) => EQ
             case (Nothing, _) => LT

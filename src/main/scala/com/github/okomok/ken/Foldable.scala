@@ -156,7 +156,8 @@ trait Foldable[t[+_]] extends Typeclass1[t] { outer =>
 
 
 trait FoldableProxy[t[+_]] extends Foldable[t] {
-    def selfFoldable: Foldable[t]
+    type selfFoldable = Foldable[t]
+    def selfFoldable: selfFoldable
 
     override def fold[m](f: t[m])(implicit i: Monoid[m]): m = selfFoldable.fold(f)(i)
     override def foldMap[a, m](f: a => m)(x: t[a])(implicit i: Monoid[m]): m = selfFoldable.foldMap(f)(x)(i)

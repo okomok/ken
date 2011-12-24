@@ -49,7 +49,7 @@ private[ken] sealed trait CodensityAs0 { this: Codensity.type =>
 private[ken] sealed trait CodensityAs1 extends CodensityAs0 { this: Codensity.type =>
     implicit def _asMonad[n[+_]]: Monad[({type L[+a] = Codensity[n, a]})#L] = new Monad[({type L[+a] = Codensity[n, a]})#L] with FunctorProxy[({type L[+a] = Codensity[n, a]})#L] {
         private type m[+a] = Codensity[n, a]
-        override val selfFunctor = _asFunctor[n]
+        override val selfFunctor: selfFunctor = _asFunctor[n]
         override def `return`[a](x: Lazy[a]): m[a] = new Codensity[n, a] {
             override def apply[r](h: a => n[r]): n[r] = h(x)
         }
@@ -62,7 +62,7 @@ private[ken] sealed trait CodensityAs1 extends CodensityAs0 { this: Codensity.ty
 private[ken] sealed trait CodensityAs2 extends CodensityAs1 { this: Codensity.type =>
     implicit def _asMonadPlus[n[+_]](implicit nM: MonadPlus[n]): MonadPlus[({type L[+a] = Codensity[n, a]})#L] = new MonadPlus[({type L[+a] = Codensity[n, a]})#L] with MonadProxy[({type L[+a] = Codensity[n, a]})#L] {
         private type m[+a] = Codensity[n, a]
-        override val selfMonad = _asMonad[n]
+        override val selfMonad: selfMonad = _asMonad[n]
         override val mzero: m[Nothing] = rep(nM.mzero)
         override def mplus[a](p1: m[a])(p2: Lazy[m[a]]): m[a] = rep(nM.mplus(p1.improve)(p2.improve))
     }
@@ -71,8 +71,8 @@ private[ken] sealed trait CodensityAs2 extends CodensityAs1 { this: Codensity.ty
 private[ken] sealed trait CodensityAs extends CodensityAs2 { this: Codensity.type =>
     implicit def _asMonadFree[f[+_], n[+_]](implicit fF: Functor[f], nM: MonadFree[f, n]): MonadFree[f, ({type L[+a] = Codensity[n, a]})#L] = new MonadFree[f, ({type L[+a] = Codensity[n, a]})#L] with MonadProxy[({type L[+a] = Codensity[n, a]})#L] {
         private type m[+a] = Codensity[n, a]
-        override val selfMonad = _asMonad[n]
-        override val functor: Functor[f] = fF
+        override val selfMonad: selfMonad = _asMonad[n]
+        override val functor: functor = fF
         override def free[a, b](m: m[a]): m[Either[a, f[m[a]]]] = {
             val rep_ : n[a] => m[a] = rep
             rep(nM.fmap(Functor[Either.apply1[a]].fmap(fF.fmap(rep_)))( nM.free(m.improve(nM)) ))

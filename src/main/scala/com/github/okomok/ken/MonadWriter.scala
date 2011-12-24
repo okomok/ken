@@ -36,8 +36,9 @@ trait MonadWriter[w, m[+_]] extends Monad[m] {
 
 
 trait MonadWriterProxy[w, m[+_]] extends MonadWriter[w, m] with MonadProxy[m] {
-    def selfMonadWriter: MonadWriter[w, m]
-    override def selfMonad: Monad[m] = selfMonadWriter
+    type selfMonadWriter = MonadWriter[w, m]
+    def selfMonadWriter: selfMonadWriter
+    override def selfMonad: selfMonad = selfMonadWriter
 
     override def monoid: monoid = selfMonadWriter.monoid
     override def tell: tell = selfMonadWriter.tell
@@ -54,7 +55,7 @@ object MonadWriter {
 
     def deriving[w, nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply1, nt#oldtype1], i: MonadWriter[w, nt#oldtype1]): MonadWriter[w, nt#apply1] = new MonadWriter[w, nt#apply1] with MonadProxy[nt#apply1] {
         private type m[+a] = nt#apply1[a]
-        override val selfMonad = Monad.deriving[nt]
+        override val selfMonad: selfMonad = Monad.deriving[nt]
 
         override def monoid: Monoid[w] = i.monoid
         override val tell: tell = x => j.newOf { i.tell(x) }

@@ -102,9 +102,10 @@ trait RealFloat[a] extends RealFrac[a] with Floating[a] {
 
 
 trait RealFloatProxy[a] extends RealFloat[a] with RealFracProxy[a] with FloatingProxy[a] {
-    def selfRealFloat: RealFloat[a]
-    override def selfRealFrac: RealFrac[a] = selfRealFloat
-    override def selfFloating: Floating[a] = selfRealFloat
+    type selfRealFloat = RealFloat[a]
+    def selfRealFloat: selfRealFloat
+    override def selfRealFrac: selfRealFrac = selfRealFloat
+    override def selfFloating: selfFloating = selfRealFloat
 
     override def floatRadix: floatRadix = selfRealFloat.floatRadix
     override def floatDigits: floatDigits = selfRealFloat.floatDigits
@@ -132,8 +133,8 @@ object RealFloat extends RealFloatInstance with RealFloatShortcut with RealFloat
 
     def deriving[nt <: Kind.Newtype](implicit j: Newtype[nt#apply0, nt#oldtype, _], i: RealFloat[nt#oldtype]): RealFloat[nt#apply0] = new RealFloat[nt#apply0] with RealFracProxy[nt#apply0] with FloatingProxy[nt#apply0] {
         private type a = nt#apply0
-        override val selfRealFrac = RealFrac.deriving[nt]
-        override val selfFloating = Floating.deriving[nt]
+        override val selfRealFrac: selfRealFrac = RealFrac.deriving[nt]
+        override val selfFloating: selfFloating = Floating.deriving[nt]
 
         override def floatRadix: floatRadix = i.floatRadix
         override def floatDigits: floatDigits = i.floatDigits

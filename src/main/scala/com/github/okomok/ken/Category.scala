@@ -35,7 +35,8 @@ trait Category[cat[-_, +_]] extends Typeclass2[cat] {
 
 
 trait CategoryProxy[cat[-_, +_]] extends Category[cat] {
-    def selfCategory: Category[cat]
+    type selfCategory = Category[cat]
+    def selfCategory: selfCategory
 
     override def cid[a]: cat[a, a] = selfCategory.cid[a]
     override def op_<<<:[a, b, c](f: cat[b, c])(g: cat[a, b]): cat[a, c] = selfCategory.op_<<<:(f)(g)

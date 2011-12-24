@@ -26,7 +26,7 @@ object SomeException extends Exception[SomeException] with TypeableProxy[SomeExc
     // Overrides
     //
     // Typeable
-    override val selfTypeable = Typeable.of[SomeException]
+    override val selfTypeable: selfTypeable = Typeable.of[SomeException]
     // Exception
     override val toException: toException = se => se
     override val fromException: fromException = se => Just(se)

@@ -41,7 +41,7 @@ private[ken] sealed trait Tuple2As { this: Tuple2.type =>
     }
 
     private[ken] def _asMonoid[a, b](implicit ma: Monoid[a], mb: Monoid[b]): Monoid[(a, b)] = new Monoid[(a, b)] with SemigroupProxy[(a, b)] {
-        override val selfSemigroup = _asSemigroup(ma, mb)
+        override val selfSemigroup: selfSemigroup = _asSemigroup(ma, mb)
         override val mempty: mempty = (ma.mempty, mb.mempty)
         override val mappend: mappend = x1 => x2 => (x1, x2.!) match {
             case ((a1, b1), (a2, b2)) => (ma.mappend(a1)(a2), mb.mappend(b1)(b2))

@@ -71,7 +71,7 @@ private[ken] sealed trait WriterTAs extends MonadTransControl.Deriving1[WriterT,
     override protected def deriveMonadCont[z, n[+_]](_N: MonadCont[n], _C: c[z]): MonadCont[({type L[+a] = t1[z, n, a]})#L] = new MonadCont[({type L[+a] = t1[z, n, a]})#L] with MonadProxy[({type L[+a] = t1[z, n, a]})#L] {
         private type m[+a] = t1[z, n, a]
         private type w = z
-        override val selfMonad = deriveMonad(_N, _C)
+        override val selfMonad: selfMonad = deriveMonad(_N, _C)
         override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = WriterT {
             _N.callCC { (c: ((a, w)) => n[(b, w)]) =>
                 run( f(a => WriterT { c((a, _C.mempty)) }) )

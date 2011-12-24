@@ -68,7 +68,7 @@ private[ken] sealed trait IdentityTAs extends MonadTransControl.Deriving0[Identi
 
     override protected def deriveMonadCont[n[+_]](_N: MonadCont[n]): MonadCont[({type L[+a] = t[n, a]})#L] = new MonadCont[({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {
         private type m[+a] = t[n, a]
-        override val selfMonad = deriveMonad(_N)
+        override val selfMonad: selfMonad = deriveMonad(_N)
         override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = IdentityT {
             _N.callCC { (c: a => n[b]) =>
                 run( f( a => IdentityT { c(a) } ) )

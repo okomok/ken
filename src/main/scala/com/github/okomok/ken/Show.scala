@@ -36,7 +36,8 @@ trait Show[a] extends Typeclass[a] {
 
 
 trait ShowProxy[a] extends Show[a] {
-    def selfShow: Show[a]
+    type selfShow = Show[a]
+    def selfShow: selfShow
 
     override val showsPrec: showsPrec = selfShow.showsPrec
     override val show: show = selfShow.show

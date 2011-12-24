@@ -18,8 +18,9 @@ trait ArrowZero[a[-_, +_]] extends Arrow[a] {
 
 
 trait ArrowZeroProxy[a[-_, +_]] extends ArrowZero[a] with ArrowProxy[a] {
-    def selfArrowZero: ArrowZero[a]
-    override def selfArrow: Arrow[a] = selfArrowZero
+    type selfArrowZero = ArrowZero[a]
+    def selfArrowZero: selfArrowZero
+    override def selfArrow: selfArrow = selfArrowZero
 
     override def zeroArrow[b, c]: a[b, c] = selfArrowZero.zeroArrow[b, c]
 }
@@ -30,7 +31,7 @@ object ArrowZero {
 
     def deriving[nt <: Kind.Newtype2](implicit j: Newtype2[nt#apply2, nt#oldtype2], i: ArrowZero[nt#oldtype2]): ArrowZero[nt#apply2] = new ArrowZero[nt#apply2] with ArrowProxy[nt#apply2] {
         private type a[-a, +b] = nt#apply2[a, b]
-        override val selfArrow = Arrow.deriving[nt]
+        override val selfArrow: selfArrow = Arrow.deriving[nt]
 
         override def zeroArrow[b, c]: a[b, c] = j.newOf(i.zeroArrow[b, c])
     }

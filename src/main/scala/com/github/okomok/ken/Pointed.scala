@@ -18,8 +18,9 @@ trait Pointed[f[+_]] extends Functor[f] {
 
 
 trait PointedProxy[f[+_]] extends Pointed[f] with FunctorProxy[f] {
-    def selfPointed: Pointed[f]
-    override def selfFunctor: Functor[f] = selfPointed
+    type selfPointed = Pointed[f]
+    def selfPointed: selfPointed
+    override def selfFunctor: selfFunctor = selfPointed
 
     override def pure[a](x: Lazy[a]): f[a] = selfPointed.pure(x)
 }
@@ -30,7 +31,7 @@ object Pointed extends PointedInstance {
 
     def deriving[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply1, nt#oldtype1], i: Pointed[nt#oldtype1]): Pointed[nt#apply1] = new Pointed[nt#apply1] with FunctorProxy[nt#apply1] {
         private type f[+a] = nt#apply1[a]
-        override val selfFunctor = Functor.deriving[nt]
+        override val selfFunctor: selfFunctor = Functor.deriving[nt]
 
         override def pure[a](x: Lazy[a]): f[a] = j.newOf { i.pure(x) }
     }

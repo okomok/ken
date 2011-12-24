@@ -59,8 +59,9 @@ trait Extend[w[+_]] extends Functor[w] {
 
 
 trait ExtendProxy[w[+_]] extends Extend[w] with FunctorProxy[w] {
-    def selfExtend: Extend[w]
-    override def selfFunctor: Functor[w] = selfExtend
+    type selfExtend = Extend[w]
+    def selfExtend: selfExtend
+    override def selfFunctor: selfFunctor = selfExtend
 
     override def duplicate[a](w: w[a]): w[w[a]] = selfExtend.duplicate(w)
     override def extend[a, b](f: w[a] => b): w[a] => w[b] = selfExtend.extend(f)
@@ -74,7 +75,7 @@ object Extend extends ExtendInstance {
 
     def deriving[nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply1, nt#oldtype1], i: Extend[nt#oldtype1]): Extend[nt#apply1] = new Extend[nt#apply1] with FunctorProxy[nt#apply1] {
         private type w[+a] = nt#apply1[a]
-        override val selfFunctor = Functor.deriving[nt]
+        override val selfFunctor: selfFunctor = Functor.deriving[nt]
 
         override def extend[a, b](f: w[a] => b): w[a] => w[b] = nt => j.newOf(i.extend((ot: nt#oldtype1[a]) => f(j.newOf(ot)))(j.oldOf(nt)))
     }

@@ -67,7 +67,8 @@ trait Semigroup[a] extends Typeclass[a] {
 
 
 trait SemigroupProxy[a] extends Semigroup[a] {
-    def selfSemigroup: Semigroup[a]
+    type selfSemigroup = Semigroup[a]
+    def selfSemigroup: selfSemigroup
 
     override def op_<>: : op_<>: = selfSemigroup.op_<>:
 
@@ -135,7 +136,7 @@ sealed trait SemigroupType { this: Semigroup.type =>
         }
 
         implicit def _asMonoid[z](implicit i: Ord[z], j: Bounded[z]): Monoid[Min[z]] = new Monoid[Min[z]] with SemigroupProxy[Min[z]] {
-            override val selfSemigroup = _asSemigroup(i)
+            override val selfSemigroup: selfSemigroup = _asSemigroup(i)
             override val mempty: mempty = Min(j.maxBound)
             override val mappend = op_<>:
         }
@@ -158,7 +159,7 @@ sealed trait SemigroupType { this: Semigroup.type =>
         }
 
         implicit def _asMonoid[z](implicit i: Ord[z], j: Bounded[z]): Monoid[Max[z]] = new Monoid[Max[z]] with SemigroupProxy[Max[z]] {
-            override val selfSemigroup = _asSemigroup(i)
+            override val selfSemigroup: selfSemigroup = _asSemigroup(i)
             override val mempty: mempty = Max(j.minBound)
             override val mappend = op_<>:
         }

@@ -137,8 +137,9 @@ trait Data[a] extends Typeable[a] {
 
 
 trait DataProxy[a] extends Data[a] with TypeableProxy[a] {
-    def selfData: Data[a]
-    override def selfTypeable: Typeable[a] = selfData
+    type selfData = Data[a]
+    def selfData: selfData
+    override def selfTypeable: selfTypeable = selfData
 
     override def gfoldl[c[_]](k: GenericL[c])(z: Pure[c])(a: a): c[a] = selfData.gfoldl(k)(z)(a)
     override def gmapT: gmapT = selfData.gmapT
@@ -159,12 +160,12 @@ object Data extends DataInstance with DataShortcut {
 
 sealed trait DataInstance { this: Data.type =>
     implicit def ofDefault[a](implicit t: Typeable[a]): Data[a] = new Data[a] with TypeableProxy[a] {
-        override def selfTypeable = t
+        override def selfTypeable: selfTypeable = t
     }
 
     implicit def _ofList[v](implicit i: Data[v], t: Typeable[List[v]]): Data[List[v]] = new Data[List[v]] with TypeableProxy[List[v]] {
         private type a = List[v]
-        override val selfTypeable = t
+        override def selfTypeable: selfTypeable = t
         override def gfoldl[c[_]](f: GenericL[c])(z: Pure[c])(a: a): c[a] = a match {
             case Nil => z(Nil)
             case x :: xs => f( f(z(List.op_!::[v]_))(x) )(xs.!)(this)
@@ -173,7 +174,7 @@ sealed trait DataInstance { this: Data.type =>
 
     implicit def _ofMaybe[v](implicit i: Data[v], t: Typeable[Maybe[v]]): Data[Maybe[v]] = new Data[Maybe[v]] with TypeableProxy[Maybe[v]] {
         private type a = Maybe[v]
-        override val selfTypeable = t
+        override def selfTypeable: selfTypeable = t
         override def gfoldl[c[_]](f: GenericL[c])(z: Pure[c])(a: a): c[a] = a match {
             case Nothing => z(Nothing)
             case Just(x) => f(z(Just(_: v).up))(x)
@@ -182,7 +183,7 @@ sealed trait DataInstance { this: Data.type =>
 
     implicit val _ofOrdering: Data[Ordering] = new Data[Ordering] with TypeableProxy[Ordering] {
         private type a = Ordering
-        override val selfTypeable = Typeable.of[Ordering]
+        override def selfTypeable: selfTypeable = Typeable.of[Ordering]
         override def gfoldl[c[_]](f: GenericL[c])(z: Pure[c])(a: a): c[a] = a match {
             case LT => z(LT)
             case EQ => z(EQ)
@@ -192,7 +193,7 @@ sealed trait DataInstance { this: Data.type =>
 
     implicit def _ofEither[v, w](implicit i: Data[v], j: Data[w], t: Typeable[Either[v, w]]): Data[Either[v, w]] = new Data[Either[v, w]] with TypeableProxy[Either[v, w]] {
         private type a = Either[v, w]
-        override val selfTypeable = t
+        override def selfTypeable: selfTypeable = t
         override def gfoldl[c[_]](f: GenericL[c])(z: Pure[c])(a: a): c[a] = a match {
             case Left(a) => f(z(Left(_: v).of[v, w]))(a)
             case Right(a) => f(z(Right(_: w).of[v, w]))(a)
@@ -203,7 +204,7 @@ sealed trait DataInstance { this: Data.type =>
     //
     implicit def _ofTuple2[v1, v2](implicit i1: Data[v1], i2: Data[v2], t: Typeable[Tuple2[v1, v2]]): Data[Tuple2[v1, v2]] = new Data[Tuple2[v1, v2]] with TypeableProxy[Tuple2[v1, v2]] {
         private type a = Tuple2[v1, v2]
-        override val selfTypeable = t
+        override def selfTypeable: selfTypeable = t
         override def gfoldl[c[_]](f: GenericL[c])(z: Pure[c])(a: a): c[a] = a match {
             case (w1, w2) => f( f(z((v1: v1) => (v2: v2) => (v1, v2)))(w1) )(w2)
         }
@@ -211,7 +212,7 @@ sealed trait DataInstance { this: Data.type =>
 
     implicit def _ofTuple3[v1, v2, v3](implicit i1: Data[v1], i2: Data[v2], i3: Data[v3], t: Typeable[Tuple3[v1, v2, v3]]): Data[Tuple3[v1, v2, v3]] = new Data[Tuple3[v1, v2, v3]] with TypeableProxy[Tuple3[v1, v2, v3]] {
         private type a = Tuple3[v1, v2, v3]
-        override val selfTypeable = t
+        override def selfTypeable: selfTypeable = t
         override def gfoldl[c[_]](f: GenericL[c])(z: Pure[c])(a: a): c[a] = a match {
             case (w1, w2, w3) => f( f( f(z((v1: v1) => (v2: v2) => (v3: v3) => (v1, v2, v3)))(w1) )(w2) )(w3)
         }

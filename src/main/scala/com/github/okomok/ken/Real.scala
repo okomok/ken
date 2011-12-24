@@ -19,9 +19,10 @@ trait Real[a] extends Num[a] with Ord[a] {
 
 
 trait RealProxy[a] extends Real[a] with NumProxy[a] with OrdProxy[a] {
-    def selfReal: Real[a]
-    override def selfNum: Num[a] = selfReal
-    override def selfOrd: Ord[a] = selfReal
+    type selfReal = Real[a]
+    def selfReal: selfReal
+    override def selfNum: selfNum = selfReal
+    override def selfOrd: selfOrd = selfReal
 
     override def toRational: toRational = selfReal.toRational
 }
@@ -31,8 +32,8 @@ object Real extends RealInstance {
     def apply[a <: Kind.Function0](implicit i: Real[a#apply0]): Real[a#apply0] = i
 
     def deriving[nt <: Kind.Newtype](implicit j: Newtype[nt#apply0, nt#oldtype, _], i: Real[nt#oldtype]): Real[nt#apply0] = new Real[nt#apply0] with NumProxy[nt#apply0] with OrdProxy[nt#apply0] {
-        override val selfNum = Num.deriving[nt]
-        override val selfOrd = Ord.deriving[nt]
+        override val selfNum: selfNum = Num.deriving[nt]
+        override val selfOrd: selfOrd = Ord.deriving[nt]
 
         override val toRational: toRational = x => i.toRational(j.oldOf(x))
     }

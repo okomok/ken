@@ -68,7 +68,7 @@ private[ken] sealed trait ReaderTAs extends MonadTransControl.Deriving1[ReaderT,
     override protected def deriveMonadCont[z, n[+_]](_N: MonadCont[n], _C: c[z]): MonadCont[({type L[+a] = t1[z, n, a]})#L] = new MonadCont[({type L[+a] = t1[z, n, a]})#L] with MonadProxy[({type L[+a] = t1[z, n, a]})#L] {
         private type m[+a] = t1[z, n, a]
         private type r = z
-        override val selfMonad = deriveMonad(_N, Trivial.of[r])
+        override val selfMonad: selfMonad = deriveMonad(_N, Trivial.of[r])
         override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = ReaderT { r =>
             _N.callCC { (c: a => n[b]) =>
                 run( f( a => ReaderT { s_ => c(a) } ) )(r)
@@ -79,7 +79,7 @@ private[ken] sealed trait ReaderTAs extends MonadTransControl.Deriving1[ReaderT,
     override protected def deriveMonadWriter[z, n[+_], w](_N: MonadWriter[w, n], _C: c[z]): MonadWriter[w, ({type L[+a] = t1[z, n, a]})#L] = new MonadWriter[w, ({type L[+a] = t1[z, n, a]})#L] with MonadProxy[({type L[+a] = t1[z, n, a]})#L] {
         private type m[+a] = t1[z, n, a]
         private type r = z
-        override val selfMonad = deriveMonad(_N, Trivial.of[r])
+        override val selfMonad: selfMonad = deriveMonad(_N, Trivial.of[r])
         override def monoid: monoid = _N.monoid
         override val tell: tell = x => asMonadTransControl(Trivial.of[r]).lift(_N.tell(x))(_N)
         override def listen[a](m: m[a]): m[(a, w)] = ReaderT { w => _N.listen(run(m)(w)) }
@@ -101,7 +101,7 @@ private[ken] sealed trait ReaderTAs extends MonadTransControl.Deriving1[ReaderT,
             for { a <- run(m)(r) } { run(k(a))(r) }
         } }
         // MonadReader
-        override def ask: m[r] = ReaderT { r => _N.`return`(r) }
+        override def ask: ask = ReaderT { r => _N.`return`(r) }
         override def local[a](f: r => r)(m: m[a]): m[a] = ReaderT { r => run(m)(f(r)) }
     }
 }

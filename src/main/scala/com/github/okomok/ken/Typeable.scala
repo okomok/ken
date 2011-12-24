@@ -28,7 +28,8 @@ trait Typeable[a] extends Typeclass[a] {
 
 
 trait TypeableProxy[a] extends Typeable[a] {
-    def selfTypeable: Typeable[a]
+    type selfTypeable = Typeable[a]
+    def selfTypeable: selfTypeable
 
     override def typeOf: typeOf = selfTypeable.typeOf
 }

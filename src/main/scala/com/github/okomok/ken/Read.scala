@@ -47,7 +47,8 @@ trait Read[a] extends Typeclass[a] {
 
 
 trait ReadProxy[a] extends Read[a] {
-    def selfRead: Read[a]
+    type selfRead = Read[a]
+    def selfRead: selfRead
 
 }
 

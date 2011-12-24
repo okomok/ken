@@ -23,7 +23,8 @@ trait CoArbitary[a] extends Typeclass[a] {
 
 
 trait CoArbitaryProxy[a] extends CoArbitary[a] {
-    def selfCoArbitary: CoArbitary[a]
+    type selfCoArbitary = CoArbitary[a]
+    def selfCoArbitary: selfCoArbitary
 
     override def coarbitary[c](f: a)(gen: Gen[c]): Gen[c] = selfCoArbitary.coarbitary(f)(gen)
 }

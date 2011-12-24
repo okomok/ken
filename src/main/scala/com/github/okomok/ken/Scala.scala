@@ -47,7 +47,7 @@ object Scala {
 
         private[ken] def _asTraversable[CC[+X] <: GenTraversableLike[X, CC[X]]](implicit mf: CanMapFrom[CC]): Traversable[CC] = new Traversable[CC] with FunctorProxy[CC] {
             private type t[+a] = CC[a]
-            override val selfFunctor = _asMonadPlus[CC](mf)
+            override val selfFunctor: selfFunctor = _asMonadPlus[CC](mf)
             override def foldr[a, b](f: a => Lazy[b] => b)(z: b)(t: t[a]): b = t.foldRight(z)((a, b) => f(a)(b))
             override def foldl[a, b](f: a => b => a)(z: a)(t: t[b]): a = t.foldLeft(z)((a, b) => f(a)(b))
             override def traverse[f[+_], a, b](f: a => f[b])(t: t[a])(implicit i: Applicative[f]): f[t[b]] = {

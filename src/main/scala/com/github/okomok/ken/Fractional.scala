@@ -37,8 +37,9 @@ trait Fractional[a] extends Num[a] {
 
 
 trait FractionalProxy[a] extends Fractional[a] with NumProxy[a] {
-    def selfFractional: Fractional[a]
-    override def selfNum = selfFractional
+    type selfFractional = Fractional[a]
+    def selfFractional: selfFractional
+    override def selfNum: selfNum = selfFractional
 
     override def op_/ : op_/ = selfFractional.op_/
     override def recip: recip = selfFractional.recip
@@ -53,7 +54,7 @@ object Fractional extends FractionalInstance with FractionalShortcut {
 
     def deriving[nt <: Kind.Newtype](implicit j: Newtype[nt#apply0, nt#oldtype, _], i: Fractional[nt#oldtype]): Fractional[nt#apply0] = new Fractional[nt#apply0] with NumProxy[nt#apply0] {
         private type a = nt#apply0
-        override val selfNum = Num.deriving[nt]
+        override val selfNum: selfNum = Num.deriving[nt]
 
         override val op_/ : op_/ = x => y => j.newOf(i.op_/(j.oldOf(x))(j.oldOf(y)))
         override val recip: recip = x => j.newOf(i.recip(j.oldOf(x)))

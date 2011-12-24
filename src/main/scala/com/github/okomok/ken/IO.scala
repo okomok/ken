@@ -113,7 +113,7 @@ object IO extends MonadIO[IO] with ThisIsInstance {
 
     // Exception handling in the I/O asMonad
     //
-    lazy val ioError: IOError => IO[Nothing] = err => IOError.throwIO(err)
+    override lazy val ioError: ioError = err => IOError.throwIO(err)
 
     lazy val userError: String => IOError = str => IOError(new java.io.IOException(str.asJString))
 

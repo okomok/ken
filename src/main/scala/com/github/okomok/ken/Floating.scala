@@ -83,8 +83,9 @@ trait Floating[a] extends Fractional[a] {
 
 
 trait FloatingProxy[a] extends Floating[a] with FractionalProxy[a] {
-    def selfFloating: Floating[a]
-    override def selfFractional: Fractional[a] = selfFloating
+    type selfFloating = Floating[a]
+    def selfFloating: selfFloating
+    override def selfFractional: selfFractional = selfFloating
 
     override def pi: pi = selfFloating.pi
 
@@ -118,7 +119,7 @@ object Floating extends FloatingInstance with FloatingShortcut {
 
     def deriving[nt <: Kind.Newtype](implicit j: Newtype[nt#apply0, nt#oldtype, _], i: Floating[nt#oldtype]): Floating[nt#apply0] = new Floating[nt#apply0] with FractionalProxy[nt#apply0] {
         private type a = nt#apply0
-        override val selfFractional = Fractional.deriving[nt]
+        override val selfFractional: selfFractional = Fractional.deriving[nt]
 
         override val pi: pi = j.newOf(i.pi)
 

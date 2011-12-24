@@ -18,7 +18,7 @@ object FreeT extends FreeTOp with FreeTAs with Kind.FunctionLike {
     trait apply[f <: Kind.Function1] extends apply1[f]
     trait apply1[f <: Kind.Function1] extends Kind.MonadTrans with Kind.MonadFree {
         override type monadTrans[n[+_], +a] = FreeT[f#apply1, n, a]
-        override type functor[+a] = f#apply1[a]
+        override type freeFunctor[+a] = f#apply1[a]
     }
 
     trait apply2[f <: Kind.Function1, n <: Kind.Function1] extends Kind.Newtype1 {
@@ -96,7 +96,7 @@ private[ken] sealed trait FreeTAs extends FreeTAs0 { this: FreeT.type =>
     }
 
     implicit def _asMonadFree[f[+_], n[+_]](implicit fF: Functor[f], nM: Monad[n]): MonadFree[f, ({type L[+a] = FreeT[f, n, a]})#L] = new MonadFree[f, ({type L[+a] = FreeT[f, n, a]})#L] with FunctorProxy[({type L[+a] = FreeT[f, n, a]})#L] {
-        override val selfFunctor = _asFunctor(fF, nM)
+        override val selfFunctor: selfFunctor = _asFunctor(fF, nM)
         // Monad
         private type m[+a] = FreeT[f, n, a]
         override def `return`[a](a: Lazy[a]): m[a] = FreeT(nM.`return`(Lazy(Left(a.!).of[a, f[FreeT[f, n, a]]])))
@@ -115,7 +115,7 @@ private[ken] sealed trait FreeTAs extends FreeTAs0 { this: FreeT.type =>
             }
         }
         // MonadFree
-        override val functor: Functor[f] = fF
+        override val functor: functor = fF
         override def free[a, b](m: m[a]): m[Either[a, f[m[a]]]] = _asMonadTrans[f].lift(run(m))
         override def wrap[a](f: f[m[a]]): m[a] = FreeT(nM.`return`(Right(f)))
     }
