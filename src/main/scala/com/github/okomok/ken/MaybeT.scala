@@ -28,21 +28,17 @@ object MaybeT extends MaybeTOp with MaybeTAs with MonadTransControl[MaybeT] {
     //
     // MonadTransControl
     protected type t[n[+_], +a] = MaybeT[n, a]
-    final case class StT[+a](override val old: Maybe[a]) extends NewtypeOf[Maybe[a]]
+    override type StT[+a] = Maybe[a]
     override def liftWith[n[+_], a](f: Run => n[a])(implicit _N: Monad[n]): t[n, a] = MaybeT {
         _N.liftM((a: a) => Maybe.`return`(a)) {
             f {
                 new Run {
-                    override def apply[u[+_], b](t: t[u, b])(implicit _U: Monad[u]): u[StT[b]] = {
-                        _U.liftM((x: Maybe[b]) => StT(x))(run(t))
-                    }
+                    override def apply[u[+_], b](t: t[u, b])(implicit _U: Monad[u]): u[StT[b]] = run(t)
                 }
             }
         }
     }
-    override def restoreT[n[+_], a](nSt: n[StT[a]])(implicit _N: Monad[n]): t[n, a] = MaybeT {
-        _N.liftM((St: StT[a]) => St.old)(nSt)
-    }
+    override def restoreT[n[+_], a](nSt: n[StT[a]])(implicit _N: Monad[n]): t[n, a] = MaybeT(nSt)
 }
 
 

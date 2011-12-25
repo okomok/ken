@@ -44,22 +44,18 @@ private[ken] sealed trait ErrorTAs0 extends MonadTransControl.Deriving1[ErrorT, 
     override protected def asMonadTransControl[z](_C: c[z]): MonadTransControl[({type L[n[+_], +a] = t1[z, n, a]})#L] = new MonadTransControl[({type L[n[+_], +a] = t1[z, n, a]})#L] {
         private type t[n[+_], +a] = t1[z, n, a]
         private type e = z
-        final case class StT[+a](override val old: Either[e, a]) extends NewtypeOf[Either[e, a]]
+        override type StT[+a] = Either[e, a]
         override def liftWith[n[+_], a](f: Run => n[a])(implicit _N: Monad[n]): t[n, a] = ErrorT {
             val _Me = Monad[Either.apply[e]]
             _N.liftM((a: a) => _Me.`return`(a)) {
                 f {
                     new Run {
-                        override def apply[u[+_], b](t: t[u, b])(implicit _U: Monad[u]): u[StT[b]] = {
-                            _U.liftM((x: Either[e, b]) => StT(x))(run(t))
-                        }
+                        override def apply[u[+_], b](t: t[u, b])(implicit _U: Monad[u]): u[StT[b]] = run(t)
                     }
                 }
             }
         }
-        override def restoreT[n[+_], a](nSt: n[StT[a]])(implicit _N: Monad[n]): t[n, a] = ErrorT {
-            _N.liftM((St: StT[a]) => St.old)(nSt)
-        }
+        override def restoreT[n[+_], a](nSt: n[StT[a]])(implicit _N: Monad[n]): t[n, a] = ErrorT(nSt)
     }
 
     override protected def deriveMonad[z, n[+_]](_N: Monad[n], _C: c[z]): Monad[({type L[+a] = t1[z, n, a]})#L] = _asMonadError(_N)

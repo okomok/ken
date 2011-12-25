@@ -48,5 +48,5 @@ object MonadTrans extends MonadTransInstance {
 }
 
 
-trait MonadTransInstance {
+sealed trait MonadTransInstance { this: MonadTrans.type =>
 }

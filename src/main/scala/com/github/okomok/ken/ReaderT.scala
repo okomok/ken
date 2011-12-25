@@ -48,19 +48,15 @@ private[ken] sealed trait ReaderTAs extends MonadTransControl.Deriving1[ReaderT,
     override protected def asMonadTransControl[z](_C: c[z]): MonadTransControl[({type L[n[+_], +a] = t1[z, n, a]})#L] = new MonadTransControl[({type L[n[+_], +a] = t1[z, n, a]})#L] {
         private type t[n[+_], +a] = t1[z, n, a]
         private type r = z
-        final case class StT[+a](override val old: a) extends NewtypeOf[a]
+        override type StT[+a] = a
         override def liftWith[n[+_], a](f: Run => n[a])(implicit _N: Monad[n]): t[n, a] = ReaderT { r =>
             f {
                 new Run {
-                    override def apply[u[+_], b](t: t[u, b])(implicit _U: Monad[u]): u[StT[b]] = {
-                        _U.liftM((x: b) => StT(x))(run(t)(r): u[b])
-                    }
+                    override def apply[u[+_], b](t: t[u, b])(implicit _U: Monad[u]): u[StT[b]] = run(t)(r)
                 }
             }
         }
-        override def restoreT[n[+_], a](nSt: n[StT[a]])(implicit _N: Monad[n]): t[n, a] = ReaderT { _ =>
-            _N.liftM((St: StT[a]) => St.old)(nSt)
-        }
+        override def restoreT[n[+_], a](nSt: n[StT[a]])(implicit _N: Monad[n]): t[n, a] = ReaderT { _ => nSt }
     }
 
     override protected def deriveMonad[z, n[+_]](_N: Monad[n], _C: c[z]): Monad[({type L[+a] = t1[z, n, a]})#L] = _asMonadReader(_N)

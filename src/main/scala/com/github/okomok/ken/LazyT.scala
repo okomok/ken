@@ -28,21 +28,17 @@ object LazyT extends LazyTOp with LazyTAs {
     //
     // MonadTransControl
     protected type t[n[+_], +a] = LazyT[n, a]
-    final case class StT[+a](override val old: Lazy[a]) extends NewtypeOf[Lazy[a]]
+    override type StT[+a] = Lazy[a]
     override def liftWith[n[+_], a](f: Run => n[a])(implicit _N: Monad[n]): t[n, a] = LazyT {
          _N.liftM((a: a) => Lazy.`return`(a)) {
             f {
                 new Run {
-                    override def apply[u[+_], b](t: t[u, b])(implicit _U: Monad[u]): u[StT[b]] = {
-                        _U.liftM((x: Lazy[b]) => StT(x))(run(t))
-                    }
+                    override def apply[u[+_], b](t: t[u, b])(implicit _U: Monad[u]): u[StT[b]] = run(t)
                 }
             }
         }
     }
-    override def restoreT[n[+_], a](nSt: n[StT[a]])(implicit _N: Monad[n]): t[n, a] = LazyT {
-        _N.liftM((St: StT[a]) => St.old)(nSt)
-    }
+    override def restoreT[n[+_], a](nSt: n[StT[a]])(implicit _N: Monad[n]): t[n, a] = LazyT(nSt)
 }
 
 

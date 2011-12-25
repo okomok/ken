@@ -32,20 +32,20 @@ trait MonadTransControl[t[_[+_], +_]] extends MonadTrans[t] { outer =>
     // Default implementations
     //
     final def defaultMonadBaseControl[n[+_], b[+_]](_M: Monad[({type L[+a] = t[n, a]})#L], _N: MonadBaseControl[b, n]): MonadBaseControl[b, ({type L[+a] = t[n, a]})#L] = new MonadBaseControl[b, ({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {
-        final case class StM[+a](override val old: _N.StM[outer.StT[a]]) extends NewtypeOf[_N.StM[outer.StT[a]]]
         private type m[+a] = t[n, a]
+        override type StM[+a] = _N.StM[outer.StT[a]]
         override def selfMonad: selfMonad = _M
         override def baseMonad: baseMonad = _N.baseMonad
         override def liftBaseWith[a](f: RunInBase => b[a]): m[a] = outer.liftWith(run1 =>
             _N.liftBaseWith { runInBase =>
                 f {
                     new RunInBase {
-                        override def apply[c](m: m[c]): b[StM[c]] = baseMonad.liftM((x: _N.StM[outer.StT[c]]) => StM(x))(runInBase(run1(m)(_N)))
+                        override def apply[c](m: m[c]): b[StM[c]] = runInBase(run1(m)(_N))
                     }
                 }
             }
         )(_N)
-        override def restoreM[a](St: StM[a]): m[a] = outer.restoreT(_N.restoreM(St.old))(_N)
+        override def restoreM[a](St: StM[a]): m[a] = outer.restoreT(_N.restoreM(St))(_N)
     }
 
     final def defaultMonadCont[n[+_]](_M: MonadBaseControl[n, ({type L[+a] = t[n, a]})#L], _N: MonadCont[n]): MonadCont[({type L[+a] = t[n, a]})#L] = new MonadCont[({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {
@@ -109,32 +109,18 @@ trait MonadTransControlProxy[t[_[+_], +_]] extends MonadTransControl[t] with Mon
     override def selfMonadTrans: selfMonadTrans = selfMonadTransControl
     override type StT[+a] = selfMonadTransControl.StT[a]
 
-    private[this] def run2run(run: selfMonadTransControl.Run): Run = new Run {
-        override def apply[u[+_], b](t: t[u, b])(implicit _U: Monad[u]): u[StT[b]] = run(t)
-    }
-
-
     override def lift[n[+_], a](n: n[a])(implicit _N: Monad[n]): t[n, a] = selfMonadTransControl.lift(n)
     override def liftWith[n[+_], a](f: Run => n[a])(implicit _N: Monad[n]): t[n, a] = selfMonadTransControl.liftWith((run: selfMonadTransControl.Run) => f(run2run(run)))(_N)
     override def restoreT[n[+_], a](nSt: n[StT[a]])(implicit _N: Monad[n]): t[n, a] = selfMonadTransControl.restoreT(nSt)(_N)
+
+    private[this] def run2run(run: selfMonadTransControl.Run): Run = new Run {
+        override def apply[u[+_], b](t: t[u, b])(implicit _U: Monad[u]): u[StT[b]] = run(t)
+    }
 }
 
 
-object MonadTransControl extends MonadTransInstance {
+object MonadTransControl extends MonadTransControlInstance {
     def apply[t <: Kind.MonadTrans](implicit _T: MonadTransControl[t#monadTrans]): MonadTransControl[t#monadTrans] = _T
-
-    trait RunInBase[m[+_], base[+_]] {
-        def apply[b](t: m[b]): base[m[b]]
-    }
-
-    // Lifting
-    //
-    def idLiftControl[m[+_], a](f: RunInBase[m, m] => m[a])(implicit j: Monad[m]): m[a] = f {
-        new RunInBase[m, m] {
-            override def apply[b](t: m[b]): m[m[b]] = j.liftM[b, m[b]](j.`return`[b])(t)
-        }
-    }
-
 
     // Default implementation providers
     //

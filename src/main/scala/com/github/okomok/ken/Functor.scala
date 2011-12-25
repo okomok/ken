@@ -9,7 +9,7 @@ package ken
 
 
 trait Functor[f[+_]] extends Typeclass1[f] { outer =>
-    // Prefer `apply` to `f` for type-parameter inference.
+    // Prefer `apply1` to `f` for type-parameter inference.
     final val asFunctor: Functor[apply1] = this
 
     // Core

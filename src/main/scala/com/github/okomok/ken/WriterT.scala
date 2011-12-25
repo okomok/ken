@@ -49,21 +49,17 @@ private[ken] sealed trait WriterTAs extends MonadTransControl.Deriving1[WriterT,
     override protected def asMonadTransControl[z](_C: c[z]): MonadTransControl[({type L[n[+_], +a] = t1[z, n, a]})#L] = new MonadTransControl[({type L[n[+_], +a] = t1[z, n, a]})#L] {
         private type t[n[+_], +a] = t1[z, n, a]
         private type w = z
-        final case class StT[+a](override val old: (a, w)) extends NewtypeOf[(a, w)]
+        override type StT[+a] = (a, w)
         override def liftWith[n[+_], a](f: Run => n[a])(implicit _N: Monad[n]): t[n, a] = WriterT {
             _N.liftM((x: a) => (x, _C.mempty)) {
                 f {
                     new Run {
-                        override def apply[u[+_], b](t: t[u, b])(implicit _U: Monad[u]): u[StT[b]] = {
-                            _U.liftM((x: (b, w)) => StT(x))(run(t))
-                        }
+                        override def apply[u[+_], b](t: t[u, b])(implicit _U: Monad[u]): u[StT[b]] = run(t)
                     }
                 }
             }
         }
-        override def restoreT[n[+_], a](nSt: n[StT[a]])(implicit _N: Monad[n]): t[n, a] = WriterT {
-            _N.liftM((St: StT[a]) => St.old)(nSt)
-        }
+        override def restoreT[n[+_], a](nSt: n[StT[a]])(implicit _N: Monad[n]): t[n, a] = WriterT(nSt)
     }
 
     override protected def deriveMonad[z, n[+_]](_N: Monad[n], _C: c[z]): Monad[({type L[+a] = t1[z, n, a]})#L] = _asMonadWriter(_N, _C)

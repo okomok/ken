@@ -25,19 +25,15 @@ object IdentityT extends IdentityTOp with IdentityTAs with MonadTransControl[Ide
     //
     // MonadTransControl
     protected type t[n[+_], +a] = IdentityT[n, a]
-    final case class StT[+a](override val old: a) extends NewtypeOf[a]
+    override type StT[+a] = a
     override def liftWith[n[+_], a](f: Run => n[a])(implicit _N: Monad[n]): t[n, a] = IdentityT {
         f {
             new Run {
-                override def apply[u[+_], b](t: t[u, b])(implicit _U: Monad[u]): u[StT[b]] = {
-                    _U.liftM((x: b) => StT(x))(run(t))
-                }
+                override def apply[u[+_], b](t: t[u, b])(implicit _U: Monad[u]): u[StT[b]] = run(t)
             }
         }
     }
-    override def restoreT[n[+_], a](nSt: n[StT[a]])(implicit _N: Monad[n]): t[n, a] = IdentityT {
-        _N.liftM((St: StT[a]) => St.old)(nSt)
-    }
+    override def restoreT[n[+_], a](nSt: n[StT[a]])(implicit _N: Monad[n]): t[n, a] = IdentityT(nSt)
 }
 
 
@@ -50,7 +46,7 @@ private[ken] trait IdentityTOp {
 }
 
 
-private[ken] sealed trait IdentityTAs extends MonadTransControl.Deriving0[IdentityT, MonadTransControl.AnyMonad] { this: IdentityT.type =>
+private[ken] sealed trait IdentityTAs extends MonadTransControl.Deriving0[IdentityT, MonadWriter.type ^: MonadTransControl.AnyMonad] { this: IdentityT.type =>
     override protected def deriveMonad[n[+_]](_N: Monad[n]): Monad[({type L[+a] = t[n, a]})#L] = new Monad[({type L[+a] = t[n, a]})#L] {
         // Functor
         private type f[+a] = t[n, a]
@@ -74,5 +70,14 @@ private[ken] sealed trait IdentityTAs extends MonadTransControl.Deriving0[Identi
                 run( f( a => IdentityT { c(a) } ) )
             }
         }
+    }
+
+    override protected def deriveMonadWriter[n[+_], w](_N: MonadWriter[w, n]): MonadWriter[w, ({type L[+a] = t[n, a]})#L] = new MonadWriter[w, ({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {
+        private type m[+a] = t[n, a]
+        override val selfMonad: selfMonad = deriveMonad(_N)
+        override def monoid: monoid = _N.monoid
+        override def tell: tell = x => asMonadTrans.lift(_N.tell(x))(_N)
+        override def listen[a](x: m[a]): m[(a, w)] = IdentityT { _N.listen(x.old) }
+        override def pass[a](x: m[(a, w => w)]): m[a] = IdentityT { _N.pass(x.old) }
     }
 }

@@ -28,21 +28,17 @@ object ListT extends ListTOp with ListTAs with MonadTransControl[ListT] {
     //
     // MonadTransControl
     protected type t[n[+_], +a] = ListT[n, a]
-    final case class StT[+a](override val old: List[a]) extends NewtypeOf[List[a]]
+    override type StT[+a] = List[a]
     override def liftWith[n[+_], a](f: Run => n[a])(implicit _N: Monad[n]): t[n, a] = ListT {
         _N.liftM((a: a) => List.`return`(a)) {
             f {
                 new Run {
-                    override def apply[u[+_], b](t: t[u, b])(implicit _U: Monad[u]): u[StT[b]] = {
-                        _U.liftM((x: List[b]) => StT(x))(run(t))
-                    }
+                    override def apply[u[+_], b](t: t[u, b])(implicit _U: Monad[u]): u[StT[b]] = run(t)
                 }
             }
         }
     }
-    override def restoreT[n[+_], a](nSt: n[StT[a]])(implicit _N: Monad[n]): t[n, a] = ListT {
-        _N.liftM((St: StT[a]) => St.old)(nSt)
-    }
+    override def restoreT[n[+_], a](nSt: n[StT[a]])(implicit _N: Monad[n]): t[n, a] = ListT(nSt)
 }
 
 
