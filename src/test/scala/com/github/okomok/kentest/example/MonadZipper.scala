@@ -28,7 +28,7 @@ class MonadZipperTest extends org.scalatest.junit.JUnit3Suite {
 
     type Env = List[(String, Int)]
 
-    val em = MonadError[String, Error.apply[String]]
+    val em = MonadError[Error.apply[String]]
     implicit val sm = MonadState[Env, StateT.apply2[Env, em.type]]
     type M[+a] = sm.apply[a]
 

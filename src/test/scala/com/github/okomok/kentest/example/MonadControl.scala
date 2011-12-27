@@ -20,7 +20,9 @@ class MonadControlTest extends org.scalatest.junit.JUnit3Suite {
     val MyError = List.from("my error")
 
     val mt = MonadTransControl[ErrorT.apply1[MyError]]
-    val me = MonadError[MyError, ErrorT.apply2[MyError, IO.type]]
+    val me = MonadError[ErrorT.apply2[MyError, IO.type]]
+
+    implicitly[me.ErrorType =:= MyError]
 
     def simple {
         val sayHi: IO[Unit] = IO.putStrLn("Hello")

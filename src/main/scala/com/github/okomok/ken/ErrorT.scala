@@ -136,7 +136,7 @@ private[ken] sealed trait ErrorTAs0 extends MonadTransControl.Deriving1[ErrorT, 
 }
 
 private[ken] sealed trait ErrorTAs extends ErrorTAs0 { this: ErrorT.type =>
-    implicit def _asMonadError[e, n[+_]](implicit _N: Monad[n]): MonadError[e, ({type L[+a] = ErrorT[e, n, a]})#L] = new MonadError[e, ({type L[+a] = ErrorT[e, n, a]})#L] {
+    implicit def _asMonadError[n[+_], e](implicit _N: Monad[n]): MonadError[({type L[+a] = ErrorT[e, n, a]})#L] = new MonadError[({type L[+a] = ErrorT[e, n, a]})#L] {
         // Functor
         private type f[+a] = ErrorT[e, n, a]
         override def fmap[a, b](f: a => b): f[a] => f[b] = m => ErrorT {
@@ -165,6 +165,7 @@ private[ken] sealed trait ErrorTAs extends ErrorTAs0 { this: ErrorT.type =>
             }
         }
         // MonadError
+        override type ErrorType = e
         override val throwError: throwError = l => ErrorT { _N.`return`(Left(l)) }
         override def catchError[a](m: m[a])(h: e => m[a]): m[a] = ErrorT {
             import _N.`for`

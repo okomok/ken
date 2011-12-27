@@ -86,12 +86,13 @@ private[parsec] sealed trait ParsecTAs0 { this: ParsecT.type =>
         }
     }
 
-    implicit def _asMonadError[s, u, n[+_], e](implicit i: MonadError[e, n]): MonadError[e, ({type L[+a] = ParsecT[s, u, n, a]})#L] = new MonadError[e, ({type L[+a] = ParsecT[s, u, n, a]})#L] with MonadProxy[({type L[+a] = ParsecT[s, u, n, a]})#L] {
+    implicit def _asMonadError[s, u, n[+_]](implicit i: MonadError[n]): MonadError[({type L[+a] = ParsecT[s, u, n, a]})#L] = new MonadError[({type L[+a] = ParsecT[s, u, n, a]})#L] with MonadProxy[({type L[+a] = ParsecT[s, u, n, a]})#L] {
         private type m[+a] = ParsecT[s, u, n, a]
         private val prim = ParsecTOp[apply3[s, u, Kind.quote1[n]]]
         override def selfMonad: selfMonad = _asMonadPlus[s, u, n]
+        override type ErrorType = i.ErrorType
         override val throwError: throwError = e => _asMonadTrans[s, u].lift(i.throwError(e))
-        override def catchError[a](p: m[a])(h: e => m[a]): m[a] = prim.mkPT { s =>
+        override def catchError[a](p: m[a])(h: ErrorType => m[a]): m[a] = prim.mkPT { s =>
             i.catchError(prim.runParsecT(p)(s)) { e =>
                 prim.runParsecT(h(e))(s)
             }

@@ -15,7 +15,7 @@ class MonadTransTest extends org.scalatest.junit.JUnit3Suite {
     def testGetInstance {
         val i = MonadIO[MaybeT.apply[IO.type]]
         val me = Monad[Error.apply[String]]
-        val j = MonadError[String, MaybeT.apply[me.type]]
+        val j = MonadError[MaybeT.apply[me.type]]
     }
 /*
     Legacy
@@ -39,8 +39,8 @@ class MonadTransTest extends org.scalatest.junit.JUnit3Suite {
     }
 */
     def testImplicit {
-        MonadError[String, ErrorT.apply2[String, WeakIdentity.type]]
-        MonadError[String, ErrorT.apply2[String, IO.type]]
+        MonadError[ErrorT.apply2[String, WeakIdentity.type]]
+        MonadError[ErrorT.apply2[String, IO.type]]
         MonadIO[ListT.apply[IO.type]]
         MonadIO[ErrorT.apply2[String, IO.type]]
         MonadIO[ReaderT.apply2[String, IO.type]]

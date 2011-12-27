@@ -26,7 +26,7 @@ class ParseErrorTest extends org.scalatest.junit.JUnit3Suite {
         override def strMsg = s => Err(0)(s)
     }
 
-    implicit val ParseMonad = MonadError[ParseError, Error.apply[ParseError]]
+    implicit val ParseMonad = MonadError[Error.apply[ParseError]]
     type ParseMonad[+a] = ParseMonad.apply[a]
 
     import ParseMonad._

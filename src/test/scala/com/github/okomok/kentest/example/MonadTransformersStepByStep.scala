@@ -86,7 +86,7 @@ class MonadTransformersStepByStepTest extends org.scalatest.junit.JUnit3Suite {
 
     // 2.2 Adding Error Handling
 
-    lazy val _M2 = MonadError[String, ErrorT.apply2[String, Identity.type]]
+    lazy val _M2 = MonadError[ ErrorT.apply2[String, Identity.type]]
     type Eval2[+a] = _M2.apply[a]
     def runEval2[a](ev: Eval2[a]): Either[String, a] = ev.run.run
 
@@ -130,7 +130,7 @@ class MonadTransformersStepByStepTest extends org.scalatest.junit.JUnit3Suite {
     lazy val _M3 = MonadReader[Env, ReaderT.apply2[Env, _M2.type]]
     type Eval3[+a] = _M3.apply[a]
     def runEval3[a](env: Env)(ev: Eval3[a]): Either[String, a] = (ev.run)(env).run.run
-    lazy val _M3E = MonadError[String, _M3.type]
+    lazy val _M3E = MonadError[_M3.type]
 
     lazy val eval3: Exp => Eval3[Value] = exp => {
         import _M3._
@@ -175,7 +175,7 @@ class MonadTransformersStepByStepTest extends org.scalatest.junit.JUnit3Suite {
 
     lazy val _M4 = MonadReader[Env, ReaderT.apply2[Env, ErrorT.apply2[String, StateT.apply2[Int, Identity.type]]]]
     type Eval4[+a] = _M4.apply[a]
-    lazy val _M4E = MonadError[String, _M4.type]
+    lazy val _M4E = MonadError[_M4.type]
     def runEval4[a](env: Env)(st: Int)(ev: Eval4[a]): (Either[String, a], Int) = ((ev.run)(env).run)(st).run
 
     def tick[s, m[+_]](implicit _N: Num[s], _MS: MonadState[s, m]): m[Unit] = {
@@ -233,7 +233,7 @@ class MonadTransformersStepByStepTest extends org.scalatest.junit.JUnit3Suite {
 
     lazy val _M5 = MonadReader[Env, ReaderT.apply2[Env, ErrorT.apply2[String, WriterT.apply2[List[String], StateT.apply2[Int, Identity.type]]]]]
     type Eval5[+a] = _M5.apply[a]
-    lazy val _M5E = MonadError[String, _M5.type]
+    lazy val _M5E = MonadError[_M5.type]
     lazy val _M5W = MonadWriter[List[String], _M5.type]
     def runEval5[a](env: Env)(st: Int)(ev: Eval5[a]): ((Either[String, a], List[String]), Int) = (((ev.run)(env).run).run)(st).run
 
@@ -291,7 +291,7 @@ class MonadTransformersStepByStepTest extends org.scalatest.junit.JUnit3Suite {
 
     lazy val _M6 = MonadReader[Env, ReaderT.apply2[Env, ErrorT.apply2[String, WriterT.apply2[List[String], StateT.apply2[Int, IO.type]]]]]
     type Eval6[+a] = _M6.apply[a]
-    lazy val _M6E = MonadError[String, _M6.type]
+    lazy val _M6E = MonadError[_M6.type]
     lazy val _M6W = MonadWriter[List[String], _M6.type]
     lazy val _M6IO = MonadIO[_M6.type]
     def runEval6[a](env: Env)(st: Int)(ev: Eval6[a]): IO[((Either[String, a], List[String]), Int)] = (((ev.run)(env).run).run)(st)

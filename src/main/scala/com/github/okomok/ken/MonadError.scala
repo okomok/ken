@@ -8,40 +8,44 @@ package com.github.okomok
 package ken
 
 
-trait MonadError[e, m[+_]] extends Monad[m] {
-    final val asMonadError: MonadError[e, apply] = this
+trait MonadError[m[+_]] extends Monad[m] {
+    final val asMonadError: MonadError[apply1] = this
 
     // Core
     //
-    type throwError = e => m[Nothing]
-    def throwError: throwError
+    type ErrorType
 
-    def catchError[a](m: m[a])(h: e => m[a]): m[a]
+    type throwError = ErrorType => m[Nothing]
+    def throwError: ErrorType => m[Nothing] // throwError
+
+    def catchError[a](m: m[a])(h: ErrorType => m[a]): m[a]
 }
 
 
-trait MonadErrorProxy[e, m[+_]] extends MonadError[e, m] with MonadProxy[m] {
-    type selfMonadError = MonadError[e, m]
-    def selfMonadError: selfMonadError
+trait MonadErrorProxy[m[+_]] extends MonadError[m] with MonadProxy[m] {
+    type selfMonadError = MonadError[m]
+    val selfMonadError: selfMonadError
     override def selfMonad: selfMonad = selfMonadError
 
+    override type ErrorType = selfMonadError.ErrorType
     override def throwError: throwError = selfMonadError.throwError
-    override def catchError[a](m: m[a])(h: e => m[a]): m[a] = selfMonadError.catchError(m)(h)
+    override def catchError[a](m: m[a])(h: ErrorType => m[a]): m[a] = selfMonadError.catchError(m)(h)
 }
 
 
 object MonadError extends MonadErrorInstance {
-    def apply[e, m <: Kind.Function1](implicit i: MonadError[e, m#apply1]): MonadError[e, m#apply1] = i
+    def apply[m <: Kind.Function1](implicit _M: MonadError[m#apply1]): MonadError[m#apply1] = _M
 
-    def deriving[e, nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply1, nt#oldtype1], i: MonadError[e, nt#oldtype1]): MonadError[e, nt#apply1] = new MonadError[e, nt#apply1] with MonadProxy[nt#apply1] {
+    def deriving[nt <: Kind.Newtype1](implicit _Nt: Newtype1[nt#apply1, nt#oldtype1], _M: MonadError[nt#oldtype1]): MonadError[nt#apply1] = new MonadError[nt#apply1] with MonadProxy[nt#apply1] {
         private type m[+a] = nt#apply1[a]
         override val selfMonad: selfMonad = Monad.deriving[nt]
 
-        override def throwError: throwError = e => j.newOf { i.throwError(e) }
-        override def catchError[a](m: m[a])(h: e => m[a]): m[a] = j.newOf { i.catchError(j.oldOf(m))(e => j.oldOf(h(e))) }
+        override type ErrorType = _M.ErrorType
+        override def throwError: throwError = e => _Nt.newOf { _M.throwError(e) }
+        override def catchError[a](m: m[a])(h: ErrorType => m[a]): m[a] = _Nt.newOf { _M.catchError(_Nt.oldOf(m))(e => _Nt.oldOf(h(e))) }
     }
 
-    def weak[e, nt <: Kind.Newtype1](implicit j: Newtype1[nt#apply1, nt#oldtype1], i: MonadError[e, nt#apply1]): MonadError[e, nt#oldtype1] = deriving[e, Kind.coNewtype1[nt]](j.coNewtype, i)
+    def weak[nt <: Kind.Newtype1](implicit _Nt: Newtype1[nt#apply1, nt#oldtype1], _M: MonadError[nt#apply1]): MonadError[nt#oldtype1] = deriving[Kind.coNewtype1[nt]](_Nt.coNewtype, _M)
 }
 
 
