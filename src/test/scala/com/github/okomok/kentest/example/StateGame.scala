@@ -16,23 +16,25 @@ package com.github.okomok.kentest.example
         type GameState = (Bool, Int)
 
         // Pull the Monad explicitly.
-        val i = MonadState[GameState, State.apply[GameState]]
-        import i._
+        val _M = MonadState[GameState, State.apply[GameState]]
+        import _M._
 
-        val playGame: String => State[GameState, GameValue] = {
-            case Nil => for {
-                (_, score) <- get
-            } yield score
-            case x :: xs => for {
-                (on, score) <- get
-                _ <- x match {
-                    case 'a' if on => put(on, score + 1)
-                    case 'b' if on => put(on, score - 1)
-                    case 'c' => put(Bool.not(on), score)
-                    case _ => put(on, score)
-                }
-            } {
-                playGame(xs)
+        val playGame: String => _M.apply[GameValue] = {
+            case Nil => {
+                for {
+                    (_, score) <- get
+                } yield score
+            }
+            case x :: xs => {
+                for {
+                    (on, score) <- get
+                    _ <- x match {
+                        case 'a' if on => put(on, score + 1)
+                        case 'b' if on => put(on, score - 1)
+                        case 'c' => put(Bool.not(on), score)
+                        case _ => put(on, score)
+                    }
+                } playGame(xs)
             }
         }
 
