@@ -20,12 +20,6 @@ object build extends Build {
     lazy val ken = Project(
         id = "ken",
         base = file("."),
-        aggregate = Seq(core, enumerator, parsec, quickcheck)
-   )
-
-    lazy val core = Project(
-        id = "ken-core",
-        base = file("core"),
         settings = kenSettings
     )
 
@@ -33,20 +27,27 @@ object build extends Build {
         id = "ken-enumerator",
         base = file("enumerator"),
         settings = kenSettings,
-        dependencies = Seq(core)
+        dependencies = Seq(ken)
     )
 
     lazy val parsec = Project(
         id = "ken-parsec",
         base = file("parsec"),
         settings = kenSettings,
-        dependencies = Seq(core)
+        dependencies = Seq(ken)
     )
 
     lazy val quickcheck = Project(
         id = "ken-quickcheck",
         base = file("quickcheck"),
         settings = kenSettings,
-        dependencies = Seq(core)
+        dependencies = Seq(ken)
+    )
+
+    lazy val kenAggregate = Project(
+        id = "ken-aggregate",
+        base = file("aggregate"),
+        settings = kenSettings,
+        aggregate = Seq(ken, enumerator, parsec, quickcheck)
     )
 }
