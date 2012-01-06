@@ -12,6 +12,11 @@ package ken
 // (Toplevel identifier is case-insensitive under the influence of file-system.)
 
 
+/**
+ * Prefer overriding `Any.equals` to `Eq` instances.
+ * The precise Haskell's `Eq` emulation seems impractical,
+ * especially in case of complicated case-class hierarchies.
+ */
 trait _Eq[a] extends Typeclass[a] {
     final val asEq: _Eq[apply0] = this
 

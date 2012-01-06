@@ -16,6 +16,6 @@ class KleisliTest extends org.scalatest.junit.JUnit3Suite {
         Arrow[Kleisli.apply[WeakIdentity.type]] // not ambiguous
 
         val a = ArrowApply[Kleisli.apply[WeakIdentity.type]]
-        Monad[ArrowMonad.apply[a.apply2]]
+        Monad[ArrowMonad.apply[a.type]]
     }
 }

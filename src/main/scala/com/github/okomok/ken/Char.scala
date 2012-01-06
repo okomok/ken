@@ -57,8 +57,8 @@ object Char extends Bounded[Char] with Enum[Char] with Eq.Of[Char] with Ord[Char
         str => ch => java.lang.String.valueOf(ch).matches(str.asJString)
     }
 
-    @Annotation.compilerWorkaround("2.9.1") // Without this, clean compilation fails: "val isAlpha is not a member of Char".
-    private def isA = undefined
+    //@Annotation.compilerWorkaround("2.9.1") // Without this, clean compilation fails: "val isAlpha is not a member of Char".
+    //private def isA = undefined
 
     val isAscii: Char => Bool = ch => ch < 128
     val isLatin1: Char => Bool = ch => ch <= 255

@@ -14,6 +14,12 @@ package com.github.okomok
 package ken
 
 
+/**
+ * Prefer overriding `Any.toString` to `Show` instances.
+ * The precise Haskell's `Show` emulation seems impractical,
+ * especially in case of complicated case-class hierarchies.
+ * `Char` string issue is hard-coded in `List.toString`
+ */
 trait Show[a] extends Typeclass[a] {
     final val asShow: Show[apply0] = this
 

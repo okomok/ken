@@ -50,4 +50,9 @@ object Annotation {
      *   java.lang.IllegalArgumentException: transpose requires all collections have the same size
      */
     class typeAliasWorkaround extends compilerWorkaround("2.9.1")
+
+    /**
+     * Pending(unstable) feature
+     */
+    class pending(why: JString) extends StaticAnnotation
 }

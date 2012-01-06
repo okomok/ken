@@ -18,10 +18,10 @@ final case class ArrowMonad[k[-_, +_], +a](override val old: k[Unit, a]) extends
 
 
 object ArrowMonad extends ArrowMonadAs with Kind.FunctionLike {
-    trait apply[k[-_, +_]] extends apply1[k]
-    trait apply1[k[-_, +_]] extends Kind.Newtype1 {
-        override type apply1[+a] = ArrowMonad[k, a]
-        override type oldtype1[+a] = k[Unit, a]
+    trait apply[k <: Kind.Function2] extends apply1[k]
+    trait apply1[k <: Kind.Function2] extends Kind.Newtype1 {
+        override type apply1[+a] = ArrowMonad[k#apply2, a]
+        override type oldtype1[+a] = k#apply2[Unit, a]
     }
 }
 
