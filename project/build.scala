@@ -1,11 +1,8 @@
 import sbt._
 import Keys._
-import Project.Setting
 
 object build extends Build {
-    type Sett = Project.Setting[_]
-
-    lazy val kenSettings: Seq[Sett] = Defaults.defaultSettings ++ Seq[Sett](
+    lazy val kenSettings = Project.defaultSettings ++ Seq(
         organization := "com.github.okomok",
         version := "0.1.0-SNAPSHOT",
         scalaVersion := "2.9.1",
@@ -14,7 +11,8 @@ object build extends Build {
             "org.scalatest" % "scalatest_2.9.0" % "1.6.1" % "test",
             "junit" % "junit" % "4.4" % "test"
         ),
-        parallelExecution in Test := false
+        parallelExecution := false,
+        publishArtifact in packageDoc := false
     )
 
     lazy val ken = Project(
@@ -44,10 +42,14 @@ object build extends Build {
         dependencies = Seq(ken)
     )
 
-    lazy val kenAggregate = Project(
-        id = "ken-aggregate",
-        base = file("aggregate"),
-        settings = kenSettings,
+    lazy val all = Project(
+        id = "all",
+        base = file("all"),
+        settings = kenSettings ++ Seq(
+            publishArtifact := false,
+            publish := (),
+            publishLocal := ()
+        ),
         aggregate = Seq(ken, enumerator, parsec, quickcheck)
     )
 }
