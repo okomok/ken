@@ -25,6 +25,7 @@ package object quickcheck {
     // Property
     //
     type Property = Gen[Prop]
+    val Property = _Property
 
     // Test
     //

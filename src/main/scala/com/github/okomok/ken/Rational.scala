@@ -14,7 +14,11 @@ package com.github.okomok
 package ken
 
 
-object Rational {
+// type Rational = Ratio[Integer]
+// val Rational = _Rational
+
+
+private[ken] object _Rational {
     def apply(x: Integer, y: Integer): Rational = Ratio(x, y)
     def unapply(r: Rational): Option[(Integer, Integer)] = Some((r.numerator, r.denominator))
 }

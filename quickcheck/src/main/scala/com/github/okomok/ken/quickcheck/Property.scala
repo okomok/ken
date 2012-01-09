@@ -14,9 +14,10 @@ package quickcheck
 
 
 // type Property = Gen[Prop]
+// val Property = _Property
 
 
-object Property {
+private[ken] object _Property {
 
     // Lifting
     //

@@ -21,11 +21,12 @@ object Trampoline extends Monad[Trampoline] with ThisIsInstance with EvalOp {
     //
     // Monad
     private type m[+a] = Trampoline[a]
-    override def `return`[a](a: Lazy[a]): m[a] = Done(a)
-    override def op_>>=[a, b](t: m[a])(k: a => m[b]): m[b] = Cont(t, k)
+    override def `return`[a](a: Lazy[a]): m[a] = new Done(a)
+    override def op_>>=[a, b](t: m[a])(k: a => m[b]): m[b] = new Cont(t, k)
 
-    private[ken] case class Done[+a](a: a) extends Trampoline[a]
-    private[ken] case class Cont[z, +a](t: Trampoline[z], k: z => Trampoline[a]) extends Trampoline[a]
+    // For the IORep implementation, you can't use case-classes, which extend ProductN.
+    private[ken] class Done[+a](val result: a) extends Trampoline[a]
+    private[ken] class Cont[z, +a](val current: Trampoline[z], val next: z => Trampoline[a]) extends Trampoline[a]
 
     private def __eval[a](t: Trampoline[a]): a = {
         var cur: Trampoline[_] = t
@@ -34,16 +35,16 @@ object Trampoline extends Monad[Trampoline] with ThisIsInstance with EvalOp {
 
         while (Maybe.isNothing(result)) {
             cur match {
-                case Done(a) => {
+                case c: Done[_] => {
                     if (stack.isEmpty) {
-                        result = Just(a.asInstanceOf[a])
+                        result = Just(c.result.asInstanceOf[a])
                     } else {
-                        cur = (stack.pop())(a)
+                        cur = (stack.pop())(c.result)
                     }
                 }
-                case Cont(t, k) => {
-                    cur = t
-                    stack.push(k.asInstanceOf[Any => Trampoline[a]])
+                case c: Cont[_, _] => {
+                    cur = c.current
+                    stack.push(c.next.asInstanceOf[Any => Trampoline[a]])
                 }
             }
         }
