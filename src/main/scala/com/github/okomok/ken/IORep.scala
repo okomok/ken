@@ -17,7 +17,7 @@ package ken
 
 private[ken] object _IORep {
 
-    private[ken] def done[a](a: a, s: RealWorld.type): Product2[a, RealWorld.type] with Trampoline[a] = new Trampoline.Done(a) with Product2[a, RealWorld.type] {
+    private[ken] def done[a](a: a, s: RealWorld.type): Product2[a, RealWorld.type] with Trampoline[a] = new Trampoline(Trampoline.Done(a)) with Product2[a, RealWorld.type] {
         override val _1: a = a
         override val _2: RealWorld.type = s
         override def canEqual(that: Any): Boolean = that match {
@@ -26,7 +26,7 @@ private[ken] object _IORep {
         }
     }
 
-    private[ken] def cont[z, a](rep: IORep[z], k: z => IORep[a], s: RealWorld.type): Product2[a, RealWorld.type] with Trampoline[a] = new Trampoline.Cont(rep(s), (z: z) => k(z)(s)) with Product2[a, RealWorld.type] {
+    private[ken] def cont[z, a](rep: IORep[z], k: z => IORep[a], s: RealWorld.type): Product2[a, RealWorld.type] with Trampoline[a] = new Trampoline(Trampoline.Cont(rep(s), (z: z) => k(z)(s))) with Product2[a, RealWorld.type] {
         override lazy val _1: a = _eval
         override val _2: RealWorld.type = s
         override def canEqual(that: Any): Boolean = that match {

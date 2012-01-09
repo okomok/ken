@@ -11,7 +11,8 @@ package ken
 // See: http://apocalisp.wordpress.com/2011/10/26/tail-call-elimination-in-scala-monads/
 
 
-sealed abstract class Trampoline[+a] extends Eval[a] {
+// For the IORep implementation, you can't use case-classes directly, which extend ProductN.
+class Trampoline[+a](private val impl: Trampoline.Impl[a]) extends Eval[a] {
     override lazy val _eval: a = Trampoline.__eval(this)
 }
 
@@ -21,12 +22,12 @@ object Trampoline extends Monad[Trampoline] with ThisIsInstance with EvalOp {
     //
     // Monad
     private type m[+a] = Trampoline[a]
-    override def `return`[a](a: Lazy[a]): m[a] = new Done(a)
-    override def op_>>=[a, b](t: m[a])(k: a => m[b]): m[b] = new Cont(t, k)
+    override def `return`[a](a: Lazy[a]): m[a] = new Trampoline(Done(a))
+    override def op_>>=[a, b](t: m[a])(k: a => m[b]): m[b] = new Trampoline(Cont(t, k))
 
-    // For the IORep implementation, you can't use case-classes, which extend ProductN.
-    private[ken] class Done[+a](val result: a) extends Trampoline[a]
-    private[ken] class Cont[z, +a](val current: Trampoline[z], val next: z => Trampoline[a]) extends Trampoline[a]
+    private[ken] sealed abstract class Impl[+a]
+    private[ken] case class Done[+a](a: a) extends Impl[a]
+    private[ken] case class Cont[z, +a](c: Trampoline[z], k: z => Trampoline[a]) extends Impl[a]
 
     private def __eval[a](t: Trampoline[a]): a = {
         var cur: Trampoline[_] = t
@@ -34,17 +35,17 @@ object Trampoline extends Monad[Trampoline] with ThisIsInstance with EvalOp {
         var result: Maybe[a] = Nothing
 
         while (Maybe.isNothing(result)) {
-            cur match {
-                case c: Done[_] => {
+            cur.impl match {
+                case Done(a) => {
                     if (stack.isEmpty) {
-                        result = Just(c.result.asInstanceOf[a])
+                        result = Just(a.asInstanceOf[a])
                     } else {
-                        cur = (stack.pop())(c.result)
+                        cur = (stack.pop())(a)
                     }
                 }
-                case c: Cont[_, _] => {
-                    cur = c.current
-                    stack.push(c.next.asInstanceOf[Any => Trampoline[a]])
+                case Cont(c, k) => {
+                    cur = c
+                    stack.push(k.asInstanceOf[Any => Trampoline[a]])
                 }
             }
         }
