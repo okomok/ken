@@ -97,7 +97,7 @@ object List extends ListAs with MonadPlus[List] with Traversable[List] with Exte
     // Traversable
     override def traverse[f[+_], a, b](f: a => f[b])(t: t[a])(implicit i: Applicative[f]): f[t[b]] = {
         import i.{<@>, <*>}
-        def cons_f(x: a)(ys: Lazy[f[t[b]]]): f[t[b]] = op_!::[b]_ <@> f(x) <*> ys
+        def cons_f(x: a)(ys: Lazy[f[t[b]]]): f[t[b]] = Function.from(op_!::[b]) <@> f(x) <*> ys
         foldr(cons_f)(i.pure(Nil))(t)
     }
     override def mapM[m_[+_], a, b](f: a => m_[b])(t: t[a])(implicit i: Monad[m_]): m_[t[b]] = i.mapM(f)(t)

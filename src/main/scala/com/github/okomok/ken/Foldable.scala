@@ -67,13 +67,13 @@ trait Foldable[t[+_]] extends Typeclass1[t] { outer =>
     // *> is equivalent to >> ?
 
     def traverse_[f[+_], a, b](f: a => f[b])(xs: t[a])(implicit i: Applicative[f]): f[Unit] = {
-        `foldr'`(i.op_*>[b, Unit]_ `.` f)(i.pure())(xs)
+        `foldr'`(Function.from(i.op_*>[b, Unit]) `.` f)(i.pure())(xs)
     }
 
     def for_[f[+_], a, b](xs: t[a])(f: a => f[b])(implicit i: Applicative[f]): f[Unit] = traverse_(f)(xs)
 
     def mapM__[m[+_], a, b](f: a => m[b])(xs: t[a])(implicit i: Monad[m]): m[Unit] = {
-        foldr(i.op_>>[Unit]_ `.` f)(i.`return`())(xs)
+        foldr(Function.from(i.op_>>[Unit]) `.` f)(i.`return`())(xs)
     }
 
     def forM__[m[+_], a, b](xs: t[a])(f: a => m[b])(implicit i: Monad[m]): m[Unit] = mapM__(f)(xs)

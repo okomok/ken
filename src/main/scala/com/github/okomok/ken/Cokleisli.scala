@@ -70,7 +70,7 @@ private[ken] sealed trait CokleisliAs { this: Cokleisli.type =>
         // ArrowApply
         override def app[b, c]: a[(a[b, c], b), c] = Cokleisli { (w: w[(a[b, c], b)]) =>
             import i.<@>
-            run(Pair.fst(i.extract(w)))(Pair.snd[b]_ <@> w)
+            run(Pair.fst(i.extract(w)))(Function.from(Pair.snd[b]) <@> w)
         }
         // ArrowChoice
         override def left[b, c, d](f: a[b, c], * : Type[d] = null): a[Either[b, d], Either[c, d]] = leftApp(f, *)

@@ -74,7 +74,7 @@ private[ken] sealed trait ListTAs extends MonadTransControl.Deriving0[ListT, Mon
         override def `return`[a](a: Lazy[a]): m[a] = ListT { _N.`return`(Lazy(List(a))) }
         override def op_>>=[a, b](m: m[a])(k: a => m[b]): m[b] = ListT {
             import _N.`for`
-            for { a <- run(m); b <- _N.mapM(run[n, b]_ compose k)(a) } yield List.concat(b)
+            for { a <- run(m); b <- _N.mapM(Function.from(run[n, b]) compose k)(a) } yield List.concat(b)
         }
         // MonadPlus
         override def mzero: m[Nothing] = ListT { _N.`return`(Nil) }

@@ -26,13 +26,13 @@ trait Alternative[f[+_]] extends Applicative[f] {
 
     def some[a](v: f[a]): f[List[a]] = {
         def many_v: f[List[a]] = some_v <|> pure(Nil)
-        def some_v: f[List[a]] = List.op_!::[a]_ <@> v <*> many_v
+        def some_v: f[List[a]] = Function.from(List.op_!::[a]) <@> v <*> many_v
         some_v
     }
 
     def many[a](v: f[a]): f[List[a]] = {
         def many_v: f[List[a]] = some_v <|> pure(Nil)
-        def some_v: f[List[a]] = List.op_!::[a]_ <@> v <*> many_v
+        def some_v: f[List[a]] = Function.from(List.op_!::[a]) <@> v <*> many_v
         many_v
     }
 

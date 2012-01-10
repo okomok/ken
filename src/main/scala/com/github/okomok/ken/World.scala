@@ -66,7 +66,7 @@ class World { world =>
 
         def modify[a](ref: STRef[a])(f: a => a): ST[Unit] = {
             import ST.=<<:
-            (write(ref)_ `.` f) =<<: read(ref)
+            (Function.from(write(ref)) `.` f) =<<: read(ref)
         }
 
         def atomicModify[a, b](r: STRef[a])(f: a => (a, b)): ST[b] = returnST {

@@ -60,7 +60,7 @@ private[ken] sealed trait KleisliAs0 { this: Kleisli.type =>
                 import i.`for`
                 for { (c, d) <- (f.run)(x, Lazy(Pair.snd(y))) } yield (c.!, d.!)
             }
-            Kleisli { i.liftM[(c, d), c](Pair.fst)_ `.` i.mfix[(c, d)] `.` f_ }
+            Kleisli { Function.from(i.liftM[(c, d), c](Pair.fst)) `.` i.mfix[(c, d)] `.` f_ }
         }
     }
 }

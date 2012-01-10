@@ -56,7 +56,7 @@ private[ken] sealed trait ContTAs0 { this: ContT.type =>
             for {
                 r <- i.ask
             } {
-                i.local(f)(run(m)(i.local[r](const(r))_ `.` c))
+                i.local(f)(run(m)(Function.from( i.local[r](const(r)) ) `.` c))
             }
         }
     }

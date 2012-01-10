@@ -168,7 +168,7 @@ sealed trait DataInstance { this: Data.type =>
         override def selfTypeable: selfTypeable = t
         override def gfoldl[c[_]](f: GenericL[c])(z: Pure[c])(a: a): c[a] = a match {
             case Nil => z(Nil)
-            case x :: xs => f( f(z(List.op_!::[v]_))(x) )(xs.!)(this)
+            case x :: xs => f( f(z( Function.from(List.op_!::[v]) ))(x) )(xs.!)(this)
         }
     }
 

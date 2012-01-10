@@ -11,6 +11,8 @@ package ken
 object Function extends FunctionAs with
     ArrowChoice[Function] with ArrowApply[Function] with ArrowLoop[Function] with Kind.qcurry2[Function]
 {
+    def from[a, b](that: a => b): a => b = that
+
     def fix[a](f: Lazy[a] => a): a = {
         lazy val x: a = f(x)
         x

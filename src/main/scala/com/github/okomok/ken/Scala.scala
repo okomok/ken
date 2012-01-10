@@ -52,7 +52,7 @@ object Scala {
             override def foldl[a, b](f: a => b => a)(z: a)(t: t[b]): a = t.foldLeft(z)((a, b) => f(a)(b))
             override def traverse[f[+_], a, b](f: a => f[b])(t: t[a])(implicit i: Applicative[f]): f[t[b]] = {
                 import i.{<@>, <*>}
-                def cons_f(x: a)(ys: Lazy[f[List[b]]]): f[List[b]] = List.op_!::[b]_ <@> f(x) <*> ys
+                def cons_f(x: a)(ys: Lazy[f[List[b]]]): f[List[b]] = Function.from(List.op_!::[b]) <@> f(x) <*> ys
                 val tmp: f[List[b]] = foldr(cons_f)(i.pure(Nil))(t)
                 ((xs: List[b]) => {
                     val b = mf.apply[b]
