@@ -86,7 +86,7 @@ private[parsec] sealed trait ParsecTAs0 { this: ParsecT.type =>
         }
     }
 
-    implicit def _asMonadError[s, u, n[+_]](implicit i: MonadError[n]): MonadError[({type L[+a] = ParsecT[s, u, n, a]})#L] = new MonadError[({type L[+a] = ParsecT[s, u, n, a]})#L] with MonadProxy[({type L[+a] = ParsecT[s, u, n, a]})#L] {
+    implicit def _asMonadError[s, u, n[+_]](implicit i: MonadError[n]) = new MonadError[({type L[+a] = ParsecT[s, u, n, a]})#L] with MonadProxy[({type L[+a] = ParsecT[s, u, n, a]})#L] {
         private type m[+a] = ParsecT[s, u, n, a]
         private val prim = ParsecTOp[apply3[s, u, Kind.quote1[n]]]
         override def selfMonad: selfMonad = _asMonadPlus[s, u, n]
