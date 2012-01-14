@@ -28,8 +28,8 @@ class MonadZipperTest extends org.scalatest.junit.JUnit3Suite {
 
     type Env = List[(String, Int)]
 
-    val em = MonadError[String, Error.apply[String]]
-    implicit val sm = MonadState[Env, StateT.apply2[Env, em.type]]
+    val em = MonadError[Error.apply[String]]
+    implicit val sm = MonadState[StateT.apply2[Env, em.type]]
     type M[+a] = sm.apply[a]
 
     object Introduction {
@@ -115,13 +115,13 @@ class MonadZipperTest extends org.scalatest.junit.JUnit3Suite {
     sealed abstract class Mem[+e]
     type Reg = Int
 
-    def evalMem[e, m[+_]](eval: e => m[Int])(implicit _sm: MonadState[Reg, m]): Mem[e] => m[Int] = error("todo")
+    def evalMem[e, m[+_]](eval: e => m[Int])(implicit _sm: MonadState[m] { type StateType = Reg }): Mem[e] => m[Int] = error("todo")
 
     type MemSumVar[+x] = Sum[Mem, Var, x]
     type MemSumVarSumLit[+x] = Sum[MemSumVar, Lit, x]
 
     type Exprs = Fix[MemSumVarSumLit]
-    val sms = MonadState[Reg, StateT.apply2[Reg, sm.type]]
+    val sms = MonadState[StateT.apply2[Reg, sm.type]]
     type Ms[+a] = sms.apply[a]
 
     // evalAdd[e] : (e => M[Int]) => Add[e] => M[Int]

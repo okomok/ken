@@ -81,7 +81,7 @@ class TypeSafeEventsTest extends org.scalatest.junit.JUnit3Suite {
 
         implicit def _asMonad[n[+_], s](implicit _N: Monad[n]): Monad[({type L[+a] = RespondsT[s, n, a]})#L] = new Monad[({type L[+a] = RespondsT[s, n, a]})#L] {
             private type m[+a] = RespondsT[s, n, a]
-            private val _R = MonadReader[Next[s, n], ReaderT.apply2[Next[s, n], _N.type]]
+            private val _R = MonadReader[ReaderT.apply2[Next[s, n], _N.type]]
             override def `return`[a](x: Lazy[a]): m[a] = RespondsT {
                 _R.`return`(x)
             }
@@ -103,7 +103,7 @@ class TypeSafeEventsTest extends org.scalatest.junit.JUnit3Suite {
     trait RespondsTAs2 extends RespondsTAs1 { this: RespondsT.type =>
         implicit def _asMonadResponds[e, n[+_], s](implicit _C: Contains[e, s], _N: Monad[n]): MonadResponds[e, ({type L[+a] = RespondsT[s, n, a]})#L] = new MonadResponds[e, ({type L[+a] = RespondsT[s, n, a]})#L] with MonadProxy[({type L[+a] = RespondsT[s, n, a]})#L] {
             private type m[+a] = RespondsT[s, n, a]
-            private val _R = MonadReader[Next[s, n], ReaderT.apply2[Next[s, n], _N.type]]
+            private val _R = MonadReader[ReaderT.apply2[Next[s, n], _N.type]]
             override val selfMonad = _asMonad[n, s]
             override val fire: fire = x => RespondsT {
                 _R.op_>>=(_R.ask) { a => a(_C.wrap(x)).old }

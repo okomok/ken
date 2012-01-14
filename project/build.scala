@@ -5,9 +5,8 @@ object build extends Build {
     lazy val kenSettings = Project.defaultSettings ++ Seq(
         organization := "com.github.okomok",
         version := "0.1.0-SNAPSHOT",
-        scalaVersion := "2.9.1",
-        crossScalaVersions := Seq("2.9.1", "2.10.0-SNAPSHOT"),
-        scalacOptions ++= Seq("-deprecation", "-unchecked"/*, "-Ydependent-method-types"*/),
+        scalaVersion := "2.10.0-SNAPSHOT", // SI-5033 kicks out 2.9.1.
+        scalacOptions ++= Seq("-deprecation", "-unchecked"),
         libraryDependencies ++= Seq(
             "org.scalatest" % "scalatest_2.9.0" % "1.6.1" % "test",
             "junit" % "junit" % "4.4" % "test"

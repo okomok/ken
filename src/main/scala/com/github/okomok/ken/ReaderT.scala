@@ -72,17 +72,18 @@ private[ken] sealed trait ReaderTAs extends MonadTransControl.Deriving1[ReaderT,
         }
     }
 
-    override protected def deriveMonadWriter[z, n[+_], w](_N: MonadWriter[w, n], _C: c[z]): MonadWriter[w, ({type L[+a] = t1[z, n, a]})#L] = new MonadWriter[w, ({type L[+a] = t1[z, n, a]})#L] with MonadProxy[({type L[+a] = t1[z, n, a]})#L] {
+    override protected def deriveMonadWriter[z, n[+_]](_N: MonadWriter[n], _C: c[z]): MonadWriter.Of[_N.WriteType, ({type L[+a] = t1[z, n, a]})#L] = new MonadWriter[({type L[+a] = t1[z, n, a]})#L] with MonadProxy[({type L[+a] = t1[z, n, a]})#L] {
         private type m[+a] = t1[z, n, a]
         private type r = z
         override val selfMonad: selfMonad = deriveMonad(_N, Trivial.of[r])
+        override type WriteType = _N.WriteType
         override def monoid: monoid = _N.monoid
         override val tell: tell = x => asMonadTransControl(Trivial.of[r]).lift(_N.tell(x))(_N)
-        override def listen[a](m: m[a]): m[(a, w)] = ReaderT { w => _N.listen(run(m)(w)) }
-        override def pass[a](m: m[(a, w => w)]): m[a] = ReaderT { w => _N.pass(run(m)(w)) }
+        override def listen[a](m: m[a]): m[(a, WriteType)] = ReaderT { w => _N.listen(run(m)(w)) }
+        override def pass[a](m: m[(a, WriteType => WriteType)]): m[a] = ReaderT { w => _N.pass(run(m)(w)) }
     }
 
-    implicit def _asMonadReader[r, n[+_]](implicit _N: Monad[n]): MonadReader[r, ({type L[+a] = ReaderT[r, n, a]})#L] = new MonadReader[r, ({type L[+a] = ReaderT[r, n, a]})#L] {
+    implicit def _asMonadReader[r, n[+_]](implicit _N: Monad[n]): MonadReader.Of[r, ({type L[+a] = ReaderT[r, n, a]})#L] = new MonadReader[({type L[+a] = ReaderT[r, n, a]})#L] {
         // Functor
         private type f[+a] = ReaderT[r, n, a]
         override def fmap[a, b](f: a => b): f[a] => f[b] = m => ReaderT { r => {
@@ -97,7 +98,8 @@ private[ken] sealed trait ReaderTAs extends MonadTransControl.Deriving1[ReaderT,
             for { a <- run(m)(r) } { run(k(a))(r) }
         } }
         // MonadReader
+        override type ReadType = r
         override def ask: ask = ReaderT { r => _N.`return`(r) }
-        override def local[a](f: r => r)(m: m[a]): m[a] = ReaderT { r => run(m)(f(r)) }
+        override def local[a](f: ReadType => ReadType)(m: m[a]): m[a] = ReaderT { r => run(m)(f(r)) }
     }
 }

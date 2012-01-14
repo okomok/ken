@@ -51,7 +51,7 @@ object Function extends FunctionAs with
 
 
 private[ken] sealed trait FunctionAs { this: Function.type =>
-    private[ken] def _asMonadReader[z]: MonadReader[z, apply[z]#apply1] = new MonadReader[z, apply[z]#apply1] {
+    private[ken] def _asMonadReader[z]: MonadReader.Of[z, apply[z]#apply1] = new MonadReader[apply[z]#apply1] {
         // Functor
         private type f[+a] = z => a
         override def fmap[a, b](x: a => b): f[a] => f[b] = y => x `.` y
@@ -63,8 +63,9 @@ private[ken] sealed trait FunctionAs { this: Function.type =>
         override def `return`[a](x: Lazy[a]): m[a] = const(x)
         override def op_>>=[a, b](f: m[a])(k: a => m[b]): m[b] = z => k(f(z))(z)
         // MonadReader
+        override type ReadType = z
         override def ask: ask = id
-        override def local[a](f: z => z)(m: m[a]): m[a] = m `.` f
+        override def local[a](f: ReadType => ReadType)(m: m[a]): m[a] = m `.` f
     }
 
     private[ken] def _asSemigroup[z, b](implicit sb: Semigroup[b]): Semigroup[z => b] = new Semigroup[z => b] {

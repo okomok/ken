@@ -16,7 +16,7 @@ package com.github.okomok.kentest.example
         type GameState = (Bool, Int)
 
         // Pull the Monad explicitly.
-        val _M = MonadState[GameState, State.apply[GameState]]
+        val _M = MonadState[State.apply[GameState]]
         import _M._
 
         val playGame: String => _M.apply[GameValue] = {

@@ -72,12 +72,13 @@ private[ken] sealed trait IdentityTAs extends MonadTransControl.Deriving0[Identi
         }
     }
 
-    override protected def deriveMonadWriter[n[+_], w](_N: MonadWriter[w, n]): MonadWriter[w, ({type L[+a] = t[n, a]})#L] = new MonadWriter[w, ({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {
+    override protected def deriveMonadWriter[n[+_]](_N: MonadWriter[n]): MonadWriter.Of[_N.WriteType, ({type L[+a] = t[n, a]})#L] = new MonadWriter[({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {
         private type m[+a] = t[n, a]
         override val selfMonad: selfMonad = deriveMonad(_N)
+        override type WriteType = _N.WriteType
         override def monoid: monoid = _N.monoid
         override def tell: tell = x => asMonadTrans.lift(_N.tell(x))(_N)
-        override def listen[a](x: m[a]): m[(a, w)] = IdentityT { _N.listen(x.old) }
-        override def pass[a](x: m[(a, w => w)]): m[a] = IdentityT { _N.pass(x.old) }
+        override def listen[a](x: m[a]): m[(a, WriteType)] = IdentityT { _N.listen(x.old) }
+        override def pass[a](x: m[(a, WriteType => WriteType)]): m[a] = IdentityT { _N.pass(x.old) }
     }
 }

@@ -245,7 +245,7 @@ class IteratorEssenceTest extends org.scalatest.junit.JUnit3Suite {
     }
 
     def loop[t[+_], a, b](touch: a => b)(xs: t[a])(implicit _T: Traversable[t]): State[Int, t[b]] = {
-        val _M = MonadState[Int, State.apply[Int]]
+        val _M = MonadState[State.apply[Int]]
         import _M._
         collect((a: a) => for { n <- get } put(n+1))(touch)(xs)
     }
@@ -267,7 +267,7 @@ class IteratorEssenceTest extends org.scalatest.junit.JUnit3Suite {
     }
 
     lazy val step: State[Int, Int] = {
-        val _M = MonadState[Int, State.apply[Int]]
+        val _M = MonadState[State.apply[Int]]
         import _M._
         for { n <- get; _ <- put(n+1) } yield n
     }

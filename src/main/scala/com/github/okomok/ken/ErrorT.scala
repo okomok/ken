@@ -84,13 +84,14 @@ private[ken] sealed trait ErrorTAs0 extends MonadTransControl.Deriving1[ErrorT, 
         }
     }
 
-    override protected def deriveMonadWriter[z, n[+_], w](_N: MonadWriter[w, n], _C: c[z]): MonadWriter[w, ({type L[+a] = t1[z, n, a]})#L] = new MonadWriter[w, ({type L[+a] = t1[z, n, a]})#L] with MonadProxy[({type L[+a] = t1[z, n, a]})#L] {
+    override protected def deriveMonadWriter[z, n[+_]](_N: MonadWriter[n], _C: c[z]): MonadWriter.Of[_N.WriteType, ({type L[+a] = t1[z, n, a]})#L] = new MonadWriter[({type L[+a] = t1[z, n, a]})#L] with MonadProxy[({type L[+a] = t1[z, n, a]})#L] {
         private type m[+a] = t1[z, n, a]
         private type e = z
         override val selfMonad: selfMonad = deriveMonad(_N, _C)
-        override def monoid: Monoid[w] = _N.monoid
-        override val tell: w => m[Unit] = x => asMonadTransControl(_C).lift(_N.tell(x))(_N)
-        override def listen[a](m: m[a]): m[(a, w)] = ErrorT {
+        override type WriteType = _N.WriteType
+        override def monoid: monoid = _N.monoid
+        override val tell: tell = x => asMonadTransControl(_C).lift(_N.tell(x))(_N)
+        override def listen[a](m: m[a]): m[(a, WriteType)] = ErrorT {
             import _N.`for`
             for {
                 (a, w) <- _N.listen(run(m))
@@ -101,14 +102,14 @@ private[ken] sealed trait ErrorTAs0 extends MonadTransControl.Deriving1[ErrorT, 
                 }
             }
         }
-        override def pass[a](m: m[(a, w => w)]): m[a] = ErrorT {
+        override def pass[a](m: m[(a, WriteType => WriteType)]): m[a] = ErrorT {
             import _N.`for`
             _N.pass {
                 for {
                     a <- run(m)
                 } {
                     a match {
-                        case Left(l) => _N.`return`(Left(l), id[w])
+                        case Left(l) => _N.`return`(Left(l), id[WriteType])
                         case Right((r, f)) => _N.`return`(Right(r), f)
                     }
                 }
@@ -136,7 +137,7 @@ private[ken] sealed trait ErrorTAs0 extends MonadTransControl.Deriving1[ErrorT, 
 }
 
 private[ken] sealed trait ErrorTAs extends ErrorTAs0 { this: ErrorT.type =>
-    implicit def _asMonadError[e, n[+_]](implicit _N: Monad[n]): MonadError[e, ({type L[+a] = ErrorT[e, n, a]})#L] = new MonadError[e, ({type L[+a] = ErrorT[e, n, a]})#L] {
+    implicit def _asMonadError[n[+_], e](implicit _N: Monad[n]): MonadError.Of[e, ({type L[+a] = ErrorT[e, n, a]})#L] = new MonadError[({type L[+a] = ErrorT[e, n, a]})#L] {
         // Functor
         private type f[+a] = ErrorT[e, n, a]
         override def fmap[a, b](f: a => b): f[a] => f[b] = m => ErrorT {
@@ -165,6 +166,7 @@ private[ken] sealed trait ErrorTAs extends ErrorTAs0 { this: ErrorT.type =>
             }
         }
         // MonadError
+        override type ErrorType = e
         override val throwError: throwError = l => ErrorT { _N.`return`(Left(l)) }
         override def catchError[a](m: m[a])(h: e => m[a]): m[a] = ErrorT {
             import _N.`for`

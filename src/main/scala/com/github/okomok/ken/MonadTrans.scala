@@ -27,9 +27,10 @@ trait MonadTrans[t[_[+_], +_]] extends TypeclassLike with Kind.MonadTrans { oute
         override def liftIO[a](io: IO[a]): m[a] = outer.lift(_N.liftIO(io))(_N)
     }
 
-    final def defaultMonadState[n[+_], s](_M: Monad[({type L[+a] = t[n, a]})#L], _N: MonadState[s, n]): MonadState[s, ({type L[+a] = t[n, a]})#L] = new MonadState[s, ({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {
+    final def defaultMonadState[n[+_]](_M: Monad[({type L[+a] = t[n, a]})#L], _N: MonadState[n]): MonadState.Of[_N.StateType, ({type L[+a] = t[n, a]})#L] = new MonadState[({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {
         private type m[+a] = t[n, a]
         override def selfMonad: selfMonad = _M
+        override type StateType = _N.StateType
         override val get: get = outer.lift(_N.get)(_N)
         override val put: put = s => outer.lift(_N.put(s))(_N)
     }

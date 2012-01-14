@@ -75,7 +75,7 @@ private[ken] sealed trait WriterTAs extends MonadTransControl.Deriving1[WriterT,
         }
     }
 
-    implicit def _asMonadWriter[w, n[+_]](implicit _N: Monad[n], _C: Monoid[w]): MonadWriter[w, ({type L[+a] = WriterT[w, n, a]})#L] = new MonadWriter[w, ({type L[+a] = WriterT[w, n, a]})#L] {
+    implicit def _asMonadWriter[w, n[+_]](implicit _N: Monad[n], _C: Monoid[w]): MonadWriter.Of[w, ({type L[+a] = WriterT[w, n, a]})#L] = new MonadWriter[({type L[+a] = WriterT[w, n, a]})#L] {
         // Functor
         private type f[+a] = WriterT[w, n, a]
         override def fmap[a, b](f: a => b): f[a] => f[b] = m => WriterT {
@@ -90,13 +90,14 @@ private[ken] sealed trait WriterTAs extends MonadTransControl.Deriving1[WriterT,
             for { (a, w) <- run(m); (b, w_) <- run(k(a)) } yield (b, _C.mappend(w)(w_))
         }
         // MonadWriter
-        override def monoid: Monoid[w] = _C
-        override val tell: w => m[Unit] = w => WriterT { _N.`return`((), w) }
-        override def listen[a](m: m[a]): m[(a, w)] = WriterT {
+        override type WriteType = w
+        override def monoid: monoid = _C
+        override val tell: tell = w => WriterT { _N.`return`((), w) }
+        override def listen[a](m: m[a]): m[(a, WriteType)] = WriterT {
             import _N.`for`
             for { (a, w) <- run(m) } yield ((a, w), w)
         }
-        override def pass[a](m: m[(a, w => w)]): m[a] = WriterT {
+        override def pass[a](m: m[(a, WriteType => WriteType)]): m[a] = WriterT {
             import _N.`for`
             for { ((a, f), w) <- run(m) } yield (a, f(w))
         }

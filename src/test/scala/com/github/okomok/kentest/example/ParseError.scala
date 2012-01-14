@@ -26,10 +26,12 @@ class ParseErrorTest extends org.scalatest.junit.JUnit3Suite {
         override def strMsg = s => Err(0)(s)
     }
 
-    implicit val ParseMonad = MonadError[ParseError, Error.apply[ParseError]]
+    implicit val ParseMonad = MonadError[Error.apply[ParseError]]
     type ParseMonad[+a] = ParseMonad.apply[a]
 
     import ParseMonad._
+
+    val ev = implicitly[ParseMonad.ErrorType =:= ParseError]
 
     def parseHexDigit: Char => Int => ParseMonad[Int] = c => idx => {
         if (Char.isHexDigit(c)) {
@@ -58,7 +60,7 @@ class ParseErrorTest extends org.scalatest.junit.JUnit3Suite {
             `return` { "At Index " ++: Show.show(e.location) ++: ": " ++: e.reason }
         }
 
-        val Right(str) = catchError( for { n <- parseHex(s) } { toString_(n) } )(printError).run
+        val Right(str) = catchError(for { n <- parseHex(s) } { toString_(n) })(printError).run
         str
     }
 

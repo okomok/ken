@@ -47,11 +47,12 @@ private[ken] sealed trait ContTAs0 { this: ContT.type =>
         override def lift[n[+_], a](n: n[a])(implicit i: Monad[n]): t[n, a] = ContT { c => i.op_>>=(n)(c) }
     }
 
-    implicit def _asMonadReader[r, n[+_], r_](implicit i: MonadReader[r_, n]): MonadReader[r_, ({type L[+a] = ContT[r, n, a]})#L] = new MonadReader[r_, ({type L[+a] = ContT[r, n, a]})#L] with MonadProxy[({type L[+a] = ContT[r, n, a]})#L] {
+    implicit def _asMonadReader[r, n[+_]](implicit i: MonadReader[n]): MonadReader.Of[i.ReadType, ({type L[+a] = ContT[r, n, a]})#L] = new MonadReader[({type L[+a] = ContT[r, n, a]})#L] with MonadProxy[({type L[+a] = ContT[r, n, a]})#L] {
         private type m[+a] = ContT[r, n, a]
         override val selfMonad: selfMonad = _asMonadCont[r, n]
+        override type ReadType = i.ReadType
         override val ask: ask = _asMonadTrans[r].lift(i.ask)
-        override def local[a](f: r_ => r_)(m: m[a]): m[a] = ContT { c =>
+        override def local[a](f: ReadType => ReadType)(m: m[a]): m[a] = ContT { c =>
             import i.`for`
             for {
                 r <- i.ask
@@ -61,10 +62,11 @@ private[ken] sealed trait ContTAs0 { this: ContT.type =>
         }
     }
 
-    implicit def _asMonadState[r, n[+_], s](implicit i: MonadState[s, n]): MonadState[s, ({type L[+a] = ContT[r, n, a]})#L] = new MonadState[s, ({type L[+a] = ContT[r, n, a]})#L] with MonadProxy[({type L[+a] = ContT[r, n, a]})#L] {
+    implicit def _asMonadState[r, n[+_]](implicit i: MonadState[n]): MonadState.Of[i.StateType, ({type L[+a] = ContT[r, n, a]})#L] = new MonadState[({type L[+a] = ContT[r, n, a]})#L] with MonadProxy[({type L[+a] = ContT[r, n, a]})#L] {
         private type m[+a] = ContT[r, n, a]
         private val mt = _asMonadTrans[r]
         override val selfMonad: selfMonad = _asMonadCont[r, n]
+        override type StateType = i.StateType
         override val get: get = mt.lift(i.get)
         override val put: put = s => mt.lift(i.put(s))
     }

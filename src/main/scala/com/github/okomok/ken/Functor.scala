@@ -77,7 +77,7 @@ object Functor extends FunctorInstance {
 sealed trait FunctorInstance { this: Functor.type =>
     implicit val _ofWeakIdentity: MonadFix[WeakIdentity.apply] with Comonad[WeakIdentity.apply]= WeakIdentity
     implicit def _ofTuple2[z]: Comonad[Tuple2.apply[z]#apply1] = Tuple2._asComonad[z]
-    implicit def _ofFunction[z]: MonadReader[z, Function.apply[z]#apply1] = Function._asMonadReader[z]
+    implicit def _ofFunction[z]: MonadReader.Of[z, Function.apply[z]#apply1] = Function._asMonadReader[z]
 
     implicit def ofScalaTraversable[CC[+X] <: scala.collection.GenTraversableLike[X, CC[X]]](implicit mf: Scala.CanMapFrom[CC]): MonadPlus[CC] = Scala.Traversable._asMonadPlus(mf)
     implicit val ofScalaOption: MonadPlus[Option] = Scala.Option
