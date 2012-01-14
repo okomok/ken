@@ -174,22 +174,22 @@ object Float extends Enum[Float] with Eq.Of[Float] with RealFloat[Float] with Ra
         }
 
         final val _expNormalizedBias = 127
-    }
 
-    @tailrec
-    private def _normalizedDecode(m_n: Pair[Integer, Int]): (Integer, Int) = m_n match { case (m, n) =>
-        if (_isNormalizedDecode(m, n)) (m, n)
-        else if (m == 0) (m, 0)
-        else {
-            import Integer._pow_
-            val b: Integer = floatRadix(0.0F)
-            val d: Int = floatDigits(0.0F)
-            val m_ : Integer = Integer.abs(m)
-            val sign: Integer = if (m < 0) -1 else 1
-            if ( (b _pow_ (d-1)) > m_ ) {
-                _normalizedDecode(sign * (m_ * b), n - 1)
-            } else {
-                _normalizedDecode(sign * (m_ / b), n + 1)
+        @tailrec
+        def _normalizedDecode(m_n: Pair[Integer, Int]): (Integer, Int) = m_n match { case (m, n) =>
+            if (_isNormalizedDecode(m, n)) (m, n)
+            else if (m == 0) (m, 0)
+            else {
+                import Integer._pow_
+                val b: Integer = floatRadix(0.0F)
+                val d: Int = floatDigits(0.0F)
+                val m_ : Integer = Integer.abs(m)
+                val sign: Integer = if (m < 0) -1 else 1
+                if ( (b _pow_ (d-1)) > m_ ) {
+                    _normalizedDecode(sign * (m_ * b), n - 1)
+                } else {
+                    _normalizedDecode(sign * (m_ / b), n + 1)
+                }
             }
         }
     }
