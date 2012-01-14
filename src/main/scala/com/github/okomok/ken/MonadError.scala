@@ -34,10 +34,7 @@ trait MonadErrorProxy[m[+_]] extends MonadError[m] with MonadProxy[m] {
 
 
 object MonadError extends MonadErrorInstance {
-    def apply[m <: Kind.Function1](implicit _M: MonadError[m#apply1]) = new MonadErrorProxy[m#apply1] {
-        override type ErrorType = _M.ErrorType
-        override val selfMonadError: _M.type = _M
-    }
+    def apply[m <: Kind.Function1](implicit _M: MonadError[m#apply1]): /*_M.type*/ MonadError[m#apply1] { type ErrorType = _M.ErrorType } = _M
 
     def deriving[nt <: Kind.Newtype1](implicit _Nt: Newtype1[nt#apply1, nt#oldtype1], _M: MonadError[nt#oldtype1]) = new MonadError[nt#apply1] with MonadProxy[nt#apply1] {
         private type m[+a] = nt#apply1[a]

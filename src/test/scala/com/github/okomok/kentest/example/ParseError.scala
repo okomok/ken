@@ -60,7 +60,7 @@ class ParseErrorTest extends org.scalatest.junit.JUnit3Suite {
             `return` { "At Index " ++: Show.show(e.location) ++: ": " ++: e.reason }
         }
 
-        val Right(str) = catchError( for { n <- parseHex(s) } { toString_(n) } )(x => printError(x)).run
+        val Right(str) = catchError(for { n <- parseHex(s) } { toString_(n) })(printError).run
         str
     }
 
