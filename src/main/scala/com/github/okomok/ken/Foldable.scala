@@ -137,7 +137,7 @@ trait Foldable[t[+_]] extends Typeclass1[t] { outer =>
         Maybe.listToMaybe(concatMap((x: a) => if (p(x)) List(x) else Nil)(xs))
     }
 
-    // Pull
+    // Pull (will be removed)
     //
     trait FoldablePull[f_ <: Kind.Function1] extends Pull[f_] {
         final def foldrM[a, b](f: a => Lazy[b] => m[b])(z0: b)(xs: t[a])(implicit i: Monad[m]): m[b] = outer.foldrM(f)(z0)(xs)(i)
@@ -152,6 +152,17 @@ trait Foldable[t[+_]] extends Typeclass1[t] { outer =>
         final def msum[a](xs: t[m[a]])(implicit i: MonadPlus[m]): m[a] = outer.msum(xs)(i)
     }
     override def pull[f_ <: Kind.Function1]: FoldablePull[f_] = new FoldablePull[f_] {}
+
+    final def I_foldrM[a, b, mb](f: a => Lazy[b] => mb)(z0: b)(xs: t[a])(implicit _I: Instance1[Monad, mb]): _I.result1 = foldrM((a: a) => (b: Lazy[_I.arg1]) => _I(f(a)(b.asInstanceOf[b])))(z0.asInstanceOf[_I.arg1])(xs)(_I.get)
+    final def I_foldlM[a, b, ma](f: a => b => ma)(z0: a)(xs: t[b])(implicit _I: Instance1[Monad, ma]): _I.result1 = foldlM((a: _I.arg1) => (b: b) => _I(f(a.asInstanceOf[a])(b)))(z0.asInstanceOf[_I.arg1])(xs)(_I.get)
+    final def I_traverse_[a, fb](f: a => fb)(xs: t[a])(implicit _I: Instance1[Applicative, fb]): _I.apply1[Unit] = traverse_((a: a) => _I(f(a)))(xs)(_I.get)
+    final def I_for_[a, fb](xs: t[a])(f: a => fb)(implicit _I: Instance1[Applicative, fb]): _I.apply1[Unit] = for_(xs)((a: a) => _I(f(a)))(_I.get)
+    final def I_mapM__[a, mb](f: a => mb)(xs: t[a])(implicit _I: Instance1[Monad, mb]): _I.apply1[Unit] = mapM__((a: a) => _I(f(a)))(xs)(_I.get)
+    final def I_forM__[a, mb](xs: t[a])(f: a => mb)(implicit _I: Instance1[Monad, mb]): _I.apply1[Unit] = forM__(xs)((a: a) => _I(f(a)))(_I.get)
+    final def I_sequenceA_[fa](xs: t[fa])(implicit _I: Instance1[Applicative, fa]): _I.apply1[Unit] = sequenceA_(xs.asInstanceOf[t[_I.result1]])(_I.get)
+    final def I_sequence__[ma](xs: t[ma])(implicit _I: Instance1[Monad, ma]): _I.apply1[Unit] = sequence__(xs.asInstanceOf[t[_I.result1]])(_I.get)
+    final def I_asum[fa](xs: t[fa])(implicit _I: Instance1[Alternative, fa]): _I.result1 = asum(xs.asInstanceOf[t[_I.result1]])(_I.get)
+    final def I_msum[ma](xs: t[ma])(implicit _I: Instance1[MonadPlus, ma]): _I.result1 = msum(xs.asInstanceOf[t[_I.result1]])(_I.get)
 }
 
 

@@ -39,11 +39,14 @@ object Kind {
     trait Unapply1 extends Function1 {
         type arg1
         type arg = arg1
+        type result1 = apply1[arg1]
+        type result = result1
     }
 
     trait Unapply2 extends Function2 {
         type arg1
         type arg2
+        type result2 = apply2[arg1, arg2]
     }
 
     type Unapply = Unapply1

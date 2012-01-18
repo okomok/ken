@@ -58,7 +58,7 @@ trait Traversable[t[+_]] extends Functor[t] with Foldable[t] { outer =>
         traverse( (x: a) => j.infer( Const(f(x)) ) )(t).get
     }
 
-    // Pull
+    // Pull (will be removed)
     //
     trait TraversablePull[f_ <: Kind.Function1] extends FoldablePull[f_] {
         final def traverse[a, b](f: a => f[b])(t: t[a])(implicit i: Applicative[f]): f[t[b]] = outer.traverse(f)(t)(i)
@@ -70,9 +70,12 @@ trait Traversable[t[+_]] extends Functor[t] with Foldable[t] { outer =>
     }
     override def pull[f_ <: Kind.Function1]: TraversablePull[f_] = new TraversablePull[f_] {}
 
-    // Experimental
-    //
-    // def traverseI[fb, a](f: a => fb)(t: t[a])(implicit _f: Instance1[Applicative, fb]): _f.apply1[t[_f.arg1]] = traverse((a: a) => _f(f(a)))(t)(_f.instance)
+    final def I_traverse[fb, a](f: a => fb)(t: t[a])(implicit _I: Instance1[Applicative, fb]): _I.apply1[t[_I.arg1]] = traverse((a: a) => _I(f(a)))(t)(_I.get)
+    final def I_sequenceA[fa](t: t[fa])(implicit _I: Instance1[Applicative, fa]): _I.apply1[t[_I.arg1]] = sequenceA(t.asInstanceOf[t[_I.result1]])(_I.get)
+    final def I_mapM[a, mb](f: a => mb)(t: t[a])(implicit _I: Instance1[Monad, mb]): _I.apply1[t[_I.arg1]] = mapM((a: a) => _I(f(a)))(t)(_I.get)
+    final def I_sequence[ma](t: t[ma])(implicit _I: Instance1[Monad, ma]): _I.apply1[t[_I.arg1]] = sequence(t.asInstanceOf[t[_I.result1]])(_I.get)
+    final def I_tfor[a, fb](t: t[a])(f: a => fb)(implicit _I: Instance1[Applicative, fb]): _I.apply1[t[_I.arg1]] = tfor(t)((a: a) => _I(f(a)))(_I.get)
+    final def I_tforM[a, mb](t: t[a])(f: a => mb)(implicit _I: Instance1[Monad, mb]): _I.apply1[t[_I.arg1]] = tforM(t)((a: a) => _I(f(a)))(_I.get)
 }
 
 
