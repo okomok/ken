@@ -48,9 +48,9 @@ trait MonadReaderProxy[m[+_]] extends MonadReader[m] with MonadProxy[m] {
 object MonadReader extends MonadReaderInstance {
     type Of[r, m[+a]] = MonadReader[m] { type ReadType = r }
 
-    def apply[m <: Kind.Function1](implicit _M: MonadReader[m#apply1]): MonadReader.Of[_M.ReadType, m#apply1] = _M
+    def apply[m <: Kind.Function1](implicit _M: MonadReader[m#apply1]): Of[_M.ReadType, m#apply1] = _M
 
-    def deriving[nt <: Kind.Newtype1](implicit _Nt: Newtype1[nt#apply1, nt#oldtype1], _M: MonadReader[nt#oldtype1]): MonadReader.Of[_M.ReadType, nt#apply1] = new MonadReader[nt#apply1] with MonadProxy[nt#apply1] {
+    def deriving[nt <: Kind.Newtype1](implicit _Nt: Newtype1[nt#apply1, nt#oldtype1], _M: MonadReader[nt#oldtype1]): Of[_M.ReadType, nt#apply1] = new MonadReader[nt#apply1] with MonadProxy[nt#apply1] {
         private type m[+a] = nt#apply1[a]
         override val selfMonad: selfMonad = Monad.deriving[nt]
 
@@ -61,7 +61,7 @@ object MonadReader extends MonadReaderInstance {
         override def asks[a](f: ReadType => a): m[a] = _Nt.newOf { _M.asks(f) }
     }
 
-    def weak[nt <: Kind.Newtype1](implicit _Nt: Newtype1[nt#apply1, nt#oldtype1], _M: MonadReader[nt#apply1]): MonadReader.Of[_M.ReadType, nt#oldtype1] = deriving[Kind.coNewtype1[nt]](_Nt.coNewtype, _M)
+    def weak[nt <: Kind.Newtype1](implicit _Nt: Newtype1[nt#apply1, nt#oldtype1], _M: MonadReader[nt#apply1]): Of[_M.ReadType, nt#oldtype1] = deriving[Kind.coNewtype1[nt]](_Nt.coNewtype, _M)
 }
 
 
