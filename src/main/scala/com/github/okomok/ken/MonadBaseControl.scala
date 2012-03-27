@@ -11,6 +11,7 @@ package com.github.okomok
 package ken
 
 
+// @pending("nonstandard")
 trait MonadBaseControl[b[+_], m[+_]] extends MonadBase[b, m] {
     final val asMonadBaseControl: MonadBaseControl[b, apply1] = this
 

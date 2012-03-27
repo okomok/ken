@@ -22,10 +22,10 @@ private[enumerator] trait Primitives { this: _Enumerator.type =>
         Iteratee { runIteratee(i) >>= (runIteratee[a_, n, b_]_ `.` f) }
     }
 
-    @Annotation.flipOf("op_>>==")
+    // @flipOf("op_>>==")
     def op_==<<:[a, n[+_], b, a_, b_](f: Step[a, n, b] => Iteratee[a_, n, b_])(i: Iteratee[a, n, b])(implicit im: Monad[n]): Iteratee[a_, n, b_] = op_>>==(i)(f)
 
-    @Annotation.aliasOf("op_==<<:")
+    // @aliasOf("op_==<<:")
     def op_@@:[a, b, n[+_], a_, b_](f: Step[a, n, b] => Iteratee[a_, n, b_])(i: Iteratee[a, n, b])(implicit im: Monad[n]): Iteratee[a_, n, b_] = op_==<<:(f)(i)
 
     /**
@@ -33,7 +33,7 @@ private[enumerator] trait Primitives { this: _Enumerator.type =>
      */
     def op_>==>:[a, b, n[+_], a_, b_](e1: Enumerator[a, n, b])(e2: Step[a, n, b] => Iteratee[a_, n, b_])(implicit im: Monad[n]): Step[a, n, b] => Iteratee[a_, n, b_] = s => e1(s) >>== e2
 
-    @Annotation.flipOf("op_>==>:")
+    // @flipOf("op_>==>:")
     def op_<==<:[a, b, n[+_], a_, b_](e2: Step[a, n, b] => Iteratee[a_, n, b_])(e1: Enumerator[a, n, b])(implicit im: Monad[n]): Step[a, n, b] => Iteratee[a_, n, b_] = op_>==>:(e1)(e2)
 
     private[ken] sealed class Op_>>==[a, n[+_], b](i: Iteratee[a, n, b]) {

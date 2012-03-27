@@ -12,6 +12,7 @@ package ken
 //   See: =~~= of scalaz7
 
 
+// @pending("unreliable")
 trait Iso1[f[_], g[_]] extends TypeclassLike {
     final val asIso: Iso1[f, g] = this
 

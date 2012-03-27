@@ -34,37 +34,37 @@ package object ken {
 
     def `op_.`[a, b, c](f: b => c)(g: a => b): a => c = x => f(g(x))
 
-    @Annotation.ceremonial("`compose` is recommended")
+    // @ceremonial("`compose` is recommended")
     implicit def `.`[b, c](f: b => c): `Op_.`[b, c] = new `Op_.`(f)
 
     def flip[a, b, c](f: a => b => c): b => a => c = x => y => f(y)(x)
 
     def op_@[a, b](f: a => b)(x: a): b = f(x)
 
-    @Annotation.ceremonial("`apply` is much better")
+    // @ceremonial("`apply` is much better")
     implicit def `@`[a, b](f: a => b): Op_@[a, b] = new Op_@(f)
 
     def until[a](p: a => Bool)(f: a => a)(x: a): a = {
         if (p(x)) x else until(p)(f)(f(x))
     }
 
-    @Annotation.ceremonial("useless in Scala")
+    // @ceremonial("useless in Scala")
     def asTypeOf[a](x: a)(y: Lazy[a]): a = x
 
-    @Annotation.ceremonial("useless in Scala")
+    // @ceremonial("useless in Scala")
     implicit def _asTypeOf_[a](x: a): Op_asTypeOf_[a] = new Op_asTypeOf_(x)
 
     val error: String => Nothing = { msg => throw new ErrorError(msg.asJString) }
 
     def undefined: Nothing = throw new UndefinedError
 
-    @Annotation.ceremonial("no special effects")
+    // @ceremonial("no special effects")
     def seq[b](x: Any)(y: b): b = y
 
-    @Annotation.ceremonial("same as `op_@`")
+    // @ceremonial("same as `op_@`")
     def op_@![a, b](f: a => b)(x: a): b = seq(x)(f(x))
 
-    @Annotation.ceremonial("same as `@`")
+    // @ceremonial("same as `@`")
     implicit def @![a, b](f: a => b): Op_@[a, b] = new Op_@(f)
 
     // Trivial transformers

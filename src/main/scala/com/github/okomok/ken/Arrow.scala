@@ -14,6 +14,7 @@ package com.github.okomok
 package ken
 
 
+// @pending("not work well under the scalac inferencer")
 trait Arrow[a[-_, +_]] extends Category[a] {
     final val asArrow: Arrow[apply2] = this
 

@@ -54,7 +54,7 @@ trait MonadPlus[m[+_]] extends Monad[m] with Alternative[m] { outer =>
     //
     private[this] def monadFor[a](m: m[a]): For[a] = super.`for`(m)
 
-    @Annotation.compilerWorkaround("2.9.1", 5070)
+    // @scalacWorkaround("2.9.1", 5070)
     override implicit def `for`[a](m: m[a]): ken.For[m, a] = new ForProxy[a] {
         override val selfFor: selfFor = monadFor(m)
         override def filter(p: a => Bool): m[a] = outer.filter(p)(m)

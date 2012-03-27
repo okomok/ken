@@ -17,6 +17,7 @@ package com.github.okomok
 package ken
 
 
+// @pending("not implemented yet")
 trait Read[a] extends Typeclass[a] {
     final val asRead: Read[apply0] = this
 

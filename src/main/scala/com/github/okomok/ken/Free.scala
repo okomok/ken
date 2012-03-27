@@ -11,7 +11,8 @@ package ken
 // type Free[f[+_], n[+_], +a] = FreeT[f, WeakIdentity.apply, a]
 
 
-@Annotation.compilerWorkaround("2.9.1", 5031)
+// @pending("nonstandard")
+// @scalacWorkaround("2.9.1", 5031)
 object _Free extends FreeTOp with Kind.FunctionLike {
     trait apply[f <: Kind.Function1] extends apply1[f]
     trait apply1[f <: Kind.Function1] extends FreeT.apply2[f, WeakIdentity.type]

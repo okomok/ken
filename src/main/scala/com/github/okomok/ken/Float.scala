@@ -163,7 +163,7 @@ object Float extends Enum[Float] with Eq.Of[Float] with RealFloat[Float] with Ra
         impl(_normalizedDecode(m, n))
     }
 
-    @Annotation.compilerWorkaround("2.9.1") // scalac sucks - not found: value _isNormalizedDecode
+    // @scalacWorkaround("2.9.1") // scalac sucks - not found: value _isNormalizedDecode
     private object WorkaroundNotFound {
         lazy val _isNormalizedDecode: Pair[Integer, Int] => Bool = { case (m, n) =>
             import Integer._pow_

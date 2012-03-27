@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-@Annotation.aliasOf("Pair")
+// @aliasOf("Pair")
 object Tuple2 extends Tuple2As with Kind.qcurry2[Tuple2] {
 
     // Prelude

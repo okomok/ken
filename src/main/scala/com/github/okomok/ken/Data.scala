@@ -14,6 +14,7 @@ package com.github.okomok
 package ken
 
 
+// @pending("inaccurate")
 trait Data[a] extends Typeable[a] {
     final val asData: Data[apply0] = this
 

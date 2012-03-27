@@ -11,6 +11,7 @@ package com.github.okomok
 package ken
 
 
+// @pending("nonstandard")
 final case class FreeT[f[+_], n[+_], +a](override val old: n[Either[a, f[FreeT[f, n, a]]]]) extends NewtypeOf[n[Either[a, f[FreeT[f, n, a]]]]]
 
 

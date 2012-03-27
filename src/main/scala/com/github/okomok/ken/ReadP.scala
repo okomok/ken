@@ -17,6 +17,7 @@ package com.github.okomok
 package ken
 
 
+// @pending("not implemented yet")
 trait ReadP[+a] extends Kind.constThis {
     def apply[b](k: a => ReadP.P[b]): ReadP.P[b]
 }

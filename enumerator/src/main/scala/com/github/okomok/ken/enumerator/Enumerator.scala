@@ -12,5 +12,5 @@ package ken
 package enumerator
 
 
-@Annotation.compilerWorkaround("2.9.1", 5031)
+// @scalacWorkaround("2.9.1", 5031)
 object _Enumerator extends Types with Primitives with Utilities with ListAnalogues

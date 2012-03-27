@@ -211,7 +211,7 @@ object Test {
 
     val run: Rose[IO[quickcheck.Result]] => IO[(quickcheck.Result, List[Rose[IO[quickcheck.Result]]])] = rose => {
         val errResult: quickcheck.Result => SomeException => quickcheck.Result = res => err => {
-            @Annotation.caseClassCopyWorkaround
+            // @caseClassCopyWorkaround
             val tmp = "Exception: \'" ++: Str.showErr(err) ++: List.from("\'")
             res.copy(reason = tmp)
         }
@@ -235,7 +235,7 @@ object Test {
             Rose(mres, ts) <- orElseErr(IO.`return`(rose))("rose", errRose)
             res <- orElseErr(mres)("mres", errResult(Result.failed))
             res_ <- orElseErr(IO.`return`(strictOk(res)))("ok", errResult(res.copy(ok = Just(False))))
-            ts_ <- repairList(ts)
+            ts_ <- repairList(Lazy.eval(ts)) // @scalacWorkaround("2.10.0-M2") // `eval` is ambiguous.
         } yield (res_, ts_)
     }
 
@@ -293,7 +293,7 @@ object Test {
             if (res_.ok == Just(False)) {
                 foundFailure(st.copy(numSuccessShrinks = st.numSuccessShrinks + 1))(res_)(ts_)
             } else {
-                localMin(st.copy(numTryShrinks = st.numTryShrinks + 1))(res)(ts)
+                localMin(st.copy(numTryShrinks = st.numTryShrinks + 1))(res)(Lazy.eval(ts)) // @scalacWorkaround("2.10.0-M2") // `eval` is ambiguous.
             }
         }
     }

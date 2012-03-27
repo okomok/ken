@@ -22,7 +22,7 @@ trait MonadIO[m[+_]] extends Monad[m] {
     type ioError = IOError => m[Nothing]
     def ioError: ioError = e => liftIO(IO.ioError(e))
 
-    @Annotation.ceremonial("no special effects")
+    // @ceremonial("no special effects")
     final def evaluate[a](a: a): m[a] = liftIO(Exception.evaluate(a))
 }
 

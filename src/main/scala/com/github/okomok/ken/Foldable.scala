@@ -137,8 +137,7 @@ trait Foldable[t[+_]] extends Typeclass1[t] { outer =>
         Maybe.listToMaybe(concatMap((x: a) => if (p(x)) List(x) else Nil)(xs))
     }
 
-    // Pull (will be removed)
-    //
+    // @deprecated
     trait FoldablePull[f_ <: Kind.Function1] extends Pull[f_] {
         final def foldrM[a, b](f: a => Lazy[b] => m[b])(z0: b)(xs: t[a])(implicit i: Monad[m]): m[b] = outer.foldrM(f)(z0)(xs)(i)
         final def foldlM[a, b](f: a => b => m[a])(z0: a)(xs: t[b])(implicit i: Monad[m]): m[a] = outer.foldlM(f)(z0)(xs)

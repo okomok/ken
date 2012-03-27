@@ -8,7 +8,7 @@ package com.github.okomok
 package ken
 
 
-@Annotation.pending("not work well under the current scalac inferencer")
+// @pending("not work well under the current scalac inferencer")
 trait Newtype2[nt[-_, +_], ot[-_, +_]] extends TypeclassLike with Kind.Newtype2 { outer =>
     override type apply2[-a, +b] = nt[a, b]
     override type oldtype2[-a, +b] = ot[a, b]

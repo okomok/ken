@@ -12,7 +12,7 @@ package parsec
 // type Parsec[s, u, +a] = ParsecT[s, u, WeakIdentity.apply, a]
 
 
-@Annotation.compilerWorkaround("2.9.1", 5031)
+// @scalacWorkaround("2.9.1", 5031)
 object _Parsec extends Kind.FunctionLike {
     trait apply2[s, u] extends ParsecT.apply3[s, u, WeakIdentity.type]
 

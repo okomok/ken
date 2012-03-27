@@ -51,10 +51,10 @@ trait Exception[e] extends Typeable[e] with Show[e] {
         `catch`(a)(handler_)
     }
 
-    @Annotation.flipOf("`catch`")
+    // @flipOf("`catch`")
     final def handle[a](h: e => IO[a])(a: IO[a]): IO[a] = `catch`(a)(h)
 
-    @Annotation.flipOf("catchJust")
+    // @flipOf("catchJust")
     final def handleJust[a, b](p: e => Maybe[b])(h: b => IO[a])(a: IO[a]): IO[a] = catchJust(p)(a)(h)
 
     def mapException[e2, a](f: e => e2)(v: a)(implicit i: Exception[e2]): a = IO.unsafePerformIO(`catch`(Exception.evaluate(v))(x => i.`throw`(f(x))))
@@ -122,10 +122,10 @@ object Exception extends ExceptionInstance with ExceptionShortcut {
 
     def weak[nt <: Kind.Newtype](implicit j: Newtype[nt#apply0, nt#oldtype, _], i: Exception[nt#apply0], k: Typeable[nt#oldtype]): Exception[nt#oldtype] = deriving[Kind.coNewtype[nt]](j.coNewtype, i, k)
 
-    @Annotation.ceremonial("no special effects")
+    // @ceremonial("no special effects")
     def evaluate[a](x: a): IO[a] = IO.`return`(x)
 
-    @Annotation.ceremonial("no special effects")
+    // @ceremonial("no special effects")
     def mask[a](action: (IO[a] => IO[a]) => IO[a]): IO[a] = {
         val restore: IO[a] => IO[a] = act => act
         action(restore)

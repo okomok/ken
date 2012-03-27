@@ -11,6 +11,7 @@ package ken
 // See: SI-2712, scalaz.Unapply.scala
 
 
+// @pending("unreliable")
 trait Instance1[tc[_[+_]], fa] extends Kind.Unapply1 {
     def get: tc[apply1]
     final def apply(fa: fa): result1 = fa.asInstanceOf[result1]

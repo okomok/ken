@@ -17,7 +17,7 @@ package ken
 // type State[s, +a] = StateT[s, WeakIdentity.apply, a]
 
 
-@Annotation.compilerWorkaround("2.9.1", 5031)
+// @scalacWorkaround("2.9.1", 5031)
 object _State extends StateTOp with Kind.FunctionLike {
     trait apply[s] extends apply1[s]
     trait apply1[s] extends StateT.apply2[s, WeakIdentity.type]

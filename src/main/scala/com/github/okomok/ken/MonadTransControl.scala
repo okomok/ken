@@ -11,6 +11,7 @@ package com.github.okomok
 package ken
 
 
+// @pending("experimental")
 trait MonadTransControl[t[_[+_], +_]] extends MonadTrans[t] { outer =>
     final val asMonadTransControl: MonadTransControl[monadTrans] = this
 
@@ -145,7 +146,7 @@ object MonadTransControl extends MonadTransControlInstance {
         protected def deriveMonadReader[n[+_]](_N: MonadReader[n]): MonadReader.Of[_N.ReadType, ({type L[+a] = t[n, a]})#L] = defaultMonadReader(deriveMonadBaseControl1(_N), _N)
         protected def deriveMonadState[n[+_]](_N: MonadState[n]): MonadState.Of[_N.StateType, ({type L[+a] = t[n, a]})#L]  = defaultMonadState(deriveMonad(_N), _N)
 
-        @Annotation.compilerWorkaround("2.9.1", 5033)
+        // @scalacWorkaround("2.9.1", 5033)
         protected def deriveMonadWriter[n[+_]](_N: MonadWriter[n]): Any /*MonadWriter.Of[_N.WriteType, ({type L[+a] = t[n, a]})#L]*/ = error("shall be overriden")
     }
 
@@ -178,7 +179,7 @@ object MonadTransControl extends MonadTransControlInstance {
         final implicit def __asMonadState[n[+_]](implicit _On: Contains[ds, MonadState.type], _N: MonadState[n]): MonadState.Of[_N.StateType, ({type L[+a] = t[n, a]})#L] = deriveMonadState(_N)
     }
     private[ken] sealed trait Deriving0_9[t[_[+_], +_], ds <: Kind.List] extends Deriving0_8[t, ds] { this: Deriving0[t, ds] =>
-        @Annotation.compilerWorkaround("2.9.1", 5033)
+        // @scalacWorkaround("2.9.1", 5033)
         final implicit def __asMonadWriter[n[+_]](implicit _On: Contains[ds, MonadWriter.type], _N: MonadWriter[n]): MonadWriter.Of[_N.WriteType, ({type L[+a] = t[n, a]})#L] = deriveMonadWriter(_N).asInstanceOf[MonadWriter.Of[_N.WriteType, ({type L[+a] = t[n, a]})#L]]
     }
 
@@ -197,7 +198,7 @@ object MonadTransControl extends MonadTransControlInstance {
         protected def deriveMonadReader[z, n[+_]](_N: MonadReader[n], _C: c[z]): MonadReader.Of[_N.ReadType, ({type L[+a] = t1[z, n, a]})#L] = asMonadTransControl(_C).defaultMonadReader(deriveMonadBaseControl1(_N, _C), _N)
         protected def deriveMonadState[z, n[+_]](_N: MonadState[n], _C: c[z]): MonadState.Of[_N.StateType, ({type L[+a] = t1[z, n, a]})#L] = asMonadTransControl(_C).defaultMonadState(deriveMonad(_N, _C), _N)
 
-        @Annotation.compilerWorkaround("2.9.1", 5033)
+        // @scalacWorkaround("2.9.1", 5033)
         protected def deriveMonadWriter[z, n[+_]](_N: MonadWriter[n], _C: c[z]): Any /*MonadWriter.Of[_N.WriteType, ({type L[+a] = t1[z, n, a]})#L]*/ = error("shall be overriden")
     }
 
@@ -230,7 +231,7 @@ object MonadTransControl extends MonadTransControlInstance {
         final implicit def __asMonadState[z, n[+_]](implicit _On: Contains[ds, MonadState.type], _N: MonadState[n], _C: c[z]): MonadState.Of[_N.StateType, ({type L[+a] = t1[z, n, a]})#L] = deriveMonadState(_N, _C)
     }
     private[ken] sealed trait Deriving1_9[t1[z, _[+_], +_], c[_], ds <: Kind.List] extends Deriving1_8[t1, c, ds] { this: Deriving1[t1, c, ds] =>
-        @Annotation.compilerWorkaround("2.9.1", 5033)
+        // @scalacWorkaround("2.9.1", 5033)
         final implicit def __asMonadWriter[z, n[+_]](implicit _On: Contains[ds, MonadWriter.type], _N: MonadWriter[n], _C: c[z]): MonadWriter.Of[_N.WriteType, ({type L[+a] = t1[z, n, a]})#L] = deriveMonadWriter(_N, _C).asInstanceOf[MonadWriter.Of[_N.WriteType, ({type L[+a] = t1[z, n, a]})#L]]
     }
 }

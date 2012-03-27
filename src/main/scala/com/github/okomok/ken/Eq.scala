@@ -17,6 +17,7 @@ package ken
  * The precise Haskell's `Eq` emulation seems impractical,
  * especially in case of complicated case-class hierarchies.
  */
+// @ceremonial("impractical")
 trait _Eq[a] extends Typeclass[a] {
     final val asEq: _Eq[apply0] = this
 

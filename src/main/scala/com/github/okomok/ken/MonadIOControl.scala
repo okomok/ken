@@ -14,6 +14,7 @@ package ken
 // This is not a typeclass.
 
 
+// @pending("nonstandard")
 trait MonadIOControl[m[+_]] extends MonadBaseControl[IO, m] with MonadIO[m] {
     final val asMonadIOControl: MonadIOControl[apply1] = this
 

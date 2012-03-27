@@ -8,6 +8,7 @@ package com.github.okomok
 package ken
 
 
+// @pending("not work well under the scalac inferencer")
 trait Category[cat[-_, +_]] extends Typeclass2[cat] {
     final val asCategory: Category[apply2] = this
 

@@ -134,7 +134,7 @@ trait Monad[m[+_]] extends Applicative[m] { outer =>
     //
     private[this] def functorFor[a](m: m[a]): For[a] = super.`for`(m)
 
-    @Annotation.compilerWorkaround("2.9.1", 5070)
+    // @scalacWorkaround("2.9.1", 5070)
     override implicit def `for`[a](m: m[a]): ken.For[m, a] = new ForProxy[a] {
         override val selfFor: selfFor = functorFor(m)
         override def flatMap[b](k: a => m[b]): m[b] = outer.op_>>=(m)(k)

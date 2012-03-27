@@ -79,6 +79,6 @@ private[ken] object _Bool extends Bounded[Bool] with Enum[Bool] with Eq.Of[Bool]
     val op_&& : Bool => Lazy[Bool] => Bool = b => c => b && c.!
     val op_|| : Bool => Lazy[Bool] => Bool = b => c => b || c.!
 
-    @Annotation.ceremonial("useless?")
+    // @ceremonial("useless?")
     final val otherwise = True
 }

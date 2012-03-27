@@ -17,7 +17,7 @@ package ken
 // type Error[e, +a] = ErrorT[e, WeakIdentity.apply, a]
 
 
-@Annotation.compilerWorkaround("2.9.1", 5031)
+// @scalacWorkaround("2.9.1", 5031)
 object _Error extends ErrorTOp with Kind.FunctionLike {
     trait apply[e] extends apply1[e]
     trait apply1[e] extends ErrorT.apply2[e, WeakIdentity.type]

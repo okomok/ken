@@ -12,6 +12,7 @@ package com.github.okomok
 package ken
 
 
+// @pending("nonstandard")
 trait Extend[w[+_]] extends Functor[w] {
     final val asExtend: Extend[apply1] = this
 
@@ -22,16 +23,16 @@ trait Extend[w[+_]] extends Functor[w] {
 
     // Extra
     //
-    @Annotation.aliasOf("extend")
+    // @aliasOf("extend")
     final def op_<<=:[a, b](f: w[a] => b): w[a] => w[b] = extend(f)
 
-    @Annotation.flipOf("extend")
+    // @flipOf("extend")
     final def op_=>>[a, b](w: w[a])(f: w[a] => b): w[b] = extend(f)(w)
 
     /** Cokleisli composition */
     def op_=<=:[a, b, c](f: w[b] => c)(g: w[a] => b): w[a] => c = f `.` extend(g)
 
-    @Annotation.flipOf("op_=<=:")
+    // @flipOf("op_=<=:")
     final def op_=>=:[a, b, c](g: w[a] => b)(f: w[b] => c): w[a] => c = op_=<=:(f)(g)
 
     // Operators

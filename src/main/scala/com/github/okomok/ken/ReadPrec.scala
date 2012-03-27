@@ -17,6 +17,7 @@ package com.github.okomok
 package ken
 
 
+// @pending("not implemented yet")
 final case class ReadPrec[+a](override val old: Int => ReadP[a]) extends NewtypeOf[Int => ReadP[a]] with (Int => ReadP[a]) {
     override def apply(x: Int): ReadP[a] = old(x)
 }

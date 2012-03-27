@@ -11,5 +11,5 @@ package ken
 /**
  * Type envelope to help type-parameter inference
  */
-@Annotation.marker
+// @marker
 trait TypeEnvelope

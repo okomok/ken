@@ -724,7 +724,7 @@ private[ken] sealed trait ListAs { this: List.type =>
         }
     }
 
-    @Annotation.compilerWorkaround("2.9.1") // SI-4982
+    // @scalacWorkaround("2.9.1") // SI-4982
     implicit val _NilAsOrd: Ord[List[Nothing]] = new Ord[List[Nothing]] {
         override val op_=== : op_=== = x => y => True
         override val compare: compare = x => y => EQ

@@ -58,8 +58,7 @@ trait Traversable[t[+_]] extends Functor[t] with Foldable[t] { outer =>
         traverse( (x: a) => j.infer( Const(f(x)) ) )(t).get
     }
 
-    // Pull (will be removed)
-    //
+    // @deprecated
     trait TraversablePull[f_ <: Kind.Function1] extends FoldablePull[f_] {
         final def traverse[a, b](f: a => f[b])(t: t[a])(implicit i: Applicative[f]): f[t[b]] = outer.traverse(f)(t)(i)
         final def sequenceA[a](t: t[f[a]])(implicit i: Applicative[f]): f[t[a]] = outer.sequenceA(t)(i)

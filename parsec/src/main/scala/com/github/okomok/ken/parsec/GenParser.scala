@@ -12,7 +12,7 @@ package parsec
 // type GenParser[tok, st, +a] = Parsec[List[tok], st, a]
 
 
-@Annotation.compilerWorkaround("2.9.1", 5031)
+// @scalacWorkaround("2.9.1", 5031)
 object _GenParser extends Kind.FunctionLike {
     type apply2[tok, st] = Parsec.apply2[List[tok], st]
 

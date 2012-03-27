@@ -17,7 +17,7 @@ package ken
 // type Writer[w, +a] = WriterT[w, WeakIdentity.apply, a]
 
 
-@Annotation.compilerWorkaround("2.9.1", 5031)
+// @scalacWorkaround("2.9.1", 5031)
 object _Writer extends WriterTOp with Kind.FunctionLike {
     trait apply[w] extends apply1[w]
     trait apply1[w] extends WriterT.apply2[w, WeakIdentity.type]

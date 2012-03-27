@@ -12,7 +12,7 @@ package ken
  * Type-level utilities
  */
 object Kind {
-    @Annotation.marker
+    // @marker
     trait FunctionLike
 
     // Functions

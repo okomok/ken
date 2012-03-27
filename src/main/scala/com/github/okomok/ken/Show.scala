@@ -20,6 +20,7 @@ package ken
  * especially in case of complicated case-class hierarchies.
  * `Char` string issue is hard-coded in `List.toString`
  */
+// @ceremonial("impractical")
 trait Show[a] extends Typeclass[a] {
     final val asShow: Show[apply0] = this
 

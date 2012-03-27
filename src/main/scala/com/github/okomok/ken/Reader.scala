@@ -17,7 +17,7 @@ package ken
 // type Reader[r, +a] = ReaderT[r, WeakIdentity.apply, a]
 
 
-@Annotation.compilerWorkaround("2.9.1", 5031)
+// @scalacWorkaround("2.9.1", 5031)
 object _Reader extends ReaderTOp with Kind.FunctionLike {
     trait apply[r] extends apply1[r]
     trait apply1[r] extends ReaderT.apply2[r, WeakIdentity.type]
