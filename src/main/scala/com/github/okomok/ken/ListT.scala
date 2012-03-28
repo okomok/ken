@@ -49,7 +49,7 @@ private[ken] trait ListTOp {
 }
 
 
-private[ken] sealed trait ListTAs extends MonadTransControl.Deriving0[ListT, MonadBaseControl.type ^: MonadCont.type ^: MonadError.type ^: MonadFix.type ^: MonadIO.type ^: MonadReader.type ^: MonadState.type ^: Kind.Nil] { this: ListT.type =>
+private[ken] sealed trait ListTAs extends MonadTransControl.Deriving0[ListT, MonadInnerControl.type ^: MonadCont.type ^: MonadError.type ^: MonadFix.type ^: MonadIO.type ^: MonadReader.type ^: MonadState.type ^: Kind.Nil] { this: ListT.type =>
     override protected def deriveMonad[n[+_]](_N: Monad[n]) = _asMonadPlus(_N)
 
     override protected def deriveMonadCont[n[+_]](_N: MonadCont[n]): MonadCont[({type L[+a] = t[n, a]})#L] = new MonadCont[({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {

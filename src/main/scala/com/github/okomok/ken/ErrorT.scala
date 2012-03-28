@@ -37,7 +37,7 @@ private[ken] trait ErrorTOp {
 }
 
 
-private[ken] sealed trait ErrorTAs0 extends MonadTransControl.Deriving1[ErrorT, ErrorClass, Monad.type ^: MonadBaseControl.type ^: MonadCont.type ^: MonadIO.type ^: MonadReader.type ^: MonadState.type ^: MonadWriter.type ^: Kind.Nil] { this: ErrorT.type =>
+private[ken] sealed trait ErrorTAs0 extends MonadTransControl.Deriving1[ErrorT, ErrorClass, Monad.type ^: MonadInnerControl.type ^: MonadCont.type ^: MonadIO.type ^: MonadReader.type ^: MonadState.type ^: MonadWriter.type ^: Kind.Nil] { this: ErrorT.type =>
     private type t1[z, n[+_], +a] = ErrorT[z, n, a]
     private type c[z] = ErrorClass[z]
 

@@ -42,7 +42,7 @@ private[ken] trait WriterTOp {
 }
 
 
-private[ken] sealed trait WriterTAs extends MonadTransControl.Deriving1[WriterT, Monoid, Monad.type ^: MonadBaseControl.type ^: MonadError.type ^: MonadFix.type ^: MonadIO.type ^: MonadPlus.type ^: MonadReader.type ^: MonadState.type ^: Kind.Nil] { this: WriterT.type =>
+private[ken] sealed trait WriterTAs extends MonadTransControl.Deriving1[WriterT, Monoid, Monad.type ^: MonadInnerControl.type ^: MonadError.type ^: MonadFix.type ^: MonadIO.type ^: MonadPlus.type ^: MonadReader.type ^: MonadState.type ^: Kind.Nil] { this: WriterT.type =>
     private type t1[z, n[+_], +a] = WriterT[z, n, a]
     private type c[z] = Monoid[z]
 

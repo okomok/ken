@@ -11,7 +11,7 @@ package com.github.okomok
 package ken
 
 
-// @pending("experimental")
+// @pending("nonstandard")
 trait MonadTransControl[t[_[+_], +_]] extends MonadTrans[t] { outer =>
     final val asMonadTransControl: MonadTransControl[monadTrans] = this
 
@@ -32,16 +32,16 @@ trait MonadTransControl[t[_[+_], +_]] extends MonadTrans[t] { outer =>
 
     // Default implementations
     //
-    final def defaultMonadBaseControl[n[+_], b[+_]](_M: Monad[({type L[+a] = t[n, a]})#L], _N: MonadBaseControl[b, n]): MonadBaseControl[b, ({type L[+a] = t[n, a]})#L] = new MonadBaseControl[b, ({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {
+    final def defaultMonadInnerControl[n[+_], b[+_]](_M: Monad[({type L[+a] = t[n, a]})#L], _N: MonadInnerControl[b, n]): MonadInnerControl[b, ({type L[+a] = t[n, a]})#L] = new MonadInnerControl[b, ({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {
         private type m[+a] = t[n, a]
         override type StM[+a] = _N.StM[outer.StT[a]]
         override def selfMonad: selfMonad = _M
-        override def baseMonad: baseMonad = _N.baseMonad
-        override def liftBaseWith[a](f: RunInBase => b[a]): m[a] = outer.liftWith(run1 =>
-            _N.liftBaseWith { runInBase =>
+        override def innerMonad: innerMonad = _N.innerMonad
+        override def liftInnerWith[a](f: RunInInner => b[a]): m[a] = outer.liftWith(run1 =>
+            _N.liftInnerWith { runInInner =>
                 f {
-                    new RunInBase {
-                        override def apply[c](m: m[c]): b[StM[c]] = runInBase(run1(m)(_N))
+                    new RunInInner {
+                        override def apply[c](m: m[c]): b[StM[c]] = runInInner(run1(m)(_N))
                     }
                 }
             }
@@ -49,13 +49,13 @@ trait MonadTransControl[t[_[+_], +_]] extends MonadTrans[t] { outer =>
         override def restoreM[a](St: StM[a]): m[a] = outer.restoreT(_N.restoreM(St))(_N)
     }
 
-    final def defaultMonadCont[n[+_]](_M: MonadBaseControl[n, ({type L[+a] = t[n, a]})#L], _N: MonadCont[n]): MonadCont[({type L[+a] = t[n, a]})#L] = new MonadCont[({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {
+    final def defaultMonadCont[n[+_]](_M: MonadInnerControl[n, ({type L[+a] = t[n, a]})#L], _N: MonadCont[n]): MonadCont[({type L[+a] = t[n, a]})#L] = new MonadCont[({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {
         private type m[+a] = t[n, a]
         override def selfMonad: selfMonad = _M
         override def callCC[a, b](f: (a => m[b]) => m[a]): m[a] = error("how?")
     }
 
-    final def defaultMonadError[n[+_]](_M: MonadBaseControl[n, ({type L[+a] = t[n, a]})#L], _N: MonadError[n]): MonadError.Of[_N.ErrorType, ({type L[+a] = t[n, a]})#L] = new MonadError[({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {
+    final def defaultMonadError[n[+_]](_M: MonadInnerControl[n, ({type L[+a] = t[n, a]})#L], _N: MonadError[n]): MonadError.Of[_N.ErrorType, ({type L[+a] = t[n, a]})#L] = new MonadError[({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {
         private type m[+a] = t[n, a]
         override def selfMonad: selfMonad = _M
         override type ErrorType = _N.ErrorType
@@ -65,7 +65,7 @@ trait MonadTransControl[t[_[+_], +_]] extends MonadTrans[t] { outer =>
         }
     }
 
-    final def defaultMonadFix[n[+_]](_M: MonadBaseControl[n, ({type L[+a] = t[n, a]})#L], _N: MonadFix[n]): MonadFix[({type L[+a] = t[n, a]})#L] = new MonadFix[({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {
+    final def defaultMonadFix[n[+_]](_M: MonadInnerControl[n, ({type L[+a] = t[n, a]})#L], _N: MonadFix[n]): MonadFix[({type L[+a] = t[n, a]})#L] = new MonadFix[({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {
         private type m[+a] = t[n, a]
         override def selfMonad: selfMonad = _M
         override def mfix[a](f: Lazy[a] => m[a]): m[a] = _M.control { run =>
@@ -76,7 +76,7 @@ trait MonadTransControl[t[_[+_], +_]] extends MonadTrans[t] { outer =>
         }
     }
 
-    final def defaultMonadPlus[n[+_]](_M: MonadBaseControl[n, ({type L[+a] = t[n, a]})#L], _N: MonadPlus[n]): MonadPlus[({type L[+a] = t[n, a]})#L] = new MonadPlus[({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {
+    final def defaultMonadPlus[n[+_]](_M: MonadInnerControl[n, ({type L[+a] = t[n, a]})#L], _N: MonadPlus[n]): MonadPlus[({type L[+a] = t[n, a]})#L] = new MonadPlus[({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {
         private type m[+a] = t[n, a]
         override def selfMonad: selfMonad = _M
         override val mzero: mzero = outer.lift(_N.mzero)(_N)
@@ -85,7 +85,7 @@ trait MonadTransControl[t[_[+_], +_]] extends MonadTrans[t] { outer =>
         }
     }
 
-    final def defaultMonadReader[n[+_]](_M: MonadBaseControl[n, ({type L[+a] = t[n, a]})#L], _N: MonadReader[n]): MonadReader.Of[_N.ReadType, ({type L[+a] = t[n, a]})#L] = new MonadReader[({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {
+    final def defaultMonadReader[n[+_]](_M: MonadInnerControl[n, ({type L[+a] = t[n, a]})#L], _N: MonadReader[n]): MonadReader.Of[_N.ReadType, ({type L[+a] = t[n, a]})#L] = new MonadReader[({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {
         private type m[+a] = t[n, a]
         override def selfMonad: selfMonad = _M
         override type ReadType = _N.ReadType
@@ -95,7 +95,7 @@ trait MonadTransControl[t[_[+_], +_]] extends MonadTrans[t] { outer =>
         }
     }
 
-    final def defaultMonadWriter[n[+_]](_M: MonadBaseControl[n, ({type L[+a] = t[n, a]})#L], _N: MonadWriter[n]): MonadWriter.Of[_N.WriteType, ({type L[+a] = t[n, a]})#L] = new MonadWriter[({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {
+    final def defaultMonadWriter[n[+_]](_M: MonadInnerControl[n, ({type L[+a] = t[n, a]})#L], _N: MonadWriter[n]): MonadWriter.Of[_N.WriteType, ({type L[+a] = t[n, a]})#L] = new MonadWriter[({type L[+a] = t[n, a]})#L] with MonadProxy[({type L[+a] = t[n, a]})#L] {
         private type m[+a] = t[n, a]
         override val selfMonad: selfMonad = _M
         override type WriteType = _N.WriteType
@@ -128,7 +128,7 @@ object MonadTransControl extends MonadTransControlInstance {
 
     // Default implementation providers
     //
-    type AnyMonad = Monad.type ^: MonadBaseControl.type ^: MonadError.type ^: MonadFix.type ^: MonadIO.type ^: MonadPlus.type ^: MonadReader.type ^: MonadState.type ^: Kind.Nil
+    type AnyMonad = Monad.type ^: MonadInnerControl.type ^: MonadError.type ^: MonadFix.type ^: MonadIO.type ^: MonadPlus.type ^: MonadReader.type ^: MonadState.type ^: Kind.Nil
 
     import Kind.List.Contains
 
@@ -136,14 +136,14 @@ object MonadTransControl extends MonadTransControlInstance {
     //
     trait Deriving0[t[_[+_], +_], ds <: Kind.List] extends Deriving0_9[t, ds] with MonadTransControl[t] {
         protected def deriveMonad[n[+_]](_N: Monad[n]): Monad[({type L[+a] = t[n, a]})#L]
-        protected def deriveMonadBaseControl[n[+_], b[+_]](_N: MonadBaseControl[b, n]): MonadBaseControl[b, ({type L[+a] = t[n, a]})#L] = defaultMonadBaseControl(deriveMonad(_N), _N)
-        protected def deriveMonadBaseControl1[n[+_]](_N: Monad[n]): MonadBaseControl[n, ({type L[+a] = t[n, a]})#L] = deriveMonadBaseControl(MonadBase._ofSame(_N))
+        protected def deriveMonadInnerControl[n[+_], b[+_]](_N: MonadInnerControl[b, n]): MonadInnerControl[b, ({type L[+a] = t[n, a]})#L] = defaultMonadInnerControl(deriveMonad(_N), _N)
+        protected def deriveMonadInnerControl1[n[+_]](_N: Monad[n]): MonadInnerControl[n, ({type L[+a] = t[n, a]})#L] = deriveMonadInnerControl(MonadInner._ofSame(_N))
         protected def deriveMonadCont[n[+_]](_N: MonadCont[n]): MonadCont[({type L[+a] = t[n, a]})#L] = error("shall be overriden")
-        protected def deriveMonadError[n[+_]](_N: MonadError[n]): MonadError.Of[_N.ErrorType, ({type L[+a] = t[n, a]})#L] = defaultMonadError(deriveMonadBaseControl1(_N), _N)
-        protected def deriveMonadFix[n[+_]](_N: MonadFix[n]): MonadFix[({type L[+a] = t[n, a]})#L] = defaultMonadFix(deriveMonadBaseControl1(_N), _N)
-        protected def deriveMonadIO[n[+_]](_N: MonadIO[n]): MonadIO[({type L[+a] = t[n, a]})#L] = defaultMonadIO(deriveMonadBaseControl1(_N), _N)
-        protected def deriveMonadPlus[n[+_]](_N: MonadPlus[n]): MonadPlus[({type L[+a] = t[n, a]})#L] = defaultMonadPlus(deriveMonadBaseControl1(_N), _N)
-        protected def deriveMonadReader[n[+_]](_N: MonadReader[n]): MonadReader.Of[_N.ReadType, ({type L[+a] = t[n, a]})#L] = defaultMonadReader(deriveMonadBaseControl1(_N), _N)
+        protected def deriveMonadError[n[+_]](_N: MonadError[n]): MonadError.Of[_N.ErrorType, ({type L[+a] = t[n, a]})#L] = defaultMonadError(deriveMonadInnerControl1(_N), _N)
+        protected def deriveMonadFix[n[+_]](_N: MonadFix[n]): MonadFix[({type L[+a] = t[n, a]})#L] = defaultMonadFix(deriveMonadInnerControl1(_N), _N)
+        protected def deriveMonadIO[n[+_]](_N: MonadIO[n]): MonadIO[({type L[+a] = t[n, a]})#L] = defaultMonadIO(deriveMonadInnerControl1(_N), _N)
+        protected def deriveMonadPlus[n[+_]](_N: MonadPlus[n]): MonadPlus[({type L[+a] = t[n, a]})#L] = defaultMonadPlus(deriveMonadInnerControl1(_N), _N)
+        protected def deriveMonadReader[n[+_]](_N: MonadReader[n]): MonadReader.Of[_N.ReadType, ({type L[+a] = t[n, a]})#L] = defaultMonadReader(deriveMonadInnerControl1(_N), _N)
         protected def deriveMonadState[n[+_]](_N: MonadState[n]): MonadState.Of[_N.StateType, ({type L[+a] = t[n, a]})#L]  = defaultMonadState(deriveMonad(_N), _N)
 
         // @scalacWorkaround("2.9.1", 5033)
@@ -155,7 +155,7 @@ object MonadTransControl extends MonadTransControlInstance {
         final implicit def __asMonad[n[+_]](implicit _On: Contains[ds, Monad.type], _N: Monad[n]): Monad[({type L[+a] = t[n, a]})#L] = deriveMonad(_N)
     }
     private[ken] sealed trait Deriving0_1[t[_[+_], +_], ds <: Kind.List] extends Deriving0_0[t, ds] { this: Deriving0[t, ds] =>
-        final implicit def __asMonadBaseControl[n[+_], b[+_]](implicit _On: Contains[ds, MonadBaseControl.type], _N: MonadBaseControl[b, n]): MonadBaseControl[b, ({type L[+a] = t[n, a]})#L] = deriveMonadBaseControl(_N)
+        final implicit def __asMonadInnerControl[n[+_], b[+_]](implicit _On: Contains[ds, MonadInnerControl.type], _N: MonadInnerControl[b, n]): MonadInnerControl[b, ({type L[+a] = t[n, a]})#L] = deriveMonadInnerControl(_N)
     }
     private[ken] sealed trait Deriving0_2[t[_[+_], +_], ds <: Kind.List] extends Deriving0_1[t, ds] { this: Deriving0[t, ds] =>
         final implicit def __asMonadCont[n[+_]](implicit _On: Contains[ds, MonadCont.type], _N: MonadCont[n]): MonadCont[({type L[+a] = t[n, a]})#L] = deriveMonadCont(_N)
@@ -188,14 +188,14 @@ object MonadTransControl extends MonadTransControlInstance {
     trait Deriving1[t1[_, _[+_], +_], c[_], ds <: Kind.List] extends Deriving1_9[t1, c, ds] {
         protected def asMonadTransControl[z](_C: c[z]): MonadTransControl[({type L[n[+_], +a] = t1[z, n, a]})#L]
         protected def deriveMonad[z, n[+_]](_N: Monad[n], _C: c[z]): Monad[({type L[+a] = t1[z, n, a]})#L]
-        protected def deriveMonadBaseControl[z, n[+_], b[+_]](_N: MonadBaseControl[b, n], _C: c[z]): MonadBaseControl[b, ({type L[+a] = t1[z, n, a]})#L] = asMonadTransControl(_C).defaultMonadBaseControl(deriveMonad(_N, _C), _N)
-        protected def deriveMonadBaseControl1[z, n[+_]](_N: Monad[n], _C: c[z]): MonadBaseControl[n, ({type L[+a] = t1[z, n, a]})#L] = deriveMonadBaseControl(MonadBase._ofSame(_N), _C)
+        protected def deriveMonadInnerControl[z, n[+_], b[+_]](_N: MonadInnerControl[b, n], _C: c[z]): MonadInnerControl[b, ({type L[+a] = t1[z, n, a]})#L] = asMonadTransControl(_C).defaultMonadInnerControl(deriveMonad(_N, _C), _N)
+        protected def deriveMonadInnerControl1[z, n[+_]](_N: Monad[n], _C: c[z]): MonadInnerControl[n, ({type L[+a] = t1[z, n, a]})#L] = deriveMonadInnerControl(MonadInner._ofSame(_N), _C)
         protected def deriveMonadCont[z, n[+_]](_N: MonadCont[n], _C: c[z]): MonadCont[({type L[+a] = t1[z, n, a]})#L] = error("shall be overriden")
-        protected def deriveMonadError[z, n[+_]](_N: MonadError[n], _C: c[z]) = asMonadTransControl(_C).defaultMonadError(deriveMonadBaseControl1(_N, _C), _N)
-        protected def deriveMonadFix[z, n[+_]](_N: MonadFix[n], _C: c[z]): MonadFix[({type L[+a] = t1[z, n, a]})#L] = asMonadTransControl(_C).defaultMonadFix(deriveMonadBaseControl1(_N, _C), _N)
-        protected def deriveMonadIO[z, n[+_]](_N: MonadIO[n], _C: c[z]): MonadIO[({type L[+a] = t1[z, n, a]})#L] = asMonadTransControl(_C).defaultMonadIO(deriveMonadBaseControl1(_N, _C), _N)
-        protected def deriveMonadPlus[z, n[+_]](_N: MonadPlus[n], _C: c[z]): MonadPlus[({type L[+a] = t1[z, n, a]})#L] = asMonadTransControl(_C).defaultMonadPlus(deriveMonadBaseControl1(_N, _C), _N)
-        protected def deriveMonadReader[z, n[+_]](_N: MonadReader[n], _C: c[z]): MonadReader.Of[_N.ReadType, ({type L[+a] = t1[z, n, a]})#L] = asMonadTransControl(_C).defaultMonadReader(deriveMonadBaseControl1(_N, _C), _N)
+        protected def deriveMonadError[z, n[+_]](_N: MonadError[n], _C: c[z]) = asMonadTransControl(_C).defaultMonadError(deriveMonadInnerControl1(_N, _C), _N)
+        protected def deriveMonadFix[z, n[+_]](_N: MonadFix[n], _C: c[z]): MonadFix[({type L[+a] = t1[z, n, a]})#L] = asMonadTransControl(_C).defaultMonadFix(deriveMonadInnerControl1(_N, _C), _N)
+        protected def deriveMonadIO[z, n[+_]](_N: MonadIO[n], _C: c[z]): MonadIO[({type L[+a] = t1[z, n, a]})#L] = asMonadTransControl(_C).defaultMonadIO(deriveMonadInnerControl1(_N, _C), _N)
+        protected def deriveMonadPlus[z, n[+_]](_N: MonadPlus[n], _C: c[z]): MonadPlus[({type L[+a] = t1[z, n, a]})#L] = asMonadTransControl(_C).defaultMonadPlus(deriveMonadInnerControl1(_N, _C), _N)
+        protected def deriveMonadReader[z, n[+_]](_N: MonadReader[n], _C: c[z]): MonadReader.Of[_N.ReadType, ({type L[+a] = t1[z, n, a]})#L] = asMonadTransControl(_C).defaultMonadReader(deriveMonadInnerControl1(_N, _C), _N)
         protected def deriveMonadState[z, n[+_]](_N: MonadState[n], _C: c[z]): MonadState.Of[_N.StateType, ({type L[+a] = t1[z, n, a]})#L] = asMonadTransControl(_C).defaultMonadState(deriveMonad(_N, _C), _N)
 
         // @scalacWorkaround("2.9.1", 5033)
@@ -207,7 +207,7 @@ object MonadTransControl extends MonadTransControlInstance {
         final implicit def __asMonad[z, n[+_]](implicit _On: Contains[ds, Monad.type], _N: Monad[n], _C: c[z]): Monad[({type L[+a] = t1[z, n, a]})#L] = deriveMonad(_N, _C)
     }
     private[ken] sealed trait Deriving1_1[t1[z, _[+_], +_], c[_], ds <: Kind.List] extends Deriving1_0[t1, c, ds] { this: Deriving1[t1, c, ds] =>
-        final implicit def __asMonadBaseControl[z, n[+_], b[+_]](implicit _On: Contains[ds, MonadBaseControl.type], _N: MonadBaseControl[b, n], _C: c[z]): MonadBaseControl[b, ({type L[+a] = t1[z, n, a]})#L] = deriveMonadBaseControl(_N, _C)
+        final implicit def __asMonadInnerControl[z, n[+_], b[+_]](implicit _On: Contains[ds, MonadInnerControl.type], _N: MonadInnerControl[b, n], _C: c[z]): MonadInnerControl[b, ({type L[+a] = t1[z, n, a]})#L] = deriveMonadInnerControl(_N, _C)
     }
     private[ken] sealed trait Deriving1_2[t1[z, _[+_], +_], c[_], ds <: Kind.List] extends Deriving1_1[t1, c, ds] { this: Deriving1[t1, c, ds] =>
         final implicit def __asMonadCont[z, n[+_]](implicit _On: Contains[ds, MonadCont.type], _N: MonadCont[n], _C: c[z]): MonadCont[({type L[+a] = t1[z, n, a]})#L] = deriveMonadCont(_N, _C)

@@ -14,24 +14,24 @@ package ken
 // This is not a typeclass.
 
 
-// @pending("nonstandard")
-trait MonadIOControl[m[+_]] extends MonadBaseControl[IO, m] with MonadIO[m] {
+// @pending("experimental")
+trait MonadIOControl[m[+_]] extends MonadInnerControl[IO, m] with MonadIO[m] {
     final val asMonadIOControl: MonadIOControl[apply1] = this
 
     // Overrides
     //
-    // MonadBaseControl
-    override def baseMonad: baseMonad = IO
+    // MonadInnerControl
+    override def innerMonad: innerMonad = IO
     // MonadIO
-    override def liftIO[a](b: IO[a]): m[a] = liftBase(b)
+    override def liftIO[a](b: IO[a]): m[a] = liftInner(b)
 
     // Synonyms
     //
-    type RunInIO = RunInBase
-    final def liftIOWith[a](f: RunInIO => IO[a]): m[a] = liftBaseWith(f)
-    final def liftIOOp[a, q, c](f: (a => IO[StM[q]]) => IO[StM[c]]): (a => m[q]) => m[c] = liftBaseOp(f)
-    final def liftIOOp_[a, q](f: IO[StM[a]] => IO[StM[q]]): m[a] => m[q] = liftBaseOp_(f)
-    final def liftIODiscard[a](f: IO[Unit] => IO[a]): m[Unit] => m[a] = liftBaseDiscard(f)
+    type RunInIO = RunInInner
+    final def liftIOWith[a](f: RunInIO => IO[a]): m[a] = liftInnerWith(f)
+    final def liftIOOp[a, q, c](f: (a => IO[StM[q]]) => IO[StM[c]]): (a => m[q]) => m[c] = liftInnerOp(f)
+    final def liftIOOp_[a, q](f: IO[StM[a]] => IO[StM[q]]): m[a] => m[q] = liftInnerOp_(f)
+    final def liftIODiscard[a](f: IO[Unit] => IO[a]): m[Unit] => m[a] = liftInnerDiscard(f)
 
     // Catching exceptions
     //
@@ -121,10 +121,10 @@ trait MonadIOControl[m[+_]] extends MonadBaseControl[IO, m] with MonadIO[m] {
 }
 
 
-trait MonadIOControlProxy[m[+_]] extends MonadIOControl[m] with MonadBaseControlProxy[IO, m] with MonadIOProxy[m] {
+trait MonadIOControlProxy[m[+_]] extends MonadIOControl[m] with MonadInnerControlProxy[IO, m] with MonadIOProxy[m] {
     type selfMonadIOControl = MonadIOControl[m]
     def selfMonadIOControl: selfMonadIOControl
-    override val selfMonadBaseControl: selfMonadBaseControl = selfMonadIOControl
+    override val selfMonadInnerControl: selfMonadInnerControl = selfMonadIOControl
     override def selfMonadIO: selfMonadIO = selfMonadIOControl
 
     override def `catch`[e, a](a: m[a])(handler: e => m[a])(implicit _E: Exception[e]): m[a] = selfMonadIOControl.`catch`(a)(handler)(_E)
@@ -143,8 +143,8 @@ trait MonadIOControlProxy[m[+_]] extends MonadIOControl[m] with MonadBaseControl
 
 
 object MonadIOControl {
-    def apply[m <: Kind.Function1](implicit _B: MonadBaseControl[IO, m#apply1]): MonadIOControl[m#apply1] = new MonadIOControl[m#apply] with MonadBaseControlProxy[IO, m#apply] {
-        override val selfMonadBaseControl: selfMonadBaseControl = _B
+    def apply[m <: Kind.Function1](implicit _B: MonadInnerControl[IO, m#apply1]): MonadIOControl[m#apply1] = new MonadIOControl[m#apply] with MonadInnerControlProxy[IO, m#apply] {
+        override val selfMonadInnerControl: selfMonadInnerControl = _B
     }
 
     case class Handler[m[+_], a](rep: (e => m[a], Exception[e]) forSome { type e }) {

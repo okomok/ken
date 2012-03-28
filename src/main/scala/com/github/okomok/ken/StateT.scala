@@ -51,7 +51,7 @@ private[ken] trait StateTOp {
 }
 
 
-private[ken] sealed trait StateTAs extends MonadTransControl.Deriving1[StateT, Trivial, Monad.type ^: MonadBaseControl.type ^: MonadCont.type ^: MonadError.type ^: MonadFix.type ^: MonadIO.type ^: MonadPlus.type ^: MonadWriter.type ^: Kind.Nil] { this: StateT.type =>
+private[ken] sealed trait StateTAs extends MonadTransControl.Deriving1[StateT, Trivial, Monad.type ^: MonadInnerControl.type ^: MonadCont.type ^: MonadError.type ^: MonadFix.type ^: MonadIO.type ^: MonadPlus.type ^: MonadWriter.type ^: Kind.Nil] { this: StateT.type =>
     private type t1[z, n[+_], +a] = StateT[z, n, a]
     private type c[z] = Trivial[z]
 

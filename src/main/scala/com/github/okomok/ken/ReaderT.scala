@@ -41,7 +41,7 @@ private[ken] trait ReaderTOp {
 }
 
 
-private[ken] sealed trait ReaderTAs extends MonadTransControl.Deriving1[ReaderT, Trivial, Monad.type ^: MonadBaseControl.type ^: MonadCont.type ^: MonadError.type ^: MonadFix.type ^: MonadIO.type ^: MonadPlus.type ^: MonadState.type ^: MonadWriter.type ^: Kind.Nil] { this: ReaderT.type =>
+private[ken] sealed trait ReaderTAs extends MonadTransControl.Deriving1[ReaderT, Trivial, Monad.type ^: MonadInnerControl.type ^: MonadCont.type ^: MonadError.type ^: MonadFix.type ^: MonadIO.type ^: MonadPlus.type ^: MonadState.type ^: MonadWriter.type ^: Kind.Nil] { this: ReaderT.type =>
     private type t1[z, n[+_], +a] = ReaderT[z, n, a]
     private type c[z] = Trivial[z]
 
