@@ -11,6 +11,7 @@ package com.github.okomok
 package ken
 
 
+// @pending("experimental")
 trait MonadFree[f[+_], m[+_]] extends Monad[m] with Kind.MonadFree {
     override type freeFunctor[+a] = f[a]
     final val asMonadFree: MonadFree[freeFunctor, apply1] = this

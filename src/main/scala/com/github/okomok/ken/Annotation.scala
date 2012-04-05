@@ -8,6 +8,10 @@ package com.github.okomok
 package ken
 
 
+// Annotations for documentation.
+// Commented out for scalac to compile in case of multiple super-types.
+
+
 object Annotation {
     /**
      * Marker trait for documentation

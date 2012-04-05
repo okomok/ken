@@ -1,7 +1,7 @@
 
-# ken 0.1.0-SNAPSHOT
+# ken 0.1.0
 
-`ken` is a DSL like Haskell in Scala without any elaborate technique:
+`ken` is a Haskell-like DSL in Scala:
 
     import com.github.okomok.ken._
 
@@ -39,7 +39,7 @@
         val main_ = IO.print { State.eval(playGame("abcaaacbbcabbab"))(startState) }
     }
 
-The current status is alpha.
+In ken, type-class instances are explicitly retrieved.
 
 
 
@@ -49,6 +49,17 @@ The current status is alpha.
 * Variance-aware.
 * Pulling type-class instances explicitly so that wildcard imports are removed.
 * Type-level functions for partially-applied types.
+
+
+
+## Maven Repository
+
+* repository: `http://okomok.github.com/maven-repo/releases`
+* group id: `com.github.okomok`
+* artifact id: `ken_2.9.1`
+* version: `0.1.0`
+
+In Scala 2.9.x, add `-Ydependent-method-types` to compiler options.
 
 
 

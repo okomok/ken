@@ -4,7 +4,7 @@ import Keys._
 object build extends Build {
     lazy val kenSettings = Project.defaultSettings ++ Seq(
         organization := "com.github.okomok",
-        version := "0.1.0-SNAPSHOT",
+        version := "0.1.0",
 
         scalaVersion := "2.9.1",
         crossScalaVersions := Seq("2.9.1", "2.9.2-RC1", "2.10.0-M2"),
@@ -25,7 +25,9 @@ object build extends Build {
         ),
 
         parallelExecution := false,
-        publishArtifact in packageDoc := false
+        publishArtifact in packageDoc := false,
+
+        publishTo := Some(Resolver.file("file", new java.io.File("../maven-repo/releases/")))
     )
 
     lazy val ken = Project(
